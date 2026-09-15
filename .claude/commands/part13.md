@@ -1,0 +1,62 @@
+---
+description: PrismFlow Part 13
+---
+
+PART 13 - TAIL DEPENDENCE AND COPULA MEASURES
+==============================================
+
+Read docs/CONTRACT.md, prismflow/statistics/dependence.py,
+results/chorus/ from Part 09.
+
+YOU MAY CREATE ONLY THESE PATHS
+  prismflow/statistics/tail_dependence.py
+  prismflow/statistics/copula.py
+  experiments/tail/run_tail.py
+  experiments/tail/plot_tail.py
+  experiments/tail/README.md
+  tests/unit/test_tail_dependence.py
+
+THE ARGUMENT - RECORD IT IN THE README, IT IS THE POINT OF THIS PART
+  Pearson correlation and dCor measure AVERAGE co-movement. Adversarial events
+  are not average; they are extreme. The quantity that matters is upper tail
+  dependence:
+
+      lambda_U = lim_{q -> 1-}  P( U_2 > q  |  U_1 > q )
+
+  the probability that view 2 is extreme given that view 1 is extreme.
+
+  The Gaussian copula has lambda_U = 0 by construction. Two variables can have
+  correlation 0.9 and still be modelled as having zero probability of joint
+  extreme behaviour. This is not an abstract concern - it is the modelling
+  failure that priced correlated defaults as independent before 2008. Our fusion
+  system commits the same error in miniature: it measures average agreement and
+  is blind to coordinated extreme agreement, which is exactly what an attack is.
+
+IMPLEMENT
+  - Empirical upper and lower tail dependence coefficients with a configurable
+    threshold quantile q (default 0.95), plus a nonparametric estimator.
+  - Rank transform to pseudo-observations (empirical copula).
+  - Fit a t-copula (which HAS tail dependence) and a Gaussian copula (which does
+    not) to per-view evidence; report fitted parameters and log-likelihood.
+  - A tail-aware ENIV variant using lambda_U in place of rho_bar.
+
+THE HEADLINE EXPERIMENT
+  Re-run the Part 09 Chorus attack conditions. For each, plot on one figure:
+      rho_bar (Pearson)   vs   lambda_U (tail dependence)
+  across attack strength epsilon.
+
+  Expected and worth reporting either way: rho_bar stays roughly flat as the
+  attack strengthens while lambda_U rises sharply. If that appears, it
+  demonstrates that the standard measure is blind and the tail measure is not.
+  This single figure is the strongest visual argument the project can produce.
+
+  Also report detection rate of a lambda_U-based suspicion flag vs the
+  rho_bar-based flag from Part 10, at matched false-positive rates (use an ROC
+  curve, not a single threshold).
+
+CAVEAT TO DOCUMENT
+  Tail dependence estimation is data-hungry because extremes are rare by
+  definition. Report the effective sample size in the tail for every estimate.
+  If fewer than 50 points exceed the threshold, mark the estimate unreliable.
+
+5 seeds. STOP after the figure is written to results/tail/.

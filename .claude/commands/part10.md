@@ -1,0 +1,61 @@
+---
+description: PrismFlow Part 10
+---
+
+PART 10 - DEFENDED MODEL, SUSPICION DETECTOR, COMPARISON MATRIX
+================================================================
+
+Read docs/CONTRACT.md, prismflow/attacks/chorus.py, prismflow/eniv/.
+
+YOU MAY CREATE ONLY THESE PATHS
+  prismflow/models/defended.py
+  prismflow/statistics/suspicion.py
+  experiments/comparison/run_comparison.py
+  experiments/comparison/build_table.py
+  experiments/comparison/README.md
+  tests/unit/test_suspicion.py
+
+SUSPICION DETECTOR (statistics/suspicion.py)
+
+  Raise a warning when observed pairwise agreement exceeds what the estimated
+  dependence structure can account for.
+
+  HARD ISOLATION REQUIREMENT
+  The suspicion function MUST be derived only from statistical quantities
+  available at inference time. It MUST NOT receive, read, or infer from: any
+  attack label, attack config, compromise mask, or ground-truth corruption flag.
+
+  Add a test that inspects the function signature and asserts it accepts no
+  parameter whose name contains "attack", "compromise", "adversar", or "truth".
+  An agentic session under pressure to make a test pass will wire the ground
+  truth in, and the resulting detector would prove nothing.
+
+  This is the difference between signature-based and anomaly-based detection. A
+  detector that already knows the attack is a lookup table.
+
+DEFENDED MODEL (models/defended.py)
+  Full pipeline: encoders -> evidential heads -> dependence -> ENIV ->
+  discount -> Dempster fusion -> prediction.
+  Expose: prediction, confidence, uncertainty, ENIV, dependence matrix,
+  per-view reliability, per-view evidence, suspicion flag.
+
+FULL COMPARISON MATRIX
+  Systems (rows):
+     single best view | feature concatenation | naive Dempster fusion |
+     PrismFlow without discount | PrismFlow with discount
+  Conditions (columns):
+     clean | clone k=2 | missing 30% | missing 50% | noisy 1 view |
+     Chorus k=1 | Chorus k=2 | Chorus k=3
+  Metrics per cell:
+     accuracy | ECE | Brier reliability | mean confidence | ENIV |
+     suspicion flag rate
+
+  5 seeds. Write results/comparison/matrix.csv and a formatted markdown table.
+
+HONESTY REQUIREMENT
+  Explicitly mark every cell where PrismFlow performs WORSE than a baseline.
+  Do not omit losing conditions. A comparison table in which the proposed method
+  wins everywhere is not credible and reviewers treat it as a red flag.
+  Add a short "Where PrismFlow loses" section to the README.
+
+STOP.

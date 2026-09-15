@@ -1,0 +1,61 @@
+PART 06 - THE CLONE EXPERIMENT
+===============================
+*** THIS IS THE DECISIVE PART. THE ENTIRE THESIS IS TESTED HERE. ***
+
+Read docs/CONTRACT.md, prismflow/eniv/, prismflow/data/corruption.py.
+Do not modify any module. This Part only runs experiments.
+
+YOU MAY CREATE ONLY THESE PATHS
+  experiments/clone/run_clone.py
+  experiments/clone/plot_clone.py
+  experiments/clone/config.yaml
+  experiments/clone/README.md
+
+THE QUESTION
+Does duplicating an existing view increase confidence, even though the duplicate
+adds no new information whatsoever?
+
+PROTOCOL
+  Start from 4 genuinely independent views (rho = 0.0).
+  Progressively duplicate view 0 with k = 0, 1, 2, 3, 4 copies.
+  For each k, evaluate BOTH systems on identical data and identical seeds:
+      (a) naive Dempster fusion       use_discount = False
+      (b) PrismFlow with discount     use_discount = True
+
+  Record per condition: accuracy, mean confidence, mean uncertainty, ENIV,
+  mean pairwise dependence.
+  5 seeds minimum. Report mean and standard deviation for every value.
+
+  Also run the same sweep at rho = 0.5 as a secondary condition, to show the
+  effect is not an artifact of perfectly independent starting views.
+
+PLOTS into results/clone/
+  confidence_vs_duplicates.png   (both systems, with error bars)
+  eniv_vs_duplicates.png
+  uncertainty_vs_duplicates.png
+  accuracy_vs_duplicates.png
+
+WHAT THE RESULT SHOULD LOOK LIKE - do not force it, report what happens
+  Naive fusion : confidence rises with k while accuracy stays flat.
+  PrismFlow    : confidence approximately flat with k; ENIV stays near 4.
+
+  The interesting quantity is the GAP between the confidence curves, because
+  accuracy is identical by construction - the duplicate carries zero new
+  information. Any confidence increase is therefore pure fabrication.
+
+IF BOTH CURVES ARE FLAT
+  The thesis is not reproducing in this setup. Write the observed numbers into
+  experiments/clone/README.md, state clearly that the hypothesis did not
+  reproduce, and STOP. Do not proceed to Part 07. Do not adjust parameters until
+  the curve appears - that is fitting the experiment to the conclusion.
+
+  Diagnostic checklist to report on, in order:
+    1. Is baseline accuracy saturated near 99%? If so there is no headroom.
+    2. Is vacuity pinned near 1.0 or near 0.0? Check KL annealing.
+    3. Does the dependence engine actually return ~1.0 for duplicated views?
+    4. Is the discount being applied (alpha < 1) at all?
+
+NEVER INVENT NUMBERS. Every value in every plot and every table must come from a
+run executed in this session.
+
+STOP after the plots are written.

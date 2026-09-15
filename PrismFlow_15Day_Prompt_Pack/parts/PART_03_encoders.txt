@@ -1,0 +1,41 @@
+PART 03 - VIEW ENCODERS
+=======================
+
+Read docs/CONTRACT.md and prismflow/data/dataset.py. Do not modify data code.
+
+YOU MAY CREATE ONLY THESE PATHS
+  prismflow/models/__init__.py
+  prismflow/models/encoders.py
+  tests/unit/test_encoders.py
+
+REQUIREMENTS
+
+  1. One encoder per view. Weights MUST NOT be shared across views by default.
+     Reason to record in a code comment: shared weights force a common
+     representational geometry across views, which manufactures exactly the
+     dependence this project exists to measure. Provide share_weights: bool =
+     False and document that setting it True invalidates all ENIV results.
+
+  2. MLP encoder for V1. Structure the factory so a CNN or Transformer encoder
+     can be substituted later without changing any call signature.
+
+  3. All encoders output the same feature dimension.
+
+  4. Missing views: respect view_mask. Masked views output a zero placeholder
+     and must be excluded from all downstream statistics.
+
+  5. Configurable per view: input dim, hidden dims, feature dim, dropout.
+
+TESTS
+  - forward pass returns [B, V, feature_dim]
+  - encoder parameters are genuinely distinct across views. Assert that
+    encoder[0] and encoder[1] parameter tensors are not the same object AND
+    differ numerically after one optimizer step. A shared-weight bug is silent
+    and would invalidate the whole project, so test it explicitly.
+  - gradients flow to every unmasked view encoder
+  - masked views receive no gradient
+
+VERIFY
+  Run a toy training loop of 20 steps. Print the loss decreasing.
+
+STOP. Do not implement evidential heads or fusion.

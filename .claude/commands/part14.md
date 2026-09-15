@@ -1,0 +1,63 @@
+---
+description: PrismFlow Part 14
+---
+
+PART 14 - ADAPTIVE ADVERSARY EVALUATION
+========================================
+
+Read docs/CONTRACT.md, prismflow/attacks/chorus.py, prismflow/eniv/,
+prismflow/statistics/suspicion.py.
+
+WHY THIS PART IS NOT OPTIONAL
+  Any defence that reduces attack success is presumed to be masking gradients
+  until proven otherwise. A defence evaluated only against an attacker who does
+  not know it exists is not evaluated at all. Without this Part, every robustness
+  claim in the project is dismissible in one sentence. This is the single
+  highest-value Part after the clone experiment.
+
+YOU MAY CREATE ONLY THESE PATHS
+  prismflow/attacks/adaptive.py
+  experiments/adaptive/run_adaptive.py
+  experiments/adaptive/README.md
+  tests/unit/test_adaptive.py
+
+THE ADAPTIVE OBJECTIVE
+  The attacker knows the ENIV discount and the suspicion detector, and optimises
+  against them:
+
+    maximise over {delta_v : v in C}
+        sum_{v in C} log b_v[target]
+        - beta  * sum_{i,j in C} || b_i - b_j ||^2        (agreement term)
+        - gamma * max(0, rho_hat(C) - tau)                (evasion term)
+
+  The third term penalises MEASURED dependence among the compromised views. The
+  attacker wants its views to agree on the wrong answer while appearing
+  statistically independent. This is the direct counter to our defence and it is
+  what a competent adversary would actually do.
+
+  Sweep gamma. gamma = 0 recovers the Part 09 Chorus attack.
+
+ALSO IMPLEMENT
+  - BPDA-style handling if any part of the pipeline is non-differentiable
+    (the detached ENIV path): approximate it with the identity on the backward
+    pass so the attacker is not accidentally handicapped by our implementation.
+    If the attacker cannot compute a gradient through our defence, that is an
+    artifact of our code, not a property of the defence.
+  - A transfer attack: craft perturbations on the undefended model and apply
+    them to the defended one.
+  - A random-search / gradient-free attack as a sanity check that reduced attack
+    success is not a gradient-computation artifact.
+
+REPORT HONESTLY
+  Plot attack success rate vs gamma for PrismFlow with discount.
+  If success rate rises materially with gamma, the defence is partially evadable.
+  SAY SO, in the README, in plain language, with the numbers.
+
+  A paper that reports "our defence reduces attack success from 94% to 31%, and
+  to 68% against an adaptive adversary aware of the discount" is credible and
+  publishable. A paper reporting only the 31% is neither.
+
+  Include a short section titled "Limits of the defence" summarising exactly
+  which attacker capabilities defeat it.
+
+5 seeds. STOP.

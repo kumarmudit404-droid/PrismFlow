@@ -1,0 +1,49 @@
+PART 07 - CALIBRATION AND EVALUATION PROTOCOL
+==============================================
+
+Read docs/CONTRACT.md. Do not modify any model file.
+
+YOU MAY CREATE ONLY THESE PATHS
+  prismflow/evaluation/__init__.py
+  prismflow/evaluation/metrics.py
+  prismflow/evaluation/calibration.py
+  prismflow/evaluation/protocol.py
+  docs/EVALUATION_PROTOCOL.md
+  tests/unit/test_calibration.py
+
+WHY THIS PART MATTERS
+Accuracy is not this project's metric. The claim is about honest confidence, so
+the evaluation must measure honesty directly.
+
+IMPLEMENT
+  - Accuracy, macro precision / recall / F1
+  - ECE (Expected Calibration Error), 15 bins default, configurable
+  - MCE (Maximum Calibration Error)
+  - Brier score
+  - BRIER MURPHY DECOMPOSITION: reliability - resolution + uncertainty.
+    Report all three components separately, not only the total.
+    Our claim is specifically that PrismFlow improves RELIABILITY, not
+    resolution. A single Brier number hides this; the decomposition
+    demonstrates it. This one table will do more argumentative work than any
+    accuracy figure in the project.
+  - AURC (Area Under Risk-Coverage curve)
+  - Selective risk at coverage {1.0, 0.9, 0.8, 0.5}
+  - Reliability diagram plotting function
+
+UNIFIED PROTOCOL (protocol.py)
+  A single function:
+      evaluate(model, loader, experiment_id, seeds) -> dict
+  It writes, for every experiment in the project:
+      results/<experiment_id>/metrics.json
+      results/<experiment_id>/metrics.csv
+      results/<experiment_id>/reliability_diagram.png
+  Every later experiment calls this and nothing else. No experiment script may
+  compute its own metrics.
+
+TESTS
+  - a perfectly calibrated synthetic predictor yields ECE near 0
+  - a deliberately overconfident predictor yields high ECE
+  - the three Brier decomposition components reconstruct the total Brier score
+  - AURC of a perfect confidence ranking is lower than that of random ranking
+
+STOP. Do not modify models. Do not run new experiments.
