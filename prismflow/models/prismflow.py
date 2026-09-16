@@ -5,8 +5,9 @@ measured against: every view is treated as an independent witness, so
 agreement between two near-duplicate views inflates confidence just as much as
 agreement between two genuinely independent ones.
 
-With `use_discount=True` the per-view opinions are Shafer-discounted by
-ENIV/n before fusion, so redundant agreement buys proportionally less
+With `use_discount=True` each view's evidence is scaled by its own redundancy
+factor (`per_view_alpha`: 1 for an independent view, ~1/g for each member of a
+g-view duplicate cluster) before fusion, so redundant agreement buys less
 confidence. The estimator runs under no_grad and alpha enters as a constant --
 see `prismflow/eniv/discount.py` for why that stop-gradient matters.
 
@@ -21,13 +22,13 @@ conditioning, and a permutation null correction.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import torch
 from torch import nn
 
-from prismflow.eniv.discount import shafer_discount
-from prismflow.eniv.eniv import ENIVResult, compute_eniv
+from prismflow.eniv.discount import evidence_discount
+from prismflow.eniv.eniv import ENIVResult, compute_eniv, per_view_alpha
 from prismflow.models.encoders import EncoderConfig, MultiViewEncoder
 from prismflow.models.evidence import (
     MultiViewEvidenceHead,
@@ -154,17 +155,23 @@ class PrismFlow(nn.Module):
                     null_permutations=self.null_permutations,
                 )
                 present = available_views(view_mask, n_views=self.n_views)
-                eniv = compute_eniv(matrix, present)
+                alpha = per_view_alpha(matrix, present)
+                eniv = replace(
+                    compute_eniv(matrix, present),
+                    per_view_alpha=tuple(float(a) for a in alpha),
+                )
                 dependence = torch.as_tensor(
                     matrix, dtype=evidence.dtype, device=evidence.device
                 )
 
-            per_view_belief, per_view_uncertainty = shafer_discount(
-                per_view_belief,
-                per_view_uncertainty,
-                eniv.efficiency_ratio,
-                validate=self.validate_opinions,
+            # One factor per view, applied to evidence: a duplicated view must
+            # not discount views that were never duplicated. efficiency_ratio
+            # is reported but no longer applied.
+            per_view_belief, per_view_uncertainty = evidence_to_opinion(
+                evidence_discount(evidence, alpha)
             )
+            if self.validate_opinions:
+                assert_valid_opinion(per_view_belief, per_view_uncertainty)
 
         fused_belief, fused_uncertainty = fuse_opinions(
             per_view_belief, per_view_uncertainty, view_mask

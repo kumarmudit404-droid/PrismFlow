@@ -15,6 +15,8 @@ from prismflow.eniv.eniv import (
     compute_eniv,
     eigen_n_eff,
     mean_off_diagonal,
+    per_view_alpha,
+    vif_alpha,
 )
 from prismflow.statistics.dependence import dependence_matrix
 
@@ -307,6 +309,123 @@ def test_eigen_respects_available_views():
     result = compute_eniv(matrix, available)
     assert result.nominal_views == 3
     assert result.effective_views == pytest.approx(2.0, abs=1e-9)
+
+
+# --- per-view discount factors ---------------------------------------------
+
+
+def _clone_matrix(k, c=1.0, base_views=4):
+    """4 independent views plus k copies of view 0, copy correlation c."""
+    size = base_views + k
+    matrix = np.eye(size)
+    group = [0] + list(range(base_views, size))
+    for a in group:
+        for b in group:
+            if a != b:
+                matrix[a, b] = c
+    return matrix, group
+
+
+def test_per_view_alpha_is_one_for_independent_views():
+    assert np.allclose(per_view_alpha(np.eye(5)), 1.0)
+
+
+@pytest.mark.parametrize("n_views", [4, 8])
+@pytest.mark.parametrize("rho", [0.0, 0.3, 0.6, 0.9])
+def test_per_view_alpha_matches_equicorrelated_closed_form(rho, n_views):
+    """Row sums of the inverse equicorrelated matrix are 1 / (1 + (n-1) rho)."""
+    expected = 1.0 / (1.0 + (n_views - 1) * rho)
+    assert np.allclose(per_view_alpha(_matrix(n_views, rho)), expected, atol=1e-5)
+
+
+@pytest.mark.parametrize("k", [0, 1, 2, 3, 4])
+def test_part06_clone_untouched_views_keep_full_weight(k):
+    """The bug being fixed: duplicating view 0 used to discount views 1-3."""
+    matrix, _ = _clone_matrix(k)
+    assert np.allclose(per_view_alpha(matrix)[1:4], 1.0, atol=1e-6)
+
+
+@pytest.mark.parametrize("k", [0, 1, 2, 3, 4])
+def test_part06_clone_cluster_counts_as_exactly_one_witness(k):
+    matrix, group = _clone_matrix(k)
+    alpha = per_view_alpha(matrix)
+    assert np.allclose(alpha[group], 1.0 / len(group), atol=1e-5)
+    assert alpha[group].sum() == pytest.approx(1.0, abs=1e-5)
+
+
+def test_near_duplicate_cluster_weight_matches_closed_form():
+    """At copy correlation c each of g members gets 1 / (1 + (g-1) c); the
+    cluster total g / (1 + (g-1) c) sits slightly above one witness."""
+    c = 0.92
+    for k in range(5):
+        matrix, group = _clone_matrix(k, c)
+        g = len(group)
+        alpha = per_view_alpha(matrix)
+        assert np.allclose(alpha[group], 1.0 / (1.0 + (g - 1) * c), atol=1e-5)
+        assert np.allclose(alpha[1:4], 1.0, atol=1e-6)
+
+
+def test_per_view_alpha_is_insensitive_to_the_ridge_for_exact_copies():
+    matrix, group = _clone_matrix(3)
+    for ridge in (1e-9, 1e-6, 1e-3):
+        assert np.allclose(per_view_alpha(matrix, ridge=ridge)[group], 0.25, atol=1e-3)
+
+
+def test_vif_alpha_erases_exact_duplicate_clusters_documented_counterexample():
+    """Why 1/VIF was not used: every member of an exact-copy cluster, the
+    original included, goes to ~0 -- the witness is erased, not counted once."""
+    matrix, group = _clone_matrix(2)
+    alpha = vif_alpha(matrix)
+    assert np.all(alpha[group] < 1e-4)
+    assert np.allclose(alpha[1:4], 1.0)
+
+
+def test_vif_alpha_matches_equicorrelated_closed_form():
+    for n_views in (4, 8):
+        for rho in (0.0, 0.3, 0.6, 0.9):
+            vif = (1 + (n_views - 2) * rho) / ((1 - rho) * (1 + (n_views - 1) * rho))
+            assert np.allclose(vif_alpha(_matrix(n_views, rho), ridge=0.0), 1.0 / vif, atol=1e-9)
+
+
+def test_per_view_alpha_stays_in_unit_interval():
+    rng = np.random.default_rng(7)
+    for _ in range(50):
+        raw = rng.uniform(-0.6, 1.0, size=(6, 6))
+        matrix = np.clip(0.5 * (raw + raw.T), -1, 1)
+        np.fill_diagonal(matrix, 1.0)
+        alpha = per_view_alpha(matrix)
+        assert np.all(alpha > 0.0) and np.all(alpha <= 1.0)
+
+
+def test_negative_dependence_never_amplifies_evidence():
+    assert np.all(per_view_alpha(_matrix(3, -0.4)) <= 1.0)
+
+
+def test_per_view_alpha_respects_available_views():
+    matrix, _ = _clone_matrix(1)  # views 0 and 4 are copies
+    available = np.array([True, True, True, True, False])
+    alpha = per_view_alpha(matrix, available)
+    # with the copy absent, view 0 is no longer redundant
+    assert np.allclose(alpha, 1.0, atol=1e-6)
+
+
+def test_per_view_alpha_imputes_unmeasurable_pairs_and_does_not_mutate():
+    matrix = _matrix(4, 0.6)
+    matrix[0, 3] = matrix[3, 0] = np.nan
+    before = matrix.copy()
+    assert np.allclose(per_view_alpha(matrix), 1.0 / (1.0 + 3 * 0.6), atol=1e-5)
+    assert np.array_equal(before, matrix, equal_nan=True)
+
+
+def test_per_view_alpha_rejects_bad_shapes():
+    with pytest.raises(ValueError):
+        per_view_alpha(np.zeros((3, 4)))
+    with pytest.raises(ValueError):
+        per_view_alpha(np.eye(3), available=np.array([True, False]))
+
+
+def test_eniv_result_per_view_alpha_defaults_to_none():
+    assert compute_eniv(_matrix(3, 0.2)).per_view_alpha is None
 
 
 # --- ENIV is not trainable ---------------------------------------------

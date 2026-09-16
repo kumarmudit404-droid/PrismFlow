@@ -1,7 +1,11 @@
 import pytest
 import torch
 
-from prismflow.eniv.discount import eniv_discount_factor, shafer_discount
+import numpy as np
+
+from prismflow.eniv.discount import eniv_discount_factor, evidence_discount, shafer_discount
+from prismflow.eniv.eniv import per_view_alpha
+from prismflow.models.fusion import fuse_opinions
 from prismflow.models.encoders import EncoderConfig
 from prismflow.models.evidence import evidence_to_opinion, simplex_residual
 from prismflow.models.prismflow import PrismFlow
@@ -118,6 +122,110 @@ def test_discount_factor_helper_runs_outside_the_graph():
     assert evidence.grad is None
 
 
+# --- evidence-space per-view discount ------------------------------------
+
+
+def test_evidence_discount_alpha_one_is_identity():
+    evidence = torch.rand(8, 3, 4) * 5.0
+    assert torch.equal(evidence_discount(evidence, torch.ones(3)), evidence)
+
+
+def test_evidence_discount_alpha_zero_is_vacuous():
+    evidence = torch.rand(8, 3, 4) * 5.0
+    belief, uncertainty = evidence_to_opinion(evidence_discount(evidence, torch.zeros(3)))
+    assert torch.all(belief == 0.0)
+    assert torch.allclose(uncertainty, torch.ones(8, 3))
+
+
+def test_evidence_discount_is_per_view():
+    evidence = torch.rand(8, 3, 4) * 5.0
+    out = evidence_discount(evidence, torch.tensor([1.0, 0.5, 0.25]))
+    assert torch.equal(out[:, 0], evidence[:, 0])
+    assert torch.allclose(out[:, 1], 0.5 * evidence[:, 1])
+    assert torch.allclose(out[:, 2], 0.25 * evidence[:, 2])
+
+
+def test_evidence_discount_accepts_per_sample_alpha():
+    evidence = torch.rand(6, 3, 4) * 5.0
+    alpha = torch.rand(6, 3)
+    assert torch.allclose(evidence_discount(evidence, alpha), evidence * alpha.unsqueeze(-1))
+
+
+def test_evidence_discount_opinions_stay_on_the_simplex():
+    evidence = torch.rand(16, 5, 3) * 8.0
+    belief, uncertainty = evidence_to_opinion(evidence_discount(evidence, torch.rand(5)))
+    assert simplex_residual(belief, uncertainty) < 1e-5
+
+
+def test_evidence_discount_rejects_bad_alpha():
+    evidence = torch.rand(4, 3, 2)
+    with pytest.raises(ValueError):
+        evidence_discount(evidence, torch.tensor([1.0, 1.2, 0.5]))
+    with pytest.raises(ValueError):
+        evidence_discount(evidence, torch.ones(2))
+
+
+def test_evidence_discount_alpha_carries_no_gradient_but_evidence_does():
+    evidence = (torch.rand(4, 3, 2) * 5.0).requires_grad_(True)
+    alpha = torch.tensor([0.5, 0.7, 1.0], requires_grad=True)
+    evidence_discount(evidence, alpha).sum().backward()
+    assert alpha.grad is None
+    assert evidence.grad is not None and torch.any(evidence.grad != 0)
+
+
+def _clone_structure(k):
+    size = 4 + k
+    matrix = np.eye(size)
+    group = [0] + list(range(4, size))
+    for a in group:
+        for b in group:
+            if a != b:
+                matrix[a, b] = 1.0
+    return matrix
+
+
+def _fused_confidence(evidence, alpha):
+    belief, uncertainty = evidence_to_opinion(evidence_discount(evidence, alpha))
+    _, fused_uncertainty = fuse_opinions(belief, uncertainty)
+    return float((1.0 - fused_uncertainty).mean())
+
+
+def test_controlled_duplication_confidence_stays_near_flat():
+    """The controlled test that found the uniform-discount bug, with the
+    dependence structure KNOWN (not estimated): 4 distinct views + k exact
+    copies of view 0. Uniform ENIV/n drifted -0.066 over k=0..4; per-view
+    evidence discounting must stay within 0.01, and far closer than uniform."""
+    torch.manual_seed(0)
+    evidence = torch.rand(2000, 4, 3) * 6.0
+
+    per_view, uniform = [], []
+    for k in range(5):
+        stacked = torch.cat([evidence, evidence[:, :1].repeat(1, k, 1)], dim=1)
+        alpha = torch.as_tensor(per_view_alpha(_clone_structure(k)), dtype=evidence.dtype)
+        per_view.append(_fused_confidence(stacked, alpha))
+
+        belief, uncertainty = evidence_to_opinion(stacked)
+        belief, uncertainty = shafer_discount(belief, uncertainty, 4.0 / (4 + k))
+        _, fused_u = fuse_opinions(belief, uncertainty)
+        uniform.append(float((1.0 - fused_u).mean()))
+
+    per_view_drift = max(per_view) - min(per_view)
+    uniform_drift = max(uniform) - min(uniform)
+    assert per_view_drift < 0.01, f"per-view confidence {per_view}"
+    assert per_view_drift < uniform_drift / 5
+
+
+def test_duplicate_does_not_discount_untouched_views_evidence():
+    torch.manual_seed(1)
+    evidence = torch.rand(50, 6, 3) * 6.0  # views 0 and 4, 5 are copies below
+    evidence[:, 4] = evidence[:, 0]
+    evidence[:, 5] = evidence[:, 0]
+    alpha = torch.as_tensor(per_view_alpha(_clone_structure(2)), dtype=evidence.dtype)
+    out = evidence_discount(evidence, alpha)
+    # alpha is 1 - O(ridge) here, not bit-exactly 1
+    assert torch.allclose(out[:, 1:4], evidence[:, 1:4], rtol=1e-5, atol=0.0)
+
+
 # --- wired into the model ----------------------------------------------
 
 
@@ -216,6 +324,38 @@ def test_discounted_model_is_deterministic_across_calls():
 
     assert first.eniv.effective_views == second.eniv.effective_views
     assert torch.allclose(first.uncertainty, second.uncertainty)
+
+
+def test_model_applies_per_view_alpha_not_the_scalar_ratio(monkeypatch):
+    """Feed the model a known clone structure: 3 distinct views + 1 copy of
+    view 0. Views 1 and 2 must be left undiscounted even though the scalar
+    efficiency_ratio is below 1."""
+    import prismflow.models.prismflow as prismflow_module
+
+    def known_structure(features, evidence, *args, **kwargs):
+        matrix = np.eye(4)
+        matrix[0, 3] = matrix[3, 0] = 1.0
+        return matrix
+
+    monkeypatch.setattr(prismflow_module, "feature_dependence_matrix", known_structure)
+
+    torch.manual_seed(0)
+    configs = [EncoderConfig(input_dim=6, hidden_dims=[16], feature_dim=8) for _ in range(4)]
+    model = PrismFlow(configs, n_classes=3, use_discount=True)
+    model.eval()
+    output = model(torch.randn(32, 4, 6))
+
+    alpha = output.eniv.per_view_alpha
+    assert alpha is not None
+    assert alpha[1] == pytest.approx(1.0, abs=1e-6)
+    assert alpha[2] == pytest.approx(1.0, abs=1e-6)
+    assert alpha[0] == pytest.approx(0.5, abs=1e-4)
+    assert alpha[3] == pytest.approx(0.5, abs=1e-4)
+    assert output.eniv.efficiency_ratio < 1.0
+
+    undiscounted_b, undiscounted_u = evidence_to_opinion(output.per_view_evidence)
+    assert torch.allclose(output.per_view_belief[:, 1:3], undiscounted_b[:, 1:3])
+    assert torch.allclose(output.per_view_uncertainty[:, 1:3], undiscounted_u[:, 1:3])
 
 
 def test_discounted_model_still_trains():
