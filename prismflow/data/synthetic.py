@@ -96,6 +96,27 @@ def analytic_n_eff(rho: float, n_views: int) -> float:
     return n_views / (1.0 + (n_views - 1) * rho)
 
 
+def analytic_n_eff_eigen(rho: float, n_views: int) -> float:
+    """Ground-truth ENIV under the eigenvalue definition, for equicorrelated views.
+
+        n_eff = sum_i min(lambda_i, 1) = n - (n - 1) * rho
+
+    An equicorrelated matrix has eigenvalues 1 + (n-1)*rho (once) and 1 - rho
+    (n-1 times). For rho in [0, 1] the first is >= 1 and caps at 1; the rest
+    are <= 1 and count in full, giving 1 + (n-1)(1-rho).
+
+    This is a DIFFERENT quantity from `analytic_n_eff` (the design effect), not
+    a correction of it: at n=4, rho=0.5 the design effect is 1.6 and this is
+    2.5. Compare an estimator only against the ground truth of its own
+    definition.
+    """
+    if not (0.0 <= rho <= 1.0):
+        raise ValueError(f"rho must be in [0, 1], got {rho}")
+    if n_views < 1:
+        raise ValueError(f"n_views must be >= 1, got {n_views}")
+    return n_views - (n_views - 1) * rho
+
+
 def _resolve_rho_matrix(rho: RhoSpec, n_views: int) -> np.ndarray:
     if np.isscalar(rho):
         rho = float(rho)

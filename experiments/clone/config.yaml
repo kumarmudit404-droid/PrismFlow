@@ -1,0 +1,30 @@
+experiment:
+  id: clone
+  description: >
+    Does duplicating an existing view increase fused confidence, even though
+    the duplicate carries no new information? Naive Dempster fusion vs
+    PrismFlow with ENIV discounting, on identical data and seeds.
+
+seeds: [0, 1, 2, 3, 4]
+
+# Primary condition is rho=0.0 (genuinely independent starting views);
+# rho=0.5 checks the effect is not an artefact of perfect independence.
+rhos: [0.0, 0.5]
+
+base_views: 4
+source_view: 0
+duplicates: [0, 1, 2, 3, 4]
+
+# Identical to the Part 04 baseline and the Part 05 validation sweep, so the
+# clone results are comparable with both. Fixed before any clone run.
+training:
+  epochs: 40
+  batch_size: 64
+  lr: 0.001
+  anneal_epochs: 10
+  per_view_loss_weight: 1.0
+
+evaluation:
+  split: test
+  # ENIV is estimated per forward batch, exactly as the deployed model does.
+  batch_size: 64

@@ -5,6 +5,7 @@ from prismflow.data.dataset import split_indices
 from prismflow.data.synthetic import (
     SyntheticConfig,
     analytic_n_eff,
+    analytic_n_eff_eigen,
     empirical_cross_view_correlation,
     generate_synthetic_dataset,
 )
@@ -35,6 +36,68 @@ def test_analytic_n_eff_monotonic_in_rho():
 def test_analytic_n_eff_invalid_rho_raises():
     with pytest.raises(ValueError):
         analytic_n_eff(1.5, 5)
+
+
+# --- analytic_n_eff_eigen -------------------------------------------------
+
+
+def _equicorrelated(rho, n_views):
+    matrix = np.full((n_views, n_views), rho)
+    np.fill_diagonal(matrix, 1.0)
+    return matrix
+
+
+def _sum_capped_eigenvalues(matrix):
+    return float(np.minimum(np.linalg.eigvalsh(matrix), 1.0).sum())
+
+
+@pytest.mark.parametrize("n_views", [4, 8])
+@pytest.mark.parametrize("rho", [0.0, 0.3, 0.6, 0.9, 1.0])
+def test_analytic_n_eff_eigen_matches_population_eigenvalues(rho, n_views):
+    """The closed form n - (n-1) rho, checked against an actual eigendecomposition
+    rather than taken on trust from the derivation."""
+    actual = _sum_capped_eigenvalues(_equicorrelated(rho, n_views))
+    assert actual == pytest.approx(analytic_n_eff_eigen(rho, n_views), abs=1e-9)
+
+
+@pytest.mark.parametrize("n_views", [4, 8])
+@pytest.mark.parametrize("rho", [0.0, 0.3, 0.6, 0.9, 1.0])
+def test_analytic_n_eff_eigen_matches_simulated_sample_eigenvalues(rho, n_views):
+    """Simulate equicorrelated data, take the SAMPLE correlation matrix's
+    eigenvalues, and confirm they converge on the closed form. Large n keeps the
+    finite-sample downward bias (real, and documented in eniv.py) well inside
+    the tolerance."""
+    rng = np.random.default_rng(int(rho * 10) * 17 + n_views)
+    n_samples = 60000
+    shared = rng.standard_normal((n_samples, 1))
+    private = rng.standard_normal((n_samples, n_views))
+    data = np.sqrt(rho) * shared + np.sqrt(1.0 - rho) * private
+
+    sample = np.corrcoef(data, rowvar=False)
+    if rho == 1.0:
+        sample = np.ones((n_views, n_views))  # corrcoef of identical columns, exactly
+
+    assert _sum_capped_eigenvalues(sample) == pytest.approx(
+        analytic_n_eff_eigen(rho, n_views), abs=0.06
+    )
+
+
+def test_analytic_n_eff_eigen_endpoints():
+    assert analytic_n_eff_eigen(0.0, 6) == pytest.approx(6.0)
+    assert analytic_n_eff_eigen(1.0, 6) == pytest.approx(1.0)
+
+
+def test_analytic_n_eff_eigen_differs_from_design_effect_between_endpoints():
+    """Different definitions, not competing estimates of one quantity."""
+    assert analytic_n_eff_eigen(0.5, 4) == pytest.approx(2.5)
+    assert analytic_n_eff(0.5, 4) == pytest.approx(1.6)
+
+
+def test_analytic_n_eff_eigen_validates_inputs():
+    with pytest.raises(ValueError):
+        analytic_n_eff_eigen(-0.1, 4)
+    with pytest.raises(ValueError):
+        analytic_n_eff_eigen(0.5, 0)
 
 
 # --- empirical cross-view correlation tracks rho ------------------------

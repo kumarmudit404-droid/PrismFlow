@@ -50,6 +50,7 @@ from prismflow.data.loaders import iter_batches
 from prismflow.data.synthetic import (
     SyntheticConfig,
     analytic_n_eff,
+    analytic_n_eff_eigen,
     empirical_cross_view_correlation,
 )
 from prismflow.eniv.eniv import compute_eniv, mean_off_diagonal
@@ -236,7 +237,12 @@ def run_cell(rho: float, seed: int, config: TrainConfig, logger) -> dict:
         "rho": rho,
         "seed": seed,
         "n_views": cell_config.n_views,
+        # compute_eniv now defaults to the eigenvalue form, so its own closed
+        # form is the ground truth. The design-effect value is kept for
+        # reference only; comparing eigen estimates against it would mix two
+        # different definitions.
         "analytic_n_eff": analytic_n_eff(rho, cell_config.n_views),
+        "analytic_n_eff_eigen": analytic_n_eff_eigen(rho, cell_config.n_views),
     }
 
     for name, method, conditioning in EVIDENCE_ESTIMATORS:
@@ -282,7 +288,7 @@ def run_cell(rho: float, seed: int, config: TrainConfig, logger) -> dict:
         rho,
         seed,
         row["accuracy"],
-        row["analytic_n_eff"],
+        row["analytic_n_eff_eigen"],
         row["eniv_pearson_holdout"],
         row["eniv_features_pearson_global"],
         row["eniv_views_cca"],
@@ -290,11 +296,14 @@ def run_cell(rho: float, seed: int, config: TrainConfig, logger) -> dict:
     return row
 
 
-def _aggregate(rows: list[dict], key: str) -> dict:
+TRUTH_KEY = "analytic_n_eff_eigen"
+
+
+def _aggregate(rows: list[dict], key: str, truth_key: str = TRUTH_KEY) -> dict:
     """MAE against the analytic value, plus the spread across all cells."""
-    errors = [abs(row[key] - row["analytic_n_eff"]) for row in rows]
+    errors = [abs(row[key] - row[truth_key]) for row in rows]
     estimates = [row[key] for row in rows]
-    truth = [row["analytic_n_eff"] for row in rows]
+    truth = [row[truth_key] for row in rows]
 
     centered_est = [value - statistics.mean(estimates) for value in estimates]
     centered_truth = [value - statistics.mean(truth) for value in truth]
@@ -347,7 +356,7 @@ def main() -> None:
     summary["per_rho"] = {
         str(rho): {
             key: statistics.mean([r[key] for r in rows if r["rho"] == rho])
-            for key in estimator_keys + ["analytic_n_eff", "accuracy"]
+            for key in estimator_keys + ["analytic_n_eff", TRUTH_KEY, "accuracy"]
         }
         for rho in RHO_GRID
     }
@@ -371,7 +380,7 @@ def main() -> None:
     print("-" * len(header))
     for rho in RHO_GRID:
         cells = summary["per_rho"][str(rho)]
-        line = f"{rho:6.2f} {cells['analytic_n_eff']:9.3f} "
+        line = f"{rho:6.2f} {cells[TRUTH_KEY]:9.3f} "
         line += " ".join(f"{cells[k]:16.3f}" for k in estimator_keys)
         print(line)
 
