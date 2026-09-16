@@ -6,6 +6,7 @@ from prismflow.statistics.dependence import (
     available_views,
     class_conditional_residuals,
     dependence_matrix,
+    feature_dependence_matrix,
     predicted_classes,
 )
 
@@ -287,6 +288,297 @@ def test_dcor_near_one_for_identical_views():
     base = _evidence(rng, n_samples=400, n_views=1)
     evidence = np.concatenate([base, base], axis=1)
     assert dependence_matrix(evidence, method="dcor")[0, 1] > 0.99
+
+
+# --- feature-space estimation -------------------------------------------
+
+
+def _features_and_evidence(rng, n_samples=2000, n_views=3, feature_dim=16, n_classes=3, rho=0.0):
+    """Encoder-like features with a shared factor, plus a separate evidence
+    tensor that only names the conditioning class."""
+    shared = rng.standard_normal((n_samples, 1, feature_dim))
+    private = rng.standard_normal((n_samples, n_views, feature_dim))
+    features = np.sqrt(rho) * shared + np.sqrt(1.0 - rho) * private
+
+    labels = rng.integers(0, n_classes, size=n_samples)
+    evidence = np.abs(rng.standard_normal((n_samples, n_views, n_classes)))
+    evidence[np.arange(n_samples), :, labels] += 5.0
+    return features, evidence, labels
+
+
+def test_feature_matrix_is_symmetric_with_unit_diagonal():
+    rng = np.random.default_rng(30)
+    features, evidence, _ = _features_and_evidence(rng, n_views=4)
+
+    matrix = feature_dependence_matrix(features, evidence)
+    assert matrix.shape == (4, 4)
+    assert np.allclose(matrix, matrix.T, equal_nan=True)
+    assert np.allclose(np.diag(matrix), 1.0)
+
+
+def test_feature_dependence_recovers_shared_factor():
+    rng = np.random.default_rng(31)
+    measured = []
+    for rho in (0.0, 0.3, 0.6, 0.9):
+        features, evidence, _ = _features_and_evidence(rng, rho=rho)
+        measured.append(feature_dependence_matrix(features, evidence)[0, 1])
+
+    assert measured == sorted(measured), f"not monotone in rho: {measured}"
+    assert abs(measured[0]) < 0.06
+    assert measured[-1] > 0.8
+
+
+def test_feature_dependence_tracks_rho_more_closely_than_a_k_dim_bottleneck():
+    """The K-dim evidence head discards non-class variation -- which is
+    precisely the shared nuisance factor that makes views redundant."""
+    rng = np.random.default_rng(32)
+    features, evidence, labels = _features_and_evidence(rng, rho=0.6, feature_dim=16)
+
+    # project features through a narrow rectified bottleneck, as the evidence
+    # head does, then measure on that instead
+    projection = rng.standard_normal((16, 3))
+    bottleneck = np.maximum(features @ projection, 0.0)
+
+    from_features = feature_dependence_matrix(features, evidence, classes=labels)[0, 1]
+    from_bottleneck = dependence_matrix(bottleneck, classes=labels)[0, 1]
+
+    assert from_features > from_bottleneck
+
+
+def test_evidence_only_names_the_class_and_is_never_correlated():
+    """Scrambling evidence values while preserving the argmax must not move
+    the estimate -- proof the evidence tensor is used for stratification only."""
+    rng = np.random.default_rng(33)
+    features, evidence, _ = _features_and_evidence(rng, rho=0.5)
+
+    rescaled = evidence * 7.0 + 0.5  # same argmax, different magnitudes
+    assert np.allclose(
+        feature_dependence_matrix(features, evidence),
+        feature_dependence_matrix(features, rescaled),
+    )
+
+
+def test_pearson_fails_on_unaligned_bases_where_cca_succeeds():
+    """Independent per-view encoders give each view its own arbitrary feature
+    basis. Axis-aligned correlation then averages real shared structure
+    against misalignment and reads near zero; CCA is basis-invariant."""
+    rng = np.random.default_rng(36)
+    n_samples, dim = 3000, 8
+
+    shared = rng.standard_normal((n_samples, dim))
+    view_a = np.sqrt(0.8) * shared + np.sqrt(0.2) * rng.standard_normal((n_samples, dim))
+    view_b = np.sqrt(0.8) * shared + np.sqrt(0.2) * rng.standard_normal((n_samples, dim))
+
+    # rotate view b into a different basis -- the dependence is unchanged
+    rotation = np.linalg.qr(rng.standard_normal((dim, dim)))[0]
+    features = np.stack([view_a, view_b @ rotation], axis=1)
+
+    evidence = np.abs(rng.standard_normal((n_samples, 2, 3)))
+    classes = np.zeros(n_samples, dtype=int)
+
+    pearson = feature_dependence_matrix(features, evidence, classes=classes)[0, 1]
+    cca = feature_dependence_matrix(
+        features, evidence, classes=classes, method="cca"
+    )[0, 1]
+
+    assert abs(pearson) < 0.2, f"pearson {pearson:.3f} should be washed out by rotation"
+    assert cca > 0.7, f"cca {cca:.3f} should survive rotation"
+
+
+def test_cca_is_invariant_to_invertible_remapping():
+    rng = np.random.default_rng(37)
+    features, evidence, labels = _features_and_evidence(rng, n_views=2, feature_dim=8, rho=0.6)
+
+    rotation = np.linalg.qr(rng.standard_normal((8, 8)))[0]
+    rotated = features.copy()
+    rotated[:, 1, :] = rotated[:, 1, :] @ rotation
+
+    plain = feature_dependence_matrix(features, evidence, classes=labels, method="cca")[0, 1]
+    turned = feature_dependence_matrix(rotated, evidence, classes=labels, method="cca")[0, 1]
+
+    assert plain == pytest.approx(turned, abs=0.02)
+
+
+def test_cca_is_monotone_in_shared_signal():
+    rng = np.random.default_rng(38)
+    measured = []
+    for rho in (0.0, 0.3, 0.6, 0.9):
+        features, evidence, labels = _features_and_evidence(
+            rng, n_samples=3000, n_views=2, feature_dim=8, rho=rho
+        )
+        measured.append(
+            feature_dependence_matrix(features, evidence, classes=labels, method="cca")[0, 1]
+        )
+
+    assert measured == sorted(measured), f"not monotone: {measured}"
+    assert measured[-1] > 0.8
+
+
+def test_cca_is_upward_biased_at_independence_without_correction():
+    """CCA maximises over projection directions, so it reports a positive
+    correlation even for independent inputs. The bias grows with
+    feature_dim / n_samples."""
+    rng = np.random.default_rng(39)
+    features, evidence, labels = _features_and_evidence(
+        rng, n_samples=300, n_views=2, feature_dim=16, rho=0.0
+    )
+    biased = feature_dependence_matrix(features, evidence, classes=labels, method="cca")[0, 1]
+    assert biased > 0.1, "expected visible upward bias at small n, large F"
+
+
+# --- permutation null correction ----------------------------------------
+
+
+@pytest.mark.parametrize("method", ["cca", "dcor"])
+def test_null_correction_removes_the_independence_bias(method):
+    """Averaged over datasets, because the claim is that the correction is
+    UNBIASED at independence. A single draw also carries the estimator's own
+    spread (~0.05 for CCA at this n), so one sample cannot separate residual
+    bias from noise.
+    """
+    raw, corrected = [], []
+    for seed in range(8):
+        rng = np.random.default_rng(100 + seed)
+        features, evidence, labels = _features_and_evidence(
+            rng, n_samples=300, n_views=2, feature_dim=16, rho=0.0
+        )
+        raw.append(
+            feature_dependence_matrix(features, evidence, classes=labels, method=method)[0, 1]
+        )
+        corrected.append(
+            feature_dependence_matrix(
+                features, evidence, classes=labels, method=method, null_permutations=12
+            )[0, 1]
+        )
+
+    assert np.mean(raw) > 0.15, f"{method} should be visibly biased before correction"
+    assert abs(np.mean(corrected)) < 0.06, (
+        f"{method} corrected mean {np.mean(corrected):+.3f}, expected near 0"
+    )
+
+
+@pytest.mark.parametrize("method", ["cca", "dcor"])
+def test_null_correction_preserves_real_dependence(method):
+    """The correction must move the zero point without flattening the scale."""
+    rng = np.random.default_rng(41)
+    features, evidence, labels = _features_and_evidence(
+        rng, n_samples=1500, n_views=2, feature_dim=16, rho=0.8
+    )
+
+    corrected = feature_dependence_matrix(
+        features, evidence, classes=labels, method=method, null_permutations=8
+    )[0, 1]
+    assert corrected > 0.4, f"{method} lost real dependence: {corrected:.3f}"
+
+
+def test_null_correction_keeps_monotonicity_in_rho():
+    rng = np.random.default_rng(42)
+    measured = []
+    for rho in (0.0, 0.3, 0.6, 0.9):
+        features, evidence, labels = _features_and_evidence(
+            rng, n_samples=800, n_views=2, feature_dim=16, rho=rho
+        )
+        measured.append(
+            feature_dependence_matrix(
+                features, evidence, classes=labels, method="cca", null_permutations=8
+            )[0, 1]
+        )
+
+    assert measured == sorted(measured), f"not monotone after correction: {measured}"
+    assert abs(measured[0]) < 0.12
+
+
+def test_null_correction_is_a_no_op_for_identical_views():
+    """Perfect dependence must stay at 1.0: the correction rescales the
+    interval [null, 1] onto [0, 1], it does not shift it downward."""
+    rng = np.random.default_rng(43)
+    base = np.abs(rng.standard_normal((600, 1, 8)))
+    features = np.concatenate([base, base], axis=1)
+    evidence = np.abs(rng.standard_normal((600, 2, 3)))
+    classes = np.zeros(600, dtype=int)
+
+    corrected = feature_dependence_matrix(
+        features, evidence, classes=classes, method="cca", null_permutations=8
+    )[0, 1]
+    assert corrected > 0.97
+
+
+def test_within_stratum_permutation_preserves_class_composition():
+    from prismflow.statistics.dependence import _within_stratum_permutation
+
+    rng = np.random.default_rng(44)
+    strata = rng.integers(0, 4, size=500)
+    order = _within_stratum_permutation(strata, rng)
+
+    assert sorted(order.tolist()) == list(range(500)), "not a permutation"
+    assert np.array_equal(strata[order], strata), "rows crossed stratum boundaries"
+
+
+def test_null_correction_is_deterministic_given_seed():
+    rng = np.random.default_rng(45)
+    features, evidence, labels = _features_and_evidence(rng, n_samples=400, n_views=3, rho=0.5)
+
+    kwargs = dict(classes=labels, method="cca", null_permutations=6, seed=7)
+    first = feature_dependence_matrix(features, evidence, **kwargs)
+    second = feature_dependence_matrix(features, evidence, **kwargs)
+    assert np.allclose(first, second, equal_nan=True)
+
+
+def test_correction_off_by_default():
+    rng = np.random.default_rng(46)
+    features, evidence, labels = _features_and_evidence(rng, n_samples=400, n_views=2)
+
+    assert np.allclose(
+        feature_dependence_matrix(features, evidence, classes=labels, method="cca"),
+        feature_dependence_matrix(
+            features, evidence, classes=labels, method="cca", null_permutations=0
+        ),
+    )
+
+
+def test_feature_dependence_supports_both_conditioning_modes():
+    rng = np.random.default_rng(34)
+    features, evidence, _ = _features_and_evidence(rng, n_views=4, rho=0.5)
+
+    for conditioning in ("global", "pairwise_holdout"):
+        matrix = feature_dependence_matrix(features, evidence, conditioning=conditioning)
+        assert np.all(matrix[np.triu_indices(4, k=1)] > 0.2)
+
+
+def test_feature_dependence_respects_view_mask():
+    rng = np.random.default_rng(35)
+    features, evidence, _ = _features_and_evidence(rng, n_samples=300, n_views=3)
+
+    mask = np.ones((300, 3), dtype=bool)
+    mask[:, 2] = False
+
+    matrix = feature_dependence_matrix(features, evidence, view_mask=mask)
+    assert np.isnan(matrix[0, 2])
+    assert not np.isnan(matrix[0, 1])
+
+
+def test_feature_dependence_accepts_torch_and_stays_detached():
+    features = torch.rand(400, 3, 8, requires_grad=True)
+    evidence = torch.rand(400, 3, 3, requires_grad=True)
+
+    matrix = feature_dependence_matrix(features, evidence)
+    assert isinstance(matrix, np.ndarray)
+    assert features.grad is None
+
+
+def test_feature_dependence_rejects_mismatched_batch_or_view_count():
+    with pytest.raises(ValueError):
+        feature_dependence_matrix(torch.rand(100, 3, 8), torch.rand(100, 2, 3))
+    with pytest.raises(ValueError):
+        feature_dependence_matrix(torch.rand(100, 3, 8), torch.rand(50, 3, 3))
+
+
+def test_feature_dependence_rejects_bad_method_and_conditioning():
+    features, evidence = torch.rand(100, 3, 8), torch.rand(100, 3, 3)
+    with pytest.raises(ValueError):
+        feature_dependence_matrix(features, evidence, method="spearman")
+    with pytest.raises(ValueError):
+        feature_dependence_matrix(features, evidence, conditioning="jackknife")
 
 
 def test_dcor_detects_nonlinear_dependence_pearson_misses():

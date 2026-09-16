@@ -16,8 +16,14 @@ different fixes:
                      rho, the data is wrong, not the estimator.
 
   evidence-space     dependence measured on a trained model's per-view
-                     evidence -- the quantity the deployed system actually
-                     discounts on. This is the number that matters.
+                     evidence -- the quantity the deployed system currently
+                     discounts on.
+
+  feature-space      dependence measured on encoder features, before the
+                     evidence head's K-dimensional bottleneck. Evidence-space
+                     estimation failed its gate at realistic accuracy; this
+                     column tests whether the loss happens at the bottleneck
+                     rather than in the estimator.
 
   conditioning modes both "global" and "pairwise_holdout", since the collider
                      bias in the former is large enough to move ENIV (see
@@ -47,7 +53,7 @@ from prismflow.data.synthetic import (
     empirical_cross_view_correlation,
 )
 from prismflow.eniv.eniv import compute_eniv, mean_off_diagonal
-from prismflow.statistics.dependence import dependence_matrix
+from prismflow.statistics.dependence import dependence_matrix, feature_dependence_matrix
 from prismflow.train import TrainConfig, build_model, compute_loss
 from prismflow.utils.logging import get_logger
 from prismflow.utils.seed import set_seed
@@ -56,11 +62,35 @@ RHO_GRID = (0.0, 0.2, 0.4, 0.6, 0.8, 0.95)
 SEEDS = (0, 1, 2, 3, 4)
 N_VIEWS = 4
 
-ESTIMATORS = (
+# Measured on post-softplus evidence [B, V, K].
+EVIDENCE_ESTIMATORS = (
     ("pearson_global", "pearson", "global"),
     ("pearson_holdout", "pearson", "pairwise_holdout"),
     ("dcor_global", "dcor", "global"),
     ("dcor_holdout", "dcor", "pairwise_holdout"),
+)
+
+# Measured on encoder features [B, V, feature_dim], before the evidence head's
+# K-dimensional bottleneck. Kept ALONGSIDE the evidence estimators, not in
+# place of them: the point of the comparison is to quantify how much is lost
+# by measuring after the model's classification bottleneck.
+# pearson is kept here deliberately even though it is the wrong tool for an
+# unaligned basis: the table should show that the failure is an aggregation
+# mismatch, not evidence that feature-space estimation cannot work.
+NULL_PERMUTATIONS = 12
+
+FEATURE_ESTIMATORS = (
+    ("features_pearson_global", "pearson", "global", 0),
+    ("features_cca_global", "cca", "global", 0),
+    ("features_cca_holdout", "cca", "pairwise_holdout", 0),
+    ("features_dcor_global", "dcor", "global", 0),
+    ("features_dcor_holdout", "dcor", "pairwise_holdout", 0),
+    # chance-corrected: cca and dcor both read positive on independent inputs,
+    # so uncorrected they discount views that are genuinely independent
+    ("features_cca_holdout_nc", "cca", "pairwise_holdout", NULL_PERMUTATIONS),
+    ("features_cca_global_nc", "cca", "global", NULL_PERMUTATIONS),
+    ("features_dcor_holdout_nc", "dcor", "pairwise_holdout", NULL_PERMUTATIONS),
+    ("features_dcor_global_nc", "dcor", "global", NULL_PERMUTATIONS),
 )
 
 
@@ -117,14 +147,25 @@ def train_model(config: TrainConfig, seed: int):
 
 @torch.no_grad()
 def collect_evidence(model, dataset, indices, batch_size):
+    """Per-view evidence AND the encoder features it was derived from.
+
+    Features come from `model.encoder` directly; PrismFlowOutput does not
+    expose them, and its signature is frozen.
+    """
     model.eval()
-    evidence, masks, labels = [], [], []
+    evidence, features, masks, labels = [], [], [], []
     for batch in iter_batches(dataset, indices, batch_size):
         output = model(batch.views, batch.view_mask)
         evidence.append(output.per_view_evidence)
+        features.append(model.encoder(batch.views, batch.view_mask))
         masks.append(output.view_mask)
         labels.append(batch.labels)
-    return torch.cat(evidence), torch.cat(masks), torch.cat(labels)
+    return (
+        torch.cat(evidence),
+        torch.cat(features),
+        torch.cat(masks),
+        torch.cat(labels),
+    )
 
 
 def view_space_reference(dataset) -> tuple[float, float]:
@@ -158,7 +199,7 @@ def run_cell(rho: float, seed: int, config: TrainConfig, logger) -> dict:
     cell_config = TrainConfig(**{**config.__dict__, "rho": rho})
     model, dataset, splits = train_model(cell_config, seed)
 
-    evidence, masks, labels = collect_evidence(
+    evidence, features, masks, labels = collect_evidence(
         model, dataset, splits["test"], cell_config.batch_size
     )
 
@@ -169,9 +210,23 @@ def run_cell(rho: float, seed: int, config: TrainConfig, logger) -> dict:
         "analytic_n_eff": analytic_n_eff(rho, cell_config.n_views),
     }
 
-    for name, method, conditioning in ESTIMATORS:
+    for name, method, conditioning in EVIDENCE_ESTIMATORS:
         matrix = dependence_matrix(
             evidence, masks, method=method, conditioning=conditioning, seed=seed
+        )
+        result = compute_eniv(matrix)
+        row[f"eniv_{name}"] = result.effective_views
+        row[f"rho_bar_{name}"] = result.mean_dependence
+
+    for name, method, conditioning, null_permutations in FEATURE_ESTIMATORS:
+        matrix = feature_dependence_matrix(
+            features,
+            evidence,
+            masks,
+            method=method,
+            conditioning=conditioning,
+            seed=seed,
+            null_permutations=null_permutations,
         )
         result = compute_eniv(matrix)
         row[f"eniv_{name}"] = result.effective_views
@@ -188,12 +243,13 @@ def run_cell(rho: float, seed: int, config: TrainConfig, logger) -> dict:
     row["accuracy"] = correct / len(splits["test"])
 
     logger.info(
-        "rho=%.2f seed=%d  acc=%.3f  analytic=%.3f  pearson_holdout=%.3f  views_cca=%.3f",
+        "rho=%.2f seed=%d  acc=%.3f  analytic=%.3f  evidence=%.3f  features=%.3f  views_cca=%.3f",
         rho,
         seed,
         row["accuracy"],
         row["analytic_n_eff"],
         row["eniv_pearson_holdout"],
+        row["eniv_features_pearson_global"],
         row["eniv_views_cca"],
     )
     return row
@@ -247,7 +303,11 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(rows)
 
-    estimator_keys = [f"eniv_{name}" for name, _, _ in ESTIMATORS] + ["eniv_views_cca"]
+    estimator_keys = (
+        [f"eniv_{name}" for name, _, _ in EVIDENCE_ESTIMATORS]
+        + [f"eniv_{name}" for name, _, _, _ in FEATURE_ESTIMATORS]
+        + ["eniv_views_cca"]
+    )
     summary = {key: _aggregate(rows, key) for key in estimator_keys}
     summary["per_rho"] = {
         str(rho): {
