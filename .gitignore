@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# PrismFlow generated outputs (not source)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+experiments/*
+!experiments/.gitkeep
+results/*
+!results/.gitkeep
+logs/*
+!logs/.gitkeep
+checkpoints/*
+!checkpoints/.gitkeep
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test / tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

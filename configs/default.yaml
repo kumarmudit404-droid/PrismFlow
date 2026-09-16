@@ -1,0 +1,21 @@
+experiment:
+  id: default
+  description: "PrismFlow default configuration (Part 01 skeleton)"
+
+seed:
+  list: [0, 1, 2, 3, 4]
+  deterministic: true
+
+device:
+  prefer: auto  # auto | cpu | cuda
+
+paths:
+  data_raw: data/raw
+  data_processed: data/processed
+  experiments_dir: experiments
+  results_dir: results
+  logs_dir: logs
+  checkpoints_dir: checkpoints
+
+logging:
+  level: INFO
