@@ -64,6 +64,11 @@
     "mae_std": 0.44066055139442006,
     "correlation_with_truth": 0.9088553310976525
   },
+  "eniv_model_forward": {
+    "mae": 0.5355108808760909,
+    "mae_std": 0.17999969107696126,
+    "correlation_with_truth": 0.9507211305849806
+  },
   "eniv_views_cca": {
     "mae": 0.2921891689176636,
     "mae_std": 0.47031887331926225,
@@ -84,6 +89,7 @@
       "eniv_features_cca_global_nc": 3.9362319967746107,
       "eniv_features_dcor_holdout_nc": 3.2374314798448016,
       "eniv_features_dcor_global_nc": 3.9645552373320756,
+      "eniv_model_forward": 3.4266227386126036,
       "eniv_views_cca": 2.688400399324104,
       "analytic_n_eff": 4.0,
       "accuracy": 0.7433333333333333
@@ -102,6 +108,7 @@
       "eniv_features_cca_global_nc": 3.571376310648166,
       "eniv_features_dcor_holdout_nc": 2.7026709874234496,
       "eniv_features_dcor_global_nc": 3.7381105217457797,
+      "eniv_model_forward": 2.8063284774408204,
       "eniv_views_cca": 2.2472396177860974,
       "analytic_n_eff": 2.5,
       "accuracy": 0.8406666666666667
@@ -120,6 +127,7 @@
       "eniv_features_cca_global_nc": 2.7667433847467993,
       "eniv_features_dcor_holdout_nc": 2.344988725471742,
       "eniv_features_dcor_global_nc": 3.0818126098858944,
+      "eniv_model_forward": 2.4124237737609686,
       "eniv_views_cca": 1.7809709397672417,
       "analytic_n_eff": 1.8181818181818181,
       "accuracy": 0.8240000000000001
@@ -138,6 +146,7 @@
       "eniv_features_cca_global_nc": 2.1917890979934267,
       "eniv_features_dcor_holdout_nc": 2.048595319764768,
       "eniv_features_dcor_global_nc": 2.548293587227639,
+      "eniv_model_forward": 2.0583822407155665,
       "eniv_views_cca": 1.460985290410837,
       "analytic_n_eff": 1.4285714285714286,
       "accuracy": 0.788
@@ -156,6 +165,7 @@
       "eniv_features_cca_global_nc": 1.7338467678268255,
       "eniv_features_dcor_holdout_nc": 1.8736559803645596,
       "eniv_features_dcor_global_nc": 2.179108932293413,
+      "eniv_model_forward": 1.775574444323069,
       "eniv_views_cca": 1.2330881391386508,
       "analytic_n_eff": 1.176470588235294,
       "accuracy": 0.7373333333333333
@@ -174,6 +184,7 @@
       "eniv_features_cca_global_nc": 1.474308771749324,
       "eniv_features_dcor_holdout_nc": 1.7680538418114613,
       "eniv_features_dcor_global_nc": 1.9993761136361248,
+      "eniv_model_forward": 1.5491639615783042,
       "eniv_views_cca": 1.101493778419881,
       "analytic_n_eff": 1.038961038961039,
       "accuracy": 0.6859999999999999

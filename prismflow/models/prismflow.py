@@ -9,6 +9,14 @@ With `use_discount=True` the per-view opinions are Shafer-discounted by
 ENIV/n before fusion, so redundant agreement buys proportionally less
 confidence. The estimator runs under no_grad and alpha enters as a constant --
 see `prismflow/eniv/discount.py` for why that stop-gradient matters.
+
+Dependence is measured on ENCODER FEATURES, not evidence. The evidence head is
+a K-dim bottleneck trained to discard non-class variation, which is exactly
+the shared structure that makes views redundant; measured after it, ENIV
+failed validation at realistic accuracy (corr 0.864, non-monotone above
+rho=0.6). The defaults below are the configuration that passed: canonical
+correlation (per-view encoders share no feature basis), pairwise-holdout
+conditioning, and a permutation null correction.
 """
 
 from __future__ import annotations
@@ -29,7 +37,17 @@ from prismflow.models.evidence import (
     opinion_to_probs,
 )
 from prismflow.models.fusion import fuse_opinions
-from prismflow.statistics.dependence import available_views, dependence_matrix
+from prismflow.statistics.dependence import available_views, feature_dependence_matrix
+
+# Null permutations used inside the forward pass. The correction itself is
+# required -- at batch size 64 without it, ENIV on independent views reads
+# ~1.45 instead of 4.0 -- but its permutation count is not the bottleneck: at
+# n=64 the spread comes from the observed statistic, and 2, 4, 8 and 12
+# permutations gave indistinguishable means and spreads while 12 cost ~3x as
+# much as 4. Kept low because the discount path runs every batch and inside
+# attack loops; reported validation numbers use REPORTING_NULL_PERMUTATIONS.
+FORWARD_NULL_PERMUTATIONS = 4
+REPORTING_NULL_PERMUTATIONS = 12
 
 
 @dataclass
@@ -78,7 +96,10 @@ class PrismFlow(nn.Module):
         use_discount: bool = False,
         share_weights: bool = False,
         validate_opinions: bool = True,
-        dependence_method: str = "pearson",
+        dependence_method: str = "cca",
+        dependence_conditioning: str = "pairwise_holdout",
+        null_permutations: int = FORWARD_NULL_PERMUTATIONS,
+        dependence_seed: int = 0,
     ):
         super().__init__()
         self.encoder = MultiViewEncoder(view_configs, share_weights=share_weights)
@@ -92,6 +113,9 @@ class PrismFlow(nn.Module):
         self.use_discount = use_discount
         self.validate_opinions = validate_opinions
         self.dependence_method = dependence_method
+        self.dependence_conditioning = dependence_conditioning
+        self.null_permutations = null_permutations
+        self.dependence_seed = dependence_seed
 
     def forward(
         self, views: torch.Tensor, view_mask: torch.Tensor | None = None
@@ -120,8 +144,14 @@ class PrismFlow(nn.Module):
             # the graph entirely so nothing in training can be optimised
             # against it. See prismflow/eniv/discount.py.
             with torch.no_grad():
-                matrix = dependence_matrix(
-                    evidence, view_mask, method=self.dependence_method
+                matrix = feature_dependence_matrix(
+                    features,
+                    evidence,
+                    view_mask,
+                    method=self.dependence_method,
+                    conditioning=self.dependence_conditioning,
+                    seed=self.dependence_seed,
+                    null_permutations=self.null_permutations,
                 )
                 present = available_views(view_mask, n_views=self.n_views)
                 eniv = compute_eniv(matrix, present)

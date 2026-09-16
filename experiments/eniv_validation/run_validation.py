@@ -53,6 +53,7 @@ from prismflow.data.synthetic import (
     empirical_cross_view_correlation,
 )
 from prismflow.eniv.eniv import compute_eniv, mean_off_diagonal
+from prismflow.models.prismflow import REPORTING_NULL_PERMUTATIONS
 from prismflow.statistics.dependence import dependence_matrix, feature_dependence_matrix
 from prismflow.train import TrainConfig, build_model, compute_loss
 from prismflow.utils.logging import get_logger
@@ -77,7 +78,7 @@ EVIDENCE_ESTIMATORS = (
 # pearson is kept here deliberately even though it is the wrong tool for an
 # unaligned basis: the table should show that the failure is an aggregation
 # mismatch, not evidence that feature-space estimation cannot work.
-NULL_PERMUTATIONS = 12
+NULL_PERMUTATIONS = REPORTING_NULL_PERMUTATIONS
 
 FEATURE_ESTIMATORS = (
     ("features_pearson_global", "pearson", "global", 0),
@@ -168,6 +169,34 @@ def collect_evidence(model, dataset, indices, batch_size):
     )
 
 
+@torch.no_grad()
+def model_forward_eniv(model, dataset, indices, batch_size) -> tuple[float, float]:
+    """ENIV exactly as the deployed discount path computes it.
+
+    The same trained weights, with discounting switched on, run batch by
+    batch at the model's own forward-pass settings (feature-space CCA,
+    pairwise holdout, FORWARD_NULL_PERMUTATIONS). The full-split columns
+    validate the estimator; this column validates the wiring -- per-batch
+    estimation at n=batch_size is a harder regime than n=300.
+
+    Returns the sample-weighted mean effective views and mean dependence.
+    """
+    model.eval()
+    model.use_discount = True
+    try:
+        weighted_eniv = weighted_rho = 0.0
+        total = 0
+        for batch in iter_batches(dataset, indices, batch_size):
+            output = model(batch.views, batch.view_mask)
+            n = len(batch)
+            weighted_eniv += output.eniv.effective_views * n
+            weighted_rho += output.eniv.mean_dependence * n
+            total += n
+    finally:
+        model.use_discount = False
+    return weighted_eniv / total, weighted_rho / total
+
+
 def view_space_reference(dataset) -> tuple[float, float]:
     """Dependence measured on raw views, centred by true label.
 
@@ -231,6 +260,12 @@ def run_cell(rho: float, seed: int, config: TrainConfig, logger) -> dict:
         result = compute_eniv(matrix)
         row[f"eniv_{name}"] = result.effective_views
         row[f"rho_bar_{name}"] = result.mean_dependence
+
+    forward_eniv, forward_rho = model_forward_eniv(
+        model, dataset, splits["test"], cell_config.batch_size
+    )
+    row["eniv_model_forward"] = forward_eniv
+    row["rho_bar_model_forward"] = forward_rho
 
     view_rho, view_eniv = view_space_reference(dataset)
     row["rho_bar_views_cca"] = view_rho
@@ -306,7 +341,7 @@ def main() -> None:
     estimator_keys = (
         [f"eniv_{name}" for name, _, _ in EVIDENCE_ESTIMATORS]
         + [f"eniv_{name}" for name, _, _, _ in FEATURE_ESTIMATORS]
-        + ["eniv_views_cca"]
+        + ["eniv_model_forward", "eniv_views_cca"]
     )
     summary = {key: _aggregate(rows, key) for key in estimator_keys}
     summary["per_rho"] = {
