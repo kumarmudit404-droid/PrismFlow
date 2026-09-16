@@ -7,13 +7,42 @@ producing an unfalsifiable number.
 
 Generative model, per sample with class label y drawn uniformly at random:
 
-    z_shared   = signal_strength * class_direction[y] + eps_shared   (class-informative, shared across views)
-    z_v        ~ N(0, I_d_latent)                                     (private, independent per view)
+    mu_y       = signal_strength * class_direction[y]   (fixed unit direction per class)
+    z_shared   = mu_y + eps_shared,  eps_shared ~ N(0, I)   (shared across views)
+    z_v        = mu_y + eps_v,       eps_v      ~ N(0, I)   (private, independent per view)
     combined_v = sqrt(rho_v) * z_shared + sqrt(1 - rho_v) * z_v
     x_v        = A_v @ combined_v + noise_v
 
 `A_v` is a fixed random projection unique to view v (fixed for a given
 config/seed, not redrawn per sample).
+
+WHY BOTH COMPONENTS CARRY THE CLASS MEAN
+----------------------------------------
+The class mean is added to the private component as well as the shared one so
+that `rho` controls redundancy ONLY, not task difficulty.
+
+Previously the label lived exclusively in `z_shared`, so it entered each view
+multiplied by sqrt(rho_v) and vanished entirely at rho = 0 -- the views became
+pure noise and a classifier sat at chance. That made `rho` a single knob
+driving both "how dependent are the views" and "is the task learnable at all",
+and it left the rho = 0 anchor of the ENIV validation sweep degenerate: the
+estimator was being asked to measure dependence in evidence that carried no
+signal.
+
+With the mean in both components the class term becomes
+(sqrt(rho) + sqrt(1 - rho)) * mu_y, which is 1.0 at rho in {0, 1} and peaks at
+sqrt(2) around rho = 0.5. Signal amplitude therefore varies by at most ~41%
+across the sweep instead of collapsing to zero.
+
+CRITICALLY, THIS LEAVES analytic_n_eff UNCHANGED. Conditional on y the class
+term is a constant, so the residual is
+
+    combined_v - E[combined_v | y] = sqrt(rho) * eps_shared + sqrt(1 - rho) * eps_v
+
+which is exactly the residual structure the previous generator had. Both
+components have unit variance, so Corr(combined_i, combined_j | y) = rho
+exactly, and the design effect n / (1 + (n-1) * rho) remains the correct
+ground truth. `test_synthetic.py` asserts this empirically.
 
 `rho` may be:
   - a scalar in [0, 1], applied uniformly to every view (rho_v = rho), or
@@ -44,7 +73,12 @@ class SyntheticConfig:
     d_view: int = 16
     rho: RhoSpec = 0.3
     noise_std: Union[float, list] = 0.5
-    signal_strength: float = 2.8
+    # Calibrated against the TRAINED evidential model, not the nearest-centroid
+    # probe: at rho=0.3 this gives test accuracy ~0.83 and mean uncertainty
+    # ~0.22, which leaves headroom for the discount and the calibration work to
+    # move. Calibrating on nearest-centroid alone is misleading -- it scored
+    # 0.85 at a setting where the real model was saturated at 0.98.
+    signal_strength: float = 1.15
     seed: int = 0
 
 
@@ -125,12 +159,17 @@ def generate_synthetic_dataset(config: SyntheticConfig) -> dict:
 
     labels = rng.integers(0, n_classes, size=n_samples)
 
+    # The class mean goes into BOTH the shared and the private component, so
+    # rho controls redundancy alone -- see the module docstring.
+    class_mean = config.signal_strength * class_directions[labels]
+
     eps_shared = rng.standard_normal((n_samples, d_latent))
-    z_shared = config.signal_strength * class_directions[labels] + eps_shared
+    z_shared = class_mean + eps_shared
 
     views = np.zeros((n_samples, n_views, d_view), dtype=np.float64)
     for v in range(n_views):
-        z_v = rng.standard_normal((n_samples, d_latent))
+        eps_v = rng.standard_normal((n_samples, d_latent))
+        z_v = class_mean + eps_v
         combined_v = np.sqrt(rho_v[v]) * z_shared + np.sqrt(1.0 - rho_v[v]) * z_v
         noise_v = rng.standard_normal((n_samples, d_view)) * noise_std[v]
         views[:, v, :] = combined_v @ projections[v].T + noise_v

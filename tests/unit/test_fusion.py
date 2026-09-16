@@ -236,12 +236,6 @@ def test_fused_alpha_round_trips_to_the_fused_opinion():
     assert torch.allclose(alpha / alpha.sum(-1, keepdim=True), output.probs, atol=1e-4)
 
 
-def test_discount_flag_is_not_implemented_in_this_part():
-    configs = [EncoderConfig(input_dim=6, feature_dim=8) for _ in range(2)]
-    with pytest.raises(NotImplementedError):
-        PrismFlow(configs, n_classes=3, use_discount=True)
-
-
 # --- end to end ---------------------------------------------------------
 
 

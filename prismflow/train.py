@@ -30,20 +30,28 @@ from prismflow.utils.seed import set_seed
 
 MIN_SEEDS = 5
 
+# TrainConfig mirrors the generator's data parameters so one object describes a
+# run end to end. Those defaults are READ FROM SyntheticConfig rather than
+# retyped: they were duplicated once, and a later recalibration of
+# signal_strength silently never reached a single training run because
+# TrainConfig still carried the superseded value. Deriving them makes that
+# class of drift structurally impossible.
+_GENERATOR_DEFAULTS = SyntheticConfig()
+
 
 @dataclass
 class TrainConfig:
     experiment_id: str = "baseline"
 
-    # data
-    n_views: int = 4
-    n_classes: int = 3
-    n_samples: int = 2000
-    d_latent: int = 8
-    d_view: int = 16
-    rho: float = 0.3
-    noise_std: float = 0.5
-    signal_strength: float = 2.8
+    # data -- mirrors SyntheticConfig, see note above
+    n_views: int = _GENERATOR_DEFAULTS.n_views
+    n_classes: int = _GENERATOR_DEFAULTS.n_classes
+    n_samples: int = _GENERATOR_DEFAULTS.n_samples
+    d_latent: int = _GENERATOR_DEFAULTS.d_latent
+    d_view: int = _GENERATOR_DEFAULTS.d_view
+    rho: float = _GENERATOR_DEFAULTS.rho
+    noise_std: float = _GENERATOR_DEFAULTS.noise_std
+    signal_strength: float = _GENERATOR_DEFAULTS.signal_strength
     split_seed: int = 12345
 
     # model

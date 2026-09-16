@@ -10,10 +10,20 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
-experiments/*
-!experiments/.gitkeep
+# experiments/ holds experiment SOURCE code, which must be tracked -- only
+# its generated artefacts are ignored.
+experiments/**/outputs/
+
+# results/ holds findings. Reported numbers and figures are tracked so a
+# claim stays linked to the commit that produced it; bulk artefacts are not.
 results/*
 !results/.gitkeep
+!results/*/
+results/*/*
+!results/*/*.json
+!results/*/*.csv
+!results/*/*.md
+!results/*/*.png
 logs/*
 !logs/.gitkeep
 checkpoints/*
