@@ -339,14 +339,24 @@ def main():
         raise ValueError("contract requires at least 5 seeds")
 
     logger = get_logger("prismflow.clone")
+    out_dir = Path(args.results_dir) / experiment_id
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Each cell's rows are appended as soon as the cell finishes, so a run that
+    # dies part-way still leaves every completed cell on disk.
+    partial_path = out_dir / "runs.partial.csv"
+    partial_path.unlink(missing_ok=True)
     rows = []
     for rho in config["rhos"]:
         for k in config["duplicates"]:
             for seed in config["seeds"]:
-                rows.extend(run_cell(rho, k, seed, config, logger))
-
-    out_dir = Path(args.results_dir) / experiment_id
-    out_dir.mkdir(parents=True, exist_ok=True)
+                cell_rows = run_cell(rho, k, seed, config, logger)
+                with partial_path.open("a", newline="", encoding="utf-8") as handle:
+                    writer = csv.DictWriter(handle, fieldnames=list(cell_rows[0]))
+                    if not rows:
+                        writer.writeheader()
+                    writer.writerows(cell_rows)
+                rows.extend(cell_rows)
 
     with (out_dir / "runs.csv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
