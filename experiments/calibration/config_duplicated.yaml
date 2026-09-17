@@ -1,0 +1,39 @@
+experiment:
+  id: calibration_duplicated
+  description: >
+    Does PrismFlow stay better calibrated than naive fusion when a view is
+    duplicated? ECE, the Brier decomposition and AURC for three systems at
+    k = 0, 2, 4 bit-identical copies of one view, all scored by
+    prismflow.evaluation.evaluate.
+
+seeds: [0, 1, 2, 3, 4]
+
+# Base data identical to the existing calibration run (config.yaml): default
+# generator, 4 views, rho = 0.3. k copies of view 0 are appended via
+# prismflow.data.corruption.duplicate_view, in training and at evaluation.
+data:
+  n_views: 4
+  rho: 0.3
+
+source_view: 0
+duplicates: [0, 2, 4]
+
+# Identical to config.yaml, the Part 04 baseline and the clone experiment.
+# Fixed before any run.
+training:
+  epochs: 40
+  batch_size: 64
+  lr: 0.001
+  anneal_epochs: 10
+  per_view_loss_weight: 1.0
+
+systems:
+  - naive                     # trained and evaluated with use_discount=False
+  - prismflow                 # trained and evaluated with use_discount=True
+  - naive_weights_discounted  # naive weights, discount switched on at test time only
+
+evaluation:
+  split: test
+  batch_size: 64
+  n_bins: 15
+  coverages: [1.0, 0.9, 0.8, 0.5]

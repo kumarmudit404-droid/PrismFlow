@@ -96,9 +96,9 @@ rate.
 
 ## The Brier decomposition
 
-This table is the project's main calibration argument. The claim is that
-PrismFlow improves reliability, not resolution. A single Brier number cannot
-show which of the two moved, so the components are always reported separately:
+This table is the project's main calibration argument. A single Brier number
+cannot show whether a difference comes from calibration or discrimination, so
+the components are always reported separately:
 
     brier = reliability - resolution + uncertainty + within_bin
 
@@ -120,6 +120,75 @@ data. A difference in `brier` between two systems is split between reliability
 (calibration) and resolution (discrimination). Report both, with std across
 seeds. Do not claim a reliability improvement unless the error bars separate.
 Also state any condition where resolution got worse.
+
+### Current claim (revised 2026-09-17)
+
+The original framing was "PrismFlow improves reliability, not resolution."
+**The evidence so far does not support it and points the other way.** Until new
+evidence changes this, the claim is:
+
+> Under view duplication, PrismFlow preserves resolution, accuracy and AURC
+> relative to naive fusion. It does not show improved Brier reliability or ECE.
+> Its reliability trends slightly worse as copies are added.
+
+Evidence (5 seeds, rho = 0.3, 4 base views, k copies of view 0;
+`experiments/calibration/README_duplicated.md`, `results/calibration_duplicated/`):
+
+- Without duplicates (k = 0), PrismFlow and naive fusion cannot be told apart
+  on any metric (`experiments/calibration/README.md`).
+- As copies are added, the gap in PrismFlow's favour grows within every seed.
+  At k = 4 the growth is Brier -0.0200 +/- 0.0118 and AURC -0.0149 +/- 0.0091
+  (5/5 seeds each). The Brier gain is entirely resolution: +0.0275 +/- 0.0166
+  (5/5). Naive fusion's accuracy falls -0.0227 +/- 0.0095 (5/5 seeds lower),
+  while PrismFlow's falls -0.0073 +/- 0.0128.
+- ECE does not separate at any k. At k = 4, prismflow - naive is
+  -0.0051 +/- 0.0261, lower in 2/5 seeds.
+- Brier reliability does not separate either, and it leans against PrismFlow.
+  At k = 4, prismflow - naive is +0.0041 +/- 0.0099 (lower in 1/5 seeds).
+  PrismFlow's own reliability worsens from k = 0 to k = 4 by +0.0090 +/- 0.0061
+  (5/5 seeds).
+
+Confounds:
+
+- **Naive fusion trained on the copies. Tested; does not explain the result.**
+  A naive model trained at k = 0 and frozen, with copies appended only at
+  inference (`experiments/calibration/README_frozen_naive.md`), loses about the
+  same resolution (-0.0340 +/- 0.0283) and accuracy (-0.0213 +/- 0.0257) as
+  naive fusion trained on the copies. Training on copies mainly absorbs
+  confidence inflation: +0.018 against +0.057, frozen higher in 5/5 seeds.
+  Against the frozen model, PrismFlow still separates on resolution and AURC
+  (5/5 seeds). Reliability is still null (-0.0002 +/- 0.0116).
+- **PrismFlow trained under the discount. Tested: the robustness comes from the
+  mechanism, and training adds a level correction.** The same frozen k = 0 naive
+  model was run with the discount switched on at inference only, with no
+  retraining (`experiments/calibration/README_frozen_discount.md`). Reproduction
+  checks against both earlier runs were exact. Relative to the undiscounted
+  frozen model, this mechanism-only condition protects against added copies as
+  much as trained PrismFlow does. At k = 4:
+  - resolution: +0.0306 +/- 0.0270 vs +0.0308 +/- 0.0278
+  - AURC: -0.0175 +/- 0.0071 vs -0.0183 +/- 0.0091
+  - Brier: -0.0301 +/- 0.0228 vs -0.0274 +/- 0.0241
+
+  All of these hold in 5/5 seeds for both. Training contributes a roughly
+  constant offset instead: the untrained discount costs Brier and resolution
+  even with no duplicates (k = 0: Brier +0.0091 +/- 0.0040, 5/5 seeds). At
+  k = 4, mechanism-only is still worse than PrismFlow on Brier by
+  +0.0063 +/- 0.0039 (5/5 seeds). Reliability is null for the mechanism too.
+  **Restriction:** the frozen copies share view 0's encoder, so this is exact
+  feature duplication, the easiest case for the estimator. With near-duplicate
+  copies (`naive_weights_discounted`, weights trained on duplicates), the
+  untrained discount protected about half as much. Whether the mechanism alone
+  suffices beyond exact duplication is open.
+
+So the claim can be attributed as follows. Robustness of resolution, accuracy
+and AURC to exact duplication is a property of the discount mechanism. Matching
+the undiscounted baseline's level when there are no duplicates requires
+training under the discount.
+
+Scope: one synthetic condition, k up to 4, 300 test samples per seed. The ECE
+and reliability nulls mean "not detected at this power", not "shown to be
+zero". A write-up that makes a calibration claim must cite this section and
+must not restore the original framing without new evidence.
 
 ## Tests
 

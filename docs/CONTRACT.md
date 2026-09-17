@@ -10,6 +10,21 @@ proportion to how many views agree, and that discounting fused confidence by
 estimated inter-view dependence (ENIV) yields fusion that is robust to
 colluding or compromised views.
 
+**Evidence status for calibration (annotation, 2026-09-17).** The hypothesis
+above is unchanged. What the evidence currently supports about calibration is
+narrower than "PrismFlow improves reliability, not resolution," the framing
+Part 07 started from. Under view duplication, PrismFlow preserves resolution,
+accuracy and AURC relative to naive fusion. It does not show improved Brier
+reliability or ECE, and its reliability trends slightly worse as copies are
+added (5/5 seeds at k = 4). A naive model frozen at k = 0 rules out naive
+fusion's own training adaptation as the explanation. The same frozen model
+with the discount on at inference only (no retraining) reproduces PrismFlow's
+robustness to added copies. So that robustness is a property of the discount
+mechanism, at least for exact feature duplication. Training under the discount
+removes a constant cost the untrained discount imposes even without duplicates.
+Figures, confounds and scope are in `docs/EVALUATION_PROTOCOL.md`, "Current
+claim". Any calibration claim must be stated consistently with that section.
+
 ## 2. Data Flow
 
 ```

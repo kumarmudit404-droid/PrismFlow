@@ -1,0 +1,50 @@
+{
+  "experiment": {
+    "id": "calibration_duplicated",
+    "description": "Does PrismFlow stay better calibrated than naive fusion when a view is duplicated? ECE, the Brier decomposition and AURC for three systems at k = 0, 2, 4 bit-identical copies of one view, all scored by prismflow.evaluation.evaluate.\n"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "data": {
+    "n_views": 4,
+    "rho": 0.3
+  },
+  "source_view": 0,
+  "duplicates": [
+    0,
+    2,
+    4
+  ],
+  "training": {
+    "epochs": 40,
+    "batch_size": 64,
+    "lr": 0.001,
+    "anneal_epochs": 10,
+    "per_view_loss_weight": 1.0
+  },
+  "systems": [
+    "naive",
+    "prismflow",
+    "naive_weights_discounted"
+  ],
+  "evaluation": {
+    "split": "test",
+    "batch_size": 64,
+    "n_bins": 15,
+    "coverages": [
+      1.0,
+      0.9,
+      0.8,
+      0.5
+    ]
+  },
+  "reproduction_max_abs_diff": {
+    "k0_vs_calibration_duplicated_naive_weights_discounted": 0.0,
+    "k0_discount_off_vs_naive_frozen": 0.0
+  }
+}
