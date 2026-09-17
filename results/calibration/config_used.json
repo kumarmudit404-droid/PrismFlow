@@ -1,0 +1,40 @@
+{
+  "experiment": {
+    "id": "calibration",
+    "description": "Is PrismFlow's confidence more honest than naive fusion's? ECE, the Brier decomposition and AURC for three systems on identical data and seeds, all scored by prismflow.evaluation.evaluate.\n"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "data": {
+    "n_views": 4,
+    "rho": 0.3
+  },
+  "training": {
+    "epochs": 40,
+    "batch_size": 64,
+    "lr": 0.001,
+    "anneal_epochs": 10,
+    "per_view_loss_weight": 1.0
+  },
+  "systems": [
+    "naive",
+    "prismflow",
+    "naive_weights_discounted"
+  ],
+  "evaluation": {
+    "split": "test",
+    "batch_size": 64,
+    "n_bins": 15,
+    "coverages": [
+      1.0,
+      0.9,
+      0.8,
+      0.5
+    ]
+  }
+}
