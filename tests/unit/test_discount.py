@@ -4,7 +4,7 @@ import torch
 import numpy as np
 
 from prismflow.eniv.discount import eniv_discount_factor, evidence_discount, shafer_discount
-from prismflow.eniv.eniv import per_view_alpha
+from prismflow.eniv.eniv import per_view_alpha, soft_cluster_alpha
 from prismflow.models.fusion import fuse_opinions
 from prismflow.models.encoders import EncoderConfig
 from prismflow.models.evidence import evidence_to_opinion, simplex_residual
@@ -213,6 +213,60 @@ def test_controlled_duplication_confidence_stays_near_flat():
     uniform_drift = max(uniform) - min(uniform)
     assert per_view_drift < 0.01, f"per-view confidence {per_view}"
     assert per_view_drift < uniform_drift / 5
+
+
+def test_controlled_duplication_stays_near_flat_under_estimation_noise():
+    """The gap between Task 3 and the clone experiment: the model sees a NOISY
+    per-batch estimate, not the exact structure. Measured copy structure
+    (c=0.94, others 0.047) plus noise sd=0.05 per batch of 64. Soft cluster
+    weights must keep fused confidence within 0.01 over k=0..4."""
+    torch.manual_seed(0)
+    evidence = torch.rand(2048, 4, 3) * 6.0
+    rng = np.random.default_rng(0)
+
+    confidences = []
+    for k in range(5):
+        size = 4 + k
+        stacked = torch.cat([evidence, evidence[:, :1].repeat(1, k, 1)], dim=1)
+        total = 0.0
+        for start in range(0, 2048, 64):
+            matrix = np.full((size, size), 0.047)
+            np.fill_diagonal(matrix, 1.0)
+            group = [0] + list(range(4, size))
+            for a in group:
+                for b in group:
+                    if a != b:
+                        matrix[a, b] = 0.94
+            noise = np.triu(rng.normal(0.0, 0.05, (size, size)), 1)
+            matrix = np.clip(matrix + noise + noise.T, -1.0, 1.0)
+            np.fill_diagonal(matrix, 1.0)
+
+            alpha = torch.as_tensor(soft_cluster_alpha(matrix), dtype=evidence.dtype)
+            belief, uncertainty = evidence_to_opinion(
+                evidence_discount(stacked[start : start + 64], alpha)
+            )
+            _, fused_u = fuse_opinions(belief, uncertainty)
+            total += float((1.0 - fused_u).sum())
+        confidences.append(total / 2048)
+
+    assert max(confidences) - min(confidences) < 0.01, f"confidence {confidences}"
+
+
+def test_model_uses_soft_cluster_alpha(monkeypatch):
+    import prismflow.models.prismflow as prismflow_module
+
+    called = {}
+    real = prismflow_module.soft_cluster_alpha
+
+    def spy(*args, **kwargs):
+        called["yes"] = True
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(prismflow_module, "soft_cluster_alpha", spy)
+    torch.manual_seed(0)
+    configs = [EncoderConfig(input_dim=6, hidden_dims=[16], feature_dim=8) for _ in range(3)]
+    PrismFlow(configs, n_classes=3, use_discount=True)(torch.randn(32, 3, 6))
+    assert called.get("yes")
 
 
 def test_duplicate_does_not_discount_untouched_views_evidence():

@@ -258,6 +258,9 @@ _ALPHA_FLOOR = 1e-6
 def per_view_alpha(dependence, available=None, ridge: float = 1e-6) -> np.ndarray:
     """Per-view discount alpha_i = sum_j ((R + ridge I)^-1)_ij, clipped to (0, 1].
 
+    NOT used by the model any more -- superseded by `soft_cluster_alpha`, which
+    matches it on clean structure but does not amplify estimation noise.
+
     The row sums of the inverse dependence matrix: the best-linear-unbiased
     weights for combining correlated views. Independent view -> 1; each member
     of a cluster of g exact copies -> 1/g. See the block comment above for why
@@ -293,6 +296,56 @@ def per_view_alpha(dependence, available=None, ridge: float = 1e-6) -> np.ndarra
     sub = _repaired_dependence(dependence[np.ix_(present, present)])
     weights = _regularised_inverse(sub, ridge).sum(axis=1)
     alpha[present] = np.clip(weights, _ALPHA_FLOOR, 1.0)
+    return alpha
+
+
+def soft_cluster_alpha(dependence, available=None) -> np.ndarray:
+    """Per-view discount alpha_i = 1 / sum_j clip(R_ij, 0, 1).  USED BY THE MODEL.
+
+    One over the view's soft cluster size: how many views, itself included,
+    it is redundant with. A cluster of g exact copies gives 1/g each, summing to
+    one witness. An independent view gives 1. Equicorrelated views give
+    1 / (1 + (n-1) rho), so general correlation is still discounted.
+
+    WHY NOT THE BLUE INVERSE (`per_view_alpha`)
+    Both agree on exact copies and on equicorrelated views. They differ under
+    estimation noise. A copy cluster makes R nearly singular, and inverting it
+    amplifies per-batch noise: at noise sd 0.02-0.08 around the measured
+    structure, a 5-view copy cluster's BLUE weights summed to 2.0 +/- 0.5
+    instead of 1, and in the clone experiment PrismFlow's confidence was no
+    flatter than with one uniform alpha. Row sums involve no inverse, so noise
+    enters linearly. At sd 0.05 the cluster summed to 1.017 +/- 0.011 and fused
+    confidence drifted +0.005 over 0..4 copies.
+
+    WHY NOT HARD CLUSTERS
+    Thresholded connected components were exactly stable for copies at every
+    threshold tried (0.7, 0.8, 0.9). But views equicorrelated at rho=0.5 got
+    alpha=1: anything short of near-duplication would stop being discounted.
+
+    KNOWN LIMIT
+    Small positive off-diagonals accumulate. Residual bias after the null
+    correction is ~0.05 per pair. So an untouched view's alpha falls as views
+    are added even when none of them duplicates it: ~0.88 at 4 views, ~0.75 at
+    8. This is a far weaker form of the coupling this function removes, but it
+    is not zero. Negative entries are clipped to 0: anti-correlation is not
+    redundancy.
+    """
+    dependence = np.asarray(dependence, dtype=np.float64)
+    if dependence.ndim != 2 or dependence.shape[0] != dependence.shape[1]:
+        raise ValueError(f"dependence must be square [V, V], got {dependence.shape}")
+    n_views = dependence.shape[0]
+
+    present = np.ones(n_views, dtype=bool) if available is None else np.asarray(available, dtype=bool)
+    if present.shape != (n_views,):
+        raise ValueError(f"available must be [{n_views}], got {present.shape}")
+
+    alpha = np.ones(n_views, dtype=np.float64)
+    if present.sum() == 0:
+        return alpha
+
+    sub = _repaired_dependence(dependence[np.ix_(present, present)])
+    # The diagonal is 1, so every row sum is >= 1 and alpha lands in (0, 1].
+    alpha[present] = 1.0 / np.clip(sub, 0.0, 1.0).sum(axis=1)
     return alpha
 
 

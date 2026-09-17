@@ -6,8 +6,8 @@ agreement between two near-duplicate views inflates confidence just as much as
 agreement between two genuinely independent ones.
 
 With `use_discount=True` each view's evidence is scaled by its own redundancy
-factor (`per_view_alpha`: 1 for an independent view, ~1/g for each member of a
-g-view duplicate cluster) before fusion, so redundant agreement buys less
+factor (`soft_cluster_alpha`: 1 for an independent view, ~1/g for each member
+of a g-view duplicate cluster) before fusion, so redundant agreement buys less
 confidence. The estimator runs under no_grad and alpha enters as a constant --
 see `prismflow/eniv/discount.py` for why that stop-gradient matters.
 
@@ -28,7 +28,7 @@ import torch
 from torch import nn
 
 from prismflow.eniv.discount import evidence_discount
-from prismflow.eniv.eniv import ENIVResult, compute_eniv, per_view_alpha
+from prismflow.eniv.eniv import ENIVResult, compute_eniv, soft_cluster_alpha
 from prismflow.models.encoders import EncoderConfig, MultiViewEncoder
 from prismflow.models.evidence import (
     MultiViewEvidenceHead,
@@ -155,7 +155,7 @@ class PrismFlow(nn.Module):
                     null_permutations=self.null_permutations,
                 )
                 present = available_views(view_mask, n_views=self.n_views)
-                alpha = per_view_alpha(matrix, present)
+                alpha = soft_cluster_alpha(matrix, present)
                 eniv = replace(
                     compute_eniv(matrix, present),
                     per_view_alpha=tuple(float(a) for a in alpha),

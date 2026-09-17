@@ -16,6 +16,7 @@ from prismflow.eniv.eniv import (
     eigen_n_eff,
     mean_off_diagonal,
     per_view_alpha,
+    soft_cluster_alpha,
     vif_alpha,
 )
 from prismflow.statistics.dependence import dependence_matrix
@@ -422,6 +423,96 @@ def test_per_view_alpha_rejects_bad_shapes():
         per_view_alpha(np.zeros((3, 4)))
     with pytest.raises(ValueError):
         per_view_alpha(np.eye(3), available=np.array([True, False]))
+
+
+# --- soft cluster size (used by the model) ----------------------------------
+
+
+@pytest.mark.parametrize("k", [0, 1, 2, 3, 4])
+def test_soft_cluster_exact_copies_count_as_one_witness_and_spare_others(k):
+    matrix, group = _clone_matrix(k)
+    alpha = soft_cluster_alpha(matrix)
+    assert np.allclose(alpha[group], 1.0 / len(group))
+    assert np.allclose(alpha[1:4], 1.0)
+
+
+@pytest.mark.parametrize("n_views", [4, 8])
+@pytest.mark.parametrize("rho", [0.0, 0.3, 0.6, 0.9])
+def test_soft_cluster_matches_blue_on_equicorrelated_views(rho, n_views):
+    matrix = _matrix(n_views, rho)
+    expected = 1.0 / (1.0 + (n_views - 1) * rho)
+    assert np.allclose(soft_cluster_alpha(matrix), expected)
+    assert np.allclose(soft_cluster_alpha(matrix), per_view_alpha(matrix), atol=1e-5)
+
+
+def test_soft_cluster_still_discounts_general_correlation():
+    """Why hard thresholded clusters were rejected: they leave rho=0.5 views at 1."""
+    assert np.all(soft_cluster_alpha(_matrix(4, 0.5)) < 1.0)
+
+
+def test_soft_cluster_is_stable_under_estimation_noise_where_blue_is_not():
+    """Measured copy structure (c=0.94, others 0.047) with per-batch noise
+    sd=0.05. The BLUE inverse amplified this to a cluster total of ~2.0 +/- 0.5;
+    soft cluster size, with no inverse, must stay near one witness."""
+    rng = np.random.default_rng(0)
+    soft_sums, blue_sums = [], []
+    for _ in range(200):
+        matrix, group = _clone_matrix(4, 0.94)
+        matrix[matrix == 0.0] = 0.047
+        noise = np.triu(rng.normal(0.0, 0.05, matrix.shape), 1)
+        noisy = np.clip(matrix + noise + noise.T, -1.0, 1.0)
+        np.fill_diagonal(noisy, 1.0)
+        soft_sums.append(soft_cluster_alpha(noisy)[group].sum())
+        blue_sums.append(per_view_alpha(noisy)[group].sum())
+
+    assert abs(np.mean(soft_sums) - 1.0) < 0.05
+    assert np.std(soft_sums) < 0.05
+    assert np.std(blue_sums) > 5 * np.std(soft_sums)
+
+
+def test_soft_cluster_known_limit_small_positive_entries_accumulate():
+    """Documented, not fixed: with a residual ~0.05 bias per pair, an untouched
+    view's alpha falls as more views are added, even with no duplicates of it."""
+    four = soft_cluster_alpha(_matrix(4, 0.05))[0]
+    eight = soft_cluster_alpha(_matrix(8, 0.05))[0]
+    assert four == pytest.approx(1 / 1.15)
+    assert eight == pytest.approx(1 / 1.35)
+    assert eight < four
+
+
+def test_soft_cluster_ignores_anticorrelation():
+    assert np.allclose(soft_cluster_alpha(_matrix(3, -0.4)), 1.0)
+
+
+def test_soft_cluster_respects_available_views():
+    matrix, _ = _clone_matrix(1)
+    available = np.array([True, True, True, True, False])
+    assert np.allclose(soft_cluster_alpha(matrix, available), 1.0)
+
+
+def test_soft_cluster_imputes_nan_and_does_not_mutate():
+    matrix = _matrix(4, 0.6)
+    matrix[0, 3] = matrix[3, 0] = np.nan
+    before = matrix.copy()
+    assert np.allclose(soft_cluster_alpha(matrix), 1.0 / (1.0 + 3 * 0.6))
+    assert np.array_equal(before, matrix, equal_nan=True)
+
+
+def test_soft_cluster_stays_in_unit_interval():
+    rng = np.random.default_rng(8)
+    for _ in range(50):
+        raw = rng.uniform(-1.0, 1.0, size=(7, 7))
+        matrix = 0.5 * (raw + raw.T)
+        np.fill_diagonal(matrix, 1.0)
+        alpha = soft_cluster_alpha(matrix)
+        assert np.all(alpha > 0.0) and np.all(alpha <= 1.0)
+
+
+def test_soft_cluster_rejects_bad_shapes():
+    with pytest.raises(ValueError):
+        soft_cluster_alpha(np.zeros((2, 3)))
+    with pytest.raises(ValueError):
+        soft_cluster_alpha(np.eye(3), available=np.array([True]))
 
 
 def test_eniv_result_per_view_alpha_defaults_to_none():

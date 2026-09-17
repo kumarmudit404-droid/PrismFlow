@@ -1,7 +1,7 @@
 """Discounting evidential opinions for redundancy.
 
 The model applies `evidence_discount` with PER-VIEW factors from
-`prismflow.eniv.eniv.per_view_alpha`. `shafer_discount` below, with one scalar
+`prismflow.eniv.eniv.soft_cluster_alpha`. `shafer_discount` below, with one scalar
 alpha = n_eff / n for every view, was the V1 mechanism. It is kept and tested,
 but it discounts views that were never duplicated. `evidence_discount`
 documents the measurements behind the change.
@@ -99,7 +99,7 @@ def evidence_discount(evidence: torch.Tensor, alpha) -> torch.Tensor:
               `evidence_to_opinion`, which yields a valid simplex by construction
 
     This is what the model applies, with alpha from
-    `prismflow.eniv.eniv.per_view_alpha`. Two differences from
+    `prismflow.eniv.eniv.soft_cluster_alpha`. Two differences from
     `shafer_discount`, both measured:
 
     PER VIEW, NOT ONE SCALAR. One alpha = ENIV/n for every view penalised views
