@@ -24,6 +24,13 @@ results/*/*
 !results/*/*.csv
 !results/*/*.md
 !results/*/*.png
+# evaluate() writes results/<experiment>/<system>/: same policy, one level down.
+!results/*/*/
+results/*/*/*
+!results/*/*/*.json
+!results/*/*/*.csv
+!results/*/*/*.md
+!results/*/*/*.png
 logs/*
 !logs/.gitkeep
 checkpoints/*
