@@ -1,0 +1,53 @@
+experiment:
+  id: robustness
+  description: >
+    Part 08. Naive fusion vs PrismFlow when views go missing or become noisy.
+    Models are trained once per seed on clean data; corruption is applied at
+    test time only, so every condition scores the same trained models. All
+    metrics come from prismflow.evaluation.evaluate.
+
+seeds: [0, 1, 2, 3, 4]
+
+# Default synthetic generator (4 views, rho = 0.3): the Part 04 baseline and
+# Part 07 calibration setting. View features have std ~1.3.
+data:
+  n_views: 4
+  rho: 0.3
+
+# Identical to the Part 04 baseline and Part 07. Fixed before any run.
+training:
+  epochs: 40
+  batch_size: 64
+  lr: 0.001
+  anneal_epochs: 10
+  per_view_loss_weight: 1.0
+
+missing:
+  # Each (sample, view) mask entry dropped independently with this probability
+  # (prismflow.data.corruption.drop_views). A sample can lose every view; it then
+  # receives the vacuous opinion (uniform probs, confidence 0).
+  rates: [0.0, 0.1, 0.3, 0.5, 0.7]
+  # Imputation baseline: a missing view's input is replaced by the mean of the
+  # sample's available views' inputs and marked present. Samples with no
+  # available view stay fully missing.
+  imputation: true
+
+noise:
+  sigmas: [0.25, 0.5, 1.0, 2.0, 4.0]
+  conditions:
+    one_noisy:
+      views: [0]
+      mode: add        # add N(0, sigma^2) to the view (corruption.add_noise)
+    two_noisy:
+      views: [0, 1]
+      mode: add
+    one_severe:
+      views: [0]
+      mode: replace    # view content replaced by N(0, sigma^2): no signal left
+
+evaluation:
+  split: test
+  # ENIV is estimated per forward batch, exactly as the deployed model does.
+  batch_size: 64
+  n_bins: 15
+  coverages: [1.0, 0.9, 0.8, 0.5]

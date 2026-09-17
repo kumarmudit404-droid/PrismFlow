@@ -55,3 +55,34 @@ soft cluster size, so an untouched view's alpha falls from ~0.88 to ~0.75 going
 from 4 to 8 views (controlled harness). This may contribute to prismflow's
 upward confidence drift at rho=0.0 in `clone_eigen_softcluster`
 (+0.003, +0.007, +0.010, +0.013 for k=1..4). That link is untested.
+
+## L3. The discount addresses redundant evidence, not unreliable evidence
+
+**Scope boundary, not a defect.** The discount acts on views that are
+correlated *with each other*. It has no purchase on a single view that is
+individually noisy or corrupted but uncorrelated with anything.
+
+**Evidence:** Part 08, `experiments/robustness/` (5 seeds, mean +/- sample std;
+`results/robustness/noise_summary.md`).
+
+- ENIV stays flat as view noise rises: 3.2-3.4 across every sigma in all three
+  noise conditions. Noise makes a view LESS dependent on the others, not more,
+  which is the opposite of what a dependence-based discount can detect.
+- One noisy view (sigma 0.25 -> 4) costs naive fusion 0.098 accuracy while
+  top-label confidence falls only 0.014, and evidence-mass confidence RISES
+  0.016. The model stays confident while becoming wrong.
+- PrismFlow does not separate from naive fusion at any sigma in any condition,
+  and at sigma 4 it is worse on accuracy and Brier in 5/5 seeds.
+
+**What this means.** This is a structural boundary of the dependence-based
+approach, not a tunable parameter: no setting of the discount detects
+individually unreliable evidence, because the signal it reads (cross-view
+dependence) does not move in that case. Detecting unreliable-but-independent
+views needs a different signal entirely, such as per-view reconstruction error
+or out-of-distribution scoring on raw inputs. That is out of scope for this
+project.
+
+**Consequence for later Parts.** An attack that makes views AGREE (collusion,
+duplication) is on the axis the discount can read. An attack that merely
+degrades a view's quality is not, and PrismFlow should not be claimed to defend
+against it. See `docs/CONTRACT.md` section 1.

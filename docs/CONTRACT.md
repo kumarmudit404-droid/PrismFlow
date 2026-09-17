@@ -10,6 +10,14 @@ proportion to how many views agree, and that discounting fused confidence by
 estimated inter-view dependence (ENIV) yields fusion that is robust to
 colluding or compromised views.
 
+**Scope (annotation, 2026-09-17).** The hypothesis is about REDUNDANT evidence:
+views that are correlated with each other. It is not a claim about UNRELIABLE
+evidence, meaning a view that is individually noisy or corrupted but
+uncorrelated with the others. Part 08 measured that boundary directly: ENIV is
+flat as view noise rises, because noise makes a view less dependent, not more
+(`docs/KNOWN_LIMITATIONS.md` L3). Robustness to individually degraded views is
+not claimed and is not tested for.
+
 **Evidence status for calibration (annotation, 2026-09-17).** The hypothesis
 above is unchanged. What the evidence currently supports about calibration is
 narrower than "PrismFlow improves reliability, not resolution," the framing
