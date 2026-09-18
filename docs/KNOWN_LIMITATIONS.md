@@ -86,3 +86,69 @@ project.
 duplication) is on the axis the discount can read. An attack that merely
 degrades a view's quality is not, and PrismFlow should not be claimed to defend
 against it. See `docs/CONTRACT.md` section 1.
+
+### L3 extension (2026-09-18, Part 09): adversarial evidence, not just natural
+
+Part 09 tested the axis this entry said was readable — an attacker perturbing
+k views *jointly* so they agree on a wrong class — and the boundary turned out
+to be wider than "unreliable evidence".
+
+**Evidence:** Part 09, `experiments/chorus/` (5 seeds, mean +/- sample std;
+`results/chorus/summary.md`).
+
+- **Reading the axis does not confer defence.** Under the chorus attack ENIV
+  falls 3.36 -> 2.70 and dependence among the compromised views rises
+  +0.7351 +/- 0.0914, so the collusion is plainly detected. PrismFlow's attack
+  success rate is nonetheless HIGHER than naive fusion's in 12/12 attacked
+  cells (+0.0267 +/- 0.0071 at epsilon 1.0, 0/5 seeds better).
+- **The blindness moves to uncoordinated attacks.** Independent PGD reaches
+  0.4640 success at epsilon 2.0 — 78% of the coordinated attack — while rho_bar
+  moves -0.0290 +/- 0.0251 (wrong direction) and ENIV stays flat at 3.34.
+- **k = 1 is invisible by construction.** A single compromised view has no
+  within-pairs, so `dependence_compromised` is undefined while the attack
+  still succeeds 22% of the time.
+
+**What this means.** The original L3 framing — "the discount addresses redundant
+evidence, not unreliable evidence" — is too generous. Redundancy that is
+*adversarially induced* is detected and still not defended against. The accurate
+statement is that the discount addresses redundant evidence **arising
+naturally**, and that detection of redundancy is not the same capability as
+robustness to it. The mechanism is L4.
+
+## L4. The discount is proportional, not capping, and weakens as evidence grows
+
+**Scope boundary and defect boundary both.** This is the mechanism behind L3's
+extension: it explains why detecting collusion does not neutralise it.
+
+**Component:** `evidence_discount` with per-view `soft_cluster_alpha`
+(the retired V1 scalar `shafer_discount` is not what runs).
+
+**Evidence:** Part 09 diagnostic, `experiments/chorus/README.md` section 6
+(5 seeds, `prismflow`, successful attacks only; models reconstructed by
+deterministic retraining, replayed per-seed success rates match
+`results/chorus/attack_metrics.json` exactly).
+
+- On successful attacks, compromised views' discounted belief in the attacker's
+  class is 0.5553 +/- 0.0611 (epsilon 1.0) and 0.7301 +/- 0.0320 (epsilon 2.0):
+  above 0.5 on 67.6% and 90.1% of successes respectively.
+- That belief reaches fusion **3.3-3.4x larger** than the honest views' belief
+  in the true class (0.1668 and 0.2130), and the honest views are much more
+  vacuous (u ~ 0.73-0.78 against 0.27-0.44).
+- **The reduction is sublinear in alpha.** Discounting scales evidence, and
+  belief is `e / (sum(e) + K)`, so alpha = 0.5021 removes only 17.6% of belief
+  and alpha = 0.4331 removes 12.8%. The stronger the attack, the smaller the
+  fraction a given alpha removes.
+- Alpha is per-view and batch-level, not per-sample, so the correction cannot
+  concentrate on attacked samples within a batch.
+
+**What this means.** A proportional factor cannot bound any single view's
+contribution. Neutralising a 3.3x margin would need alpha near 0.25 with a
+floor, or an explicit cap on per-view contribution, or a per-sample rather than
+per-batch factor. None of these is what V1 does, and the sublinearity means the
+mechanism is weakest exactly where the evidence is largest — which is where an
+attacker operates.
+
+**What would change our understanding.** A capped or per-sample variant tested
+on the same `results/chorus/perturbations/` tensors would show directly whether
+the shape of the correction is the binding constraint, or whether dependence is
+simply the wrong signal to drive a correction from at all.

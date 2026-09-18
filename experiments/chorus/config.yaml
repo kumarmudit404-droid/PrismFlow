@@ -1,0 +1,75 @@
+experiment:
+  id: chorus
+  description: >
+    Part 09. The Chorus attack: k compromised views perturbed JOINTLY so that
+    they agree on a wrong class, against independent PGD as the literature
+    baseline. Controlled research simulation on this project's own models and
+    synthetic data.
+
+  # Why this attack surface, given Part 08 (docs/KNOWN_LIMITATIONS.md L3):
+  # the discount reads cross-view DEPENDENCE. Part 08 measured that a merely
+  # noisy view is invisible to it (ENIV flat at 3.2-3.4 across the whole sigma
+  # sweep) because noise makes a view less dependent, not more. Chorus drives
+  # views toward AGREEMENT, which is the axis the discount can read, so this is
+  # the attack that actually tests the defence rather than its scope boundary.
+
+seeds: [0, 1, 2, 3, 4]
+
+data:
+  n_views: 4
+  rho: 0.3
+
+training:
+  epochs: 40
+  batch_size: 64
+  lr: 0.001
+  anneal_epochs: 10
+  per_view_loss_weight: 1.0
+
+attack:
+  steps: 30
+  target_strategy: least_likely   # least_likely | random | fixed
+  fixed_target: 0
+  # Compromised views are the first k; the generator gives no view special status.
+
+# One cell = one attack configuration, evaluated on all three systems.
+# epsilon is in input units; view features have std ~1.3.
+cells:
+  - {name: clean,               attack: none,   k: 0, epsilon: 0.0,  beta: 0.0}
+
+  # epsilon sweep, k = 2: chorus against the baseline. The range was chosen
+  # from a single-seed probe: success climbs from ~0.05 at 0.2 and saturates
+  # near 0.69 by 2.0, where the two uncompromised views set the ceiling.
+  - {name: chorus_k2_eps0.2,    attack: chorus, k: 2, epsilon: 0.2, beta: 1.0}
+  - {name: chorus_k2_eps0.5,    attack: chorus, k: 2, epsilon: 0.5, beta: 1.0}
+  - {name: chorus_k2_eps1.0,    attack: chorus, k: 2, epsilon: 1.0, beta: 1.0}
+  - {name: chorus_k2_eps2.0,    attack: chorus, k: 2, epsilon: 2.0, beta: 1.0}
+  - {name: pgd_k2_eps0.2,       attack: pgd,    k: 2, epsilon: 0.2, beta: 0.0}
+  - {name: pgd_k2_eps0.5,       attack: pgd,    k: 2, epsilon: 0.5, beta: 0.0}
+  - {name: pgd_k2_eps1.0,       attack: pgd,    k: 2, epsilon: 1.0, beta: 0.0}
+  - {name: pgd_k2_eps2.0,       attack: pgd,    k: 2, epsilon: 2.0, beta: 0.0}
+
+  # beta sweep at epsilon 1.0, k = 2 (beta = 0 separates per view: the
+  # agreement term is off, so it is chorus-shaped independent PGD)
+  - {name: chorus_k2_beta0,     attack: chorus, k: 2, epsilon: 1.0, beta: 0.0}
+  - {name: chorus_k2_beta5,     attack: chorus, k: 2, epsilon: 1.0, beta: 5.0}
+
+  # k sweep at epsilon 1.0, beta 1
+  - {name: chorus_k1,           attack: chorus, k: 1, epsilon: 1.0, beta: 1.0}
+  - {name: chorus_k3,           attack: chorus, k: 3, epsilon: 1.0, beta: 1.0}
+
+systems:
+  naive:               {trained_with_discount: false, evaluate_with_discount: false}
+  prismflow_nodiscount: {trained_with_discount: true,  evaluate_with_discount: false}
+  prismflow:           {trained_with_discount: true,  evaluate_with_discount: true}
+
+evaluation:
+  split: test
+  batch_size: 64
+  n_bins: 15
+  coverages: [1.0, 0.9, 0.8, 0.5]
+
+outputs:
+  # Perturbation tensors are bulk artefacts: .npz under results/<id>/perturbations/
+  # is untracked by .gitignore on purpose. Metadata and metrics are tracked.
+  save_perturbations: true

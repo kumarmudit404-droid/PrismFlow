@@ -18,6 +18,33 @@ flat as view noise rises, because noise makes a view less dependent, not more
 (`docs/KNOWN_LIMITATIONS.md` L3). Robustness to individually degraded views is
 not claimed and is not tested for.
 
+**Evidence status for the robustness claim (annotation, 2026-09-18, Part 09).**
+The project statement above ends with the claim that discounting by estimated
+inter-view dependence "yields fusion that is robust to colluding or compromised
+views". **As tested, that half of the hypothesis is not supported.** Part 09
+attacked all three systems white-box with k colluding views optimised jointly
+to agree on a wrong class (`experiments/chorus/`, 5 seeds). PrismFlow's attack
+success rate was HIGHER than naive fusion's in 12 of 12 attacked cells
+(+0.0267 +/- 0.0071 at epsilon 1.0, 0/5 seeds better; the effect is small and
+unpaired bars overlap, but no cell at any k, epsilon or beta favours it).
+
+The detection half stands and should be stated separately from the defence
+half: ENIV falls 3.36 -> 2.70 under the coordinated attack and dependence among
+the compromised views rises +0.7351 +/- 0.0914, so the estimator identifies
+collusion reliably. It is the correction driven from that signal that fails —
+it is proportional rather than capping, sublinear in alpha, and batch-level
+rather than per-sample (`docs/KNOWN_LIMITATIONS.md` L4). Detection of
+redundancy and robustness to it are separate capabilities, and only the first
+is evidenced.
+
+Two further scope notes from the same experiment. The dependence signal is
+blind to *uncoordinated* compromise: independent PGD reached 0.4640 success at
+epsilon 2.0 while rho_bar moved -0.0290 +/- 0.0251 and ENIV stayed flat. And
+the one measured benefit of the discount under attack is that belief in the
+wrong class is lower when the attack succeeds (-0.0562 +/- 0.0069 at epsilon
+1.0, 5/5 seeds, bars separate). Any robustness claim must be stated
+consistently with this paragraph.
+
 **Evidence status for calibration (annotation, 2026-09-17).** The hypothesis
 above is unchanged. What the evidence currently supports about calibration is
 narrower than "PrismFlow improves reliability, not resolution," the framing
