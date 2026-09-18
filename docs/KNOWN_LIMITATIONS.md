@@ -252,3 +252,109 @@ above is a ceiling or merely an artefact of an attack that was never trying to
 hide. Section 1 of `experiments/comparison/README.md` notes that the evasive
 move — raising measured dependence deliberately — appears to be partly available
 to the chorus attacker already, for free.
+
+## L6. The shared/private objective does not fix which branch carries cross-view information, and ENIV reads only one of them
+
+**Component:** `prismflow/models/disentanglement_losses.py` and
+`prismflow/models/shared_private.py` (V2, `enabled=False` by default).
+`SharedPrivatePrismFlow.forward` measures dependence on the `shared` branch when
+`dependence_on="shared"`, which is the default and is what Part 11's ENIV came
+from. V1 is unaffected: this limitation applies only to a path that is off by
+default.
+
+**Evidence:** Part 11 follow-up, `experiments/branch_audit/` (5 seeds, rho in
+{0.3, 0.6}, the model's own estimator — cca / pairwise_holdout / 4 null
+permutations — applied to four representations of the same trained model;
+`results/branch_audit/summary.md`).
+
+Part 11 reported that disentanglement pushes ENIV UP (2.85 -> 3.37 at rho 0.6 in
+this audit's measurement configuration) and named one suspected cause. That
+cause is refuted and the actual one is different.
+
+- **The proposed cause is refuted: the estimator is blind to it.** Part 11
+  suggested the shared branches rotate independently across views, destroying
+  measurable structure. Dependence is measured with CCA, which
+  `prismflow/statistics/dependence.py` states is "invariant to any invertible
+  linear remapping of either side" — and a rotation is one. Applying an
+  independent random orthogonal rotation to each view's shared branch moves ENIV
+  by **0.0221 on average (max 0.1376, sign inconsistent)**, against an effect to
+  explain of **+0.3441 to +0.5203**. An order of magnitude too small, and in the
+  wrong shape. `tests/unit/test_branch_audit.py` pins both halves: that the
+  rotation is genuinely orthogonal and far from identity (it moves the data by
+  up to 31.0), and that CCA changes by 7.6e-05 under it.
+- **It is not a consistent branch swap either.** Averaged over seeds,
+  dep(private) - dep(shared) is essentially zero: **+0.0047** (rho 0.3) and
+  **+0.0031** (rho 0.6) for the orthogonality penalty. Taken on the mean alone,
+  nothing is happening.
+- **But the per-seed magnitude is large and the SIGN FLIPS.** The same
+  difference is **+0.0941 -0.0945 +0.0714 +0.0614 -0.1091** across seeds (rho
+  0.3, orthogonality). Each run puts roughly 0.06-0.12 more cross-view
+  dependence in one branch than the other; which branch is not consistent. The
+  mean is near zero because the population cancels, not because the effect is
+  absent. **A 5-seed mean is exactly the statistic that hides this**, and the
+  5-SEED RULE is what made it visible.
+- **The orientation is set by INITIALISATION, not by the data or the penalty.**
+  The sign pattern across seeds 0-4 is `+ - + + -` — **identical for both rho
+  values and both penalty methods**:
+
+  | condition | seed 0 | 1 | 2 | 3 | 4 |
+  |---|---|---|---|---|---|
+  | rho 0.3, hsic_l1 | + | - | + | + | - |
+  | rho 0.3, orthogonality | + | - | + | + | - |
+  | rho 0.6, hsic_l1 | + | - | + | + | - |
+  | rho 0.6, orthogonality | + | - | + | + | - |
+
+  Seeds 0, 2, 3 route the cross-view information into `private`; seeds 1, 4 into
+  `shared`. The true dependence in the data (rho 0.3 vs 0.6) does not change it,
+  and neither does which penalty is applied.
+- **The architecture alone does nothing; the penalty causes it.** With
+  `lambda_2 = 0` the branches are indistinguishable — dep(shared) 0.3840 against
+  V1's 0.3832 at rho 0.6, and a per-seed difference of sd 0.0045. Branch
+  asymmetry scales with penalty pressure: sd **0.0045 -> 0.0430 -> 0.0988** for
+  lambda0 -> hsic_l1 -> orthogonality, and the apparent loss of dependence on
+  `shared` tracks it, **0.000 -> 0.068 -> 0.178** below V1.
+- **Most of the "missing" dependence is recoverable, so it was moved rather than
+  destroyed.** Measuring the same models on `concat(shared, private)` recovers
+  **75.5-76.0%** of the gap to V1 for HSIC and **47.8-55.8%** for orthogonality,
+  and cuts the ENIV inflation by **76.0-76.5%** and **37.3-55.1%** respectively.
+
+**What this means.** The disentanglement objective requires only that `shared_v`
+and `private_v` be statistically independent, and independence is SYMMETRIC in
+its two arguments. Nothing in the loss distinguishes the branch named "shared"
+from the branch named "private" — the two are interchangeable optima, and
+initialisation decides which one a run lands in. The names are aspirational, not
+enforced. ENIV is then read off whichever branch happens to be labelled
+"shared", so in the runs where initialisation routed cross-view information to
+`private`, the estimator is reading a representation that genuinely does not
+contain it and correctly reports few dependencies — about a representation
+nobody should have been asking.
+
+**Part 11's ENIV inflation is therefore substantially a measurement artefact,
+but not entirely one.** Reading both branches removes 37-76% of it depending on
+penalty and rho. The residual is a real reduction in recoverable cross-view
+dependence, so the penalty does distort the representation as well as
+relabelling it, and the direction is still the dangerous one: less measured
+dependence, higher ENIV, higher confidence on data that has not become more
+independent.
+
+**Scope.** This does not touch V1 or any default run. It is a reason not to
+enable V2 as it stands, and a specific defect to fix before the idea is retried.
+
+**What would change our understanding.** An objective that breaks the symmetry —
+a cross-view alignment term on the shared branches, which would make "shared"
+mean "agrees with other views' shared" rather than merely "independent of my own
+private" — is the obvious repair and is untested. Part 11's README proposed it
+for the wrong reason; it remains the right experiment. Two further checks are
+unrun: whether the routing varies per VIEW within a run as well as per run
+(`both` exceeding each individual branch in most seeds hints that it does, but
+the per-pair matrix was not retained), and whether `dependence_on="features"`,
+which already exists in the config, removes the artefact entirely by never
+reading a single branch.
+
+**Measurement note.** Absolute ENIV here is not comparable to Part 11's table.
+`evaluate()` computes ENIV per batch and sample-weight-averages it
+(`prismflow/evaluation/protocol.py`), whereas this audit pools the test split
+into one estimate; CCA's finite-sample bias and its permutation chance
+correction both depend on n. The ordering is reproduced (v1 < hsic_l1 <
+orthogonality at both rho), and every comparison above is within-audit, where n,
+seeds and estimator settings are identical across the four representations.
