@@ -153,6 +153,56 @@ on the same `results/chorus/perturbations/` tensors would show directly whether
 the shape of the correction is the binding constraint, or whether dependence is
 simply the wrong signal to drive a correction from at all.
 
+### L4 extension (2026-09-18): that test was run, and the shapes above are refuted
+
+The paragraph above proposed three remedies. All three were tested on exactly
+those tensors and none of them works. **The speculation in "What this means" is
+superseded by this subsection.**
+
+**Evidence:** `experiments/chorus/README_correction_shapes.md` (5 seeds,
+read-only replay; both validation gates pass — reconstructed per-seed success
+matches `results/chorus/attack_metrics.json` exactly and the baseline row
+reproduces section 6 to 4 decimals).
+
+At eps 1.0, against a baseline margin of 3.33x and attack success 0.4813:
+
+| shape | ratio | attack success |
+|---|---|---|
+| capped, belief <= 0.3 | 2.65x | 0.4780 |
+| floor_alpha, alpha >= 0.25 | 3.33x | 0.4813 (exact no-op) |
+| alpha_ceiling, alpha <= 0.25 | **4.01x** | **0.4933** |
+| per_sample | 3.30x | **0.5120** |
+
+- **A cap cannot be selective.** It is the only shape that moves absolute belief
+  much (0.5553 -> 0.2650), but no correction knows which views are compromised,
+  so it must apply to all of them. Honest views get clipped too (0.1668 ->
+  0.1002), both sides fall, and success is unchanged.
+- **"alpha near 0.25 with a floor" was the wrong prescription, in two ways.**
+  Literally, a lower bound at 0.25 cannot bind, because the measured alphas
+  (0.5021, 0.4331) already exceed it. Read as intended — force alpha DOWN —
+  it makes things worse: the ratio rises to 4.01x and success rises to 0.4933.
+  **Discounting harder transfers relative advantage to the attacker**, because
+  the sublinearity recorded above cuts a larger fraction from low-evidence
+  opinions, and the honest views are the low-evidence ones.
+- **Per-sample granularity does nothing.** Ratio 3.30x against 3.33x, success
+  up 0.031. (Note also that per-sample *dependence* is not estimable at all:
+  dependence is a statistic across samples. The row uses a per-sample agreement
+  proxy.)
+
+**What this means, revised.** The binding constraint is not the SHAPE of the
+correction but its SELECTIVITY. An oracle sweep — alpha applied only to the
+compromised views, using ground-truth knowledge, an upper bound no deployable
+mechanism can reach — shows the ordinary proportional mechanism does bind once
+it is aimed: alpha 0.05 inverts the margin to 0.88x and cuts success 0.4813 ->
+0.1840. It has to be extreme (a 20x reduction) and the attack still lands 18%
+of the time, but it binds, and no blanket shape does.
+
+**Consequence.** This moves the problem onto detection, and L5 measures that
+detection at AUC 0.6328 for k=2 and 0.4870 — chance — for k=3. A correction that
+must concentrate 20x on the right two views cannot be driven by a signal that is
+at chance about which two they are. L3/L4, this extension, and L5 therefore
+close a loop rather than pointing at a fix.
+
 ## L5. The suspicion detector inherits the dependence signal's blind spot, and inverts under missing evidence
 
 **Component:** `prismflow/statistics/suspicion.py`, exposed as an alert by
