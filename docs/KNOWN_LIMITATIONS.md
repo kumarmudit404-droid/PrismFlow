@@ -152,3 +152,53 @@ attacker operates.
 on the same `results/chorus/perturbations/` tensors would show directly whether
 the shape of the correction is the binding constraint, or whether dependence is
 simply the wrong signal to drive a correction from at all.
+
+## L5. The suspicion detector inherits the dependence signal's blind spot, and inverts under missing evidence
+
+**Component:** `prismflow/statistics/suspicion.py`, exposed as an alert by
+`prismflow/models/defended.py`. The detector changes no prediction: it is an
+alert, not a correction.
+
+**Evidence:** Part 10, `experiments/comparison/` (5 seeds, ROC AUC against the
+same seed's clean scores, thresholds calibrated per seed on clean data; paired
+within-seed comparisons; `results/comparison/summary.md`).
+
+- **Detection degrades monotonically with attack strength:** AUC 0.7215 (k=1)
+  -> 0.6328 (k=2) -> 0.4870 (k=3, at chance), with k=1 above k=3 in 5/5 seeds
+  (+0.2345 +/- 0.1115). The strongest attack is the LEAST detectable: at k=3
+  accuracy has collapsed to 0.4213 and the detector is indistinguishable from
+  a coin.
+- **Inverted under missing views:** AUC 0.2568 (30% missing) and 0.1247 (50%
+  missing). Scores are systematically LOWER than clean, so the flag fires LESS
+  under missingness than under normal operation. At 50% missing it never fires
+  at all, 5/5 seeds. A deployment relying on this flag would be most silent
+  exactly when a third of its evidence is gone.
+- **False-positive on honest redundancy:** `clone_k2` (duplication, no attacker)
+  scores AUC 0.8743 +/- 0.0583, higher than every chorus condition tested
+  (+0.2415 +/- 0.1164 against chorus k=2, 5/5 seeds). The detector cannot
+  distinguish honest duplication from adversarial collusion — it detects the
+  STATISTICAL SIGNATURE of coordinated agreement, not intent.
+
+**Mechanistic link to L3 and L4.** The detector and the discount fail on
+near-complementary attacks. Independent PGD succeeds by evading the dependence
+signal entirely (L3); the detector catches PGD precisely because it watches that
+same signal for agreement unexplained BY dependence (AUC 0.8396 +/- 0.0970,
++0.2068 +/- 0.0608 over chorus k=2, 5/5 seeds). Chorus succeeds partly by
+manufacturing the dependence signal itself, and that is what buys it cover from
+a detector watching for exactly that signal (AUC 0.6328, degrading further with
+k). **Coordination functions partly as a stealth mechanism against
+dependence-based detection.**
+
+**What this means.** Detector and discount are complementary failure modes, not
+redundant safeguards. Neither is currently validated as a defence: the discount
+does not reduce attack success (L3 extension), and the detector is at chance on
+the most damaging attack and inverted under missing evidence. Combining them —
+an ensemble, or a handoff between the two signals — is untested. It is proposed
+future work, not a result of this Part.
+
+**What would change our understanding.** An attacker optimising against the
+detector, rather than only against the model, would settle whether the k-trend
+above is a ceiling or merely an artefact of an attack that was never trying to
+hide. Section 1 of `experiments/comparison/README.md` notes that the evasive
+move — raising measured dependence deliberately — appears to be partly available
+to the chorus attacker already, for free.
