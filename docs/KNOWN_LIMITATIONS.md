@@ -358,3 +358,75 @@ into one estimate; CCA's finite-sample bias and its permutation chance
 correction both depend on n. The ordering is reproduced (v1 < hsic_l1 <
 orthogonality at both rho), and every comparison above is within-audit, where n,
 seeds and estimator settings are identical across the four representations.
+
+## L7. Tail dependence is not the sharper instrument the argument predicted; it inverts under strong attack
+
+**Component:** `prismflow/statistics/tail_dependence.py` and `copula.py`, added
+in Part 13. Neither is wired into any default path: no model, discount or
+detector reads them. This limitation is a reason not to adopt the variant, not a
+defect in a running system.
+
+**Evidence:** Part 13, `experiments/tail/` (5 seeds, Part 09's chorus
+configuration — k = 2 of 4, beta 1.0, 30 steps; test split 1200, 60 exceedances
+at q = 0.95; `results/tail/summary.md`).
+
+- **The predicted result does not occur.** The Part was built expecting rho_bar
+  to stay flat while lambda_U rose with attack strength. On the colluding pair,
+  rho_bar reaches 0.7218 at epsilon 0.2 and holds 0.71-0.83 at every strength,
+  peaking at **0.8322 at epsilon 2.0**. lambda_U peaks at **0.7767 at epsilon
+  0.5** then collapses to **0.2367 at epsilon 2.0** — a fall of 0.54 while
+  attack success rises 0.23 -> 0.52.
+- **At full strength the tail measure barely discriminates.** The
+  colluding-to-honest ratio at epsilon 2.0 is **2.60x for rho_bar against 1.29x
+  for lambda_U**.
+- **The mechanism is measured.** Spread inside the colluding views' own upper
+  tail (coefficient of variation) falls **0.2383 -> 0.0747** across epsilon
+  0.5 -> 2.0, tracking lambda_U at **r = 0.939** over the attacked cells
+  (**r = 0.847** pooled per-seed, n = 20), while the same spread against rho_bar
+  is **r = -0.245**. A strong attack drives the colluding views to a
+  near-constant extreme; which samples land in the top 5% then becomes arbitrary
+  and co-exceedance reverts toward the independence baseline.
+- **The root cause is the property that made copulas attractive.** The rank
+  transform divides out each marginal by construction. This attack's signature
+  is largely a shift in LEVEL, so a scale-free measure discards a large part of
+  the evidence. Pearson on class-conditional residuals retains it.
+- **Tail-aware ENIV moves the wrong way.** Standard ENIV falls monotonically
+  3.1171 -> 2.4984, detecting the collusion. Tail ENIV falls to 2.2398 at
+  epsilon 0.5 then **rises to 3.3324 at epsilon 2.0, above its own clean value
+  of 2.8720**. Driving the discount from lambda_U would weaken it where the
+  attack succeeds most.
+- **The tail flag has no detection signal.** TPR at 5% FPR is **0.038-0.068**,
+  indistinguishable from the false-positive rate. AUC runs 0.4846 -> 0.5856
+  against the Part 10 flag's 0.5769 -> 0.7085.
+
+**What this means.** The blindness this Part set out to demonstrate is real in
+theory and absent in this system's failure mode. The chorus attack does not hide
+in the tail while leaving average co-movement untouched; it raises both, and
+then destroys the tail statistic's own basis by flattening the extremes. Part
+09's conclusion stands unchanged: the dependence signal detects collusion
+reliably, and the correction driven from it is what fails (L4). Tail dependence
+does not repair that, and the lambda_U-driven discount would make it worse.
+
+**A separate trap, recorded because it would mislead anyone reading a single
+number.** lambda_U = 0 for a Gaussian copula is ASYMPTOTIC, and the approach is
+slow: at rho = 0.9 the estimate is 0.685, 0.628, 0.570, 0.530 at q = 0.90, 0.95,
+0.99, 0.995. A single lambda_U at a single threshold does not demonstrate tail
+dependence — only the decay curve does, contrasted against a t copula, which
+flattens (0.468 -> 0.400). Pinned in `tests/unit/test_tail_dependence.py`.
+
+**What would change our understanding.** The copula fit does find real structure
+at moderate attack (t beats Gaussian by 178.81 +/- 56.70 loglik, df 4.8, at
+epsilon 0.5; on clean data the gain of 23.25 +/- 34.99 overlaps zero), so the
+machinery works and it is the strong regime that has no signature left. An
+attack that coordinates views WITHOUT saturating them — constrained to preserve
+within-tail variance — would settle whether lambda_U is blind in general or only
+to this attack's shape. Two further gaps: lambda_U is measured on a scalar
+summary rather than the full K-dimensional evidence, and it is not explained why
+the per-sample tail flag is weakest exactly where the batch-level lambda_U is
+strongest.
+
+**Caveat on the control.** The honest-pair baseline is not inert — rho_bar among
+honest pairs rises 0.113 -> 0.320 as the prediction flips to the attacker's
+target and conditioning on that class correlates the honest views. This is the
+collider effect `dependence.py` documents, and the comp/honest ratios above
+inherit it.
