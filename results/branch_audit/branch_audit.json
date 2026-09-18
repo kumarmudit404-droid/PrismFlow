@@ -1,0 +1,1327 @@
+{
+  "config": {
+    "experiment": {
+      "id": "branch_audit"
+    },
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "rhos": [
+      0.3,
+      0.6
+    ],
+    "data": {
+      "n_views": 4
+    },
+    "training": {
+      "epochs": 40,
+      "batch_size": 64,
+      "lr": 0.001,
+      "anneal_epochs": 10,
+      "per_view_loss_weight": 1.0
+    },
+    "v2": {
+      "shared_dim": 16,
+      "private_dim": 16,
+      "lambda_hsic": [
+        1.0,
+        10.0,
+        100.0
+      ],
+      "lambda_orthogonality": 0.1
+    },
+    "evaluation": {
+      "split": "test",
+      "batch_size": 256
+    },
+    "dependence": {
+      "method": "cca",
+      "conditioning": "pairwise_holdout",
+      "null_permutations": 4,
+      "seed": 0
+    }
+  },
+  "torch": "2.14.0+cpu",
+  "protocol": {
+    "rho0.3_v1|features": {
+      "eniv": {
+        "mean": 3.2460593217330307,
+        "std": 0.10924674634297998,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.2505294606551348,
+        "std": 0.036675235556168154,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.31075877963953913,
+        "std": 0.02224432621848287,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_lambda0|shared": {
+      "eniv": {
+        "mean": 3.1641303115435657,
+        "std": 0.09169739891446659,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.27749512969562456,
+        "std": 0.03057823476258871,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.34535837984079576,
+        "std": 0.03372051419604926,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_lambda0|private": {
+      "eniv": {
+        "mean": 3.1643128720134395,
+        "std": 0.09357724323185539,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.2774012147137973,
+        "std": 0.031104314077166496,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.3437594965106208,
+        "std": 0.0324228212706843,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_lambda0|both": {
+      "eniv": {
+        "mean": 3.1754421238760857,
+        "std": 0.08633966419515894,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.2736718445222677,
+        "std": 0.028794410019194763,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.34300418057443083,
+        "std": 0.025959868454957655,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_lambda0|shared_rotated": {
+      "eniv": {
+        "mean": 3.1784479700486794,
+        "std": 0.0863856590558811,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.27264682906555454,
+        "std": 0.028992277440506104,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.3427829839335384,
+        "std": 0.028208091756717662,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_hsic_l1|shared": {
+      "eniv": {
+        "mean": 3.3563234272079194,
+        "std": 0.18987799191775903,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.2136147384002941,
+        "std": 0.06320216495787942,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.279829871523336,
+        "std": 0.07864977520336744,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_hsic_l1|private": {
+      "eniv": {
+        "mean": 3.345140667803437,
+        "std": 0.09771168125521752,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.21496857770505595,
+        "std": 0.035641853031798613,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.2930353975685742,
+        "std": 0.04076708602822799,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_hsic_l1|both": {
+      "eniv": {
+        "mean": 3.2724879426568645,
+        "std": 0.04814763602478086,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.2416850064016344,
+        "std": 0.016209504125327824,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.31076449418097896,
+        "std": 0.03936812440367574,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_hsic_l1|shared_rotated": {
+      "eniv": {
+        "mean": 3.368368463158975,
+        "std": 0.14049843587202687,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.20932624973890274,
+        "std": 0.047886428511029866,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.28147961858540615,
+        "std": 0.04014242695157989,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_orthogonality|shared": {
+      "eniv": {
+        "mean": 3.5901208927836454,
+        "std": 0.1345215824723528,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.11115402746731268,
+        "std": 0.04711209419896752,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.2540519636812135,
+        "std": 0.06749274587661447,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_orthogonality|private": {
+      "eniv": {
+        "mean": 3.594767619988412,
+        "std": 0.1370886505940342,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.11581452848088569,
+        "std": 0.05934186079165328,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.21620363814908097,
+        "std": 0.0640770259949186,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_orthogonality|both": {
+      "eniv": {
+        "mean": 3.4618499754859777,
+        "std": 0.1300940051016884,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.17782991541674692,
+        "std": 0.04258730331417484,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.2507607842352202,
+        "std": 0.0589158169826832,
+        "n_seeds": 5
+      }
+    },
+    "rho0.3_v2_orthogonality|shared_rotated": {
+      "eniv": {
+        "mean": 3.588165666237932,
+        "std": 0.12457253990448514,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.11855399075432387,
+        "std": 0.04088750040603028,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.24590227214860155,
+        "std": 0.07139084888937657,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v1|features": {
+      "eniv": {
+        "mean": 2.8485621991805776,
+        "std": 0.06898114138433177,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.38318799759327565,
+        "std": 0.023073599100848358,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.43412364272610005,
+        "std": 0.0059732738315111025,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_lambda0|shared": {
+      "eniv": {
+        "mean": 2.845816512703896,
+        "std": 0.11572834545027855,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.38395157179086187,
+        "std": 0.039153169050067174,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.44355569305014286,
+        "std": 0.020444747222690823,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_lambda0|private": {
+      "eniv": {
+        "mean": 2.845601584040484,
+        "std": 0.11662806808504121,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.3839818271272217,
+        "std": 0.03948483074755748,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.4455910707252816,
+        "std": 0.015753839969468837,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_lambda0|both": {
+      "eniv": {
+        "mean": 2.8460743153811614,
+        "std": 0.10850097998459657,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.3837942146013033,
+        "std": 0.036800596308497566,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.4418866832173222,
+        "std": 0.017090759122291795,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_lambda0|shared_rotated": {
+      "eniv": {
+        "mean": 2.8491458275482424,
+        "std": 0.11512694249922663,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.38273247998571275,
+        "std": 0.03906891813108583,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.44379244274507096,
+        "std": 0.018828327870267402,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_hsic_l1|shared": {
+      "eniv": {
+        "mean": 3.053549934219917,
+        "std": 0.19921379233803366,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.3148440818123052,
+        "std": 0.06628112973461395,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.3825248761035861,
+        "std": 0.06001784184542097,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_hsic_l1|private": {
+      "eniv": {
+        "mean": 3.039661953403903,
+        "std": 0.11338650931976595,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.31614901163226466,
+        "std": 0.04094410651828714,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.41841328084153784,
+        "std": 0.021883475019443988,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_hsic_l1|both": {
+      "eniv": {
+        "mean": 2.896769896243166,
+        "std": 0.08446067135127514,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.36641037141463384,
+        "std": 0.029098810508842506,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.42866273391516374,
+        "std": 0.020349680397715023,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_hsic_l1|shared_rotated": {
+      "eniv": {
+        "mean": 3.0368304097754573,
+        "std": 0.13667418699355469,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.3199151303983913,
+        "std": 0.04676825424614956,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.38330381782679,
+        "std": 0.04753917646114746,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_orthogonality|shared": {
+      "eniv": {
+        "mean": 3.368871910998622,
+        "std": 0.1732779295363082,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.20518937807392737,
+        "std": 0.05495678361931025,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.3165047481849059,
+        "std": 0.07761435209915542,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_orthogonality|private": {
+      "eniv": {
+        "mean": 3.352001505011133,
+        "std": 0.1502058168459616,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.20824068998519768,
+        "std": 0.05570404941888675,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.3148166797602958,
+        "std": 0.07109796985707706,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_orthogonality|both": {
+      "eniv": {
+        "mean": 3.082400355049075,
+        "std": 0.07622136297492355,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.3045012306237278,
+        "std": 0.026138376306762533,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.3702738390499054,
+        "std": 0.019196350565679463,
+        "n_seeds": 5
+      }
+    },
+    "rho0.6_v2_orthogonality|shared_rotated": {
+      "eniv": {
+        "mean": 3.361340088805887,
+        "std": 0.17273552883203297,
+        "n_seeds": 5
+      },
+      "mean_dependence": {
+        "mean": 0.20722532636980684,
+        "std": 0.05522813624528746,
+        "n_seeds": 5
+      },
+      "max_dependence": {
+        "mean": 0.32525059439349785,
+        "std": 0.06117565367700715,
+        "n_seeds": 5
+      }
+    }
+  },
+  "per_seed": {
+    "rho0.3_v1|features": [
+      {
+        "seed": 0,
+        "eniv": 3.135557639245369,
+        "mean_dependence": 0.2875665804750392,
+        "max_dependence": 0.33484784927226274
+      },
+      {
+        "seed": 1,
+        "eniv": 3.2273520811776395,
+        "mean_dependence": 0.2565777422747057,
+        "max_dependence": 0.31928776914633716
+      },
+      {
+        "seed": 2,
+        "eniv": 3.4271115800156884,
+        "mean_dependence": 0.18975702263762748,
+        "max_dependence": 0.27466686987202676
+      },
+      {
+        "seed": 3,
+        "eniv": 3.197169875262465,
+        "mean_dependence": 0.2671914443706267,
+        "max_dependence": 0.3154582619674002
+      },
+      {
+        "seed": 4,
+        "eniv": 3.2431054329639912,
+        "mean_dependence": 0.2515545135176751,
+        "max_dependence": 0.3095331479396688
+      }
+    ],
+    "rho0.3_v2_lambda0|shared": [
+      {
+        "seed": 0,
+        "eniv": 3.1124560202502565,
+        "mean_dependence": 0.29451051309973514,
+        "max_dependence": 0.3587594634049448
+      },
+      {
+        "seed": 1,
+        "eniv": 3.151414063229785,
+        "mean_dependence": 0.28112540856029045,
+        "max_dependence": 0.3457548923032617
+      },
+      {
+        "seed": 2,
+        "eniv": 3.32550046470752,
+        "mean_dependence": 0.22379494278795278,
+        "max_dependence": 0.2878488043681493
+      },
+      {
+        "seed": 3,
+        "eniv": 3.110215218418115,
+        "mean_dependence": 0.29594602065507547,
+        "max_dependence": 0.3599402303305934
+      },
+      {
+        "seed": 4,
+        "eniv": 3.1210657911121515,
+        "mean_dependence": 0.29209876337506896,
+        "max_dependence": 0.37448850879702955
+      }
+    ],
+    "rho0.3_v2_lambda0|private": [
+      {
+        "seed": 0,
+        "eniv": 3.102169054395978,
+        "mean_dependence": 0.29773691480608344,
+        "max_dependence": 0.36188898043359763
+      },
+      {
+        "seed": 1,
+        "eniv": 3.152846991784869,
+        "mean_dependence": 0.28058359395730387,
+        "max_dependence": 0.34849588173314666
+      },
+      {
+        "seed": 2,
+        "eniv": 3.328358628958287,
+        "mean_dependence": 0.22295612487297387,
+        "max_dependence": 0.2868662371571724
+      },
+      {
+        "seed": 3,
+        "eniv": 3.115024795674572,
+        "mean_dependence": 0.2942317210245946,
+        "max_dependence": 0.3564102097058144
+      },
+      {
+        "seed": 4,
+        "eniv": 3.1231648892534905,
+        "mean_dependence": 0.2914977189080307,
+        "max_dependence": 0.365136173523373
+      }
+    ],
+    "rho0.3_v2_lambda0|both": [
+      {
+        "seed": 0,
+        "eniv": 3.1180755573874124,
+        "mean_dependence": 0.2925357773987771,
+        "max_dependence": 0.358353169368219
+      },
+      {
+        "seed": 1,
+        "eniv": 3.169854004360292,
+        "mean_dependence": 0.27484645107101696,
+        "max_dependence": 0.3444639881051427
+      },
+      {
+        "seed": 2,
+        "eniv": 3.325869591388266,
+        "mean_dependence": 0.22363093115904573,
+        "max_dependence": 0.29790935203883945
+      },
+      {
+        "seed": 3,
+        "eniv": 3.1271322394667718,
+        "mean_dependence": 0.29026681599958415,
+        "max_dependence": 0.35365841351113153
+      },
+      {
+        "seed": 4,
+        "eniv": 3.136279226777687,
+        "mean_dependence": 0.2870792469829147,
+        "max_dependence": 0.3606359798488214
+      }
+    ],
+    "rho0.3_v2_lambda0|shared_rotated": [
+      {
+        "seed": 0,
+        "eniv": 3.1399573477695997,
+        "mean_dependence": 0.2855626552014466,
+        "max_dependence": 0.34632272198678005
+      },
+      {
+        "seed": 1,
+        "eniv": 3.176018549534724,
+        "mean_dependence": 0.27259286078326067,
+        "max_dependence": 0.3426791249849742
+      },
+      {
+        "seed": 2,
+        "eniv": 3.3282051657992584,
+        "mean_dependence": 0.22261796586705485,
+        "max_dependence": 0.29655697293749955
+      },
+      {
+        "seed": 3,
+        "eniv": 3.1215276278352437,
+        "mean_dependence": 0.2921808135402674,
+        "max_dependence": 0.3565000474108393
+      },
+      {
+        "seed": 4,
+        "eniv": 3.126531159304572,
+        "mean_dependence": 0.29027984993574324,
+        "max_dependence": 0.3718560523475989
+      }
+    ],
+    "rho0.3_v2_hsic_l1|shared": [
+      {
+        "seed": 0,
+        "eniv": 3.2392000715829696,
+        "mean_dependence": 0.252938659991463,
+        "max_dependence": 0.3125207896344535
+      },
+      {
+        "seed": 1,
+        "eniv": 3.2796056272415104,
+        "mean_dependence": 0.23856202477938782,
+        "max_dependence": 0.317682933180183
+      },
+      {
+        "seed": 2,
+        "eniv": 3.69388818252119,
+        "mean_dependence": 0.10127667718048365,
+        "max_dependence": 0.14254264358946586
+      },
+      {
+        "seed": 3,
+        "eniv": 3.2973632823982992,
+        "mean_dependence": 0.23350899088156873,
+        "max_dependence": 0.3373519056730126
+      },
+      {
+        "seed": 4,
+        "eniv": 3.271559972295627,
+        "mean_dependence": 0.2417873391685674,
+        "max_dependence": 0.28905108553956504
+      }
+    ],
+    "rho0.3_v2_hsic_l1|private": [
+      {
+        "seed": 0,
+        "eniv": 3.2234540091621127,
+        "mean_dependence": 0.2581569382374078,
+        "max_dependence": 0.296566080590356
+      },
+      {
+        "seed": 1,
+        "eniv": 3.399634232288986,
+        "mean_dependence": 0.19779116427071694,
+        "max_dependence": 0.27737537209634566
+      },
+      {
+        "seed": 2,
+        "eniv": 3.473896370412905,
+        "mean_dependence": 0.16583921654076006,
+        "max_dependence": 0.24892104202670653
+      },
+      {
+        "seed": 3,
+        "eniv": 3.283213811574861,
+        "mean_dependence": 0.23748552331677353,
+        "max_dependence": 0.3589882255749353
+      },
+      {
+        "seed": 4,
+        "eniv": 3.3455049155783216,
+        "mean_dependence": 0.2155700461596214,
+        "max_dependence": 0.28332626755452756
+      }
+    ],
+    "rho0.3_v2_hsic_l1|both": [
+      {
+        "seed": 0,
+        "eniv": 3.2176322419227206,
+        "mean_dependence": 0.2601455938637119,
+        "max_dependence": 0.32310960318390036
+      },
+      {
+        "seed": 1,
+        "eniv": 3.323699811219921,
+        "mean_dependence": 0.2242836004041224,
+        "max_dependence": 0.2961847906667764
+      },
+      {
+        "seed": 2,
+        "eniv": 3.314107480212466,
+        "mean_dependence": 0.22838813853648518,
+        "max_dependence": 0.26577567107191186
+      },
+      {
+        "seed": 3,
+        "eniv": 3.229130918576586,
+        "mean_dependence": 0.2566271907088445,
+        "max_dependence": 0.3710872886110667
+      },
+      {
+        "seed": 4,
+        "eniv": 3.277869261352629,
+        "mean_dependence": 0.23898050849500804,
+        "max_dependence": 0.29766511737123946
+      }
+    ],
+    "rho0.3_v2_hsic_l1|shared_rotated": [
+      {
+        "seed": 0,
+        "eniv": 3.2970791674365554,
+        "mean_dependence": 0.23417262519184187,
+        "max_dependence": 0.26828354527470855
+      },
+      {
+        "seed": 1,
+        "eniv": 3.3004863925568744,
+        "mean_dependence": 0.23149251394572992,
+        "max_dependence": 0.3076622360410605
+      },
+      {
+        "seed": 2,
+        "eniv": 3.619391457477276,
+        "mean_dependence": 0.12376919189199857,
+        "max_dependence": 0.2220104499124468
+      },
+      {
+        "seed": 3,
+        "eniv": 3.3116791974079454,
+        "mean_dependence": 0.22927235274905755,
+        "max_dependence": 0.3267333448974253
+      },
+      {
+        "seed": 4,
+        "eniv": 3.3132061009162244,
+        "mean_dependence": 0.22792456491588584,
+        "max_dependence": 0.28270851680138964
+      }
+    ],
+    "rho0.3_v2_orthogonality|shared": [
+      {
+        "seed": 0,
+        "eniv": 3.6659509514672775,
+        "mean_dependence": 0.07679325026355782,
+        "max_dependence": 0.2017988971794873
+      },
+      {
+        "seed": 1,
+        "eniv": 3.443316000663696,
+        "mean_dependence": 0.155398218739224,
+        "max_dependence": 0.3193347574871103
+      },
+      {
+        "seed": 2,
+        "eniv": 3.774150354990022,
+        "mean_dependence": 0.0517585378586009,
+        "max_dependence": 0.1661680280320245
+      },
+      {
+        "seed": 3,
+        "eniv": 3.5827099348901905,
+        "mean_dependence": 0.11370151722255134,
+        "max_dependence": 0.27272147660039997
+      },
+      {
+        "seed": 4,
+        "eniv": 3.4844772219070412,
+        "mean_dependence": 0.15811861325262935,
+        "max_dependence": 0.3102366591070455
+      }
+    ],
+    "rho0.3_v2_orthogonality|private": [
+      {
+        "seed": 0,
+        "eniv": 3.4712543792124313,
+        "mean_dependence": 0.17093232266756533,
+        "max_dependence": 0.2782296272160495
+      },
+      {
+        "seed": 1,
+        "eniv": 3.741755952995275,
+        "mean_dependence": 0.06084850426397987,
+        "max_dependence": 0.12136900430023909
+      },
+      {
+        "seed": 2,
+        "eniv": 3.5750552318544537,
+        "mean_dependence": 0.12314841307340992,
+        "max_dependence": 0.22624257757121854
+      },
+      {
+        "seed": 3,
+        "eniv": 3.4551974074924785,
+        "mean_dependence": 0.17509862933095563,
+        "max_dependence": 0.2677296162406034
+      },
+      {
+        "seed": 4,
+        "eniv": 3.7305751283874216,
+        "mean_dependence": 0.04904477306851768,
+        "max_dependence": 0.18744736541729434
+      }
+    ],
+    "rho0.3_v2_orthogonality|both": [
+      {
+        "seed": 0,
+        "eniv": 3.3376438056997513,
+        "mean_dependence": 0.21842251851421615,
+        "max_dependence": 0.2901621717643788
+      },
+      {
+        "seed": 1,
+        "eniv": 3.3968443752120647,
+        "mean_dependence": 0.19898809604749337,
+        "max_dependence": 0.29985793735201033
+      },
+      {
+        "seed": 2,
+        "eniv": 3.594627566440054,
+        "mean_dependence": 0.13436260564671557,
+        "max_dependence": 0.1908110964062022
+      },
+      {
+        "seed": 3,
+        "eniv": 3.3700199846321945,
+        "mean_dependence": 0.20807558665289835,
+        "max_dependence": 0.2908913695911755
+      },
+      {
+        "seed": 4,
+        "eniv": 3.610114145445823,
+        "mean_dependence": 0.12930077022241113,
+        "max_dependence": 0.18208134606233403
+      }
+    ],
+    "rho0.3_v2_orthogonality|shared_rotated": [
+      {
+        "seed": 0,
+        "eniv": 3.631411653433423,
+        "mean_dependence": 0.08636635016330885,
+        "max_dependence": 0.20705615029934096
+      },
+      {
+        "seed": 1,
+        "eniv": 3.4384263227824228,
+        "mean_dependence": 0.16890373153854712,
+        "max_dependence": 0.32816740320490606
+      },
+      {
+        "seed": 2,
+        "eniv": 3.759669220586234,
+        "mean_dependence": 0.07548005305250453,
+        "max_dependence": 0.14957597906760456
+      },
+      {
+        "seed": 3,
+        "eniv": 3.6115826215381137,
+        "mean_dependence": 0.1092114437278716,
+        "max_dependence": 0.24560058594370154
+      },
+      {
+        "seed": 4,
+        "eniv": 3.4997385128494676,
+        "mean_dependence": 0.1528083752893872,
+        "max_dependence": 0.2991112422274546
+      }
+    ],
+    "rho0.6_v1|features": [
+      {
+        "seed": 0,
+        "eniv": 2.822488832239392,
+        "mean_dependence": 0.3921450057091835,
+        "max_dependence": 0.4305201949946557
+      },
+      {
+        "seed": 1,
+        "eniv": 2.851645283145181,
+        "mean_dependence": 0.38213070701553,
+        "max_dependence": 0.4386174696653574
+      },
+      {
+        "seed": 2,
+        "eniv": 2.9657029875731595,
+        "mean_dependence": 0.34403225315682473,
+        "max_dependence": 0.42997321904282854
+      },
+      {
+        "seed": 3,
+        "eniv": 2.8112373940540616,
+        "mean_dependence": 0.3951707323832146,
+        "max_dependence": 0.4423491453561119
+      },
+      {
+        "seed": 4,
+        "eniv": 2.791736498891095,
+        "mean_dependence": 0.40246128970162554,
+        "max_dependence": 0.4291581845715466
+      }
+    ],
+    "rho0.6_v2_lambda0|shared": [
+      {
+        "seed": 0,
+        "eniv": 2.8870941942242836,
+        "mean_dependence": 0.37007200837108917,
+        "max_dependence": 0.4159705458766556
+      },
+      {
+        "seed": 1,
+        "eniv": 2.861114630296854,
+        "mean_dependence": 0.3784528755574734,
+        "max_dependence": 0.4495958445197185
+      },
+      {
+        "seed": 2,
+        "eniv": 3.0056077168293465,
+        "mean_dependence": 0.3299619710784961,
+        "max_dependence": 0.4304326014439354
+      },
+      {
+        "seed": 3,
+        "eniv": 2.7743328163150407,
+        "mean_dependence": 0.40833293733706316,
+        "max_dependence": 0.4537702806352278
+      },
+      {
+        "seed": 4,
+        "eniv": 2.7009332058539552,
+        "mean_dependence": 0.43293806661018736,
+        "max_dependence": 0.468009192775177
+      }
+    ],
+    "rho0.6_v2_lambda0|private": [
+      {
+        "seed": 0,
+        "eniv": 2.863522444014267,
+        "mean_dependence": 0.3779265100783238,
+        "max_dependence": 0.42432273860987874
+      },
+      {
+        "seed": 1,
+        "eniv": 2.8660969078303022,
+        "mean_dependence": 0.37678733548153787,
+        "max_dependence": 0.44913532791004934
+      },
+      {
+        "seed": 2,
+        "eniv": 3.016346576320037,
+        "mean_dependence": 0.32625898336417297,
+        "max_dependence": 0.43662604473438577
+      },
+      {
+        "seed": 3,
+        "eniv": 2.7773470085383414,
+        "mean_dependence": 0.407276056089335,
+        "max_dependence": 0.4521789785229187
+      },
+      {
+        "seed": 4,
+        "eniv": 2.704694983499472,
+        "mean_dependence": 0.43166025062273866,
+        "max_dependence": 0.4656922638491754
+      }
+    ],
+    "rho0.6_v2_lambda0|both": [
+      {
+        "seed": 0,
+        "eniv": 2.8623954000095924,
+        "mean_dependence": 0.3781819291651492,
+        "max_dependence": 0.4223741672851906
+      },
+      {
+        "seed": 1,
+        "eniv": 2.859595516220242,
+        "mean_dependence": 0.3789445131808191,
+        "max_dependence": 0.44975352392036777
+      },
+      {
+        "seed": 2,
+        "eniv": 3.0063886473890093,
+        "mean_dependence": 0.3295140240644145,
+        "max_dependence": 0.4263773460616302
+      },
+      {
+        "seed": 3,
+        "eniv": 2.7888126387181025,
+        "mean_dependence": 0.40351610665537657,
+        "max_dependence": 0.4478315672836539
+      },
+      {
+        "seed": 4,
+        "eniv": 2.7131793745688606,
+        "mean_dependence": 0.42881449994075704,
+        "max_dependence": 0.46309681153576865
+      }
+    ],
+    "rho0.6_v2_lambda0|shared_rotated": [
+      {
+        "seed": 0,
+        "eniv": 2.8771806515626923,
+        "mean_dependence": 0.3736459028255834,
+        "max_dependence": 0.4186802888390264
+      },
+      {
+        "seed": 1,
+        "eniv": 2.86191717368696,
+        "mean_dependence": 0.3776857596820091,
+        "max_dependence": 0.4492921889248341
+      },
+      {
+        "seed": 2,
+        "eniv": 3.0150631882557257,
+        "mean_dependence": 0.3264697669735157,
+        "max_dependence": 0.43234590853644084
+      },
+      {
+        "seed": 3,
+        "eniv": 2.7856081328997977,
+        "mean_dependence": 0.4046227024546177,
+        "max_dependence": 0.45084240437321293
+      },
+      {
+        "seed": 4,
+        "eniv": 2.7059599913360364,
+        "mean_dependence": 0.43123826799283776,
+        "max_dependence": 0.4678014230518406
+      }
+    ],
+    "rho0.6_v2_hsic_l1|shared": [
+      {
+        "seed": 0,
+        "eniv": 3.058343200581053,
+        "mean_dependence": 0.3130995551562778,
+        "max_dependence": 0.36824433579642296
+      },
+      {
+        "seed": 1,
+        "eniv": 2.9760436817212383,
+        "mean_dependence": 0.3405345723861908,
+        "max_dependence": 0.39955501335369836
+      },
+      {
+        "seed": 2,
+        "eniv": 3.395006236236197,
+        "mean_dependence": 0.20129094031239428,
+        "max_dependence": 0.28654568711567185
+      },
+      {
+        "seed": 3,
+        "eniv": 2.921464599816762,
+        "mean_dependence": 0.35906936497616043,
+        "max_dependence": 0.41578447056089907
+      },
+      {
+        "seed": 4,
+        "eniv": 2.9168919527443338,
+        "mean_dependence": 0.36022597623050284,
+        "max_dependence": 0.44249487369123824
+      }
+    ],
+    "rho0.6_v2_hsic_l1|private": [
+      {
+        "seed": 0,
+        "eniv": 2.986528179096911,
+        "mean_dependence": 0.335406051196477,
+        "max_dependence": 0.42530352624143
+      },
+      {
+        "seed": 1,
+        "eniv": 3.1046603258588297,
+        "mean_dependence": 0.2936917510102444,
+        "max_dependence": 0.43795817304564016
+      },
+      {
+        "seed": 2,
+        "eniv": 3.1911765610616616,
+        "mean_dependence": 0.2597201279067464,
+        "max_dependence": 0.4218091048720301
+      },
+      {
+        "seed": 3,
+        "eniv": 2.8944311952925785,
+        "mean_dependence": 0.36680202989550637,
+        "max_dependence": 0.4261869258988255
+      },
+      {
+        "seed": 4,
+        "eniv": 3.0215135057095357,
+        "mean_dependence": 0.3251250981523491,
+        "max_dependence": 0.3808086741497635
+      }
+    ],
+    "rho0.6_v2_hsic_l1|both": [
+      {
+        "seed": 0,
+        "eniv": 2.918650375823078,
+        "mean_dependence": 0.35889760266135484,
+        "max_dependence": 0.416246443318552
+      },
+      {
+        "seed": 1,
+        "eniv": 2.942024813487445,
+        "mean_dependence": 0.3518510540555964,
+        "max_dependence": 0.42878854108298703
+      },
+      {
+        "seed": 2,
+        "eniv": 3.0011097182172843,
+        "mean_dependence": 0.32972336764006,
+        "max_dependence": 0.4018879754727468
+      },
+      {
+        "seed": 3,
+        "eniv": 2.8255061135398813,
+        "mean_dependence": 0.39097867391494323,
+        "max_dependence": 0.4448544254399634
+      },
+      {
+        "seed": 4,
+        "eniv": 2.796558460148141,
+        "mean_dependence": 0.40060115880121466,
+        "max_dependence": 0.45153628426156944
+      }
+    ],
+    "rho0.6_v2_hsic_l1|shared_rotated": [
+      {
+        "seed": 0,
+        "eniv": 3.074231032540201,
+        "mean_dependence": 0.30833417259202206,
+        "max_dependence": 0.35837090156567264
+      },
+      {
+        "seed": 1,
+        "eniv": 2.991533560706358,
+        "mean_dependence": 0.3353126280786529,
+        "max_dependence": 0.39483852964851923
+      },
+      {
+        "seed": 2,
+        "eniv": 3.2574024727768864,
+        "mean_dependence": 0.24393170318812166,
+        "max_dependence": 0.3151500560796724
+      },
+      {
+        "seed": 3,
+        "eniv": 2.9297238209804584,
+        "mean_dependence": 0.35642628768241563,
+        "max_dependence": 0.4115319630665147
+      },
+      {
+        "seed": 4,
+        "eniv": 2.9312611618733824,
+        "mean_dependence": 0.3555708604507443,
+        "max_dependence": 0.43662763877357114
+      }
+    ],
+    "rho0.6_v2_orthogonality|shared": [
+      {
+        "seed": 0,
+        "eniv": 3.502083051162998,
+        "mean_dependence": 0.16198995770648464,
+        "max_dependence": 0.2666513032153523
+      },
+      {
+        "seed": 1,
+        "eniv": 3.2197275825910934,
+        "mean_dependence": 0.2554269639124411,
+        "max_dependence": 0.38360457682134597
+      },
+      {
+        "seed": 2,
+        "eniv": 3.5817793637952926,
+        "mean_dependence": 0.13874795199012765,
+        "max_dependence": 0.20630394502301783
+      },
+      {
+        "seed": 3,
+        "eniv": 3.358085152133174,
+        "mean_dependence": 0.20739418559662462,
+        "max_dependence": 0.3450415209343407
+      },
+      {
+        "seed": 4,
+        "eniv": 3.182684405310551,
+        "mean_dependence": 0.2623878311639588,
+        "max_dependence": 0.380922394930473
+      }
+    ],
+    "rho0.6_v2_orthogonality|private": [
+      {
+        "seed": 0,
+        "eniv": 3.28573098369521,
+        "mean_dependence": 0.23359503736634413,
+        "max_dependence": 0.31541750573704247
+      },
+      {
+        "seed": 1,
+        "eniv": 3.5009020105810493,
+        "mean_dependence": 0.16475186472183065,
+        "max_dependence": 0.21174753251113196
+      },
+      {
+        "seed": 2,
+        "eniv": 3.327808227318744,
+        "mean_dependence": 0.2153913410852412,
+        "max_dependence": 0.34531289961854283
+      },
+      {
+        "seed": 3,
+        "eniv": 3.1475814564180356,
+        "mean_dependence": 0.28361174760469887,
+        "max_dependence": 0.40592107608859335
+      },
+      {
+        "seed": 4,
+        "eniv": 3.4979848470426265,
+        "mean_dependence": 0.1438534591478735,
+        "max_dependence": 0.2956843848461685
+      }
+    ],
+    "rho0.6_v2_orthogonality|both": [
+      {
+        "seed": 0,
+        "eniv": 3.01356202626222,
+        "mean_dependence": 0.32827910606355853,
+        "max_dependence": 0.371758586685399
+      },
+      {
+        "seed": 1,
+        "eniv": 3.079098160090461,
+        "mean_dependence": 0.30575410421309396,
+        "max_dependence": 0.36290508942879196
+      },
+      {
+        "seed": 2,
+        "eniv": 3.2109229742502237,
+        "mean_dependence": 0.2604485530364807,
+        "max_dependence": 0.34495249573038345
+      },
+      {
+        "seed": 3,
+        "eniv": 3.0403957143237896,
+        "mean_dependence": 0.3187210443117346,
+        "max_dependence": 0.37384656285947593
+      },
+      {
+        "seed": 4,
+        "eniv": 3.0680229003186805,
+        "mean_dependence": 0.3093033454937713,
+        "max_dependence": 0.3979064605454768
+      }
+    ],
+    "rho0.6_v2_orthogonality|shared_rotated": [
+      {
+        "seed": 0,
+        "eniv": 3.4687070604768033,
+        "mean_dependence": 0.17243431062008344,
+        "max_dependence": 0.2926780011001804
+      },
+      {
+        "seed": 1,
+        "eniv": 3.207067165636681,
+        "mean_dependence": 0.25784903232010953,
+        "max_dependence": 0.38910165183864404
+      },
+      {
+        "seed": 2,
+        "eniv": 3.58859232493156,
+        "mean_dependence": 0.13457925810851082,
+        "max_dependence": 0.24286284607775588
+      },
+      {
+        "seed": 3,
+        "eniv": 3.360934647367855,
+        "mean_dependence": 0.20791845775853354,
+        "max_dependence": 0.3213256630040711
+      },
+      {
+        "seed": 4,
+        "eniv": 3.181399245616535,
+        "mean_dependence": 0.26334557304179684,
+        "max_dependence": 0.3802848099468379
+      }
+    ]
+  }
+}
