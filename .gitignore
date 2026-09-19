@@ -31,6 +31,27 @@ results/*/*/*
 !results/*/*/*.csv
 !results/*/*/*.md
 !results/*/*/*.png
+# Part 15 nests one deeper again: results/real/<dataset>/<condition>/, because
+# the experiment id passed to evaluate() already carries a dataset segment.
+# Same policy, one more level down. The trailing-slash un-ignore is required,
+# not decorative: git does not descend into an ignored directory, so without
+# `!results/*/*/*/` the file patterns below are never reached.
+!results/*/*/*/
+results/*/*/*/*
+!results/*/*/*/*.json
+!results/*/*/*/*.csv
+!results/*/*/*/*.md
+!results/*/*/*/*.png
+# ...and one level beyond that, because Part 15's experiment id is
+# `real/<dataset>/comparison/<condition>`, which puts evaluate()'s own output
+# five deep: results/real/handwritten/comparison/clean/metrics.json. Four
+# levels reaches the `comparison/` directory but stops short of the files.
+!results/*/*/*/*/
+results/*/*/*/*/*
+!results/*/*/*/*/*.json
+!results/*/*/*/*/*.csv
+!results/*/*/*/*/*.md
+!results/*/*/*/*/*.png
 logs/*
 !logs/.gitkeep
 checkpoints/*
