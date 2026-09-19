@@ -430,3 +430,74 @@ honest pairs rises 0.113 -> 0.320 as the prediction flips to the attacker's
 target and conditioning on that class correlates the honest views. This is the
 collider effect `dependence.py` documents, and the comp/honest ratios above
 inherit it.
+
+## L8. Detection and correction fail together, because both read cross-view belief agreement
+
+**Component:** the ENIV discount (`prismflow/models/prismflow.py`, via
+`statistics/dependence.py::feature_dependence_matrix`) and the deployable
+detection gate (`experiments/synthesis/`, via
+`statistics/suspicion.py::pairwise_agreement`). These are two DIFFERENT
+estimators in two different modules — the discount reads a batch-level matrix
+built from features and evidence against a permutation null, the gate reads
+per-sample cosine agreement between belief vectors. What they share is the
+quantity, not the code: both are functions of cross-view belief agreement.
+That makes the joint collapse below a property of the quantity rather than an
+implementation artifact, which is the stronger reading. (`dependence.py` does
+feed one gate signal — the Part 10 `detector` — but that signal is EXCLUDED
+from the deployable gate for want of a label-free sign, so it is not the link.)
+
+**Evidence:** Part 14, `experiments/adaptive/` (5 seeds, gamma in
+{0, 1, 2, 5, 10, 20}, BPDA-enabled, transfer and gradient-free controls
+verified healthy; `results/adaptive/`) and `experiments/synthesis/`
+(16-cell matrix, `results/synthesis/gate_matrix.json`).
+
+- **One objective evades both defences at once.** At gamma = 5 the attacker
+  gains simultaneously on three axes previously investigated as separate
+  questions: attack success **+0.0333 +/- 0.0237** (5/5 seeds up), measured
+  dependence **-0.1057** (5/5 down), gate AUC **0.6743 -> 0.5806** (5/5
+  down). The objective contains no gate term at any gamma.
+- **The gate falls without being targeted.** Across the sweep gate AUC runs
+  0.6743 -> 0.6135 -> 0.6109 -> 0.5806 -> 0.5186 -> 0.4874 against measured
+  dependence 0.8120 -> 0.7456 -> 0.7483 -> 0.7063 -> 0.4223 -> 0.3343.
+  Pearson r = **0.9578** across the six levels.
+- **They co-vary strongly but NOT proportionally.** Normalised to their own
+  ranges the two curves diverge by up to **0.28**. The gate degrades earlier
+  (already -0.0608 at gamma = 1, where dependence has moved only -0.0663 of a
+  much larger range) while dependence collapses later and faster (-0.2840 in
+  the single step gamma 5 -> 10, against -0.0620 for the gate). A claim that
+  the two track each other "almost exactly in shape" is not supported; what is
+  supported is that both fall monotonically under one pressure, with the gate
+  more sensitive early and dependence more sensitive late.
+
+**What this means.** Detection and correction were investigated as separate
+questions, reported in separate documents, and are not separate defences. A
+future correction to either must account for the other degrading under the
+same pressure, or it will claim an independence that does not exist. An
+adversarially robust successor needs a second signal derived from something
+other than cross-view agreement — not a differently-weighted combination of
+the same one.
+
+**What would change our understanding.** A genuinely orthogonal signal. L7
+ruled out tail dependence. `clique_contrast` (Part 14) survives label-free
+calibration but is computed from the same `pairwise_agreement` array as the
+gate's `dependence` signal — a different aggregation of one measurement, which
+is the likely reason it collapses in step. Untested directions: per-view
+reconstruction error, provenance or timestamp metadata, and out-of-distribution
+scoring on raw inputs — none of which read cross-view correlation at all.
+
+**Caveat on one arm, and on an earlier overstatement.** The `gate_check` arm
+was built to apply gate-specific pressure and DID NOT: it returned numbers
+identical to the gradient-free `random_search` arm on all 5 seeds and all 3
+metrics, because at epsilon 2.0 random perturbation drives measured dependence
+to 0.0752, below every seed's tau, leaving `max(0, rho - tau)` inactive so the
+gamma = 20 objective reduces exactly to gamma = 0. It is a null arm and cannot
+be cited as evidence that a gate-aware attacker has nothing left to take; that
+question is untested. The claim above rests on the sweep's gate column alone.
+
+Separately, "the gate is at or below chance in 15 of 16 conditions" overstates
+the matrix and should not be repeated. Measured: **10 of 16** cells at or below
+0.52, **3** between 0.52 and 0.60, and **3** at or above 0.60 — the last three
+all in the `chorus_k3` column (0.668 unstressed, 0.637 at missing_30, 0.624
+under noise). The accurate statement is that only the `chorus_k3` column rises
+meaningfully above chance anywhere, and only its unstressed cell clears 0.60 on
+4 of 5 seeds.
