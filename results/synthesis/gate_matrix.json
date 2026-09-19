@@ -1,0 +1,1835 @@
+{
+  "config": {
+    "experiment": {
+      "id": "synthesis_oracle"
+    },
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "data": {
+      "n_views": 4,
+      "rho": 0.3,
+      "n_samples": 2000
+    },
+    "training": {
+      "epochs": 40,
+      "batch_size": 64,
+      "lr": 0.001,
+      "anneal_epochs": 10,
+      "per_view_loss_weight": 1.0
+    },
+    "attack": {
+      "k": 3,
+      "epsilon": 2.0,
+      "beta": 1.0,
+      "steps": 30
+    },
+    "clone": {
+      "source": 0,
+      "ks": [
+        2,
+        3
+      ]
+    },
+    "evaluation": {
+      "batch_size": 512
+    },
+    "oracle": {
+      "ridge": 0.001,
+      "iterations": 60
+    },
+    "go_threshold": 0.6
+  },
+  "torch": "2.14.0+cpu",
+  "gate": {
+    "signals": [
+      "dependence",
+      "clique_contrast"
+    ],
+    "signs": {
+      "dependence": 1.0,
+      "clique_contrast": 1.0,
+      "detector": 1.0,
+      "tail": 1.0
+    },
+    "refitted_per_condition": false
+  },
+  "stress": [
+    {
+      "name": "none",
+      "kind": "none"
+    },
+    {
+      "name": "missing_30",
+      "kind": "missing",
+      "rate": 0.3
+    },
+    {
+      "name": "missing_50",
+      "kind": "missing",
+      "rate": 0.5
+    },
+    {
+      "name": "noisy_1",
+      "kind": "noisy",
+      "sigma": 2.0
+    }
+  ],
+  "attacks": [
+    {
+      "name": "chorus_k1",
+      "kind": "chorus",
+      "k": 1,
+      "epsilon": 2.0
+    },
+    {
+      "name": "chorus_k2",
+      "kind": "chorus",
+      "k": 2,
+      "epsilon": 2.0
+    },
+    {
+      "name": "chorus_k3",
+      "kind": "chorus",
+      "k": 3,
+      "epsilon": 2.0
+    },
+    {
+      "name": "pgd_k2",
+      "kind": "pgd",
+      "k": 2,
+      "epsilon": 2.0
+    }
+  ],
+  "cells": {
+    "none|chorus_k1": {
+      "stress": "none",
+      "attack": "chorus_k1",
+      "gate_auc": {
+        "mean": 0.4826064763317266,
+        "std": 0.02661153191062523,
+        "n_seeds": 5,
+        "per_seed": [
+          0.4900407407407407,
+          0.4850888888888889,
+          0.4420925925925926,
+          0.5160956618464961,
+          0.47971449758991475
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.7661271305565855,
+        "std": 0.08100855571676005,
+        "n_seeds": 5,
+        "per_seed": [
+          0.715137037037037,
+          0.7358296296296296,
+          0.7209148148148148,
+          0.7497330367074527,
+          0.9090211345939934
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.0003333333333333334,
+        "std": 0.0004564354645876385,
+        "n_seeds": 5,
+        "per_seed": [
+          0.0,
+          0.0,
+          0.0,
+          0.0008333333333333334,
+          0.0008333333333333334
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.0003333333333333334,
+        "std": 0.0004564354645876385,
+        "n_seeds": 5,
+        "per_seed": [
+          0.0,
+          0.0,
+          0.0,
+          0.0008333333333333334,
+          0.0008333333333333334
+        ]
+      }
+    },
+    "none|chorus_k2": {
+      "stress": "none",
+      "attack": "chorus_k2",
+      "gate_auc": {
+        "mean": 0.5200138223540559,
+        "std": 0.02330041366946749,
+        "n_seeds": 5,
+        "per_seed": [
+          0.5520907407407407,
+          0.5075388888888889,
+          0.5282388888888889,
+          0.48978680014831294,
+          0.5224137931034483
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.7335673958719565,
+        "std": 0.042354962264573276,
+        "n_seeds": 5,
+        "per_seed": [
+          0.7165370370370371,
+          0.6988555555555556,
+          0.7558296296296296,
+          0.6995698924731183,
+          0.797044864664442
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.0003333333333333334,
+        "std": 0.0004564354645876385,
+        "n_seeds": 5,
+        "per_seed": [
+          0.0,
+          0.0,
+          0.0,
+          0.0008333333333333334,
+          0.0008333333333333334
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.0003333333333333334,
+        "std": 0.0004564354645876385,
+        "n_seeds": 5,
+        "per_seed": [
+          0.0,
+          0.0,
+          0.0,
+          0.0008333333333333334,
+          0.0008333333333333334
+        ]
+      }
+    },
+    "none|chorus_k3": {
+      "stress": "none",
+      "attack": "chorus_k3",
+      "gate_auc": {
+        "mean": 0.6676312470646397,
+        "std": 0.05286509084414372,
+        "n_seeds": 5,
+        "per_seed": [
+          0.672124074074074,
+          0.6650907407407407,
+          0.738662962962963,
+          0.589645902855024,
+          0.6726325546903967
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.7160096304535905,
+        "std": 0.06328781219886682,
+        "n_seeds": 5,
+        "per_seed": [
+          0.7336074074074074,
+          0.7254222222222222,
+          0.7810148148148148,
+          0.6101520207638117,
+          0.7298516870596959
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.0003333333333333334,
+        "std": 0.0004564354645876385,
+        "n_seeds": 5,
+        "per_seed": [
+          0.0,
+          0.0,
+          0.0,
+          0.0008333333333333334,
+          0.0008333333333333334
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.0003333333333333334,
+        "std": 0.0004564354645876385,
+        "n_seeds": 5,
+        "per_seed": [
+          0.0,
+          0.0,
+          0.0,
+          0.0008333333333333334,
+          0.0008333333333333334
+        ]
+      }
+    },
+    "none|pgd_k2": {
+      "stress": "none",
+      "attack": "pgd_k2",
+      "gate_auc": {
+        "mean": 0.4992320796770074,
+        "std": 0.0200192947367977,
+        "n_seeds": 5,
+        "per_seed": [
+          0.5177611111111111,
+          0.5142240740740741,
+          0.49815,
+          0.49894512421208753,
+          0.4670800889877642
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.827052113047419,
+        "std": 0.05791773089773983,
+        "n_seeds": 5,
+        "per_seed": [
+          0.8236629629629629,
+          0.8090444444444445,
+          0.7647111111111111,
+          0.8155839822024472,
+          0.922258064516129
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.0003333333333333334,
+        "std": 0.0004564354645876385,
+        "n_seeds": 5,
+        "per_seed": [
+          0.0,
+          0.0,
+          0.0,
+          0.0008333333333333334,
+          0.0008333333333333334
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.0003333333333333334,
+        "std": 0.0004564354645876385,
+        "n_seeds": 5,
+        "per_seed": [
+          0.0,
+          0.0,
+          0.0,
+          0.0008333333333333334,
+          0.0008333333333333334
+        ]
+      }
+    },
+    "missing_30|chorus_k1": {
+      "stress": "missing_30",
+      "attack": "chorus_k1",
+      "gate_auc": {
+        "mean": 0.46863212715868324,
+        "std": 0.022989671062549916,
+        "n_seeds": 5,
+        "per_seed": [
+          0.49194884063305117,
+          0.45427973199329985,
+          0.4581105744414129,
+          0.4944359713042987,
+          0.44438551742135346
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.763735107957196,
+        "std": 0.0851304831919667,
+        "n_seeds": 5,
+        "per_seed": [
+          0.7292893509998774,
+          0.8080904522613065,
+          0.6367247990561168,
+          0.7845562898943682,
+          0.8600146475743112
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.3446666666666667,
+        "std": 0.027383592005270428,
+        "n_seeds": 5,
+        "per_seed": [
+          0.30583333333333335,
+          0.3358333333333333,
+          0.3675,
+          0.37416666666666665,
+          0.34
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.3446666666666667,
+        "std": 0.027383592005270428,
+        "n_seeds": 5,
+        "per_seed": [
+          0.30583333333333335,
+          0.3358333333333333,
+          0.3675,
+          0.37416666666666665,
+          0.34
+        ]
+      }
+    },
+    "missing_30|chorus_k2": {
+      "stress": "missing_30",
+      "attack": "chorus_k2",
+      "gate_auc": {
+        "mean": 0.5338177333031001,
+        "std": 0.028998242266122853,
+        "n_seeds": 5,
+        "per_seed": [
+          0.5046073717948718,
+          0.5136664223897264,
+          0.5792916098742995,
+          0.5319642151047845,
+          0.5395590473518184
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.7588807885586587,
+        "std": 0.03549062926730433,
+        "n_seeds": 5,
+        "per_seed": [
+          0.7220432692307692,
+          0.7182527219430486,
+          0.7849273057701045,
+          0.7884835903519177,
+          0.7806970554974534
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.3501666666666667,
+        "std": 0.027121127475743974,
+        "n_seeds": 5,
+        "per_seed": [
+          0.31333333333333335,
+          0.3425,
+          0.37166666666666665,
+          0.38166666666666665,
+          0.3416666666666667
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.3501666666666667,
+        "std": 0.027121127475743974,
+        "n_seeds": 5,
+        "per_seed": [
+          0.31333333333333335,
+          0.3425,
+          0.37166666666666665,
+          0.38166666666666665,
+          0.3416666666666667
+        ]
+      }
+    },
+    "missing_30|chorus_k3": {
+      "stress": "missing_30",
+      "attack": "chorus_k3",
+      "gate_auc": {
+        "mean": 0.6374668429841541,
+        "std": 0.02442150685499156,
+        "n_seeds": 5,
+        "per_seed": [
+          0.630540293040293,
+          0.6099310987929337,
+          0.6733329665492958,
+          0.6246801962104453,
+          0.6488496603278026
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.7084344887765321,
+        "std": 0.06797992544737967,
+        "n_seeds": 5,
+        "per_seed": [
+          0.7098748473748474,
+          0.6756031014177416,
+          0.8106660798122066,
+          0.6258728479369049,
+          0.7201555673409602
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.346,
+        "std": 0.028120524335241134,
+        "n_seeds": 5,
+        "per_seed": [
+          0.305,
+          0.3408333333333333,
+          0.36666666666666664,
+          0.3775,
+          0.34
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.346,
+        "std": 0.028120524335241134,
+        "n_seeds": 5,
+        "per_seed": [
+          0.305,
+          0.3408333333333333,
+          0.36666666666666664,
+          0.3775,
+          0.34
+        ]
+      }
+    },
+    "missing_30|pgd_k2": {
+      "stress": "missing_30",
+      "attack": "pgd_k2",
+      "gate_auc": {
+        "mean": 0.4902284410592685,
+        "std": 0.022979560087089356,
+        "n_seeds": 5,
+        "per_seed": [
+          0.4974427984296405,
+          0.5013777219430485,
+          0.49300383452547747,
+          0.5088544314522963,
+          0.4504634189458797
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.8433433605657756,
+        "std": 0.07460579474084811,
+        "n_seeds": 5,
+        "per_seed": [
+          0.8674779168200221,
+          0.8201591289782244,
+          0.7243381756507632,
+          0.9049596113653053,
+          0.8997819700145634
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.3446666666666667,
+        "std": 0.027383592005270428,
+        "n_seeds": 5,
+        "per_seed": [
+          0.30583333333333335,
+          0.3358333333333333,
+          0.3675,
+          0.37416666666666665,
+          0.34
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.3446666666666667,
+        "std": 0.027383592005270428,
+        "n_seeds": 5,
+        "per_seed": [
+          0.30583333333333335,
+          0.3358333333333333,
+          0.3675,
+          0.37416666666666665,
+          0.34
+        ]
+      }
+    },
+    "missing_50|chorus_k1": {
+      "stress": "missing_50",
+      "attack": "chorus_k1",
+      "gate_auc": {
+        "mean": 0.44083544625998444,
+        "std": 0.03450202929606652,
+        "n_seeds": 5,
+        "per_seed": [
+          0.4699592290585619,
+          0.3925238095238095,
+          0.44439589665653495,
+          0.4755244755244755,
+          0.4217738205365402
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.771867144623332,
+        "std": 0.05462480812239979,
+        "n_seeds": 5,
+        "per_seed": [
+          0.8003706449221646,
+          0.8051428571428572,
+          0.7202127659574468,
+          0.7064047064047064,
+          0.827204748689485
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.7056666666666667,
+        "std": 0.025354432003541764,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6841666666666667,
+          0.7216666666666667,
+          0.6883333333333334,
+          0.7425,
+          0.6916666666666667
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.7056666666666667,
+        "std": 0.025354432003541764,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6841666666666667,
+          0.7216666666666667,
+          0.6883333333333334,
+          0.7425,
+          0.6916666666666667
+        ]
+      }
+    },
+    "missing_50|chorus_k2": {
+      "stress": "missing_50",
+      "attack": "chorus_k2",
+      "gate_auc": {
+        "mean": 0.5023321014914479,
+        "std": 0.06083479883074704,
+        "n_seeds": 5,
+        "per_seed": [
+          0.5424100156494522,
+          0.3988780487804878,
+          0.5206521739130435,
+          0.500945064325346,
+          0.5487752047889098
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.7667106007530801,
+        "std": 0.062246601581327395,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6666666666666666,
+          0.8095609756097562,
+          0.818361801242236,
+          0.7474544235107615,
+          0.7915091367359799
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.7086666666666667,
+        "std": 0.02638918128492979,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6883333333333334,
+          0.7233333333333334,
+          0.69,
+          0.7483333333333333,
+          0.6933333333333334
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.7086666666666667,
+        "std": 0.02638918128492979,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6883333333333334,
+          0.7233333333333334,
+          0.69,
+          0.7483333333333333,
+          0.6933333333333334
+        ]
+      }
+    },
+    "missing_50|chorus_k3": {
+      "stress": "missing_50",
+      "attack": "chorus_k3",
+      "gate_auc": {
+        "mean": 0.5675517753450323,
+        "std": 0.05531030580432234,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6238452218688475,
+          0.5697317073170731,
+          0.6196040372670808,
+          0.5012025012025012,
+          0.5233754090696587
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.7196804140805034,
+        "std": 0.09584845169981844,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6460699681962744,
+          0.6450243902439025,
+          0.8512810559006211,
+          0.6636002886002886,
+          0.7924263674614306
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.7078333333333333,
+        "std": 0.026696597785735462,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6858333333333333,
+          0.7233333333333334,
+          0.69,
+          0.7475,
+          0.6925
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.7078333333333333,
+        "std": 0.026696597785735462,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6858333333333333,
+          0.7233333333333334,
+          0.69,
+          0.7475,
+          0.6925
+        ]
+      }
+    },
+    "missing_50|pgd_k2": {
+      "stress": "missing_50",
+      "attack": "pgd_k2",
+      "gate_auc": {
+        "mean": 0.4605302942731192,
+        "std": 0.015350727860119488,
+        "n_seeds": 5,
+        "per_seed": [
+          0.47301704966641955,
+          0.4362142857142857,
+          0.46322188449848023,
+          0.4565434565434565,
+          0.47365479494295404
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.8838959087408357,
+        "std": 0.01601027106858118,
+        "n_seeds": 5,
+        "per_seed": [
+          0.8862120088954781,
+          0.8663809523809524,
+          0.884726443768997,
+          0.8736263736263736,
+          0.9085337650323775
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.7056666666666667,
+        "std": 0.025354432003541764,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6841666666666667,
+          0.7216666666666667,
+          0.6883333333333334,
+          0.7425,
+          0.6916666666666667
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.7056666666666667,
+        "std": 0.025354432003541764,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6841666666666667,
+          0.7216666666666667,
+          0.6883333333333334,
+          0.7425,
+          0.6916666666666667
+        ]
+      }
+    },
+    "noisy_1|chorus_k1": {
+      "stress": "noisy_1",
+      "attack": "chorus_k1",
+      "gate_auc": {
+        "mean": 0.5070560128380932,
+        "std": 0.012484867557710175,
+        "n_seeds": 5,
+        "per_seed": [
+          0.5106189161485339,
+          0.5002943293789462,
+          0.5076399703374119,
+          0.5251162354705662,
+          0.49161061285500746
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.6303719372065983,
+        "std": 0.04859192098697171,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6024443895759916,
+          0.6435877438996955,
+          0.6803225806451613,
+          0.6645894263217098,
+          0.5609155455904334
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.006,
+        "std": 0.003140240613569462,
+        "n_seeds": 5,
+        "per_seed": [
+          0.005833333333333334,
+          0.0075,
+          0.0008333333333333334,
+          0.009166666666666667,
+          0.006666666666666667
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.006,
+        "std": 0.003140240613569462,
+        "n_seeds": 5,
+        "per_seed": [
+          0.005833333333333334,
+          0.0075,
+          0.0008333333333333334,
+          0.009166666666666667,
+          0.006666666666666667
+        ]
+      }
+    },
+    "noisy_1|chorus_k2": {
+      "stress": "noisy_1",
+      "attack": "chorus_k2",
+      "gate_auc": {
+        "mean": 0.5099885927159145,
+        "std": 0.022454372080148485,
+        "n_seeds": 5,
+        "per_seed": [
+          0.5004474272930649,
+          0.502505605381166,
+          0.5487245087133853,
+          0.49095974207237475,
+          0.5073056801195814
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.6260189112959332,
+        "std": 0.053163230013621304,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6108090976882923,
+          0.5910276532137518,
+          0.6830886169818317,
+          0.565273822377554,
+          0.6798953662182362
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.005833333333333334,
+        "std": 0.0033333333333333335,
+        "n_seeds": 5,
+        "per_seed": [
+          0.005,
+          0.006666666666666667,
+          0.0008333333333333334,
+          0.01,
+          0.006666666666666667
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.005833333333333334,
+        "std": 0.0033333333333333335,
+        "n_seeds": 5,
+        "per_seed": [
+          0.005,
+          0.006666666666666667,
+          0.0008333333333333334,
+          0.01,
+          0.006666666666666667
+        ]
+      }
+    },
+    "noisy_1|chorus_k3": {
+      "stress": "noisy_1",
+      "attack": "chorus_k3",
+      "gate_auc": {
+        "mean": 0.6242279807979495,
+        "std": 0.047630163398334716,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6220600298284862,
+          0.6139125560538117,
+          0.7046607341490545,
+          0.5806242969628796,
+          0.5998822869955157
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.7138284645309989,
+        "std": 0.055237012238583974,
+        "n_seeds": 5,
+        "per_seed": [
+          0.6983258762117822,
+          0.7339312406576981,
+          0.7953652206154987,
+          0.6952755905511812,
+          0.6462443946188341
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.005666666666666667,
+        "std": 0.003084459253886958,
+        "n_seeds": 5,
+        "per_seed": [
+          0.005,
+          0.006666666666666667,
+          0.0008333333333333334,
+          0.009166666666666667,
+          0.006666666666666667
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.005666666666666667,
+        "std": 0.003084459253886958,
+        "n_seeds": 5,
+        "per_seed": [
+          0.005,
+          0.006666666666666667,
+          0.0008333333333333334,
+          0.009166666666666667,
+          0.006666666666666667
+        ]
+      }
+    },
+    "noisy_1|pgd_k2": {
+      "stress": "noisy_1",
+      "attack": "pgd_k2",
+      "gate_auc": {
+        "mean": 0.4896567523804338,
+        "std": 0.014352367872728384,
+        "n_seeds": 5,
+        "per_seed": [
+          0.4972784000359139,
+          0.497979063245197,
+          0.49488320355951054,
+          0.49399137607799026,
+          0.46415171898355756
+        ]
+      },
+      "oracle_auc": {
+        "mean": 0.7655665884257336,
+        "std": 0.09965322549937006,
+        "n_seeds": 5,
+        "per_seed": [
+          0.8338720417798329,
+          0.740510220915758,
+          0.625391175380052,
+          0.7430258717660293,
+          0.8850336322869955
+        ]
+      },
+      "undefined_rate": {
+        "mean": 0.006,
+        "std": 0.003140240613569462,
+        "n_seeds": 5,
+        "per_seed": [
+          0.005833333333333334,
+          0.0075,
+          0.0008333333333333334,
+          0.009166666666666667,
+          0.006666666666666667
+        ]
+      },
+      "clique_undefined_rate": {
+        "mean": 0.006,
+        "std": 0.003140240613569462,
+        "n_seeds": 5,
+        "per_seed": [
+          0.005833333333333334,
+          0.0075,
+          0.0008333333333333334,
+          0.009166666666666667,
+          0.006666666666666667
+        ]
+      }
+    }
+  },
+  "verdict": {
+    "band": "SEVERE",
+    "criteria": {
+      "severe_undefined": 0.15,
+      "material_undefined": 0.05,
+      "severe_auc": 0.6
+    },
+    "missing_30_worst_undefined_rate": 0.3501666666666667,
+    "missing_30_worst_gate_auc": 0.46863212715868324,
+    "preregistration": "experiments/synthesis/PREREGISTRATION_missing_views.md"
+  },
+  "per_seed": [
+    {
+      "seed": 0,
+      "stress": "none",
+      "attack": "chorus_k1",
+      "gate_auc": 0.4900407407407407,
+      "oracle_auc": 0.715137037037037,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "none",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5520907407407407,
+      "oracle_auc": 0.7165370370370371,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "none",
+      "attack": "chorus_k3",
+      "gate_auc": 0.672124074074074,
+      "oracle_auc": 0.7336074074074074,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "none",
+      "attack": "pgd_k2",
+      "gate_auc": 0.5177611111111111,
+      "oracle_auc": 0.8236629629629629,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "missing_30",
+      "attack": "chorus_k1",
+      "gate_auc": 0.49194884063305117,
+      "oracle_auc": 0.7292893509998774,
+      "undefined_rate": 0.30583333333333335,
+      "clique_undefined_rate": 0.30583333333333335,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "missing_30",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5046073717948718,
+      "oracle_auc": 0.7220432692307692,
+      "undefined_rate": 0.31333333333333335,
+      "clique_undefined_rate": 0.31333333333333335,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "missing_30",
+      "attack": "chorus_k3",
+      "gate_auc": 0.630540293040293,
+      "oracle_auc": 0.7098748473748474,
+      "undefined_rate": 0.305,
+      "clique_undefined_rate": 0.305,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "missing_30",
+      "attack": "pgd_k2",
+      "gate_auc": 0.4974427984296405,
+      "oracle_auc": 0.8674779168200221,
+      "undefined_rate": 0.30583333333333335,
+      "clique_undefined_rate": 0.30583333333333335,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "missing_50",
+      "attack": "chorus_k1",
+      "gate_auc": 0.4699592290585619,
+      "oracle_auc": 0.8003706449221646,
+      "undefined_rate": 0.6841666666666667,
+      "clique_undefined_rate": 0.6841666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "missing_50",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5424100156494522,
+      "oracle_auc": 0.6666666666666666,
+      "undefined_rate": 0.6883333333333334,
+      "clique_undefined_rate": 0.6883333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "missing_50",
+      "attack": "chorus_k3",
+      "gate_auc": 0.6238452218688475,
+      "oracle_auc": 0.6460699681962744,
+      "undefined_rate": 0.6858333333333333,
+      "clique_undefined_rate": 0.6858333333333333,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "missing_50",
+      "attack": "pgd_k2",
+      "gate_auc": 0.47301704966641955,
+      "oracle_auc": 0.8862120088954781,
+      "undefined_rate": 0.6841666666666667,
+      "clique_undefined_rate": 0.6841666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "noisy_1",
+      "attack": "chorus_k1",
+      "gate_auc": 0.5106189161485339,
+      "oracle_auc": 0.6024443895759916,
+      "undefined_rate": 0.005833333333333334,
+      "clique_undefined_rate": 0.005833333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "noisy_1",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5004474272930649,
+      "oracle_auc": 0.6108090976882923,
+      "undefined_rate": 0.005,
+      "clique_undefined_rate": 0.005,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "noisy_1",
+      "attack": "chorus_k3",
+      "gate_auc": 0.6220600298284862,
+      "oracle_auc": 0.6983258762117822,
+      "undefined_rate": 0.005,
+      "clique_undefined_rate": 0.005,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 0,
+      "stress": "noisy_1",
+      "attack": "pgd_k2",
+      "gate_auc": 0.4972784000359139,
+      "oracle_auc": 0.8338720417798329,
+      "undefined_rate": 0.005833333333333334,
+      "clique_undefined_rate": 0.005833333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "none",
+      "attack": "chorus_k1",
+      "gate_auc": 0.4850888888888889,
+      "oracle_auc": 0.7358296296296296,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "none",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5075388888888889,
+      "oracle_auc": 0.6988555555555556,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "none",
+      "attack": "chorus_k3",
+      "gate_auc": 0.6650907407407407,
+      "oracle_auc": 0.7254222222222222,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "none",
+      "attack": "pgd_k2",
+      "gate_auc": 0.5142240740740741,
+      "oracle_auc": 0.8090444444444445,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "missing_30",
+      "attack": "chorus_k1",
+      "gate_auc": 0.45427973199329985,
+      "oracle_auc": 0.8080904522613065,
+      "undefined_rate": 0.3358333333333333,
+      "clique_undefined_rate": 0.3358333333333333,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "missing_30",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5136664223897264,
+      "oracle_auc": 0.7182527219430486,
+      "undefined_rate": 0.3425,
+      "clique_undefined_rate": 0.3425,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "missing_30",
+      "attack": "chorus_k3",
+      "gate_auc": 0.6099310987929337,
+      "oracle_auc": 0.6756031014177416,
+      "undefined_rate": 0.3408333333333333,
+      "clique_undefined_rate": 0.3408333333333333,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "missing_30",
+      "attack": "pgd_k2",
+      "gate_auc": 0.5013777219430485,
+      "oracle_auc": 0.8201591289782244,
+      "undefined_rate": 0.3358333333333333,
+      "clique_undefined_rate": 0.3358333333333333,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "missing_50",
+      "attack": "chorus_k1",
+      "gate_auc": 0.3925238095238095,
+      "oracle_auc": 0.8051428571428572,
+      "undefined_rate": 0.7216666666666667,
+      "clique_undefined_rate": 0.7216666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "missing_50",
+      "attack": "chorus_k2",
+      "gate_auc": 0.3988780487804878,
+      "oracle_auc": 0.8095609756097562,
+      "undefined_rate": 0.7233333333333334,
+      "clique_undefined_rate": 0.7233333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "missing_50",
+      "attack": "chorus_k3",
+      "gate_auc": 0.5697317073170731,
+      "oracle_auc": 0.6450243902439025,
+      "undefined_rate": 0.7233333333333334,
+      "clique_undefined_rate": 0.7233333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "missing_50",
+      "attack": "pgd_k2",
+      "gate_auc": 0.4362142857142857,
+      "oracle_auc": 0.8663809523809524,
+      "undefined_rate": 0.7216666666666667,
+      "clique_undefined_rate": 0.7216666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "noisy_1",
+      "attack": "chorus_k1",
+      "gate_auc": 0.5002943293789462,
+      "oracle_auc": 0.6435877438996955,
+      "undefined_rate": 0.0075,
+      "clique_undefined_rate": 0.0075,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "noisy_1",
+      "attack": "chorus_k2",
+      "gate_auc": 0.502505605381166,
+      "oracle_auc": 0.5910276532137518,
+      "undefined_rate": 0.006666666666666667,
+      "clique_undefined_rate": 0.006666666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "noisy_1",
+      "attack": "chorus_k3",
+      "gate_auc": 0.6139125560538117,
+      "oracle_auc": 0.7339312406576981,
+      "undefined_rate": 0.006666666666666667,
+      "clique_undefined_rate": 0.006666666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 1,
+      "stress": "noisy_1",
+      "attack": "pgd_k2",
+      "gate_auc": 0.497979063245197,
+      "oracle_auc": 0.740510220915758,
+      "undefined_rate": 0.0075,
+      "clique_undefined_rate": 0.0075,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "none",
+      "attack": "chorus_k1",
+      "gate_auc": 0.4420925925925926,
+      "oracle_auc": 0.7209148148148148,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "none",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5282388888888889,
+      "oracle_auc": 0.7558296296296296,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "none",
+      "attack": "chorus_k3",
+      "gate_auc": 0.738662962962963,
+      "oracle_auc": 0.7810148148148148,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "none",
+      "attack": "pgd_k2",
+      "gate_auc": 0.49815,
+      "oracle_auc": 0.7647111111111111,
+      "undefined_rate": 0.0,
+      "clique_undefined_rate": 0.0,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "missing_30",
+      "attack": "chorus_k1",
+      "gate_auc": 0.4581105744414129,
+      "oracle_auc": 0.6367247990561168,
+      "undefined_rate": 0.3675,
+      "clique_undefined_rate": 0.3675,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "missing_30",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5792916098742995,
+      "oracle_auc": 0.7849273057701045,
+      "undefined_rate": 0.37166666666666665,
+      "clique_undefined_rate": 0.37166666666666665,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "missing_30",
+      "attack": "chorus_k3",
+      "gate_auc": 0.6733329665492958,
+      "oracle_auc": 0.8106660798122066,
+      "undefined_rate": 0.36666666666666664,
+      "clique_undefined_rate": 0.36666666666666664,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "missing_30",
+      "attack": "pgd_k2",
+      "gate_auc": 0.49300383452547747,
+      "oracle_auc": 0.7243381756507632,
+      "undefined_rate": 0.3675,
+      "clique_undefined_rate": 0.3675,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "missing_50",
+      "attack": "chorus_k1",
+      "gate_auc": 0.44439589665653495,
+      "oracle_auc": 0.7202127659574468,
+      "undefined_rate": 0.6883333333333334,
+      "clique_undefined_rate": 0.6883333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "missing_50",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5206521739130435,
+      "oracle_auc": 0.818361801242236,
+      "undefined_rate": 0.69,
+      "clique_undefined_rate": 0.69,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "missing_50",
+      "attack": "chorus_k3",
+      "gate_auc": 0.6196040372670808,
+      "oracle_auc": 0.8512810559006211,
+      "undefined_rate": 0.69,
+      "clique_undefined_rate": 0.69,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "missing_50",
+      "attack": "pgd_k2",
+      "gate_auc": 0.46322188449848023,
+      "oracle_auc": 0.884726443768997,
+      "undefined_rate": 0.6883333333333334,
+      "clique_undefined_rate": 0.6883333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "noisy_1",
+      "attack": "chorus_k1",
+      "gate_auc": 0.5076399703374119,
+      "oracle_auc": 0.6803225806451613,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "noisy_1",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5487245087133853,
+      "oracle_auc": 0.6830886169818317,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "noisy_1",
+      "attack": "chorus_k3",
+      "gate_auc": 0.7046607341490545,
+      "oracle_auc": 0.7953652206154987,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 2,
+      "stress": "noisy_1",
+      "attack": "pgd_k2",
+      "gate_auc": 0.49488320355951054,
+      "oracle_auc": 0.625391175380052,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "none",
+      "attack": "chorus_k1",
+      "gate_auc": 0.5160956618464961,
+      "oracle_auc": 0.7497330367074527,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "none",
+      "attack": "chorus_k2",
+      "gate_auc": 0.48978680014831294,
+      "oracle_auc": 0.6995698924731183,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "none",
+      "attack": "chorus_k3",
+      "gate_auc": 0.589645902855024,
+      "oracle_auc": 0.6101520207638117,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "none",
+      "attack": "pgd_k2",
+      "gate_auc": 0.49894512421208753,
+      "oracle_auc": 0.8155839822024472,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "missing_30",
+      "attack": "chorus_k1",
+      "gate_auc": 0.4944359713042987,
+      "oracle_auc": 0.7845562898943682,
+      "undefined_rate": 0.37416666666666665,
+      "clique_undefined_rate": 0.37416666666666665,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "missing_30",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5319642151047845,
+      "oracle_auc": 0.7884835903519177,
+      "undefined_rate": 0.38166666666666665,
+      "clique_undefined_rate": 0.38166666666666665,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "missing_30",
+      "attack": "chorus_k3",
+      "gate_auc": 0.6246801962104453,
+      "oracle_auc": 0.6258728479369049,
+      "undefined_rate": 0.3775,
+      "clique_undefined_rate": 0.3775,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "missing_30",
+      "attack": "pgd_k2",
+      "gate_auc": 0.5088544314522963,
+      "oracle_auc": 0.9049596113653053,
+      "undefined_rate": 0.37416666666666665,
+      "clique_undefined_rate": 0.37416666666666665,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "missing_50",
+      "attack": "chorus_k1",
+      "gate_auc": 0.4755244755244755,
+      "oracle_auc": 0.7064047064047064,
+      "undefined_rate": 0.7425,
+      "clique_undefined_rate": 0.7425,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "missing_50",
+      "attack": "chorus_k2",
+      "gate_auc": 0.500945064325346,
+      "oracle_auc": 0.7474544235107615,
+      "undefined_rate": 0.7483333333333333,
+      "clique_undefined_rate": 0.7483333333333333,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "missing_50",
+      "attack": "chorus_k3",
+      "gate_auc": 0.5012025012025012,
+      "oracle_auc": 0.6636002886002886,
+      "undefined_rate": 0.7475,
+      "clique_undefined_rate": 0.7475,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "missing_50",
+      "attack": "pgd_k2",
+      "gate_auc": 0.4565434565434565,
+      "oracle_auc": 0.8736263736263736,
+      "undefined_rate": 0.7425,
+      "clique_undefined_rate": 0.7425,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "noisy_1",
+      "attack": "chorus_k1",
+      "gate_auc": 0.5251162354705662,
+      "oracle_auc": 0.6645894263217098,
+      "undefined_rate": 0.009166666666666667,
+      "clique_undefined_rate": 0.009166666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "noisy_1",
+      "attack": "chorus_k2",
+      "gate_auc": 0.49095974207237475,
+      "oracle_auc": 0.565273822377554,
+      "undefined_rate": 0.01,
+      "clique_undefined_rate": 0.01,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "noisy_1",
+      "attack": "chorus_k3",
+      "gate_auc": 0.5806242969628796,
+      "oracle_auc": 0.6952755905511812,
+      "undefined_rate": 0.009166666666666667,
+      "clique_undefined_rate": 0.009166666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 3,
+      "stress": "noisy_1",
+      "attack": "pgd_k2",
+      "gate_auc": 0.49399137607799026,
+      "oracle_auc": 0.7430258717660293,
+      "undefined_rate": 0.009166666666666667,
+      "clique_undefined_rate": 0.009166666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "none",
+      "attack": "chorus_k1",
+      "gate_auc": 0.47971449758991475,
+      "oracle_auc": 0.9090211345939934,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "none",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5224137931034483,
+      "oracle_auc": 0.797044864664442,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "none",
+      "attack": "chorus_k3",
+      "gate_auc": 0.6726325546903967,
+      "oracle_auc": 0.7298516870596959,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "none",
+      "attack": "pgd_k2",
+      "gate_auc": 0.4670800889877642,
+      "oracle_auc": 0.922258064516129,
+      "undefined_rate": 0.0008333333333333334,
+      "clique_undefined_rate": 0.0008333333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "missing_30",
+      "attack": "chorus_k1",
+      "gate_auc": 0.44438551742135346,
+      "oracle_auc": 0.8600146475743112,
+      "undefined_rate": 0.34,
+      "clique_undefined_rate": 0.34,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "missing_30",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5395590473518184,
+      "oracle_auc": 0.7806970554974534,
+      "undefined_rate": 0.3416666666666667,
+      "clique_undefined_rate": 0.3416666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "missing_30",
+      "attack": "chorus_k3",
+      "gate_auc": 0.6488496603278026,
+      "oracle_auc": 0.7201555673409602,
+      "undefined_rate": 0.34,
+      "clique_undefined_rate": 0.34,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "missing_30",
+      "attack": "pgd_k2",
+      "gate_auc": 0.4504634189458797,
+      "oracle_auc": 0.8997819700145634,
+      "undefined_rate": 0.34,
+      "clique_undefined_rate": 0.34,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "missing_50",
+      "attack": "chorus_k1",
+      "gate_auc": 0.4217738205365402,
+      "oracle_auc": 0.827204748689485,
+      "undefined_rate": 0.6916666666666667,
+      "clique_undefined_rate": 0.6916666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "missing_50",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5487752047889098,
+      "oracle_auc": 0.7915091367359799,
+      "undefined_rate": 0.6933333333333334,
+      "clique_undefined_rate": 0.6933333333333334,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "missing_50",
+      "attack": "chorus_k3",
+      "gate_auc": 0.5233754090696587,
+      "oracle_auc": 0.7924263674614306,
+      "undefined_rate": 0.6925,
+      "clique_undefined_rate": 0.6925,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "missing_50",
+      "attack": "pgd_k2",
+      "gate_auc": 0.47365479494295404,
+      "oracle_auc": 0.9085337650323775,
+      "undefined_rate": 0.6916666666666667,
+      "clique_undefined_rate": 0.6916666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "noisy_1",
+      "attack": "chorus_k1",
+      "gate_auc": 0.49161061285500746,
+      "oracle_auc": 0.5609155455904334,
+      "undefined_rate": 0.006666666666666667,
+      "clique_undefined_rate": 0.006666666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "noisy_1",
+      "attack": "chorus_k2",
+      "gate_auc": 0.5073056801195814,
+      "oracle_auc": 0.6798953662182362,
+      "undefined_rate": 0.006666666666666667,
+      "clique_undefined_rate": 0.006666666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "noisy_1",
+      "attack": "chorus_k3",
+      "gate_auc": 0.5998822869955157,
+      "oracle_auc": 0.6462443946188341,
+      "undefined_rate": 0.006666666666666667,
+      "clique_undefined_rate": 0.006666666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    },
+    {
+      "seed": 4,
+      "stress": "noisy_1",
+      "attack": "pgd_k2",
+      "gate_auc": 0.46415171898355756,
+      "oracle_auc": 0.8850336322869955,
+      "undefined_rate": 0.006666666666666667,
+      "clique_undefined_rate": 0.006666666666666667,
+      "n_positive": 300,
+      "n_negative": 900
+    }
+  ]
+}
