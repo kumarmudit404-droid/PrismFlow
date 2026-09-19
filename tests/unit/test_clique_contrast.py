@@ -26,6 +26,8 @@ The two structures, in the project's own terms:
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pytest
 
@@ -165,3 +167,39 @@ def test_rejects_malformed_input():
         clique_contrast_matrix(np.zeros((3, 4)))
     with pytest.raises(ValueError):
         clique_contrast(np.zeros((4, 4)))
+
+
+def test_only_two_usable_views_is_nan_and_does_not_warn():
+    """The Arm B drop case: 4 views, 2 of them with vacuous belief.
+
+    `pairwise_agreement` returns NaN for a view whose belief vector is too
+    close to vacuous to have a direction. When that leaves only two usable
+    views, no internal/external split exists and the sample is undefined --
+    but it must arrive as a NaN the caller can count, not as a RuntimeWarning
+    raised from inside numpy. Seeds 3 and 4 of the Arm B run hit this on
+    clone_k3, 1 row each.
+    """
+    sample = np.full((1, N_VIEWS, N_VIEWS), np.nan)
+    usable = (1, 3)
+    for i in usable:
+        for j in usable:
+            sample[0, i, j] = 1.0 if i == j else 0.9999
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")  # any warning fails this test
+        scores = clique_contrast(sample)
+
+    assert np.isnan(scores[0]), "two usable views cannot define a contrast"
+
+
+def test_three_usable_views_still_scores():
+    """One vacuous view out of four is survivable -- only the third is fatal."""
+    batch = chorus_collusion(clique=(0, 1))[None, :, :].astype(float).copy()
+    batch[0, 3, :] = np.nan
+    batch[0, :, 3] = np.nan
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        scores = clique_contrast(batch)
+
+    assert np.isfinite(scores[0])

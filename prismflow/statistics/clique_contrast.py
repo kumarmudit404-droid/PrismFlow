@@ -109,6 +109,15 @@ def clique_contrast(agreement, view_mask=None) -> np.ndarray:
     Intended input is `suspicion.pairwise_agreement(belief)`, so this reads the
     same per-sample agreement the Part 10 detector reads -- the two signals
     differ in what they ASK of it, not in the data they see.
+
+    UNDEFINED, NOT ZERO. A sample needs at least three usable views: with two,
+    each view has a single comparison, and one comparison cannot be split into
+    a non-empty "top g" and a non-empty "rest". Such a sample returns NaN. It
+    must NOT return 0.0 -- 0.0 is a meaningful reading in this signal's range
+    ("agrees with everyone about equally") and would assert something the data
+    does not support. Callers are expected to drop NaN rows and COUNT them:
+    the samples that land here are the ones where the model's evidence is
+    near-vacuous, so the drops are not randomly distributed.
     """
     stacked = _to_numpy(agreement)
     if stacked.ndim != 3:
@@ -122,9 +131,15 @@ def clique_contrast(agreement, view_mask=None) -> np.ndarray:
         stacked = np.where(both, stacked, np.nan)
 
     contrasts = per_view_contrast(stacked)
-    with np.errstate(invalid="ignore"):
-        out = np.nanmax(contrasts, axis=-1)
-    return np.where(np.isfinite(out), out, np.nan)
+
+    # np.nanmax warns on an all-NaN slice, which is a case this function
+    # EXPECTS (see the docstring) rather than an error. Taking the max over
+    # -inf-filled values gives the identical result wherever any view is
+    # measurable, and lets the undefined rows be named explicitly instead of
+    # arriving as a RuntimeWarning from inside a library call.
+    measurable = np.isfinite(contrasts)
+    out = np.where(measurable, contrasts, -np.inf).max(axis=-1)
+    return np.where(measurable.any(axis=-1), out, np.nan)
 
 
 def clique_contrast_matrix(matrix) -> float:

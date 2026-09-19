@@ -1,0 +1,547 @@
+{
+  "config": {
+    "experiment": {
+      "id": "synthesis_oracle"
+    },
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "data": {
+      "n_views": 4,
+      "rho": 0.3,
+      "n_samples": 2000
+    },
+    "training": {
+      "epochs": 40,
+      "batch_size": 64,
+      "lr": 0.001,
+      "anneal_epochs": 10,
+      "per_view_loss_weight": 1.0
+    },
+    "attack": {
+      "k": 3,
+      "epsilon": 2.0,
+      "beta": 1.0,
+      "steps": 30
+    },
+    "clone": {
+      "source": 0,
+      "ks": [
+        2,
+        3
+      ]
+    },
+    "evaluation": {
+      "batch_size": 512
+    },
+    "oracle": {
+      "ridge": 0.001,
+      "iterations": 60
+    },
+    "go_threshold": 0.6
+  },
+  "torch": "2.14.0+cpu",
+  "tail": {
+    "dep_det": {
+      "mean": 0.6724269115191986,
+      "std": 0.05913040362387773,
+      "n_seeds": 5,
+      "per_seed": [
+        0.7006666666666667,
+        0.7186055555555556,
+        0.7254611111111111,
+        0.6009237618252643,
+        0.6164774624373957
+      ]
+    },
+    "dep_det_tail": {
+      "mean": 0.71145122426266,
+      "std": 0.05934970333997224,
+      "n_seeds": 5,
+      "per_seed": [
+        0.7463388888888889,
+        0.76285,
+        0.7543944444444445,
+        0.6425765164162494,
+        0.6510962715637173
+      ]
+    },
+    "dep_det_tail_condition_mean_surrogate": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n_seeds": 5,
+      "per_seed": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "dep_det_tail_within_condition_centred": {
+      "mean": 0.6975926841031349,
+      "std": 0.06015512541503976,
+      "n_seeds": 5,
+      "per_seed": [
+        0.7303722222222222,
+        0.7393111111111111,
+        0.7535611111111111,
+        0.6352253756260434,
+        0.6294936004451864
+      ]
+    },
+    "clone_k2_vs_k3_auc": {
+      "mean": 0.5044350167224081,
+      "std": 0.020575126286391895,
+      "n_seeds": 5,
+      "per_seed": [
+        0.5119,
+        0.5158666666666667,
+        0.52855,
+        0.4833779264214047,
+        0.4824804905239688
+      ]
+    },
+    "between_condition_variance_share": {
+      "mean": 0.0068102954498129205,
+      "std": 0.0032665443607580147,
+      "n_seeds": 5,
+      "per_seed": [
+        0.007215285241278751,
+        0.010843799587057525,
+        0.003609944676294294,
+        0.003430849660547189,
+        0.008951598083886842
+      ]
+    }
+  },
+  "clique": {
+    "univariate": {
+      "mean": 0.6408074244110554,
+      "std": 0.055124755672475184,
+      "n_seeds": 5,
+      "per_seed": [
+        0.6525833333333333,
+        0.6433722222222222,
+        0.6908083333333334,
+        0.5476460767946577,
+        0.6696271563717306
+      ]
+    },
+    "linear_alone": {
+      "mean": 0.5033612149879428,
+      "std": 0.16676045621633942,
+      "n_seeds": 5,
+      "per_seed": [
+        0.34739722222222225,
+        0.35662777777777777,
+        0.6908027777777778,
+        0.4523511407902059,
+        0.6696271563717306
+      ]
+    },
+    "rank_alone": {
+      "mean": 0.6408074244110554,
+      "std": 0.055124755672475184,
+      "n_seeds": 5,
+      "per_seed": [
+        0.6525833333333333,
+        0.6433722222222222,
+        0.6908083333333334,
+        0.5476460767946577,
+        0.6696271563717306
+      ]
+    },
+    "linear_weight_alone": {
+      "mean": 0.003335988142099172,
+      "std": 0.2152136093344309,
+      "n_seeds": 5,
+      "per_seed": [
+        -0.059313817117255724,
+        -0.1675092389674237,
+        0.2731206538681538,
+        -0.21319263110156061,
+        0.18357497402858208
+      ]
+    },
+    "all_four_linear": {
+      "mean": 0.7447672862177703,
+      "std": 0.05920511345163355,
+      "n_seeds": 5,
+      "per_seed": [
+        0.7823055555555556,
+        0.7825555555555556,
+        0.79045,
+        0.6544685587089594,
+        0.7140567612687813
+      ]
+    },
+    "all_four_rank": {
+      "mean": 0.7527813967723984,
+      "std": 0.06171055231432839,
+      "n_seeds": 5,
+      "per_seed": [
+        0.7735833333333333,
+        0.7895277777777778,
+        0.8032722222222223,
+        0.6484418475236505,
+        0.7490818030050084
+      ]
+    },
+    "existing_three_rank": {
+      "mean": 0.6736228788721944,
+      "std": 0.06971046151025112,
+      "n_seeds": 5,
+      "per_seed": [
+        0.6590277777777778,
+        0.7311944444444445,
+        0.7592555555555556,
+        0.5969170840289372,
+        0.621719532554257
+      ]
+    }
+  },
+  "nan_drops_by_condition": {
+    "chorus_k3": {
+      "dependence": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "detector": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tail": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "clique_contrast": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "clone_k2": {
+      "dependence": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "detector": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tail": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "clique_contrast": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "clone_k3": {
+      "dependence": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "detector": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tail": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "clique_contrast": [
+        0,
+        0,
+        0,
+        1,
+        1
+      ]
+    }
+  },
+  "per_seed": [
+    {
+      "seed": 0,
+      "nan_by_condition": {
+        "chorus_k3": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        },
+        "clone_k2": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        },
+        "clone_k3": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        }
+      },
+      "n_dropped": 0,
+      "tail": {
+        "dep_det": 0.7006666666666667,
+        "dep_det_tail": 0.7463388888888889,
+        "dep_det_tail_condition_mean_surrogate": 1.0,
+        "dep_det_tail_within_condition_centred": 0.7303722222222222,
+        "clone_k2_vs_k3_auc": 0.5119,
+        "variance": {
+          "between_share": 0.007215285241278751,
+          "within_share": 0.9927847147587212
+        },
+        "condition_means": {
+          "chorus_k3": 0.5589368770764119,
+          "clone_k2": 0.6007862679955703,
+          "clone_k3": 0.5907530454042083
+        }
+      },
+      "clique": {
+        "univariate": 0.6525833333333333,
+        "linear_alone": 0.34739722222222225,
+        "rank_alone": 0.6525833333333333,
+        "linear_weight_alone": -0.059313817117255724,
+        "all_four_linear": 0.7823055555555556,
+        "all_four_rank": 0.7735833333333333,
+        "existing_three_rank": 0.6590277777777778
+      }
+    },
+    {
+      "seed": 1,
+      "nan_by_condition": {
+        "chorus_k3": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        },
+        "clone_k2": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        },
+        "clone_k3": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        }
+      },
+      "n_dropped": 0,
+      "tail": {
+        "dep_det": 0.7186055555555556,
+        "dep_det_tail": 0.76285,
+        "dep_det_tail_condition_mean_surrogate": 1.0,
+        "dep_det_tail_within_condition_centred": 0.7393111111111111,
+        "clone_k2_vs_k3_auc": 0.5158666666666667,
+        "variance": {
+          "between_share": 0.010843799587057525,
+          "within_share": 0.9891562004129424
+        },
+        "condition_means": {
+          "chorus_k3": 0.548139534883721,
+          "clone_k2": 0.5965116279069766,
+          "clone_k3": 0.5889147286821707
+        }
+      },
+      "clique": {
+        "univariate": 0.6433722222222222,
+        "linear_alone": 0.35662777777777777,
+        "rank_alone": 0.6433722222222222,
+        "linear_weight_alone": -0.1675092389674237,
+        "all_four_linear": 0.7825555555555556,
+        "all_four_rank": 0.7895277777777778,
+        "existing_three_rank": 0.7311944444444445
+      }
+    },
+    {
+      "seed": 2,
+      "nan_by_condition": {
+        "chorus_k3": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        },
+        "clone_k2": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        },
+        "clone_k3": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        }
+      },
+      "n_dropped": 0,
+      "tail": {
+        "dep_det": 0.7254611111111111,
+        "dep_det_tail": 0.7543944444444445,
+        "dep_det_tail_condition_mean_surrogate": 1.0,
+        "dep_det_tail_within_condition_centred": 0.7535611111111111,
+        "clone_k2_vs_k3_auc": 0.52855,
+        "variance": {
+          "between_share": 0.003609944676294294,
+          "within_share": 0.9963900553237057
+        },
+        "condition_means": {
+          "chorus_k3": 0.5434883720930233,
+          "clone_k2": 0.5769102990033222,
+          "clone_k3": 0.5534662236987818
+        }
+      },
+      "clique": {
+        "univariate": 0.6908083333333334,
+        "linear_alone": 0.6908027777777778,
+        "rank_alone": 0.6908083333333334,
+        "linear_weight_alone": 0.2731206538681538,
+        "all_four_linear": 0.79045,
+        "all_four_rank": 0.8032722222222223,
+        "existing_three_rank": 0.7592555555555556
+      }
+    },
+    {
+      "seed": 3,
+      "nan_by_condition": {
+        "chorus_k3": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        },
+        "clone_k2": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        },
+        "clone_k3": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 1
+        }
+      },
+      "n_dropped": 1,
+      "tail": {
+        "dep_det": 0.6009237618252643,
+        "dep_det_tail": 0.6425765164162494,
+        "dep_det_tail_condition_mean_surrogate": 1.0,
+        "dep_det_tail_within_condition_centred": 0.6352253756260434,
+        "clone_k2_vs_k3_auc": 0.4833779264214047,
+        "variance": {
+          "between_share": 0.003430849660547189,
+          "within_share": 0.9965691503394528
+        },
+        "condition_means": {
+          "chorus_k3": 0.5649501661129568,
+          "clone_k2": 0.5813510520487265,
+          "clone_k3": 0.5954399493327703
+        }
+      },
+      "clique": {
+        "univariate": 0.5476460767946577,
+        "linear_alone": 0.4523511407902059,
+        "rank_alone": 0.5476460767946577,
+        "linear_weight_alone": -0.21319263110156061,
+        "all_four_linear": 0.6544685587089594,
+        "all_four_rank": 0.6484418475236505,
+        "existing_three_rank": 0.5969170840289372
+      }
+    },
+    {
+      "seed": 4,
+      "nan_by_condition": {
+        "chorus_k3": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        },
+        "clone_k2": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 0
+        },
+        "clone_k3": {
+          "dependence": 0,
+          "detector": 0,
+          "tail": 0,
+          "clique_contrast": 1
+        }
+      },
+      "n_dropped": 1,
+      "tail": {
+        "dep_det": 0.6164774624373957,
+        "dep_det_tail": 0.6510962715637173,
+        "dep_det_tail_condition_mean_surrogate": 1.0,
+        "dep_det_tail_within_condition_centred": 0.6294936004451864,
+        "clone_k2_vs_k3_auc": 0.4824804905239688,
+        "variance": {
+          "between_share": 0.008951598083886842,
+          "within_share": 0.9910484019161132
+        },
+        "condition_means": {
+          "chorus_k3": 0.5479955703211516,
+          "clone_k2": 0.5865891472868218,
+          "clone_k3": 0.5965844064934055
+        }
+      },
+      "clique": {
+        "univariate": 0.6696271563717306,
+        "linear_alone": 0.6696271563717306,
+        "rank_alone": 0.6696271563717306,
+        "linear_weight_alone": 0.18357497402858208,
+        "all_four_linear": 0.7140567612687813,
+        "all_four_rank": 0.7490818030050084,
+        "existing_three_rank": 0.621719532554257
+      }
+    }
+  ]
+}
