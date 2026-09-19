@@ -1,0 +1,104 @@
+experiment:
+  id: real
+  description: >
+    Part 15. The Part 10 detector matrix and the Part 13 tail analysis, re-run
+    on a real multi-view benchmark, plus the redundancy audit: how many
+    effectively independent views a standard benchmark actually contains.
+
+# Five seeds, per docs/CONTRACT.md. NOTE what a seed varies here. On synthetic
+# data the seed redraws the dataset and the split is held fixed. Real data
+# cannot be redrawn, so the seed drives the train/val/test partition, the
+# scaler fitted on it, model init and batch order. Five seeds are five
+# resamplings of the same 2000 patterns, not five datasets, and the spread is
+# correspondingly narrower. See docs/DATASETS.md.
+seeds: [0, 1, 2, 3, 4]
+
+data:
+  datasets: [handwritten]
+  root: data/raw
+
+model:
+  hidden_dims: [64, 64]
+  feature_dim: 32
+  dropout: 0.0
+
+# Identical to experiments/comparison and experiments/tail. Fixed before any
+# real-data run so the two sides of the comparison are the same system.
+training:
+  epochs: 40
+  batch_size: 64
+  lr: 0.001
+  anneal_epochs: 10
+  per_view_loss_weight: 1.0
+
+# ---------------------------------------------------------------------------
+# Stage 1: the redundancy audit (the reported contribution)
+# ---------------------------------------------------------------------------
+# Measured on the WIDE split below, not the comparison split, for two reasons
+# that both come down to sample size: ENIV is biased downward at small n (see
+# prismflow/eniv/eniv.py, "finite samples"), and lambda_U at q = 0.90 needs
+# 500+ samples to clear MIN_TAIL_SAMPLES = 50 exceedances. A 300-sample test
+# split would understate ENIV and could not support the lambda_U column at all.
+redundancy:
+  # Mean off-diagonal lambda_U reported at the tail headline quantile.
+  eniv_methods: [eigen, design_effect]
+  # The estimator's own reading when the views ARE independent, at the same n,
+  # the same feature dimension and the same model: each view's encoder
+  # features are permuted WITHIN CLASS, which destroys cross-view coupling
+  # while preserving the class structure the conditional estimator needs.
+  # Without this control, "ENIV is below 6" cannot be separated from
+  # "the estimator reads below 6 at this sample size".
+  independence_null_repeats: 5
+  leave_one_out: true
+
+# ---------------------------------------------------------------------------
+# Stage 2: the Part 10 comparison matrix
+# ---------------------------------------------------------------------------
+comparison:
+  # Part 10's split, unchanged, so the matrix is comparable cell for cell.
+  split: {train: 0.7, val: 0.15, test: 0.15}
+  attack: {steps: 30, target_strategy: least_likely, fixed_target: 0}
+  detector: {threshold: 0.05, permutations: 16}
+  evaluation:
+    split: test
+    batch_size: 64
+    n_bins: 15
+    coverages: [1.0, 0.9, 0.8, 0.5]
+  # Part 10's condition list, unchanged, including the independent-PGD column
+  # that Part added. `clean` MUST come first: it calibrates every threshold.
+  conditions:
+    - {name: clean,      kind: clean,   k: 0}
+    - {name: clone_k2,   kind: clone,   k: 2}
+    - {name: missing_30, kind: missing, k: 0, rate: 0.3}
+    - {name: missing_50, kind: missing, k: 0, rate: 0.5}
+    - {name: noisy_1,    kind: noisy,   k: 0, sigma: 2.0}
+    - {name: chorus_k1,  kind: chorus,  k: 1, epsilon: 1.0, beta: 1.0}
+    - {name: chorus_k2,  kind: chorus,  k: 2, epsilon: 1.0, beta: 1.0}
+    - {name: chorus_k3,  kind: chorus,  k: 3, epsilon: 1.0, beta: 1.0}
+    - {name: pgd_k2,     kind: pgd,     k: 2, epsilon: 1.0}
+
+# ---------------------------------------------------------------------------
+# Stage 3: the Part 13 tail analysis
+# ---------------------------------------------------------------------------
+tail:
+  # Part 13 raised n_samples to 8000 so the test split carried 1200 points and
+  # 60 exceedances at q = 0.95. Real data has 2000 patterns and that lever does
+  # not exist, so the sample is bought from the split instead: 40% test = 800
+  # points. At q = 0.90 that is 80 exceedances (>= MIN_TAIL_SAMPLES = 50); at
+  # q = 0.95 it is 40, which is BELOW the threshold. The headline quantile is
+  # therefore 0.90 here and not Part 13's 0.95; q = 0.95 is still reported,
+  # with its exceedance count and its reliability flag, so the shortfall is
+  # visible rather than hidden.
+  split: {train: 0.5, val: 0.1, test: 0.4}
+  quantiles: [0.90, 0.95]
+  headline_quantile: 0.90
+  # Part 13's own 300-sample comparison, kept: the cost of a small split is
+  # measured rather than asserted.
+  subsample_n: 300
+  subsample_seed: 7
+  # Part 09 / Part 13's attack configuration, unchanged. k = 2 compromises
+  # views 0 and 1 (fou, fac on Handwritten). Note this is 2 of 6 views, so 1 of
+  # 15 pairs carries the signal, where Part 13 had 1 of 6 -- an all-pairs mean
+  # is diluted 2.5x harder here.
+  attack: {k: 2, beta: 1.0, steps: 30, epsilons: [0.0, 0.2, 0.5, 1.0, 2.0]}
+  evaluation: {batch_size: 512}

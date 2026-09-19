@@ -1,0 +1,169 @@
+{
+  "config": {
+    "experiment": {
+      "id": "real",
+      "description": "Part 15. The Part 10 detector matrix and the Part 13 tail analysis, re-run on a real multi-view benchmark, plus the redundancy audit: how many effectively independent views a standard benchmark actually contains.\n"
+    },
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "data": {
+      "datasets": [
+        "handwritten"
+      ],
+      "root": "data/raw"
+    },
+    "model": {
+      "hidden_dims": [
+        64,
+        64
+      ],
+      "feature_dim": 32,
+      "dropout": 0.0
+    },
+    "training": {
+      "epochs": 40,
+      "batch_size": 64,
+      "lr": 0.001,
+      "anneal_epochs": 10,
+      "per_view_loss_weight": 1.0
+    },
+    "redundancy": {
+      "eniv_methods": [
+        "eigen",
+        "design_effect"
+      ],
+      "independence_null_repeats": 5,
+      "leave_one_out": true
+    },
+    "comparison": {
+      "split": {
+        "train": 0.7,
+        "val": 0.15,
+        "test": 0.15
+      },
+      "attack": {
+        "steps": 30,
+        "target_strategy": "least_likely",
+        "fixed_target": 0
+      },
+      "detector": {
+        "threshold": 0.05,
+        "permutations": 16
+      },
+      "evaluation": {
+        "split": "test",
+        "batch_size": 64,
+        "n_bins": 15,
+        "coverages": [
+          1.0,
+          0.9,
+          0.8,
+          0.5
+        ]
+      },
+      "conditions": [
+        {
+          "name": "clean",
+          "kind": "clean",
+          "k": 0
+        },
+        {
+          "name": "clone_k2",
+          "kind": "clone",
+          "k": 2
+        },
+        {
+          "name": "missing_30",
+          "kind": "missing",
+          "k": 0,
+          "rate": 0.3
+        },
+        {
+          "name": "missing_50",
+          "kind": "missing",
+          "k": 0,
+          "rate": 0.5
+        },
+        {
+          "name": "noisy_1",
+          "kind": "noisy",
+          "k": 0,
+          "sigma": 2.0
+        },
+        {
+          "name": "chorus_k1",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 1.0,
+          "beta": 1.0
+        },
+        {
+          "name": "chorus_k2",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 1.0
+        },
+        {
+          "name": "chorus_k3",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 1.0
+        },
+        {
+          "name": "pgd_k2",
+          "kind": "pgd",
+          "k": 2,
+          "epsilon": 1.0
+        }
+      ]
+    },
+    "tail": {
+      "split": {
+        "train": 0.5,
+        "val": 0.1,
+        "test": 0.4
+      },
+      "quantiles": [
+        0.9,
+        0.95
+      ],
+      "headline_quantile": 0.9,
+      "subsample_n": 300,
+      "subsample_seed": 7,
+      "attack": {
+        "k": 2,
+        "beta": 1.0,
+        "steps": 30,
+        "epsilons": [
+          0.0,
+          0.2,
+          0.5,
+          1.0,
+          2.0
+        ]
+      },
+      "evaluation": {
+        "batch_size": 512
+      }
+    }
+  },
+  "stages": [
+    "redundancy",
+    "comparison",
+    "tail"
+  ],
+  "datasets": [
+    "handwritten"
+  ],
+  "commit": "16ff637d76f33716f58c1b043f2f0db2b78f9beb",
+  "torch": "2.14.0+cpu",
+  "numpy": "2.5.3",
+  "note": "controlled research simulation; own models, public benchmark data"
+}
