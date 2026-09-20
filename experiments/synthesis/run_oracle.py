@@ -58,6 +58,7 @@ comparison itself.
 Usage:
     python -m experiments.synthesis.run_oracle
     python -m experiments.synthesis.run_oracle --quick   # NOT evidence
+                                                         # writes results/synthesis_quick/
 """
 
 from __future__ import annotations
@@ -243,6 +244,12 @@ def main():
         config["attack"] = dict(config["attack"], steps=3)
         LOGGER.warning("--quick: 1 seed, 2 epochs. NOT EVIDENCE.")
 
+    # --quick output NEVER lands on the canonical evidence path: a smoke run
+    # must not be able to overwrite committed 5-seed results.
+    out_dir = OUT_DIR.with_name(OUT_DIR.name + "_quick") if args.quick else OUT_DIR
+    if args.quick:
+        LOGGER.warning("--quick: writing to %s, not %s", out_dir, OUT_DIR)
+
     per_seed_rows = []
     pooled = {"features": [], "labels": [], "seed": []}
 
@@ -397,8 +404,8 @@ def main():
     loso_summary = summarise(loso)
     decision = "PROCEED to Arm A" if oracle["mean"] >= GO_THRESHOLD else "STOP: information absent"
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    (OUT_DIR / "oracle.json").write_text(
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "oracle.json").write_text(
         json.dumps({
             "config": config, "torch": torch.__version__,
             "oracle_auc": oracle, "univariate_auc": univariate,
@@ -482,7 +489,7 @@ def main():
         "crosses. Read it before quoting the mean.",
         "",
     ]
-    (OUT_DIR / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (out_dir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     LOGGER.info("DECISION: %s (oracle AUC %.4f)", decision, oracle["mean"])
 
 

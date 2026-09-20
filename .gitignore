@@ -52,6 +52,11 @@ results/*/*/*/*/*
 !results/*/*/*/*/*.csv
 !results/*/*/*/*/*.md
 !results/*/*/*/*/*.png
+# --quick smoke runs write to results/<name>_quick/ so they can never
+# overwrite committed 5-seed evidence. That output is never a finding:
+# ignore it outright, ahead of the per-extension un-ignores above.
+results/*_quick/
+
 logs/*
 !logs/.gitkeep
 checkpoints/*

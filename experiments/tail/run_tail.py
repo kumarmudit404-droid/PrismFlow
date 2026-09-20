@@ -40,6 +40,7 @@ measured rather than asserted -- see `subsample` in the output.
 Usage:
     python -m experiments.tail.run_tail
     python -m experiments.tail.run_tail --quick   # NOT evidence
+                                                 # writes results/tail_quick/
 """
 
 from __future__ import annotations
@@ -405,6 +406,12 @@ def main():
         config["data"] = dict(config["data"], n_samples=2000)
         LOGGER.warning("--quick: 1 seed, 2 epochs, 3 attack steps. NOT EVIDENCE.")
 
+    # --quick output NEVER lands on the canonical evidence path: a smoke run
+    # must not be able to overwrite committed 5-seed results.
+    out_dir = OUT_DIR.with_name(OUT_DIR.name + "_quick") if args.quick else OUT_DIR
+    if args.quick:
+        LOGGER.warning("--quick: writing to %s, not %s", out_dir, OUT_DIR)
+
     epsilons = config["attack"]["epsilons"]
     per_seed: dict[str, list[dict]] = {f"eps{e}": [] for e in epsilons}
     roc: dict[str, list[dict]] = {f"eps{e}": [] for e in epsilons}
@@ -514,8 +521,8 @@ def main():
             for detector in ("tail", "rho_bar")
         }
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    (OUT_DIR / "tail.json").write_text(
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "tail.json").write_text(
         json.dumps(
             {
                 "config": config, "torch": torch.__version__,
@@ -613,8 +620,8 @@ def main():
             f"{cell['subsample_n_tail']['mean']:.0f} |"
         )
 
-    (OUT_DIR / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    LOGGER.info("wrote %s", OUT_DIR / "summary.md")
+    (out_dir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    LOGGER.info("wrote %s", out_dir / "summary.md")
 
 
 if __name__ == "__main__":

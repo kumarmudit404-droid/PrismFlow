@@ -56,6 +56,7 @@ that were always there and applies an estimator to them.
 Usage:
     python -m experiments.branch_audit.run_branch_audit
     python -m experiments.branch_audit.run_branch_audit --quick   # NOT evidence
+                                                  # writes results/branch_audit_quick/
 """
 
 from __future__ import annotations
@@ -225,6 +226,12 @@ def main():
         config["training"] = dict(config["training"], epochs=2)
         LOGGER.warning("--quick: 1 seed, 2 epochs. NOT EVIDENCE.")
 
+    # --quick output NEVER lands on the canonical evidence path: a smoke run
+    # must not be able to overwrite committed 5-seed results.
+    out_dir = OUT_DIR.with_name(OUT_DIR.name + "_quick") if args.quick else OUT_DIR
+    if args.quick:
+        LOGGER.warning("--quick: writing to %s, not %s", out_dir, OUT_DIR)
+
     dep_cfg = config["dependence"]
     batch_size = config["evaluation"]["batch_size"]
 
@@ -252,14 +259,14 @@ def main():
     metrics = ("eniv", "mean_dependence", "max_dependence")
     protocol = {k: summarise(v, metrics) for k, v in per_seed.items()}
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
     payload = {
         "config": config,
         "torch": torch.__version__,
         "protocol": json_safe(protocol),
         "per_seed": json_safe(per_seed),
     }
-    (OUT_DIR / "branch_audit.json").write_text(
+    (out_dir / "branch_audit.json").write_text(
         json.dumps(payload, indent=2), encoding="utf-8"
     )
 
@@ -297,8 +304,8 @@ def main():
                 lines.append(f"| {rho} | {system} | " + " | ".join(cells) + " |")
         lines.append("")
 
-    (OUT_DIR / "summary.md").write_text("\n".join(lines), encoding="utf-8")
-    LOGGER.info("wrote %s", OUT_DIR / "summary.md")
+    (out_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
+    LOGGER.info("wrote %s", out_dir / "summary.md")
 
 
 if __name__ == "__main__":

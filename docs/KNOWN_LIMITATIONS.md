@@ -3,6 +3,21 @@
 Open issues that are measured or suspected but not resolved. Each entry names
 the evidence and what would change our understanding of it.
 
+L1-L8 were written as each Part found them and are ordered by discovery. L9-L15
+were added in Part 16 to cover the standing limitations of the project as a
+whole -- the ones that are true regardless of which experiment you read, and
+which a reader is most likely to assume away.
+
+| standing limitation | entry |
+|---|---|
+| ENIV is validated only on synthetic data with analytically known rho | **L9** |
+| dependence is estimated from finite batches; the estimator's bias is signed, and larger than its seed variance | **L10** |
+| tail dependence is unreliable below 50 exceedances | **L11** |
+| the exact attacker capabilities that defeat the defence | **L12** (see also L4, L8) |
+| V1 detaches ENIV, so it corrects inference but does not shape representation learning | **L13** |
+| a single dataset family; no cross-domain evidence | **L14** |
+| no human-subject and no deployment evaluation | **L15** |
+
 ## L1. Flat confidence under duplication depends on training-time adaptation
 
 **Component:** soft-cluster discount weights, `alpha_i = 1 / sum_j clip(R_ij, 0, 1)`
@@ -501,3 +516,299 @@ all in the `chorus_k3` column (0.668 unstressed, 0.637 at missing_30, 0.624
 under noise). The accurate statement is that only the `chorus_k3` column rises
 meaningfully above chance anywhere, and only its unstressed cell clears 0.60 on
 4 of 5 seeds.
+
+## L9. ENIV is validated only on synthetic data, where rho is a parameter we set
+
+**Component:** the ENIV estimator (`prismflow/eniv/`), and every number in this
+project that depends on it.
+
+**Evidence:** Part 05, `experiments/eniv_validation/` (5 seeds x 6 rho levels =
+30 fits, `results/eniv_validation/estimator_vs_truth.csv`,
+`results/eniv_validation/summary.json`). `docs/DATASETS.md` states the same
+boundary from the data side.
+
+The validation sweep is the ONLY evidence in this project that ENIV measures
+what it claims to measure, and it exists only because the synthetic generator
+lets us choose `rho` and compute `analytic_n_eff` in closed form. The sweep
+covers a single design point: **n_views = 4**, rho in {0.0, 0.2, 0.4, 0.6, 0.8,
+0.95}, 5 seeds each.
+
+- The model's own estimator (`features_cca_holdout`) tracks the truth in RANK
+  but not in VALUE: correlation with truth **0.9922**, mean absolute error
+  **0.5220 +/- 0.2998** effective views. Against a true ENIV of 4.0 at rho = 0
+  it reads **2.9951 +/- 0.0486**; against a true 1.039 at rho = 0.95 it reads
+  **1.8104 +/- 0.0702**.
+- The error is not noise around the truth, it is COMPRESSION toward the middle
+  of the range: signed error runs **-1.0049** at rho = 0, then **+0.2557,
+  +0.7232, +0.8831, +0.8756, +0.7714** as rho rises. The estimator understates
+  independence when views are independent and overstates it when they are not.
+- The best-case variant (`views_cca`, run on raw views rather than encoder
+  features) reaches MAE **0.1919 +/- 0.1494** at correlation **0.9965**, so the
+  compression is partly attributable to the encoder, not to ENIV alone. That
+  variant is not what the model uses.
+
+**What this means.** Every ENIV, efficiency ratio and discount magnitude
+reported on real data in Part 15 is a measurement taken with an instrument
+calibrated at one view count on one generator. `RealMultiViewDataset.rho_matrix`
+is `None` and `tests/unit/test_real_datasets.py` asserts it, so the code cannot
+quietly consume a measurement as a target -- but the reader can, and should not.
+Claims of the form "these views carry N independent views of evidence" are
+licensed only up to an error of roughly half an effective view, in a direction
+that depends on where the true value sits.
+
+**What would change our understanding.** A generator with analytically known
+rho at other view counts (6, 8, 16) to test whether the compression scales with
+n_views; and a real dataset with an independently established dependence
+structure, which we do not have. See [[L10]] for the finite-sample component of
+this error and [[L14]] for the single-dataset limitation.
+
+## L10. Dependence is estimated from finite batches, and the estimator is biased
+
+**Component:** `prismflow/statistics/dependence.py::feature_dependence_matrix`,
+which every downstream quantity reads -- the discount, the Part 10 detector, the
+Part 14 gate.
+
+**Evidence:** Part 05 `results/eniv_validation/estimator_vs_truth.csv` (5 seeds
+x 6 rho) and the Part 15 permutation-null control,
+`results/real/handwritten/redundancy.json` (5 seeds).
+
+- **The clean measurement of downward bias is the independence null.** Part 15
+  permutes each view's encoder features within class, which removes cross-view
+  coupling while leaving sample size, feature dimension, marginals and class
+  structure untouched. On 6 genuinely independent views at n = 800, ENIV reads
+  **5.5094 +/- 0.0777**, not 6.0. That shortfall of **0.49 effective views** is
+  pure finite-sample artefact, measured, not estimated.
+- **The paired rho_bar null says the mean bias is already corrected.** Under
+  the same permutation rho_bar reads **0.0508 +/- 0.0116**, near zero. So the
+  chance correction works on the pairwise quantity, and the residual deficit
+  above is the eigenvalue form's own floor.
+- **The bias is SIGNED, not uniformly downward.** Measured rho_bar against
+  true rho on the synthetic sweep: **+0.3345** at rho = 0, **+0.2144** at 0.2,
+  **+0.0860** at 0.4, then **-0.0374** at 0.6, **-0.1508** at 0.8, **-0.2203**
+  at 0.95. It crosses zero between rho = 0.4 and rho = 0.6. Describing this as
+  "a downward bias" is correct only for rho >= 0.6; below that the estimator
+  reports dependence that is not there.
+- **Seed variance is small relative to that bias.** Across-seed std of rho_bar
+  is **0.0075 to 0.0235** over the whole sweep -- an order of magnitude below
+  the bias at the extremes. Running more seeds does not reduce the error that
+  matters here.
+
+**What this means.** The dominant error in the dependence signal is systematic,
+not statistical, so the 5-SEED RULE protects against the smaller of the two
+problems. In the regime where PrismFlow is most often evaluated (rho = 0.3,
+used by Parts 11-14), the estimator sits on the upward-bias side of the
+crossing: it over-reports dependence, so the discount is applied slightly too
+hard. Any claim that rests on the absolute level of measured dependence -- as
+opposed to its direction of change under an intervention -- inherits this.
+
+**What would change our understanding.** A batch-size sweep holding rho fixed,
+to separate the sample-count component from the estimator's structural floor.
+Not run: every experiment here uses `evaluation.batch_size = 512` and the
+comparison was never made. Related: [[L9]], [[L11]].
+
+## L11. Tail dependence is unreliable below 50 exceedances, and the threshold bites
+
+**Component:** `prismflow/statistics/tail_dependence.py`, where
+`MIN_TAIL_SAMPLES = 50` and `TailEstimate.reliable` is
+`n_tail >= MIN_TAIL_SAMPLES`.
+
+**Evidence:** Part 13, `experiments/tail/` (5 seeds,
+`results/tail/tail.json`), including a pre-registered split-size control.
+
+- At the Part 13 test split (8000 samples, 1200 in the evaluated slice) the
+  headline quantile q = 0.95 leaves **n_tail = 60** exceedances -- clearing the
+  threshold by 10. At Part 09's split size of 300 it leaves **n_tail = 15**,
+  which the code flags `reliable = False`.
+- **The failure is dispersion, not displacement.** At n = 300 the lambda_U
+  means barely move (eps 0.0: **0.1372 +/- 0.0611** at n = 1200 against
+  **0.1400 +/- 0.0559** at n = 300; eps 1.0: **0.0961 +/- 0.0495** against
+  **0.1000 +/- 0.0377**). A reader checking only the mean would conclude the
+  smaller split was fine. The std is 40-60% of the mean in both cases, which is
+  the actual problem, and it is already large at n = 1200.
+- The margin is thin by construction: 60 exceedances against a floor of 50 is
+  a 20% margin, and it comes from a deliberately generous 1200-sample slice.
+  Any real deployment slicing per-class or per-condition falls under the floor
+  immediately -- Part 15's real-data audit had to drop the headline quantile to
+  **q = 0.9** to reach **n_tail = 80** on 800 test samples.
+
+**What this means.** Tail dependence is the most sample-hungry quantity in the
+project and the one with the least statistical headroom. Its negative result in
+Part 13 ([[L7]]) is safe, because an underpowered estimator failing to detect
+is consistent with both "no signal" and "not enough data" -- but the converse
+does not hold. A future POSITIVE tail result at n_tail near 50 should not be
+believed without a larger split.
+
+**What would change our understanding.** Re-running Part 13's detection arm at
+4x the split size. If tail AUC stayed at the measured **0.4846 +/- 0.0022 to
+0.5856 +/- 0.0126**, the negative result would be confirmed as substantive
+rather than underpowered.
+
+## L12. The attacker capabilities that defeat the defence are specific, and only partly tested
+
+**Component:** the whole defence -- discount and gate together ([[L8]]).
+
+**Evidence:** Part 14, `experiments/adaptive/` (5 seeds, k = 3, eps = 2.0,
+beta = 1.0, 30 steps, BPDA through the dependence estimator;
+`results/adaptive/adaptive.json`).
+
+What is MEASURED as sufficient to evade:
+
+- **Full white-box access to the model and the dependence estimator**, with a
+  differentiable surrogate (BPDA, `prismflow/attacks/adaptive.py:50`). Under
+  that access, gamma = 5 raises attack success to **0.6600 +/- 0.1161** from
+  **0.6267 +/- 0.1352** while driving measured dependence to **0.7063 +/-
+  0.0702** from **0.8120 +/- 0.0120** and gate AUC to **0.5806 +/- 0.0413**
+  from **0.6743 +/- 0.0492**.
+- **Control of exactly 3 of 4 views** at eps = 2.0. Both the view count and the
+  budget are fixed across the entire sweep; neither was varied.
+
+What is MEASURED as insufficient:
+
+- **Gradient-free search.** The `random_search` arm reaches success **0.0773
+  +/- 0.0439** against 0.6267 for the gradient attack -- an 8x gap. Gradient
+  access is not a convenience here, it is the capability.
+- **Transfer from a separate model.** **0.5793 +/- 0.1519**, below direct
+  white-box, with dependence and gate barely moved (**0.8151 +/- 0.0298**,
+  **0.6530 +/- 0.0461**).
+
+What is **UNTESTED and must not be inferred**:
+
+- **A gate-aware attacker.** The `gate_check` arm was built to supply this and
+  is a null: it returns numbers identical to `random_search` on all 5 seeds and
+  all 3 metrics, because at eps = 2.0 random perturbation already drives
+  dependence to 0.0752, below every seed's tau, so `max(0, rho - tau)` is
+  inactive and the gamma = 20 objective reduces exactly to gamma = 0. No
+  conclusion about gate-aware attackers is licensed by this project.
+- Attacker control of 2 or fewer views, or of more than 3; any budget other
+  than eps = 2.0; any view count other than 4; adaptive attacks on real data.
+
+**What this means.** "The discount is partially evadable" is a claim about one
+cell -- 3-of-4 views, eps = 2.0, white-box with gradients, no gate term. The
+sweep shows the attacker pays for evasion (success falls to **0.4967 +/-
+0.1253** at gamma = 20, where dependence is crushed to **0.3343 +/- 0.0172**),
+so there is a real trade-off curve, but its shape is known at one operating
+point only.
+
+**What would change our understanding.** A working gate-aware arm -- the
+straightforward fix is to lower eps in that arm so the penalty is active -- and
+a sweep over the number of compromised views.
+
+## L13. V1 detaches the discount, so it corrects inference but never shapes representation
+
+**Component:** `prismflow/eniv/discount.py`, lines 75 and 122:
+`alpha = alpha.detach()` in both `shafer_discount` and the evidence-scaling
+path. The discount weights carry no gradient, by design and by contract.
+
+**Evidence:** Part 11, `experiments/disentangle/` and
+`experiments/branch_audit/` (5 seeds each, `results/disentangle/summary.md`,
+`results/branch_audit/summary.md`).
+
+- **What the detached discount cannot do, a penalty can.** Adding an explicit
+  representation-shaping term moves measured dependence substantially where the
+  discount leaves it untouched: at rho = 0.6, mean dependence is **0.3832 +/-
+  0.0231** for v1 and **0.2052 +/- 0.0550** for `v2_orthogonality` -- a drop of
+  0.178, roughly half the v1 level. ENIV rises correspondingly, **2.8486 +/-
+  0.0690** to **3.3689 +/- 0.1733**.
+- **The architecture alone does nothing; the penalty does it.**
+  `v2_lambda0` is the V2 architecture with the penalty switched off and it
+  reproduces v1 almost exactly (dependence **0.3840 +/- 0.0392** against
+  0.3832; ENIV **2.8458 +/- 0.1157** against 2.8486). This rules out the
+  architecture as the cause.
+- **It is not free, and it is not monotone in the penalty weight.** At
+  lambda = 1 accuracy holds (**0.7827 +/- 0.0615** against v1's **0.7940 +/-
+  0.0665** at rho = 0.6), but at lambda = 10 and 100 the model collapses to
+  **0.3273 +/- 0.0183** with vacuity confidence at **0.0172 +/- 0.0020**. The
+  window in which shaping helps without destroying the model was found by
+  sweep, not by principle.
+- **v1 is the steadiest on ENIV across seeds** (std **0.0632** at rho = 0.6
+  against 0.0957-0.2590 for every V2 arm), which is the compensating property
+  of not letting the estimator back-propagate.
+
+**What this means.** PrismFlow as evaluated is a post-hoc correction: it changes
+what the model concludes from its evidence, never what evidence the encoders
+learn to produce. The redundancy it discounts is redundancy it had no hand in
+creating or avoiding. This is a deliberate contract choice -- a detached alpha
+cannot destabilise training through an estimator that is itself biased
+([[L10]]) -- and the stability figure above is the evidence for it. But it
+bounds the ceiling: the best this design can do is spend correctly whatever
+independence the encoders happen to supply.
+
+**What would change our understanding.** A V3 that lets a calibrated,
+low-variance dependence estimate shape training without the lambda = 10
+collapse. Part 11 did not find one; `prismflow/train_two_timescale.py` is the
+closest attempt and detaches the evidence before the estimator step
+(`train_two_timescale.py:250`).
+
+## L14. One dataset family, and five seeds that are five partitions of it
+
+**Component:** the entire real-data evidence base (Part 15,
+`experiments/real/`).
+
+**Evidence:** `results/real/handwritten/redundancy.json`,
+`results/real/README.md` (5 seeds).
+
+- **There is one real dataset: `handwritten`** (UCI multi-feature, 6 views:
+  fou, fac, kar, pix, zer, mor). Every real-data claim in this project rests on
+  it.
+- **The 5 seeds do not do what 5 seeds usually do.** On synthetic data a seed
+  regenerates the dataset; on real data it only re-partitions a fixed one
+  (`docs/DATASETS.md` states this in the "what a seed varies" row). The quoted
+  spreads -- ENIV **3.2820 +/- 0.0664**, rho_bar **0.5257 +/- 0.0146**,
+  accuracy **0.9808 +/- 0.0034** -- are partition variance, NOT dataset
+  variance. They say the measurement is stable on this data; they say nothing
+  about how it would move on other data.
+- **The headline result is plausibly domain-specific.** The measured redundancy
+  (6 nominal views carrying **3.28** effective views, efficiency **0.547 +/-
+  0.011**) is concentrated in one block of the dependence matrix: pix-fac
+  **0.852**, pix-kar **0.823**, fac-kar **0.707**, against fou-kar **0.304**
+  and mor-kar **0.291**. Those three high pairs are all pixel-derived
+  descriptors of the same glyph. A benchmark whose views come from genuinely
+  different sensors need not behave this way.
+
+**What this means.** "A standard 6-view benchmark carries 3.28 effective views"
+is a true statement about `handwritten` and a conjecture about anything else.
+Reporting a +/- next to it invites the reader to treat it as a sampled estimate
+over benchmarks, which it is not. The efficiency ratio in particular should
+never be quoted as a property of multi-view data in general.
+
+**What would change our understanding.** The same audit on two or three
+unrelated multi-view benchmarks, ideally with views from different sensing
+modalities rather than different transforms of one image. The audit code is
+dataset-agnostic; only the dataset registry needs extending.
+
+## L15. No human-subject evaluation and no deployment evaluation were run
+
+**Component:** the project's claims about calibration and confidence, which are
+evaluated only as numbers.
+
+**Evidence:** none, and that is the entry. No user study, no decision-support
+task, no expert assessment, and no deployment of any kind was conducted. This
+is stated here rather than omitted because the project's central quantity is a
+CONFIDENCE, and confidence is the one output whose value is realised by a human
+or a downstream system acting on it.
+
+What was measured instead, and what it does and does not cover:
+
+- **Calibration error against ground-truth labels.** Part 11's table reports
+  v1 prob_ECE **0.0637 +/- 0.0137** at rho = 0.3 and **0.0574 +/- 0.0084** at
+  rho = 0.6 (`results/disentangle/summary.md`). This establishes that the
+  numbers are statistically well-behaved.
+- **Confidence flatness under duplication**, the Part 01-02 result ([[L1]]).
+  This establishes the mechanism does what it was designed to do.
+
+Neither establishes that a person reading a PrismFlow confidence makes better
+decisions than one reading a naive fusion confidence, or that the diagnostics
+(`prismflow/app/panels.py`) communicate the dependence structure to anyone. The
+Part 16 demo app is an inspection surface, not an evaluated interface: it has
+unit tests, no usability evidence.
+
+**What this means.** Every claim in this repository is a claim about
+measurements, not about utility. In particular, nothing here supports "this
+makes multi-view systems safer to rely on" -- only "this makes one specific
+statistical error smaller under conditions we enumerate".
+
+**What would change our understanding.** A decision task where participants see
+either naive or PrismFlow confidence on the same colluding-view inputs, scored
+on whether they correctly withhold trust. That is a different project, and it
+would need [[L14]] resolved first -- a human study on one synthetic generator
+would not be worth running.
