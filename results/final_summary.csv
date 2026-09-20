@@ -1,0 +1,18 @@
+part,finding,metric,unit,mean,std,n_seeds
+05,ENIV tracks analytic truth in rank but not value (n_views=4 only),correlation with analytic n_eff,correlation,0.9922060509334697,,
+05,ENIV absolute error is ~half an effective view,mean absolute error,effective views,0.5220005950719182,0.29982128173320327,5
+07,PrismFlow is calibrated on clean synthetic data,prob_ece,expected calibration error,0.06370506604512531,0.013687539213905394,5
+07,PrismFlow accuracy on clean synthetic data,accuracy,fraction,0.83,0.07965202096899011,5
+10,The detector separates exact clones from clean,detection AUC (clone_k2),AUC,0.8743088888888889,0.05831081226634124,
+10,The detector INVERTS under missing views (L5),detection AUC (missing_50),AUC,0.1247483747760133,0.031852118806991125,
+11,A representation penalty moves dependence where the detached discount cannot,"mean dependence, v2_orthogonality at rho=0.6",dependence,0.20518937807392737,0.05495678361931025,5
+11,V1 baseline dependence at the same operating point,"mean dependence, v1 at rho=0.6",dependence,0.38318799759327565,0.023073599100848358,5
+13,Tail dependence is not a sharper detector than rho_bar (L7),tail detection AUC at eps=2.0,AUC,0.5856175694444444,0.012607713651416228,5
+13,The rho_bar detector on the same data and split,rho_bar detection AUC at eps=2.0,AUC,0.7085138888888889,0.13954788220777403,5
+14,The adaptive attacker gains while suppressing measured dependence,attack success at gamma=5,fraction,0.6599999904632569,0.11606989902902266,5
+14,Baseline Chorus attack success (gamma=0),attack success at gamma=0,fraction,0.6266666769981384,0.1352364173449445,5
+14,The deployable gate degrades without being targeted (L8),gate AUC at gamma=5,AUC,0.5806397959562233,0.041342973880344,5
+14,"The oracle gate is an upper bound, fitted with attack labels",oracle selectivity AUC,AUC,0.7447672862177703,0.05920511345163355,5
+15,A standard 6-view benchmark carries 3.28 effective views,measured ENIV (handwritten),effective views,3.2819664911549054,0.06639076301032017,5
+15,Independence efficiency of that benchmark,efficiency ratio (handwritten),fraction,0.5469944151924842,0.011065127168386705,5
+15,The permutation null bounds the finite-sample artefact (L10),ENIV under within-class permutation,effective views,5.509378798378114,0.07768653824860623,5

@@ -1,0 +1,161 @@
+{
+  "generated": "2026-09-20",
+  "commit": "5516bcc9128b1d5c353c053771dd25dc6bea27e2",
+  "provenance": "Every value is read from a committed file under results/ at the commit above. No value is typed in by hand. Entries that failed to resolve are omitted and listed in AUDIT_REPORT.md rather than estimated.",
+  "seed_rule": "All rows are 5-seed results; n_seeds is carried through where the source records it.",
+  "rows": [
+    {
+      "part": "05",
+      "finding": "ENIV tracks analytic truth in rank but not value (n_views=4 only)",
+      "metric": "correlation with analytic n_eff",
+      "unit": "correlation",
+      "mean": 0.9922060509334697,
+      "std": null,
+      "n_seeds": null
+    },
+    {
+      "part": "05",
+      "finding": "ENIV absolute error is ~half an effective view",
+      "metric": "mean absolute error",
+      "unit": "effective views",
+      "mean": 0.5220005950719182,
+      "std": 0.29982128173320327,
+      "n_seeds": 5
+    },
+    {
+      "part": "07",
+      "finding": "PrismFlow is calibrated on clean synthetic data",
+      "metric": "prob_ece",
+      "unit": "expected calibration error",
+      "mean": 0.06370506604512531,
+      "std": 0.013687539213905394,
+      "n_seeds": 5
+    },
+    {
+      "part": "07",
+      "finding": "PrismFlow accuracy on clean synthetic data",
+      "metric": "accuracy",
+      "unit": "fraction",
+      "mean": 0.83,
+      "std": 0.07965202096899011,
+      "n_seeds": 5
+    },
+    {
+      "part": "10",
+      "finding": "The detector separates exact clones from clean",
+      "metric": "detection AUC (clone_k2)",
+      "unit": "AUC",
+      "mean": 0.8743088888888889,
+      "std": 0.05831081226634124,
+      "n_seeds": null
+    },
+    {
+      "part": "10",
+      "finding": "The detector INVERTS under missing views (L5)",
+      "metric": "detection AUC (missing_50)",
+      "unit": "AUC",
+      "mean": 0.1247483747760133,
+      "std": 0.031852118806991125,
+      "n_seeds": null
+    },
+    {
+      "part": "11",
+      "finding": "A representation penalty moves dependence where the detached discount cannot",
+      "metric": "mean dependence, v2_orthogonality at rho=0.6",
+      "unit": "dependence",
+      "mean": 0.20518937807392737,
+      "std": 0.05495678361931025,
+      "n_seeds": 5
+    },
+    {
+      "part": "11",
+      "finding": "V1 baseline dependence at the same operating point",
+      "metric": "mean dependence, v1 at rho=0.6",
+      "unit": "dependence",
+      "mean": 0.38318799759327565,
+      "std": 0.023073599100848358,
+      "n_seeds": 5
+    },
+    {
+      "part": "13",
+      "finding": "Tail dependence is not a sharper detector than rho_bar (L7)",
+      "metric": "tail detection AUC at eps=2.0",
+      "unit": "AUC",
+      "mean": 0.5856175694444444,
+      "std": 0.012607713651416228,
+      "n_seeds": 5
+    },
+    {
+      "part": "13",
+      "finding": "The rho_bar detector on the same data and split",
+      "metric": "rho_bar detection AUC at eps=2.0",
+      "unit": "AUC",
+      "mean": 0.7085138888888889,
+      "std": 0.13954788220777403,
+      "n_seeds": 5
+    },
+    {
+      "part": "14",
+      "finding": "The adaptive attacker gains while suppressing measured dependence",
+      "metric": "attack success at gamma=5",
+      "unit": "fraction",
+      "mean": 0.6599999904632569,
+      "std": 0.11606989902902266,
+      "n_seeds": 5
+    },
+    {
+      "part": "14",
+      "finding": "Baseline Chorus attack success (gamma=0)",
+      "metric": "attack success at gamma=0",
+      "unit": "fraction",
+      "mean": 0.6266666769981384,
+      "std": 0.1352364173449445,
+      "n_seeds": 5
+    },
+    {
+      "part": "14",
+      "finding": "The deployable gate degrades without being targeted (L8)",
+      "metric": "gate AUC at gamma=5",
+      "unit": "AUC",
+      "mean": 0.5806397959562233,
+      "std": 0.041342973880344,
+      "n_seeds": 5
+    },
+    {
+      "part": "14",
+      "finding": "The oracle gate is an upper bound, fitted with attack labels",
+      "metric": "oracle selectivity AUC",
+      "unit": "AUC",
+      "mean": 0.7447672862177703,
+      "std": 0.05920511345163355,
+      "n_seeds": 5
+    },
+    {
+      "part": "15",
+      "finding": "A standard 6-view benchmark carries 3.28 effective views",
+      "metric": "measured ENIV (handwritten)",
+      "unit": "effective views",
+      "mean": 3.2819664911549054,
+      "std": 0.06639076301032017,
+      "n_seeds": 5
+    },
+    {
+      "part": "15",
+      "finding": "Independence efficiency of that benchmark",
+      "metric": "efficiency ratio (handwritten)",
+      "unit": "fraction",
+      "mean": 0.5469944151924842,
+      "std": 0.011065127168386705,
+      "n_seeds": 5
+    },
+    {
+      "part": "15",
+      "finding": "The permutation null bounds the finite-sample artefact (L10)",
+      "metric": "ENIV under within-class permutation",
+      "unit": "effective views",
+      "mean": 5.509378798378114,
+      "std": 0.07768653824860623,
+      "n_seeds": 5
+    }
+  ]
+}

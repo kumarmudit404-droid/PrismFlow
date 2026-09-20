@@ -18,6 +18,14 @@ experiments/**/outputs/
 # claim stays linked to the commit that produced it; bulk artefacts are not.
 results/*
 !results/.gitkeep
+# Part 16 writes results/final_summary.{json,csv} at the TOP level. Every
+# un-ignore below starts one directory deep, so without this zero-level rule
+# those two files are silently untracked -- the same failure as 54bb6d7 and
+# c012d21, one level shallower instead of deeper.
+!results/*.json
+!results/*.csv
+!results/*.md
+!results/*.png
 !results/*/
 results/*/*
 !results/*/*.json
