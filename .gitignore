@@ -80,3 +80,16 @@ Thumbs.db
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# PrismFlow V2 — Secrets & Environment
+.env
+.env.local
+.env.*.local
+
+# API credentials
+credentials/
+*.key
+*.pem
+
+# V2 cache
+cache/v2/
