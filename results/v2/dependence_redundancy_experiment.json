@@ -1,0 +1,162 @@
+{
+  "experiment": "planted_redundancy_dependence",
+  "part": 21,
+  "n_seeds": 5,
+  "n_queries_per_seed": 20,
+  "n_topics_in_corpus": 24,
+  "conditions": [
+    "identical",
+    "paraphrase",
+    "unrelated",
+    "low_rank",
+    "low_rank_paraphrase",
+    "low_rank_unrelated"
+  ],
+  "weights": {
+    "embedding": 0.5,
+    "citation": 0.3,
+    "lexical": 0.2
+  },
+  "low_rank_dims": 4,
+  "embedding_model": "all-MiniLM-L6-v2",
+  "summary": {
+    "identical": {
+      "mean_of_seed_means": 1.0,
+      "std_of_seed_means": 0.0,
+      "per_seed_means": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "pooled_min": 0.9999999999999998,
+      "pooled_max": 1.0,
+      "n_measurements": 100
+    },
+    "paraphrase": {
+      "mean_of_seed_means": 0.6335899637375046,
+      "std_of_seed_means": 0.004645006311857836,
+      "per_seed_means": [
+        0.62805898181228,
+        0.6403012488943386,
+        0.6307768334587004,
+        0.6352503147548612,
+        0.6335624397673429
+      ],
+      "pooled_min": 0.5447269801245709,
+      "pooled_max": 0.7047747092161644,
+      "n_measurements": 100
+    },
+    "unrelated": {
+      "mean_of_seed_means": 0.1382503026394327,
+      "std_of_seed_means": 0.010134374842939293,
+      "per_seed_means": [
+        0.1299806257938428,
+        0.13026744392444747,
+        0.1324451703681993,
+        0.15021152854886438,
+        0.14834674456180946
+      ],
+      "pooled_min": 0.04196248693900243,
+      "pooled_max": 0.24555977119760147,
+      "n_measurements": 100
+    },
+    "low_rank": {
+      "mean_of_seed_means": 1.0,
+      "std_of_seed_means": 0.0,
+      "per_seed_means": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "pooled_min": 0.9999999999999998,
+      "pooled_max": 1.0,
+      "n_measurements": 100
+    },
+    "low_rank_paraphrase": {
+      "mean_of_seed_means": 0.6186087529581753,
+      "std_of_seed_means": 0.018232953427510707,
+      "per_seed_means": [
+        0.6301900598247272,
+        0.5999739748606188,
+        0.6333221698662623,
+        0.597421379417375,
+        0.6321361808218935
+      ],
+      "pooled_min": 0.3196136498680925,
+      "pooled_max": 0.802731582428695,
+      "n_measurements": 100
+    },
+    "low_rank_unrelated": {
+      "mean_of_seed_means": 0.17965602882487713,
+      "std_of_seed_means": 0.014301149810464603,
+      "per_seed_means": [
+        0.18172623169071384,
+        0.1633302887591928,
+        0.2019863422013033,
+        0.17278737649891235,
+        0.17844990497426333
+      ],
+      "pooled_min": 0.0,
+      "pooled_max": 0.4915068630396431,
+      "n_measurements": 100
+    }
+  },
+  "checks": {
+    "identical": {
+      "requirement": "mean > 0.95",
+      "observed_mean": 1.0,
+      "passed": true
+    },
+    "paraphrase": {
+      "requirement": "0.6 < mean < 0.95",
+      "observed_mean": 0.6335899637375046,
+      "passed": true
+    },
+    "unrelated": {
+      "requirement": "mean < 0.3",
+      "observed_mean": 0.1382503026394327,
+      "passed": true
+    },
+    "separability": {
+      "requirement": "unrelated < paraphrase < identical with no overlap, pooled across all seeds and queries",
+      "passed": true,
+      "unrelated_max": 0.24555977119760147,
+      "paraphrase_min": 0.5447269801245709,
+      "paraphrase_max": 0.7047747092161644,
+      "identical_min": 0.9999999999999998
+    },
+    "low_rank_degrades_gracefully": {
+      "requirement": "truncating embeddings to 4 dims keeps identical pairs high and still yields a valid matrix, while the paraphrase-vs-unrelated margin narrows rather than the estimator failing",
+      "identical_mean_full_rank": 1.0,
+      "identical_mean_low_rank": 1.0,
+      "unrelated_mean_full_rank": 0.1382503026394327,
+      "unrelated_mean_low_rank": 0.17965602882487713,
+      "separability_margin_full_rank": 0.2991672089269694,
+      "separability_margin_low_rank": -0.1718932131715506,
+      "margin_lost": 0.47106042209852,
+      "passed": true,
+      "note": "On identical claims the similarity is 1.0 at any dimensionality, so the brief's condition 4 as written cannot show degradation of anything. The informative comparison is the margin."
+    },
+    "estimator_agreement": {
+      "requirement": "mean Spearman rho between estimators > 0.5 over a 5-angle configuration (10 pairs)",
+      "observed_mean_rho": 0.7105193225835909,
+      "per_seed_rho": [
+        0.6375720854761274,
+        0.6882772224331335,
+        0.6444355136545961,
+        0.7911558956770487,
+        0.7911558956770487
+      ],
+      "passed": true,
+      "notes": []
+    }
+  },
+  "encoder_calls": 1225,
+  "distinct_texts_encoded": 96,
+  "runtime_seconds": 16.17,
+  "inputs_are_synthetic": "Claims are constructed probes with known relationships, not model output. The measurement is of the estimator, not of the world."
+}

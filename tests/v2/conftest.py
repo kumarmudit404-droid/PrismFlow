@@ -313,3 +313,241 @@ def run_async():
     def _run(coro):
         return asyncio.run(coro)
     return _run
+
+
+# --- Part 21: planted-redundancy claim corpus ---------------------------
+#
+# Synthetic claims used to probe the dependence estimators under known
+# conditions. They are PROBES, not model output and not results: the point of a
+# planted-redundancy experiment is that the true answer is known in advance, so
+# the input has to be constructed rather than observed. Nothing here is ever
+# reported as a finding about the world.
+#
+# The corpus is a pool rather than a single hardcoded pair because the Part 21
+# brief's experiment loops over five seeds while varying nothing -- its claims
+# are literals and the encoder is deterministic, so every seed returns the same
+# number and the reported standard deviation is 0.0 by construction. Seeds have
+# to select something for a mean and sd to mean anything; here they select which
+# topics are used, which findings within a topic, and which unrelated topic is
+# paired against which.
+#
+# Each topic carries two findings, each phrased twice. The two phrasings say the
+# same thing in deliberately different words, so the paraphrase condition tests
+# semantic similarity rather than string overlap.
+
+_TOPIC_CORPUS = [
+    ("vector databases",
+     (("Vector database adoption is consolidating around a few open-source engines.",
+       "A small number of open-source engines now account for most vector search deployments."),
+      ("Hybrid keyword and vector retrieval beats pure vector search on recall.",
+       "Combining lexical matching with embeddings retrieves more relevant documents than embeddings alone."))),
+    ("model quantisation",
+     (("Four-bit quantisation preserves accuracy on most instruction-following benchmarks.",
+       "Cutting weights to four bits leaves benchmark scores for instruction tasks largely intact."),
+      ("Quantised inference shifts the bottleneck from compute to memory bandwidth.",
+       "After quantisation, memory throughput rather than arithmetic limits serving speed."))),
+    ("container orchestration",
+     (("Kubernetes operator patterns have replaced bespoke deployment scripts.",
+       "Custom deployment scripting has given way to operator-based control loops."),
+      ("Cluster autoscaling reduces idle capacity but increases cold-start latency.",
+       "Scaling nodes on demand trims wasted capacity at the cost of slower first responses."))),
+    ("static analysis",
+     (("Incremental type checking makes large codebases tractable for gradual typing.",
+       "Checking only changed files lets gradual typing scale to very large repositories."),
+      ("False positive rates dominate developer adoption of static analysers.",
+       "Whether engineers keep using a linter is driven mainly by how often it cries wolf."))),
+    ("differential privacy",
+     (("Privacy budgets are rarely accounted for across repeated queries in practice.",
+       "Deployments seldom track cumulative epsilon spend over many releases."),
+      ("Adding calibrated noise degrades utility most sharply on small subgroups.",
+       "Minority cohorts lose the most accuracy when privacy noise is applied."))),
+    ("build systems",
+     (("Remote caching cuts median build times more than parallelism does.",
+       "Sharing cached artefacts shortens typical builds further than adding workers."),
+      ("Non-hermetic builds are the main cause of cache misses at scale.",
+       "Builds that leak environment state are why large caches fail to hit."))),
+    ("time series forecasting",
+     (("Gradient-boosted trees remain competitive with deep models on tabular forecasts.",
+       "Boosted decision trees still match neural networks for tabular time series."),
+      ("Forecast accuracy degrades fastest around regime changes.",
+       "Predictions break down most severely when the underlying process shifts."))),
+    ("API versioning",
+     (("Consumers migrate off deprecated endpoints only when forced by shutdown dates.",
+       "Callers move to new API versions when a sunset deadline compels them, not before."),
+      ("Additive schema changes cause fewer breakages than field renames.",
+       "Adding fields is far safer for clients than renaming existing ones."))),
+    ("graph neural networks",
+     (("Message passing depth beyond three layers yields diminishing returns.",
+       "Stacking more than about three propagation steps adds little accuracy."),
+      ("Sampling neighbourhoods is required for graphs that exceed device memory.",
+       "Large graphs must subsample adjacency to fit in accelerator memory."))),
+    ("observability",
+     (("Trace sampling strategy determines whether rare failures are ever observed.",
+       "Whether uncommon faults appear in telemetry depends on how traces are sampled."),
+      ("Cardinality growth in labels is the main driver of metrics storage cost.",
+       "Unbounded label values are what makes time series storage expensive."))),
+    ("federated learning",
+     (("Client drift under non-identical data distributions slows convergence.",
+       "Heterogeneous local datasets pull updates apart and lengthen training."),
+      ("Secure aggregation adds communication overhead that dominates small models.",
+       "For small networks the cost of private aggregation outweighs the training traffic."))),
+    ("compiler optimisation",
+     (("Profile-guided optimisation gives larger gains than aggressive inlining alone.",
+       "Using runtime profiles beats inlining heuristics for end-to-end speed."),
+      ("Auto-vectorisation fails silently on loops with unpredictable control flow.",
+       "Loops with data-dependent branches quietly miss out on vector instructions."))),
+    ("reinforcement learning",
+     (("Reward misspecification is a more common failure than exploration collapse.",
+       "Badly specified objectives break agents more often than insufficient exploration does."),
+      ("Offline policy evaluation is unreliable without overlap in the behaviour policy.",
+       "Estimating a new policy from logged data fails when the logging policy never tried those actions."))),
+    ("edge computing",
+     (("Inference at the edge is limited by thermal budget rather than raw compute.",
+       "Heat dissipation, not processor speed, caps what edge devices can run."),
+      ("Intermittent connectivity forces reconciliation logic into every client.",
+       "Unreliable networks mean each device must resolve conflicting state itself."))),
+    ("supply chain security",
+     (("Dependency confusion attacks exploit resolution order rather than code flaws.",
+       "These attacks abuse how package managers choose a registry, not bugs in the packages."),
+      ("Reproducible builds make tampering detectable but are rarely achieved.",
+       "Bit-identical rebuilds would reveal interference, yet few projects manage them."))),
+    ("database indexing",
+     (("Learned indexes outperform B-trees only on predictable key distributions.",
+       "Model-based indexes beat balanced trees when key layouts are smooth and stable."),
+      ("Write amplification limits index density on log-structured storage.",
+       "How much data each write rewrites bounds how dense indexes can get on LSM engines."))),
+    ("speech recognition",
+     (("Word error rate understates failure on accented and code-switched speech.",
+       "Aggregate error rates hide how badly systems handle accents and mixed languages."),
+      ("Streaming recognition trades accuracy for latency through limited right context.",
+       "Real-time transcription sees less future audio and is less accurate as a result."))),
+    ("property testing",
+     (("Shrinking quality determines whether a failing case is actionable.",
+       "How well a generator minimises a counterexample decides if developers can debug it."),
+      ("Stateful property tests find concurrency bugs that unit tests miss.",
+       "Model-based sequential testing surfaces race conditions that example tests never reach."))),
+    ("recommendation systems",
+     (("Popularity bias compounds when feedback loops are not corrected.",
+       "Uncorrected feedback makes already-popular items steadily more dominant."),
+      ("Offline ranking metrics correlate weakly with online engagement.",
+       "Improvements in held-out ranking scores often fail to show up in live tests."))),
+    ("memory safety",
+     (("Rewriting parsers in memory-safe languages removes most exploitable bugs.",
+       "Porting input-handling code to safe languages eliminates the majority of vulnerabilities."),
+      ("Unsafe blocks concentrate risk rather than eliminating it.",
+       "Escape hatches localise danger but do not remove it from the program."))),
+    ("data labelling",
+     (("Annotator disagreement is signal about task ambiguity, not just noise.",
+       "When labellers differ it often reveals that the task itself is underspecified."),
+      ("Active learning gains shrink once the labelled pool is broadly representative.",
+       "Selecting informative examples stops helping once coverage is already good."))),
+    ("serverless computing",
+     (("Cold start cost dominates for infrequently invoked functions.",
+       "Rarely called functions spend most of their latency budget on initialisation."),
+      ("Per-invocation billing penalises long-running synchronous workloads.",
+       "Charging by call makes sustained synchronous jobs expensive."))),
+    ("code review",
+     (("Review latency predicts defect escape rate better than review depth.",
+       "How long a change waits for review forecasts escaped bugs more than how thoroughly it is read."),
+      ("Large changesets receive systematically shallower review.",
+       "The bigger the diff, the less carefully each line is actually examined."))),
+    ("model evaluation",
+     (("Benchmark contamination inflates reported scores on public test sets.",
+       "Training data overlap with public benchmarks makes published numbers look better than they are."),
+      ("Single-number leaderboards hide per-slice regressions.",
+       "Aggregate rankings conceal subgroups where performance has got worse."))),
+]
+
+#: Conditions the planted-redundancy experiment measures.
+PLANTED_CONDITIONS = ("identical", "paraphrase", "unrelated", "low_rank")
+
+
+def topic_count() -> int:
+    """How many distinct topics the corpus holds."""
+    return len(_TOPIC_CORPUS)
+
+
+def topic_name(topic_index: int) -> str:
+    return _TOPIC_CORPUS[topic_index % len(_TOPIC_CORPUS)][0]
+
+
+def topic_claims(topic_index: int, *, paraphrase: bool = False):
+    """The claims for one topic, in base or paraphrased phrasing.
+
+    Both phrasings cite the SAME record ids: a paraphrase of a finding rests on
+    the evidence the finding rested on. That is what makes the paraphrase
+    condition a test of semantic similarity rather than of citation overlap.
+    """
+    from prismflow.v2.reasoners.models import Claim
+
+    name, findings = _TOPIC_CORPUS[topic_index % len(_TOPIC_CORPUS)]
+    claims = []
+    for finding_index, phrasings in enumerate(findings):
+        claims.append(
+            Claim(
+                text=phrasings[1 if paraphrase else 0],
+                confidence=0.8,
+                cited_ids=[
+                    f"t{topic_index}-r{finding_index}",
+                    f"t{topic_index}-r{finding_index + 1}",
+                ],
+                conflicts_noted=[],
+                caveats=[f"synthetic probe for {name}"],
+            )
+        )
+    return claims
+
+
+def make_claimset(
+    angle_name: str,
+    query_text: str,
+    claims,
+    *,
+    provider: str = "claude",
+    model_name: str = "claude-sonnet-5",
+):
+    """A ClaimSet wrapping given claims, with plausible non-claim fields."""
+    from prismflow.v2.reasoners.models import ClaimSet
+
+    return ClaimSet(
+        angle_name=angle_name,
+        query_text=query_text,
+        claims=list(claims),
+        provider=provider,
+        model_name=model_name,
+        tokens_input=100,
+        tokens_output=50,
+        latency_seconds=1.0,
+    )
+
+
+def planted_pair(condition: str, topic_index: int, other_topic_index: int):
+    """Two ClaimSets standing in a known relationship.
+
+    ``identical``  angle B repeats angle A exactly -- perfect redundancy.
+    ``paraphrase`` angle B restates A's findings in different words, citing the
+                   same records.
+    ``unrelated``  angle B reports a different topic entirely, citing records
+                   from that topic, so the id spaces are disjoint.
+    ``low_rank``   the same inputs as ``identical``; the condition is applied to
+                   the ESTIMATOR (truncated embeddings), not to the claims.
+    """
+    name = topic_name(topic_index)
+    left = make_claimset("tech", name, topic_claims(topic_index))
+
+    if condition in ("identical", "low_rank"):
+        right_claims = topic_claims(topic_index)
+    elif condition == "paraphrase":
+        right_claims = topic_claims(topic_index, paraphrase=True)
+    elif condition == "unrelated":
+        right_claims = topic_claims(other_topic_index)
+    else:
+        raise ValueError(
+            f"unknown condition {condition!r}; expected one of "
+            f"{', '.join(PLANTED_CONDITIONS)}"
+        )
+
+    right = make_claimset(
+        "market", name, right_claims, provider="openai", model_name="gpt-4o",
+    )
+    return left, right
