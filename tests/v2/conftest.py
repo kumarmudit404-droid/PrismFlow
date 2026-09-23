@@ -144,26 +144,48 @@ def _dt(year: int, month: int, day: int) -> datetime:
 
 
 def make_github_records() -> List[NormalizedRecord]:
-    """Five normalized GitHub records. Stable across runs."""
+    """Five normalized GitHub records. Stable across runs.
+
+    ``snippet_tokens`` is a fixed number rather than ``count_tokens(snippet)``
+    on purpose. Part 19 budgets against the count and Part 21 needs identical
+    fixtures on every machine, but ``count_tokens`` falls back to a character
+    heuristic when tiktoken cannot be reached -- so deriving the count here
+    would make the fixtures vary with network conditions. Tests that need the
+    two to agree should compute it themselves.
+
+    The snippets are worded so a query like "adversarial robustness" matches
+    some records far better than others; a reranking test against a corpus of
+    interchangeable text cannot show that reranking does anything.
+    """
     rows = [
-        ("1296269", "hello-world", "octocat", 12, _dt(2011, 1, 26)),
-        ("7654321", "transformers", "acme", 9, _dt(2019, 6, 2)),
-        ("1010101", "flax", "google", 7, _dt(2020, 2, 14)),
-        ("2020202", "vllm", "vllm-project", 15, _dt(2023, 3, 9)),
-        ("3030303", "keploy", "keploy", 11, _dt(2021, 8, 30)),
+        ("1296269", "hello-world", "octocat", 12, _dt(2011, 1, 26),
+         "My first repository on GitHub, for testing purposes only."),
+        ("7654321", "transformers", "acme", 9, _dt(2019, 6, 2),
+         "State of the art transformer models for natural language "
+         "processing and text classification."),
+        ("1010101", "flax", "google", 7, _dt(2020, 2, 14),
+         "A neural network library for JAX designed for flexibility and "
+         "functional programming."),
+        ("2020202", "vllm", "vllm-project", 15, _dt(2023, 3, 9),
+         "A high throughput and memory efficient inference and serving "
+         "engine for large language models."),
+        ("3030303", "keploy", "keploy", 11, _dt(2021, 8, 30),
+         "Adversarial robustness testing toolkit that generates test cases "
+         "and mocks from real traffic."),
     ]
     return [
         NormalizedRecord(
             id=rid,
             title=title,
             url=f"https://github.com/{author}/{title}",
+            snippet=snippet,
             snippet_tokens=tokens,
             source="github",
             published_date=published,
             author=author,
             relevance_score=1.0,
         )
-        for rid, title, author, tokens, published in rows
+        for rid, title, author, tokens, published, snippet in rows
     ]
 
 
@@ -171,28 +193,39 @@ def make_arxiv_records() -> List[NormalizedRecord]:
     """Five normalized arXiv records. Stable across runs."""
     rows = [
         ("1412.6572v3", "Explaining and Harnessing Adversarial Examples",
-         "Ian J. Goodfellow", 24, _dt(2014, 12, 20)),
+         "Ian J. Goodfellow", 24, _dt(2014, 12, 20),
+         "Several machine learning models are vulnerable to adversarial "
+         "examples, inputs formed by applying small perturbations."),
         ("1706.06083v4", "Towards Deep Learning Models Resistant to "
-         "Adversarial Attacks", "Aleksander Madry", 19, _dt(2017, 6, 19)),
+         "Adversarial Attacks", "Aleksander Madry", 19, _dt(2017, 6, 19),
+         "We study the adversarial robustness of neural networks through the "
+         "lens of robust optimization and min-max training."),
         ("1312.6199v4", "Intriguing properties of neural networks",
-         "Christian Szegedy", 17, _dt(2013, 12, 21)),
+         "Christian Szegedy", 17, _dt(2013, 12, 21),
+         "Deep neural networks learn input-output mappings that are fairly "
+         "discontinuous to a significant extent."),
         ("1802.00420v2", "Obfuscated Gradients Give a False Sense of "
-         "Security", "Anish Athalye", 22, _dt(2018, 2, 1)),
+         "Security", "Anish Athalye", 22, _dt(2018, 2, 1),
+         "We identify obfuscated gradients, a phenomenon that leads to a "
+         "false sense of adversarial robustness in defences."),
         ("2006.11239v2", "Denoising Diffusion Probabilistic Models",
-         "Jonathan Ho", 14, _dt(2020, 6, 19)),
+         "Jonathan Ho", 14, _dt(2020, 6, 19),
+         "We present high quality image synthesis results using diffusion "
+         "probabilistic models and a variational bound."),
     ]
     return [
         NormalizedRecord(
             id=rid,
             title=title,
             url=f"https://arxiv.org/abs/{rid}",
+            snippet=snippet,
             snippet_tokens=tokens,
             source="arxiv",
             published_date=published,
             author=author,
             relevance_score=1.0,
         )
-        for rid, title, author, tokens, published in rows
+        for rid, title, author, tokens, published, snippet in rows
     ]
 
 

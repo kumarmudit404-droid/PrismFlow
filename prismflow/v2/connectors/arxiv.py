@@ -134,6 +134,7 @@ class ArxivConnector(AngleConnector):
                     id=rec.id,
                     title=rec.title,
                     url=rec.url,
+                    snippet=rec.snippet,
                     snippet_tokens=count_tokens(rec.snippet),
                     source=rec.source_name,
                     published_date=rec.extra.get("published_date"),

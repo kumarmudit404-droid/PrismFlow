@@ -73,6 +73,7 @@ _RECORD_FIELDS = (
     "id",
     "title",
     "url",
+    "snippet",
     "snippet_tokens",
     "source",
     "published_date",

@@ -112,11 +112,34 @@ class Record:
 
 @dataclass
 class NormalizedRecord:
-    """A Record made comparable across sources."""
+    """A Record made comparable across sources.
+
+    AMENDED FOR PART 19 (authorised unfreeze, 2026-09-23)
+    -----------------------------------------------------
+    ``snippet`` was added alongside ``snippet_tokens``. As originally sealed
+    this type carried only the token *count*, so no snippet text survived
+    normalisation -- and Part 19 reranks records against a query, which needs
+    text. Only ``title`` was available, about 10% of a record's text on real
+    arXiv results (titles of ~10 tokens against snippets of ~93), so BM25 would
+    have scored on a tenth of the signal.
+
+    The alternative was for Part 19 to re-derive the text by calling ``fetch``
+    and ``parse`` itself, which works but bypasses ``get_records`` and so
+    bypasses the Part 18 cache entirely. Amending the type once, here, was
+    chosen deliberately: every part from 19 to 24 consumes NormalizedRecord and
+    the Part 18 cache serialises it, so the same change made later would be a
+    migration across five parts rather than one field.
+
+    ``snippet_tokens`` keeps its original meaning -- ``count_tokens(snippet)``
+    -- and is not derived on the fly, because Part 19 and Part 23 budget
+    against it and a recount would make the budget depend on whether tiktoken
+    was reachable.
+    """
 
     id: str
     title: str
     url: str
+    snippet: str
     snippet_tokens: int
     source: str
     published_date: Optional[datetime]
