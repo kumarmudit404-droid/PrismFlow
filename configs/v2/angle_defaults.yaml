@@ -1,0 +1,65 @@
+# Per-angle retrieval hyperparameters (Part 19).
+#
+# k                 records requested from the fallback chain in total, not per
+#                   connector: the chain stops once k records are in hand.
+# token_budget      hard ceiling on the sum of snippet_tokens in
+#                   ranked_records. Part 23 pays for these tokens.
+# ttl_seconds       freshness this angle is willing to accept. It acts as a
+#                   CEILING, not an override: the effective cache TTL is
+#                   min(this, the connector's own TTL from Part 18). An angle
+#                   may ask for fresher data than a source's default, but it
+#                   cannot make a fast-moving source look stale -- regulatory's
+#                   week does not stretch GitHub's hour.
+# rerank_method     bm25 | cross-encoder | none. cross-encoder downloads ~80MB
+#                   on first use and falls back to bm25 if it cannot.
+# budget_policy     prefix | greedy. prefix stops at the first record that
+#                   would overflow, so ranked_records is always the top-n
+#                   prefix by relevance. greedy skips overflowing records and
+#                   keeps filling, which uses more of the budget but no longer
+#                   returns a contiguous prefix of the ranking.
+# fallback_strategy which connector slots to try, in order.
+
+angles:
+  tech:
+    k: 10
+    token_budget: 2000
+    ttl_seconds: 3600
+    rerank_method: bm25
+    budget_policy: prefix
+    fallback_strategy: [primary, secondary, tertiary]
+
+  market:
+    k: 8
+    token_budget: 1500
+    ttl_seconds: 86400
+    rerank_method: bm25
+    budget_policy: prefix
+    fallback_strategy: [primary, secondary, tertiary]
+
+  financial:
+    k: 10
+    token_budget: 2000
+    ttl_seconds: 21600
+    rerank_method: bm25
+    budget_policy: prefix
+    fallback_strategy: [primary, secondary, tertiary]
+
+  regulatory:
+    k: 5
+    token_budget: 1000
+    ttl_seconds: 604800
+    # The brief assigns cross-encoder here. Kept, because regulatory text is
+    # long and lexically formulaic -- the kind of corpus where BM25's term
+    # overlap is weakest -- but it degrades to bm25 rather than failing when
+    # the model is absent, which is the common case on a fresh checkout.
+    rerank_method: cross-encoder
+    budget_policy: prefix
+    fallback_strategy: [primary, secondary, tertiary]
+
+  sentiment:
+    k: 15
+    token_budget: 2500
+    ttl_seconds: 21600
+    rerank_method: bm25
+    budget_policy: prefix
+    fallback_strategy: [primary, secondary]
