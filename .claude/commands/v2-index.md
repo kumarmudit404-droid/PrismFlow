@@ -11,9 +11,6 @@ Each command loads full context and asks Claude Code to implement that Part.
   pip install requests aiohttp sentence-transformers scikit-learn openai anthropic rank-bm25 tiktoken scipy python-dotenv praw yfinance
 
 ## Known blockers (open)
-- app.py has a stray leading character breaking ast.parse. V1 FROZEN file
-  under v1-final — reported per CLAUDE.md, not patched. Part 25 depends on
-  it being fixed before that part runs.
 - docs/v1-parts-1-16-consolidated.md does not exist, though this file lists
   it as a prerequisite. Record currently lives in project memory only.
 
