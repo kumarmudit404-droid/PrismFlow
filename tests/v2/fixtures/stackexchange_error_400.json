@@ -1,0 +1,5 @@
+{
+ "error_id": 400,
+ "error_message": "No site found for name `not-a-real-site`",
+ "error_name": "bad_parameter"
+}

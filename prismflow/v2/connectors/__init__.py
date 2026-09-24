@@ -25,6 +25,7 @@ from .errors import (
     UpstreamError,
 )
 from .github import GitHubConnector
+from .stackexchange import StackExchangeConnector
 from .yfinance import YFinanceConnector
 
 __all__ = [
@@ -43,6 +44,7 @@ __all__ = [
     "GitHubConnector",
     "ArxivConnector",
     "YFinanceConnector",
+    "StackExchangeConnector",
     # errors
     "ConnectorError",
     "QueryError",

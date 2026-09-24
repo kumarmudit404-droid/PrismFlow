@@ -1,0 +1,93 @@
+{
+ "items": [
+  {
+   "tags": [
+    "maps",
+    "visualization",
+    "transformer-model",
+    "explain",
+    "self-attention"
+   ],
+   "owner": {
+    "account_id": 23062329,
+    "reputation": 31,
+    "user_id": 17177341,
+    "user_type": "registered",
+    "profile_image": "https://lh3.googleusercontent.com/a-/AOh14Gi8yaGBndPk2fOLaiyv1FSfpbK4POGPiMer5Id50g=k-s256",
+    "display_name": "Imanuel Rozenberg",
+    "link": "https://stackoverflow.com/users/17177341/imanuel-rozenberg"
+   },
+   "is_answered": true,
+   "view_count": 3033,
+   "answer_count": 1,
+   "score": 3,
+   "last_activity_date": 1656711864,
+   "creation_date": 1642619486,
+   "question_id": 70776463,
+   "content_license": "CC BY-SA 4.0",
+   "link": "https://stackoverflow.com/questions/70776463/swin-transformer-attention-maps-visualization",
+   "title": "Swin Transformer attention maps visualization",
+   "body": "<p>I am using a Swin Transformer for a hierarchical problem of multi calss multi label classification. I would like to visualize the self attention maps on my input image trying to extract them from the model, unfortunately I am not succeeding in this task. Could you give me a hint on how to do it?\nI share you the part of the code in which I am trying to do this task.</p>\n<pre><code>attention_maps = []\nfor module in model.modules():\n    #print(module)\n    if hasattr(module,'attention_patches'):  #controlla se la variabile ha l' attributo\n        print(module.attention_patches.shape)\n        if module.attention_patches.numel() == 224*224:\n            attention_maps.append(module.attention_patches)\nfor attention_map in attention_maps:\n    attention_map = attention_map.reshape(224, 224, 1)\n    plt.imshow(sample['image'].permute(1, 2, 0), interpolation='nearest')\n    plt.imshow(attention_map, alpha=0.7, cmap=plt.cm.Greys)\n    plt.show()\n``\n\nIn addition if you know about some explainability techniques, like Grad-CAM, which could be used with a hierarchical Swin Transformer, feel free to attach a link, it would be very helpful for me.  \n</code></pre>\n"
+  },
+  {
+   "tags": [
+    "deep-learning",
+    "nlp",
+    "attention-model"
+   ],
+   "owner": {
+    "account_id": 15260607,
+    "reputation": 41,
+    "user_id": 11010750,
+    "user_type": "registered",
+    "profile_image": "https://graph.facebook.com/10161536231905551/picture?type=large",
+    "display_name": "Vincent CS Chow",
+    "link": "https://stackoverflow.com/users/11010750/vincent-cs-chow"
+   },
+   "is_answered": false,
+   "view_count": 811,
+   "answer_count": 2,
+   "score": 4,
+   "last_activity_date": 1737723537,
+   "creation_date": 1549255842,
+   "question_id": 54510289,
+   "content_license": "CC BY-SA 4.0",
+   "link": "https://stackoverflow.com/questions/54510289/transformer-attention-is-all-you-need-encoder-decoder-cross-attention",
+   "title": "Transformer - Attention is all you need - encoder decoder cross attention",
+   "body": "<p>It is my understanding that each encoder block takes the output from the previous encoder, and that the output is the attended representation (Z) of the sequence (aka sentence).  My question is, how does the last encoder block produce K, V from Z (to be used in encoder-decode attention aublayer of the decoder)</p>\n\n<p>are we simply taking Wk and Wv from last encoder layer? </p>\n\n<p><a href=\"http://jalammar.github.io/illustrated-transformer/\" rel=\"nofollow noreferrer\">http://jalammar.github.io/illustrated-transformer/</a></p>\n"
+  },
+  {
+   "tags": [
+    "machine-learning",
+    "deep-learning",
+    "neural-network",
+    "nlp",
+    "artificial-intelligence"
+   ],
+   "owner": {
+    "account_id": 6941237,
+    "reputation": 518,
+    "user_id": 12354205,
+    "user_type": "registered",
+    "profile_image": "https://www.gravatar.com/avatar/fb6b56624f2d2f40ca7e63728a1ca8f3?s=256&d=identicon&r=PG",
+    "display_name": "Newton",
+    "link": "https://stackoverflow.com/users/12354205/newton"
+   },
+   "is_answered": true,
+   "view_count": 60616,
+   "answer_count": 5,
+   "score": 51,
+   "last_activity_date": 1695476971,
+   "creation_date": 1610545630,
+   "last_edit_date": 1695476971,
+   "question_id": 65703260,
+   "content_license": "CC BY-SA 4.0",
+   "link": "https://stackoverflow.com/questions/65703260/computational-complexity-of-self-attention-in-the-transformer-model",
+   "title": "Computational Complexity of Self-Attention in the Transformer Model",
+   "body": "<p>I recently went through the <a href=\"https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf\" rel=\"noreferrer\">Transformer</a> paper from Google Research describing how self-attention layers could completely replace traditional RNN-based sequence encoding layers for machine translation. In Table 1 of the paper, the authors compare the computational complexities of different sequence encoding layers, and state (later on) that self-attention layers are faster than RNN layers when the sequence length <code>n</code> is smaller than the dimension of the vector representations <code>d</code>.</p>\n<p>However, the self-attention layer seems to have an inferior complexity than claimed if my understanding of the computations is correct. Let <code>X</code> be the input to a self-attention layer. Then, <code>X</code> will have shape <code>(n, d)</code> since there are <code>n</code> word-vectors (corresponding to rows) each of dimension <code>d</code>. Computing the output of self-attention requires the following steps (consider single-headed self-attention for simplicity):</p>\n<ol>\n<li>Linearly transforming the rows of <code>X</code> to compute the query <code>Q</code>, key <code>K</code>, and value <code>V</code> matrices, each of which has shape <code>(n, d)</code>. This is accomplished by post-multiplying <code>X</code> with 3 learned matrices of shape <code>(d, d)</code>, amounting to a computational complexity of <code>O(n d^2)</code>.</li>\n<li>Computing the layer output, specified in Equation 1 of the paper as <code>SoftMax(Q Kt / sqrt(d)) V</code>, where the softmax is computed over each row. Computing <code>Q Kt</code> has complexity <code>O(n^2 d)</code>, and post-multiplying the resultant with <code>V</code> has complexity <code>O(n^2 d)</code> as well.</li>\n</ol>\n<p>Therefore, the total complexity of the layer is <code>O(n^2 d + n d^2)</code>, which is worse than that of a traditional RNN layer. I obtained the same result for multi-headed attention too, on considering the appropriate intermediate representation dimensions (<code>dk</code>, <code>dv</code>) and finally multiplying by the number of heads <code>h</code>.</p>\n<p>Why have the authors ignored the cost of computing the Query, Key, and Value matrices while reporting total computational complexity?</p>\n<p>I understand that the proposed layer is fully parallelizable across the <code>n</code> positions, but I believe that Table 1 does not take this into account anyway.</p>\n"
+  }
+ ],
+ "has_more": true,
+ "quota_max": 300,
+ "quota_remaining": 297
+}
