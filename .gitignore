@@ -93,3 +93,9 @@ credentials/
 
 # V2 cache
 cache/v2/
+
+# Generated documentation exports, not source. Named individually rather than
+# by *.pdf because PrismFlow_Master_Project_and_Claude_Prompts.pdf and
+# PrismFlow_Technical_Overview.pdf ARE tracked source.
+/PrismFlow_File_Catalog.pdf
+/PrismFlow_Interview_Guide.pdf
