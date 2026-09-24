@@ -25,6 +25,7 @@ from .errors import (
     UpstreamError,
 )
 from .github import GitHubConnector
+from .yfinance import YFinanceConnector
 
 __all__ = [
     # interface
@@ -41,6 +42,7 @@ __all__ = [
     # sources
     "GitHubConnector",
     "ArxivConnector",
+    "YFinanceConnector",
     # errors
     "ConnectorError",
     "QueryError",

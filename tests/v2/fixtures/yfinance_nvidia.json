@@ -1,0 +1,61 @@
+{
+ "query": "nvidia",
+ "period": "1mo",
+ "fetched_at": "2026-09-24T15:07:41.138082+00:00",
+ "quotes": [
+  {
+   "symbol": "NVDA",
+   "long_name": "NVIDIA Corporation",
+   "period": "1mo",
+   "first_close": 208.24697875976562,
+   "last_close": 221.61000061035156,
+   "low": 208.24697875976562,
+   "high": 230.10252380371094,
+   "avg_volume": 126631694.08695652,
+   "bars": 23,
+   "first_session": "2026-08-24T00:00:00-04:00",
+   "last_session": "2026-09-24T00:00:00-04:00",
+   "exchange_timezone": "America/New_York",
+   "currency": "USD",
+   "exchange": "NMS",
+   "quote_type": "EQUITY",
+   "market_cap": 5351216684738.159
+  },
+  {
+   "symbol": "SNVDA=F",
+   "long_name": "NVIDIA Corp Single Stock futures",
+   "period": "1mo",
+   "first_close": 223.89999389648438,
+   "last_close": 223.89999389648438,
+   "low": 223.89999389648438,
+   "high": 223.89999389648438,
+   "avg_volume": 108.0,
+   "bars": 1,
+   "first_session": "2026-09-24T00:00:00-04:00",
+   "last_session": "2026-09-24T00:00:00-04:00",
+   "exchange_timezone": "America/New_York",
+   "currency": "USD",
+   "exchange": "CME",
+   "quote_type": "FUTURE",
+   "market_cap": null
+  },
+  {
+   "symbol": "XNVDA=F",
+   "long_name": "",
+   "period": "1mo",
+   "first_close": 224.50999450683594,
+   "last_close": 224.50999450683594,
+   "low": 224.50999450683594,
+   "high": 224.50999450683594,
+   "avg_volume": 137.0,
+   "bars": 1,
+   "first_session": "2026-09-24T00:00:00-04:00",
+   "last_session": "2026-09-24T00:00:00-04:00",
+   "exchange_timezone": "America/New_York",
+   "currency": "USD",
+   "exchange": "CME",
+   "quote_type": "FUTURE",
+   "market_cap": null
+  }
+ ]
+}
