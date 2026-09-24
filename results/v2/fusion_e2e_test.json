@@ -1,0 +1,233 @@
+{
+  "part": 23,
+  "experiment": "fusion_e2e",
+  "n_seeds": 5,
+  "n_queries": 30,
+  "domains": [
+    "career",
+    "market",
+    "policy",
+    "tech"
+  ],
+  "adjudicator": "lexical",
+  "live_api_calls": 0,
+  "cost_usd": null,
+  "cost_usd_reason": "No Anthropic credentials in this checkout, so no request was sent and the ClaimSet token counts are fixture values. A dollar figure computed from invented token counts would be a fabricated measurement (CLAUDE.md: NEVER FABRICATE). The rate table and the token counts a real run would multiply are reported instead.",
+  "latency_meaning": "fusion_seconds is local compute -- embedding, discounting, lexical adjudication. It contains no API latency.",
+  "model_pricing_usd_per_mtok": {
+    "claude-opus-5": {
+      "input": 5.0,
+      "output": 25.0
+    },
+    "claude-sonnet-5": {
+      "input": 2.0,
+      "output": 10.0
+    },
+    "claude-haiku-4-5": {
+      "input": 1.0,
+      "output": 5.0
+    }
+  },
+  "fixture_tokens_per_angle": {
+    "input": 1800,
+    "output": 420,
+    "note": "invented; see cost_usd_reason"
+  },
+  "summary": {
+    "eniv": {
+      "mean": 3.9896806719350755,
+      "sd": 0.011624354133932435,
+      "min": 3.9765618233723843,
+      "max": 4.004211896884577,
+      "per_seed_mean": [
+        3.9765618233723843,
+        4.004211896884577,
+        3.9838490307208283,
+        3.9994225271256783,
+        3.9843580815719095
+      ]
+    },
+    "discount_factor": {
+      "mean": 0.797936134387015,
+      "sd": 0.0023248708267864845,
+      "min": 0.7953123646744769,
+      "max": 0.8008423793769154,
+      "per_seed_mean": [
+        0.7953123646744769,
+        0.8008423793769154,
+        0.7967698061441657,
+        0.7998845054251357,
+        0.7968716163143819
+      ]
+    },
+    "overall_confidence": {
+      "mean": 0.3287215643508571,
+      "sd": 0.005596047076495295,
+      "min": 0.3236575663360528,
+      "max": 0.33761982432150417,
+      "per_seed_mean": [
+        0.3261086052680924,
+        0.3255745257585246,
+        0.3236575663360528,
+        0.3306473000701113,
+        0.33761982432150417
+      ]
+    },
+    "undiscounted_confidence": {
+      "mean": 0.6303062152520061,
+      "sd": 0.009328546119960077,
+      "min": 0.6171396959007095,
+      "max": 0.6412762624653323,
+      "per_seed_mean": [
+        0.6369573613248372,
+        0.6171396959007095,
+        0.6284166053512402,
+        0.6277411512179114,
+        0.6412762624653323
+      ]
+    },
+    "n_candidates": {
+      "mean": 6.2,
+      "sd": 0.06666666666666676,
+      "min": 6.1,
+      "max": 6.266666666666667,
+      "per_seed_mean": [
+        6.233333333333333,
+        6.1,
+        6.233333333333333,
+        6.166666666666667,
+        6.266666666666667
+      ]
+    },
+    "n_contradictions": {
+      "mean": 2.08,
+      "sd": 0.029814239699997264,
+      "min": 2.033333333333333,
+      "max": 2.1,
+      "per_seed_mean": [
+        2.1,
+        2.066666666666667,
+        2.033333333333333,
+        2.1,
+        2.1
+      ]
+    },
+    "fusion_seconds": {
+      "mean": 0.024047834078470866,
+      "sd": 0.0010101347750140737,
+      "min": 0.022664388020833332,
+      "max": 0.025280356407165527,
+      "per_seed_mean": [
+        0.02444279193878174,
+        0.022664388020833332,
+        0.023444835344950357,
+        0.025280356407165527,
+        0.024406798680623374
+      ]
+    },
+    "found_planted_contradiction": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "min": 1.0,
+      "max": 1.0,
+      "per_seed_mean": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "nominated_planted_contradiction": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "min": 1.0,
+      "max": 1.0,
+      "per_seed_mean": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "false_contradiction_on_agreement": {
+      "mean": 0.0,
+      "sd": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "per_seed_mean": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "false_contradictions": {
+      "mean": 0.08,
+      "sd": 0.0298142396999972,
+      "min": 0.03333333333333333,
+      "max": 0.1,
+      "per_seed_mean": [
+        0.1,
+        0.06666666666666667,
+        0.03333333333333333,
+        0.1,
+        0.1
+      ]
+    },
+    "brief_found_planted_contradiction": {
+      "mean": 0.0,
+      "sd": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "per_seed_mean": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "brief_total_flagged": {
+      "mean": 22.726666666666667,
+      "sd": 0.21908902300206637,
+      "min": 22.466666666666665,
+      "max": 23.0,
+      "per_seed_mean": [
+        22.466666666666665,
+        23.0,
+        22.6,
+        22.9,
+        22.666666666666668
+      ]
+    },
+    "brief_false_flags": {
+      "mean": 22.726666666666667,
+      "sd": 0.21908902300206637,
+      "min": 22.466666666666665,
+      "max": 23.0,
+      "per_seed_mean": [
+        22.466666666666665,
+        23.0,
+        22.6,
+        22.9,
+        22.666666666666668
+      ]
+    }
+  },
+  "gate": {
+    "queries_completed": 150,
+    "queries_expected": 150,
+    "all_queries_ran": true,
+    "discount_applied_everywhere": true,
+    "contradiction_recall": 1.0,
+    "brief_contradiction_recall": 0.0,
+    "false_contradiction_rate_on_planted_agreement": 0.0,
+    "conflicts_flagged": true,
+    "passed": true
+  },
+  "passed": true,
+  "elapsed_seconds": 38.3
+}
