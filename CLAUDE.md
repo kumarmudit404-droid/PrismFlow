@@ -20,3 +20,11 @@ Data flow:
 
 See `docs/CONTRACT.md` for the full contract (component classification,
 tensor shape conventions, reproducibility rules).
+
+## Environment
+
+- GREP CRASHES ON `-i` + MULTIPLE `-e`: this box's GNU grep 3.0 (Git for
+  Windows / MSYS2) aborts with SIGABRT (exit 134) when case-insensitive
+  matching is combined with two or more `-e` patterns — it returns no output,
+  so piping through `cat` or discarding stderr makes a crash look like a clean
+  "no matches". Use a single `-e`, or `-E "a|b"` alternation, or ripgrep.
