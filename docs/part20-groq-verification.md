@@ -1,36 +1,48 @@
 # Part 20 verification status: the OpenAIReasoner code path, via Groq
 
-**Part 20 status, stated precisely (2026-09-25): OpenAIReasoner code path
-verified via Groq; `claude_reasoner.py` and `gpt-4o` remain UNVERIFIED, pending
-funded Anthropic/OpenAI accounts.** This is never to be read, cited, or
-recorded as "Part 20 verified".
+Part 20 status (2026-09-25): OpenAIReasoner's code path -- request shape,
+response_format={'type':'json_object'} handling, usage field names,
+finish_reason mapping, parsing.py's JSON extraction, citation grounding --
+verified against a live server via injection (Groq, model openai/gpt-oss-120b,
+OpenAI-compatible API, no frozen file under prismflow/v2/reasoners/ modified).
+
+NOT verified: claude_reasoner.py -- never called, nothing learned. gpt-4o -- a
+different model on a different vendor's server. Groq is OpenAI-compatible, not
+OpenAI, and this narrows but does not close Part 20's UNVERIFIED flag.
+
+Never record this as a blanket 'Part 20 verified.'
 
 The run described here was performed in a prior session. This document brings
 that already-completed verification into the repo record; it does not report a
 new run. The script is `experiments/v2/test_groq_reasoner_probe.py`.
 
-## What the run was
+## The run
 
-The existing `OpenAIReasoner` was pointed at Groq's OpenAI-compatible endpoint
-by injection only: no file in `prismflow/v2/reasoners/` was modified, because
-`OpenAIReasoner.__init__` already accepts a `client` and only constructs
-`AsyncOpenAI()` when none is given. Model `openai/gpt-oss-120b` over live
-NewsAPI Market evidence, one query, one pass.
+One query ("semiconductor export controls"), one pass, over live NewsAPI Market
+evidence. Injection only: `OpenAIReasoner.__init__` already accepts a `client`
+and only constructs `AsyncOpenAI()` when none is given, so pointing a client at
+Groq's OpenAI-compatible endpoint required no change to any frozen file.
 
-## What it established
+| what the run recorded | value |
+|---|---|
+| model | `openai/gpt-oss-120b` (Groq) |
+| claim citations grounded in the evidence | 4/4 |
+| ungrounded citations | 0 |
+| `response_format={"type": "json_object"}` | honoured |
+| `finish_reason` | mapped to `stop_reason=stop` |
+| `parsing.py` strategy that succeeded | `direct` |
 
-- the request shape is accepted by a live OpenAI-compatible server
-- `response_format={"type": "json_object"}` is honoured
-- the `usage` field names are read correctly
-- `finish_reason` maps to `stop_reason=stop`
-- `parsing.py`'s `direct` JSON strategy works on real model output
-- 4/4 claim citations were grounded in the supplied evidence
+Token usage and wall-clock latency for this run are **not recorded**. The
+prior-session record preserves the citation-grounding result and the mapping
+outcomes above and nothing further, so no token count or timing is stated here
+rather than reconstructed. If the original console output is recovered, add the
+figures here and cite it.
 
 ## What it did NOT establish
 
 - **nothing about `claude_reasoner.py`.** It was never called.
 - **nothing about `gpt-4o`.** That is a different model on a different
-  vendor's server. Groq is OpenAI-*compatible*, not OpenAI.
+  vendor's server.
 
 ## Why the flag stays open
 
@@ -61,12 +73,13 @@ writes no file under `results/` so that it cannot become one by accident.
 ## Re-running it
 
 The committed script defaults to a **static fixture** for the evidence, so a
-re-run spends one Groq completion and nothing else — in particular it spends no
+re-run spends one Groq completion and nothing else -- in particular it spends no
 NewsAPI request and reads no rotating credential. That default exercises the
 code path, not the original run's inputs: the fixture text is written for the
 script and is not a transcript of the articles the original run retrieved, so
 claim text or citation counts obtained from it do not reproduce the 4/4 result
 above. `--live-newsapi` restores the original live Market retrieval and spends
-NewsAPI requests against `NEWSAPI_KEY` (free tier: 100 per day).
+NewsAPI requests against `NEWSAPI_KEY` (free tier: 100 per day, with no
+remaining-quota field in any response).
 
 The Market/NewsAPI connector is not blocked by any of this.

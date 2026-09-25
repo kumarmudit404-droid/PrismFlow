@@ -1,5 +1,16 @@
 """Live smoke test for the Part 20 OpenAIReasoner CODE PATH, via Groq.
 
+QUOTA WARNING, READ BEFORE RE-RUNNING
+-------------------------------------
+As invoked with no arguments this script spends ONE Groq completion and
+nothing else. With ``--live-newsapi`` it ALSO retrieves live Market evidence,
+which spends against NewsAPI's free-tier quota of 100 requests per DAY -- the
+same quota every other Market run tonight draws on, and NewsAPI reports no
+remaining count in any header or body field, so an exhausted day is only
+visible as failures. Do not pass that flag thoughtlessly. The script reads no
+credential of its own except ``GROQ_API_KEY``; the NewsAPI key is resolved by
+the connector, inside that opt-in path only.
+
 Not a pytest module despite the name (Part 17 set the convention). Run it
 directly:
 
