@@ -168,5 +168,315 @@
     "ground_truth_source": "https://discuss.python.org/t/pep-601-forbid-return-break-continue-breaking-out-of-finally/2239/32",
     "conflict_expected": "No",
     "notes": "Source: Python PEP 601"
+  },
+  {
+    "id": "019",
+    "idea_pitch": "Pitch a faster way to write compact conditional logic in Python without sacrificing readability.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2019-10-14",
+    "ground_truth_source": "https://peps.python.org/pep-0572/",
+    "conflict_expected": "Yes",
+    "notes": "PEP 572; implemented in Python 3.8. Human pre-label: Yes (syntax ergonomics vs added language complexity)."
+  },
+  {
+    "id": "020",
+    "idea_pitch": "Pitch a standard way to write built-in generic collections such as list[str] and dict[str, int] for static typing.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2020-10-05",
+    "ground_truth_source": "https://peps.python.org/pep-0585/",
+    "conflict_expected": "No",
+    "notes": "PEP 585; implemented in Python 3.9. Human pre-label: No."
+  },
+  {
+    "id": "021",
+    "idea_pitch": "Pitch a concise union-type syntax using X | Y instead of verbose typing.Union expressions.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2021-10-04",
+    "ground_truth_source": "https://peps.python.org/pep-0604/",
+    "conflict_expected": "No",
+    "notes": "PEP 604; implemented in Python 3.10. Human pre-label: No."
+  },
+  {
+    "id": "022",
+    "idea_pitch": "Pitch structural pattern matching with match and case for clearer branching over structured data.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2021-10-04",
+    "ground_truth_source": "https://peps.python.org/pep-0634/",
+    "conflict_expected": "Yes",
+    "notes": "PEP 634; implemented in Python 3.10. Human pre-label: Yes (expressiveness vs language surface area)."
+  },
+  {
+    "id": "023",
+    "idea_pitch": "Pitch fine-grained source locations so Python tracebacks can point to the expression that caused an error.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2022-10-24",
+    "ground_truth_source": "https://peps.python.org/pep-0657/",
+    "conflict_expected": "No",
+    "notes": "PEP 657; implemented in Python 3.11. Human pre-label: No."
+  },
+  {
+    "id": "024",
+    "idea_pitch": "Pitch a typing construct that lets a method state it returns the same specific subtype as self.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2022-10-24",
+    "ground_truth_source": "https://peps.python.org/pep-0673/",
+    "conflict_expected": "No",
+    "notes": "PEP 673; implemented in Python 3.11. Human pre-label: No."
+  },
+  {
+    "id": "025",
+    "idea_pitch": "Pitch a safe Python-level API for libraries to inspect and provide the low-level buffer protocol.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2023-03-07",
+    "ground_truth_source": "https://peps.python.org/pep-0688/",
+    "conflict_expected": "Yes",
+    "notes": "PEP 688; resolution dated 2023-03-07, implemented for Python 3.12. Human pre-label: Yes (API power vs compatibility complexity)."
+  },
+  {
+    "id": "026",
+    "idea_pitch": "Pitch a new syntax for declaring type parameters directly in generic classes, functions, and aliases.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2023-10-02",
+    "ground_truth_source": "https://peps.python.org/pep-0695/",
+    "conflict_expected": "Yes",
+    "notes": "PEP 695; implemented in Python 3.12. Human pre-label: Yes (typing ergonomics vs added syntax)."
+  },
+  {
+    "id": "027",
+    "idea_pitch": "Pitch a formally specified f-string grammar so f-strings can support nested expressions and behave consistently.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2023-03-14",
+    "ground_truth_source": "https://peps.python.org/pep-0701/",
+    "conflict_expected": "Yes",
+    "notes": "PEP 701; resolution dated 2023-03-14, implemented for Python 3.12. Human pre-label: Yes."
+  },
+  {
+    "id": "028",
+    "idea_pitch": "Pitch making the global interpreter lock local to each interpreter so isolated interpreters can run in parallel.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2023-10-02",
+    "ground_truth_source": "https://peps.python.org/pep-0684/",
+    "conflict_expected": "Yes",
+    "notes": "PEP 684; implemented for Python 3.12. Human pre-label: Yes (parallelism gains vs runtime extension complexity)."
+  },
+  {
+    "id": "029",
+    "idea_pitch": "Pitch immutable reference counts for selected Python objects to reduce lifetime coordination across interpreters.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2022-10-24",
+    "ground_truth_source": "https://peps.python.org/pep-0683/",
+    "conflict_expected": "Yes",
+    "notes": "PEP 683; implemented in Python 3.12. Human pre-label: Yes (runtime performance trade-offs)."
+  },
+  {
+    "id": "030",
+    "idea_pitch": "Pitch lazy annotation evaluation so annotations can be resolved later while preserving forward references and typing flexibility.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2023-05-08",
+    "ground_truth_source": "https://peps.python.org/pep-0649/",
+    "conflict_expected": "Yes",
+    "notes": "PEP 649; resolution dated 2023-05-08. Human pre-label: Yes (annotation semantics vs backward compatibility)."
+  },
+  {
+    "id": "031",
+    "idea_pitch": "Build a developer-first payment API that lets online businesses accept cards, bank payments, and wallets with minimal integration work.",
+    "domain": "Startup",
+    "actual_outcome": "Funded",
+    "outcome_date": "2011-09-30",
+    "ground_truth_source": "https://techcrunch.com/2011/09/30/sequoia-backed-stripe-launches-to-disrupt-the-online-payments-industry-with-a-developer-friendly-platform/",
+    "conflict_expected": "No",
+    "notes": "Contemporaneous launch/funding coverage; Stripe had publicly launched after raising about $2M. Human pre-label: No."
+  },
+  {
+    "id": "032",
+    "idea_pitch": "Build a browser-based collaborative design tool that lets users create and edit visual work without desktop software.",
+    "domain": "Startup",
+    "actual_outcome": "Funded",
+    "outcome_date": "2013-06-26",
+    "ground_truth_source": "https://techcrunch.com/2013/06/26/21-years-4-million-dollars/",
+    "conflict_expected": "No",
+    "notes": "TechCrunch reported Figma's $3.8M funding and browser-based product. Human pre-label: No."
+  },
+  {
+    "id": "033",
+    "idea_pitch": "Build an Indian online payment gateway focused on simplifying digital payments for businesses and developers.",
+    "domain": "Startup",
+    "actual_outcome": "Funded",
+    "outcome_date": "2015-10-27",
+    "ground_truth_source": "https://razorpay.com/blog/?p=587",
+    "conflict_expected": "No",
+    "notes": "Razorpay announced a seed + Series A totaling $11.5M on 2015-10-27. Human pre-label: No."
+  },
+  {
+    "id": "034",
+    "idea_pitch": "Build an IoT home-awareness system that combines smart sensors into a single consumer product.",
+    "domain": "Startup",
+    "actual_outcome": "Funded",
+    "outcome_date": "2016-06-02",
+    "ground_truth_source": "https://www.crowdfundinsider.com/2016/06/87008-kickstarter-success-notion-secures-3-2m-during-seed-round-led-by-xl-innovate/",
+    "conflict_expected": "Yes",
+    "notes": "PRNewswire reported Notion's $3.2M seed round for its smart-home sensor system. Human pre-label: Yes (hardware adoption vs complexity)."
+  },
+  {
+    "id": "035",
+    "idea_pitch": "Build a B2B commerce marketplace that lets small retailers source products online from brands and suppliers.",
+    "domain": "Startup",
+    "actual_outcome": "Funded",
+    "outcome_date": "2016-11-23",
+    "ground_truth_source": "https://www.medianama.com/2016/11/223-udaan-raises-10m/",
+    "conflict_expected": "Yes",
+    "notes": "Economic Times reported Udaan's $10M funding and B2B commerce focus. Human pre-label: Yes (marketplace liquidity requirements)."
+  },
+  {
+    "id": "036",
+    "idea_pitch": "Build a travel marketplace for hotels and stays, using technology to aggregate supply and make booking easier in India.",
+    "domain": "Startup",
+    "actual_outcome": "Failed",
+    "outcome_date": "2017-02-24",
+    "ground_truth_source": "https://www.medianama.com/2017/02/223-stayzilla-shutdown/",
+    "conflict_expected": "Yes",
+    "notes": "Contemporaneous report: Stayzilla suspended operations and planned a reboot; later history treats the shutdown as a failure. Human pre-label: Yes."
+  },
+  {
+    "id": "037",
+    "idea_pitch": "Build an on-demand grocery delivery service that lets households order essentials through a mobile app.",
+    "domain": "Startup",
+    "actual_outcome": "Failed",
+    "outcome_date": "2016-04-25",
+    "ground_truth_source": "https://yourstory.com/2016/04/peppertap-shutdown/",
+    "conflict_expected": "Yes",
+    "notes": "Contemporaneous coverage reported PepperTap shutting its main grocery business after failing to reach profitability. Human pre-label: Yes."
+  },
+  {
+    "id": "038",
+    "idea_pitch": "Build a managed marketplace for used cars with inspection, financing, and technology-enabled transactions.",
+    "domain": "Startup",
+    "actual_outcome": "Failed",
+    "outcome_date": "2016-08-26",
+    "ground_truth_source": "https://www.medianama.com/2016/08/223-gozoomo-shuts-down/",
+    "conflict_expected": "Yes",
+    "notes": "Contemporaneous report: GoZoomo shut down after finding its unit economics unsustainable. Human pre-label: Yes."
+  },
+  {
+    "id": "039",
+    "idea_pitch": "Build a local-language social network for Indian internet users with short-form posts and community conversations.",
+    "domain": "Startup",
+    "actual_outcome": "Failed",
+    "outcome_date": "2024-07-02",
+    "ground_truth_source": "https://techcrunch.com/2024/07/02/indian-social-network-koo-to-shut-down",
+    "conflict_expected": "Yes",
+    "notes": "TechCrunch reported Koo shutting down after funding and acquisition efforts did not produce a transaction. Human pre-label: Yes."
+  },
+  {
+    "id": "041",
+    "idea_pitch": "Build a digital lender that uses technology and alternative data to expand access to personal financial products.",
+    "domain": "Financial-Product",
+    "actual_outcome": "Profitable",
+    "outcome_date": "2025-02-24",
+    "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1818874/000181887425000016/sofi-20241231.htm",
+    "conflict_expected": "No",
+    "notes": "SoFi 2024 Form 10-K: Lending segment contribution profit was $890.5M. Segment result, not consolidated GAAP net income."
+  },
+  {
+    "id": "042",
+    "idea_pitch": "Build a technology-led consumer credit platform that originates and services personal loans online.",
+    "domain": "Financial-Product",
+    "actual_outcome": "Profitable",
+    "outcome_date": "2025-02-13",
+    "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1409970/000140997025000009/lc-20241231.htm",
+    "conflict_expected": "No",
+    "notes": "LendingClub 2024 Form 10-K: net income was $51.33M and total net revenue was $787M."
+  },
+  {
+    "id": "043",
+    "idea_pitch": "Build an AI-powered lending marketplace that matches borrowers with banks using machine-learning credit models.",
+    "domain": "Financial-Product",
+    "actual_outcome": "Loss",
+    "outcome_date": "2025-02-14",
+    "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1647639/000164763925000018/upst-20241231.htm",
+    "conflict_expected": "Yes",
+    "notes": "Upstart 2024 Form 10-K: net loss was $128.6M. Human pre-label: Yes (AI underwriting scale vs credit-cycle risk)."
+  },
+  {
+    "id": "044",
+    "idea_pitch": "Build a technology-driven health insurance platform that sells and manages individual and small-group plans.",
+    "domain": "Financial-Product",
+    "actual_outcome": "Profitable",
+    "outcome_date": "2025-02-20",
+    "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1568651/000156865125000008/oscr-20241231.htm",
+    "conflict_expected": "Yes",
+    "notes": "Oscar Health 2024 Form 10-K: net income was $26.121M, compared with a 2023 loss."
+  },
+  {
+    "id": "045",
+    "idea_pitch": "Build a mobile-first auto insurer that uses telematics and direct digital distribution to price drivers.",
+    "domain": "Financial-Product",
+    "actual_outcome": "Profitable",
+    "outcome_date": "2025-02-26",
+    "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1788882/000162828025008137/root-20241231.htm",
+    "conflict_expected": "Yes",
+    "notes": "Root 2024 10-K: operating income $78.5M and net income $30.9M. Human pre-label: Yes (pricing/underwriting model dependence)."
+  },
+  {
+    "id": "046",
+    "idea_pitch": "Build a regulated crypto exchange and financial platform for buying, selling, storing, and using digital assets.",
+    "domain": "Financial-Product",
+    "actual_outcome": "Profitable",
+    "outcome_date": "2025-02-13",
+    "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1679788/000167978825000022/coin-20241231.htm",
+    "conflict_expected": "Yes",
+    "notes": "Coinbase 2024 10-K: net income was $2.579B. Human pre-label: Yes (high regulatory and market-cycle exposure)."
+  },
+  {
+    "id": "047",
+    "idea_pitch": "Build a global digital payments platform that lets consumers and merchants move money online across markets.",
+    "domain": "Financial-Product",
+    "actual_outcome": "Profitable",
+    "outcome_date": "2025-02-04",
+    "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1633917/000163391725000019/pypl-20241231.htm",
+    "conflict_expected": "No",
+    "notes": "PayPal 2024 10-K: net income was $4.147B."
+  },
+  {
+    "id": "048",
+    "idea_pitch": "Build a mobile investing and brokerage app that makes stocks, options, and related financial products accessible to retail users.",
+    "domain": "Financial-Product",
+    "actual_outcome": "Profitable",
+    "outcome_date": "2025-02-18",
+    "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1783879/000178387925000049/hood-20241231.htm",
+    "conflict_expected": "Yes",
+    "notes": "Robinhood 2024 10-K: net income was $1.411B. Human pre-label: Yes (retail-volume and market-cycle exposure)."
+  },
+  {
+    "id": "049",
+    "idea_pitch": "Build a low-cost international money-transfer product with a transparent exchange-rate and fee model.",
+    "domain": "Financial-Product",
+    "actual_outcome": "Profitable",
+    "outcome_date": "2024-07-12",
+    "ground_truth_source": "https://www.investegate.co.uk/announcement/rns/wise-class-a--wise/wise-plc-preliminary-results-fy-end-31-march-2024/8256893",
+    "conflict_expected": "No",
+    "notes": "Wise FY2024 annual report: operating profit £501.9M and profit for the year £354.6M; annual report published in July 2024."
+  },
+  {
+    "id": "050",
+    "idea_pitch": "Build a consumer buy-now-pay-later product that underwrites purchases instantly and lets customers repay over time.",
+    "domain": "Financial-Product",
+    "actual_outcome": "Loss",
+    "outcome_date": "2024-10-25",
+    "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1820953/000182095324000049/afrm-20241025.htm",
+    "conflict_expected": "Yes",
+    "notes": "Affirm FY2024 filing materials: total revenue about $2.3B, operating loss $615.8M and net loss $517.8M."
   }
 ]
