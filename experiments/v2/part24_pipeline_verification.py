@@ -214,7 +214,7 @@ async def run_row(query, angles, reasoners, fusion):
     return record, fused
 
 
-async def main_async(limit: Optional[int]) -> int:
+async def main_async(limit: Optional[int], args_no_derive: bool = False) -> int:
     key = groq_key()
     if not key:
         print("GROQ_API_KEY is not set. Nothing was called; this run did not "
@@ -227,16 +227,21 @@ async def main_async(limit: Optional[int]) -> int:
     print(BANNER)
     print(LABEL)
     print(BANNER)
-    print("rows: %d of %d loaded  |  angles: 4 of 5 wired live (regulatory has no connector)  |  one pass"
-          % (len(rows), len(dataset)))
+    print("rows: %d of %d loaded  |  angles: 4 of 5 wired live (regulatory has no connector)"
+          "  |  one pass  |  query derivation: %s"
+          % (len(rows), len(dataset), "OFF" if args_no_derive else "ON"))
     print()
 
     db = os.path.join(tempfile.mkdtemp(prefix="prismflow_part24_verify_"), "cache.db")
     init_cache_db(db)
 
     config = load_config(str(ROOT / "configs/v2/angle_defaults.yaml"))
+    # derive_queries=True is the fix under test: each connector receives a
+    # keyword query under its own ceiling instead of the raw pitch. Off by
+    # default everywhere else, so no existing caller changed behaviour.
     angles = build_angles(config=config, sources=all_live_sources(),
-                          use_cache=True, cache_db_path=db)
+                          use_cache=True, cache_db_path=db,
+                          derive_queries=not args_no_derive)
 
     from openai import AsyncOpenAI
     client = AsyncOpenAI(api_key=key, base_url=GROQ_BASE_URL)
@@ -345,8 +350,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--limit", type=int, default=None,
                         help="run only the first N rows (for a dry check)")
+    parser.add_argument("--no-derive", action="store_true",
+                        help="send the raw pitch, reproducing the pre-fix run")
     args = parser.parse_args()
-    return asyncio.run(main_async(args.limit))
+    return asyncio.run(main_async(args.limit, args.no_derive))
 
 
 if __name__ == "__main__":

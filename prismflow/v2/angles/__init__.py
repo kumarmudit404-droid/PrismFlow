@@ -30,6 +30,14 @@ from .config import (
 from .financial_angle import FinancialAngle
 from .market_angle import MarketAngle
 from .models import AngleEvidence
+from .query_derivation import (
+    CONNECTOR_QUERY_LIMITS,
+    DEFAULT_QUERY_LIMIT,
+    DerivedQuery,
+    derive_for_connector,
+    derive_query,
+    limit_for,
+)
 from .regulatory_angle import RegulatoryAngle
 from .reranker import (
     CROSS_ENCODER_MODEL,
@@ -98,6 +106,12 @@ __all__ = [
     "build_angles",
     # evidence
     "AngleEvidence",
+    "CONNECTOR_QUERY_LIMITS",
+    "DEFAULT_QUERY_LIMIT",
+    "DerivedQuery",
+    "derive_for_connector",
+    "derive_query",
+    "limit_for",
     # config
     "load_config",
     "AngleConfig",

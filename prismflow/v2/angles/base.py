@@ -105,6 +105,7 @@ class BaseAngle(ABC):
         use_cache: bool = True,
         cache_db_path: Optional[Union[str, Path]] = None,
         cache_metrics: Optional[CacheMetrics] = None,
+        derive_queries: bool = False,
     ) -> None:
         """Build an angle.
 
@@ -147,6 +148,11 @@ class BaseAngle(ABC):
                 f"{self.token_budget}"
             )
 
+        # Off by default, so every existing caller and test keeps the exact
+        # behaviour it had: the query reaches the connector untouched. Part 24's
+        # verification run turns it on. See docs/part24-query-mismatch.md.
+        self.derive_queries = derive_queries
+
         self.use_cache = use_cache
         self._fetchers: Dict[str, Fetcher] = {}
         if use_cache:
@@ -166,6 +172,52 @@ class BaseAngle(ABC):
                 )
 
     # -- retrieval -------------------------------------------------------
+
+    def _query_for(
+        self,
+        connector: AngleConnector,
+        query: str,
+        warnings: List[str],
+    ) -> str:
+        """The string actually sent to ``connector``.
+
+        With derivation off this is ``query``, unchanged -- the original
+        behaviour, byte for byte. With it on, a long pitch is reduced to
+        keywords under that connector's own ceiling.
+
+        A short query is returned untouched even when derivation is on: it
+        already fits, and rewriting it would throw away the caller's wording
+        for no benefit. Derivation that comes back empty also returns the
+        original, because sending an empty query is a worse failure than
+        sending a long one.
+        """
+        if not self.derive_queries:
+            return query
+
+        from prismflow.v2.angles.query_derivation import (
+            derive_query, limit_for,
+        )
+
+        limit = limit_for(connector.name)
+        if len(query) <= limit:
+            return query
+
+        derived = derive_query(query, limit=limit)
+        if derived.is_empty:
+            warnings.append(
+                f"query derivation produced nothing for {connector.name} "
+                f"({derived.fallback}); sent the original {len(query)}-char query"
+            )
+            return query
+
+        note = (
+            f"query derived for {connector.name}: {len(query)} chars -> "
+            f"{len(derived.text)} (limit {limit}, {len(derived.terms)} terms)"
+        )
+        if derived.fallback:
+            note += f" [{derived.fallback}]"
+        warnings.append(note)
+        return derived.text
 
     async def retrieve(self, query: str) -> AngleEvidence:
         """Retrieve, rerank and budget this angle's evidence for ``query``."""
@@ -187,12 +239,17 @@ class BaseAngle(ABC):
             if connector is None:
                 continue
             remaining = self.k - len(raw_records)
+            # Each connector enforces its own ceiling, so the query is derived
+            # per connector rather than once per angle: GitHub's limit is far
+            # tighter than NewsAPI's, and one shared string would have to
+            # satisfy the strictest of them.
+            sent = self._query_for(connector, query, warnings)
             logger.info(
                 "[%s] querying %s (%s) for %r, k=%d",
-                self.ANGLE_NAME, slot, connector.name, query, remaining,
+                self.ANGLE_NAME, slot, connector.name, sent, remaining,
             )
             try:
-                fetched = await self._fetch(slot, connector, query, remaining)
+                fetched = await self._fetch(slot, connector, sent, remaining)
             except (ConnectorError, asyncio.TimeoutError) as exc:
                 warning = (
                     f"{connector.name} ({slot}) failed: {type(exc).__name__}: "
