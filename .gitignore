@@ -99,3 +99,7 @@ cache/v2/
 # PrismFlow_Technical_Overview.pdf ARE tracked source.
 /PrismFlow_File_Catalog.pdf
 /PrismFlow_Interview_Guide.pdf
+
+# The incoming 49-row workbook, now merged into the tracked dataset. Kept on
+# disk as the audit trail for row 040, the one row no source could confirm.
+data/v2/part24_labeled_dataset_completed.xlsx
