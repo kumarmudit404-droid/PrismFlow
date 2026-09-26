@@ -1,0 +1,172 @@
+[
+  {
+    "id": "002",
+    "idea_pitch": "A mobile-only, short-form streaming platform delivering Hollywood-produced shows in 5-10 minute episodes built for on-the-go viewing. Backed by $1.75B in funding, exclusive studio content deals, and a Canadian telecom partnership (Bell Media) for launch-market distribution.",
+    "domain": "Startup",
+    "actual_outcome": "Failed",
+    "outcome_date": "2020-10-21",
+    "ground_truth_source": "https://www.pbs.org/newshour/arts/short-video-app-quibi-shutting-down-just-months-after-launch",
+    "conflict_expected": "Yes",
+    "notes": "Launched Apr 6 2020 with strong initial pickup -- 1.7M downloads in week one -- but only 72,000 of 910,000 first-3-day downloaders converted to paid after the 90-day trial (Sensor Tower, via Wikipedia). Wind-down announced Oct 21 2020; formal dissolution Dec 1 2020."
+  },
+  {
+    "id": "003",
+    "idea_pitch": "This proposal introduces a platform condition to differentiate device and simulator builds. This condition subsumes a common pattern of conditional compilation for Metal, Keychain, and AVFoundation Camera code.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2017-11-28",
+    "ground_truth_source": "https://forums.swift.org/t/accepted-se-0190-target-environment-platform-condition/7138",
+    "conflict_expected": "No",
+    "notes": "Source: Swift Evolution SE-0190"
+  },
+  {
+    "id": "004",
+    "idea_pitch": "Playground literals tokenize colors, files, and images. They provide drag-and-drop convenience and in-context visualizations that offer easy reference and manipulation when designing playground content. These literals are built using a simple square bracket syntax that, in the current form, conflicts with collection literals. This proposal redesigns playground literals to follow the precedent of #available and #selector.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2016-03-10",
+    "ground_truth_source": "https://forums.swift.org/t/accepted-se-0039-modernizing-playground-literals/1746",
+    "conflict_expected": "No",
+    "notes": "Source: Swift Evolution SE-0039"
+  },
+  {
+    "id": "005",
+    "idea_pitch": "Starting in Sierra, Apple's Mac-based OS (OS X) will be renamed \"macOS\". All user-facing Swift APIs must go through Swift Evolution. While this is a trivial API change, I have put together a formal proposal as is normal and usual for this process.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2016-06-29",
+    "ground_truth_source": "https://forums.swift.org/t/accepted-se-0106-add-a-macos-alias-for-the-osx-platform-configuration-test/3176",
+    "conflict_expected": "No",
+    "notes": "Source: Swift Evolution SE-0106"
+  },
+  {
+    "id": "006",
+    "idea_pitch": "This proposal enhances the `Package.swift` manifest APIs to support custom target layouts, and removes a convention which allowed omission of targets from the manifest.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2017-04-11",
+    "ground_truth_source": "https://forums.swift.org/t/accepted-se-0162-package-manager-custom-target-layouts/5647",
+    "conflict_expected": "No",
+    "notes": "Source: Swift Evolution SE-0162"
+  },
+  {
+    "id": "007",
+    "idea_pitch": "The current version of Swift (2.1) requires using `self` when accessing instance members in closures. The proposal suggests extending this to all member accesses (as is intrinsically the case in Objective-C). It has the benefit of documenting instance properties vs local variables and instance functions vs local functions or closures.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Rejected",
+    "outcome_date": "2016-01-06",
+    "ground_truth_source": "https://forums.swift.org/t/rejected-se-0009-require-self-for-accessing-instance-members/930",
+    "conflict_expected": "Unsure",
+    "notes": "Source: Swift Evolution SE-0009"
+  },
+  {
+    "id": "008",
+    "idea_pitch": "This proposal removes `where` clauses from `for-in` loops, where they are better expressed (and read) as guard conditions.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Rejected",
+    "outcome_date": "2016-06-30",
+    "ground_truth_source": "https://forums.swift.org/t/rejected-se-0105-removing-where-clauses-from-for-in-loops/3205",
+    "conflict_expected": "No",
+    "notes": "Source: Swift Evolution SE-0105"
+  },
+  {
+    "id": "009",
+    "idea_pitch": "Introduce a new operator an \"Optional Value Setter\". If the optional is set via this operator then the new value is only set if there isn't an already existing value.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Rejected",
+    "outcome_date": "2016-02-23",
+    "ground_truth_source": "https://forums.swift.org/t/rejected-se-0024-optional-value-setter/1528",
+    "conflict_expected": "No",
+    "notes": "Source: Swift Evolution SE-0024"
+  },
+  {
+    "id": "010",
+    "idea_pitch": "Swift permits trailing commas after the last element in array or dictionary literal. This proposal extends that to parameters and tuples.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Rejected",
+    "outcome_date": "2016-05-26",
+    "ground_truth_source": "https://forums.swift.org/t/rejected-se-0084-allow-trailing-commas-in-parameter-lists-and-tuples/2777",
+    "conflict_expected": "Yes",
+    "notes": "Source: Swift Evolution SE-0084"
+  },
+  {
+    "id": "011",
+    "idea_pitch": "This PEP describes changes to the PyPI infrastructure that are needed to ensure that users get valid packages from PyPI. These changes should have minimal impact on other parts of the ecosystem. The PEP focuses on communication between PyPI and users, and so does not require any action by package developers. Developers will upload packages using the current process, and PyPI will automatically generate signed repository metadata for these packages. In order for the security mechanism to be effective, additional work will need to be done by PyPI consumers (like pip) to verify the signatures and metadata provided by PyPI. This verification can be transparent to users (unless it fails) and provides an automatic security mechanism. There is documentation for how to consume TUF metadata in the TUF repository.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2020-02-15",
+    "ground_truth_source": "https://discuss.python.org/t/pep-458-secure-pypi-downloads-with-package-signing/2648/115",
+    "conflict_expected": "No",
+    "notes": "Source: Python PEP 458 | abstract trimmed at a sentence boundary"
+  },
+  {
+    "id": "012",
+    "idea_pitch": "This document proposes language extensions that allow programs to raise and handle multiple unrelated exceptions simultaneously: * A new standard exception type, the ExceptionGroup, which represents a group of unrelated exceptions being propagated together. * A new syntax except* for handling ExceptionGroups.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2021-09-24",
+    "ground_truth_source": "https://discuss.python.org/t/accepting-pep-654-exception-groups-and-except/10813/1",
+    "conflict_expected": "Unsure",
+    "notes": "Source: Python PEP 654"
+  },
+  {
+    "id": "013",
+    "idea_pitch": "Type expressions provide a standardized way to specify types in the Python type system. When a type expression is evaluated at runtime, the resulting *type form object* encodes the information supplied in the type expression. This enables a variety of use cases including runtime type checking, introspection, and metaprogramming. Such use cases have proliferated, but there is currently no way to accurately annotate functions that accept type form objects. Developers are forced to use an overly-wide type like object, which makes some use cases impossible and generally reduces type safety. This PEP addresses this limitation by introducing a new special form typing.TypeForm. This PEP makes no changes to the Python grammar. Correct usage of TypeForm is intended to be enforced only by type checkers, not by the Python runtime.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2026-02-20",
+    "ground_truth_source": "https://discuss.python.org/t/pep-747-typeexpr-type-hint-for-a-type-expression/55984/103",
+    "conflict_expected": "Unsure",
+    "notes": "Source: Python PEP 747"
+  },
+  {
+    "id": "014",
+    "idea_pitch": "This PEP proposes the creation of a new standard library module named !profiling to organize Python's built-in profiling tools under a single, coherent namespace. This PEP also proposes the deprecation of the profile module, a legacy pure-Python tracing profiler.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Adopted",
+    "outcome_date": "2025-08-21",
+    "ground_truth_source": "https://discuss.python.org/t/pep-799-a-dedicated-profilers-package-for-organizing-python-profiling-tool/100898/21",
+    "conflict_expected": "No",
+    "notes": "Source: Python PEP 799"
+  },
+  {
+    "id": "015",
+    "idea_pitch": "This PEP proposes extending the existing mechanism for setting up sys.path to include a new pypackages directory, in addition to the existing locations. The new directory will be added at the start of sys.path, after the current working directory and just before the system site-packages, to give packages installed there priority over other locations. This is similar to the existing mechanism of adding the current directory (or the directory the script is located in), but by using a subdirectory, additional libraries are kept separate from the user's work.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Rejected",
+    "outcome_date": "2023-03-28",
+    "ground_truth_source": "https://discuss.python.org/t/pep-582-python-local-packages-directory/963/430",
+    "conflict_expected": "Yes",
+    "notes": "Source: Python PEP 582"
+  },
+  {
+    "id": "016",
+    "idea_pitch": "Python allows the with and async with statements to handle multiple context managers in a single statement, so long as they are all respectively synchronous or asynchronous. When mixing synchronous and asynchronous context managers, developers must use deeply nested statements or use risky workarounds such as overuse of contextlib.AsyncExitStack. We therefore propose to allow with statements to accept both synchronous and asynchronous context managers in a single statement by prefixing individual async context managers with the async keyword. This change eliminates unnecessary nesting, improves code readability, and improves ergonomics without making async code any less explicit.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Rejected",
+    "outcome_date": "2026-04-23",
+    "ground_truth_source": "https://discuss.python.org/t/pep-806-mixed-sync-async-context-managers-with-precise-async-marking/103971/12",
+    "conflict_expected": "Yes",
+    "notes": "Source: Python PEP 806"
+  },
+  {
+    "id": "017",
+    "idea_pitch": "This PEP proposes allowing parentheses in the two-argument form of assert. The interpreter will reinterpret assert (expr, msg) as assert expr, msg, eliminating the common pitfall where such code was previously treated as asserting a two-element tuple, which is always truthy.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Rejected",
+    "outcome_date": "2025-10-24",
+    "ground_truth_source": "https://discuss.python.org/t/pep-679-new-assert-statement-syntax-with-parentheses/103634/24",
+    "conflict_expected": "Yes",
+    "notes": "Source: Python PEP 679"
+  },
+  {
+    "id": "018",
+    "idea_pitch": "This PEP proposes to forbid return, break and continue statements within a finally suite where they would break out of the finally. Their use in such a location silently cancels any active exception being raised through the finally, leading to unclear code and possible bugs. continue is currently not supported in a finally in Python 3.7 (due to implementation issues) and the proposal is to not add support for it in Python 3.8. For return and break the proposal is to deprecate their use in Python 3.9, emit a compilation warning in Python 3.10 and then forbid their use after that.",
+    "domain": "Tech-OSS",
+    "actual_outcome": "Rejected",
+    "outcome_date": "2019-09-17",
+    "ground_truth_source": "https://discuss.python.org/t/pep-601-forbid-return-break-continue-breaking-out-of-finally/2239/32",
+    "conflict_expected": "No",
+    "notes": "Source: Python PEP 601"
+  }
+]
