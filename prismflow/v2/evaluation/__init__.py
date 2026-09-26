@@ -13,6 +13,21 @@ standard library; ``export`` is a one-shot authoring tool that needs
 not require a spreadsheet library.
 """
 
+from prismflow.v2.evaluation.calibration import (
+    DEFAULT_N_BINS,
+    CalibrationReport,
+    MetricInputError,
+    calibration_arrays,
+    calibration_brier_decomposition,
+    calibration_reliability,
+    compute_calibration,
+)
+from prismflow.v2.evaluation.conflict import (
+    ConflictInputError,
+    ConflictReport,
+    compute_conflict_metrics,
+    conflict_arrays,
+)
 from prismflow.v2.evaluation.dataset import (
     CONFLICT_BOOL,
     DOMAINS,
@@ -24,9 +39,20 @@ from prismflow.v2.evaluation.dataset import (
 
 __all__ = [
     "CONFLICT_BOOL",
+    "DEFAULT_N_BINS",
     "DOMAINS",
     "OUTCOME_BINARY",
+    "CalibrationReport",
+    "ConflictInputError",
+    "ConflictReport",
     "DatasetValidationError",
     "EvaluationQuery",
+    "MetricInputError",
+    "calibration_arrays",
+    "calibration_brier_decomposition",
+    "calibration_reliability",
+    "compute_calibration",
+    "compute_conflict_metrics",
+    "conflict_arrays",
     "load_evaluation_dataset",
 ]
