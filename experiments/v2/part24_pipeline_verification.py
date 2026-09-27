@@ -193,6 +193,15 @@ async def run_row(query, angles, reasoners, fusion):
             continue
 
         entry["claims"] = len(claimset.claims)
+        # A provider failure does NOT reach the except branch above: base.py
+        # catches ReasonerError, logs it, and returns an EMPTY claimset carrying
+        # .error. So len(claims) == 0 on its own cannot distinguish a Groq 429
+        # or a json_validate_failed from a model that read the evidence and had
+        # nothing to claim. Recording only the count blends the two, which is
+        # how a quota artefact gets reported as a retrieval result.
+        if claimset.error:
+            entry["reasoner_error"] = str(claimset.error)[:200]
+            record["errors"].append("%s reasoner" % name)
         entry["mean_claim_conf"] = (
             round(sum(c.confidence for c in claimset.claims) / len(claimset.claims), 4)
             if claimset.claims else None)
@@ -201,6 +210,17 @@ async def run_row(query, angles, reasoners, fusion):
             claimsets.append(claimset)
 
     record["angles_with_claims"] = len(claimsets)
+    record["angles_with_reasoner_error"] = sum(
+        1 for entry in record["angles"].values()
+        if entry.get("reasoner_error") or str(entry.get("claims", "")).startswith("ERROR"))
+    # Why a row-level verdict and not just the per-angle flag: the summary has
+    # to answer "did this row produce nothing because the provider broke, or
+    # because there was nothing to say", and only the row knows both halves.
+    if len(claimsets) == 0:
+        record["zero_claim_cause"] = (
+            "provider_error" if record["angles_with_reasoner_error"] else "genuine")
+    else:
+        record["zero_claim_cause"] = None
     if len(claimsets) < 2:
         record["fused"] = None
         record["note"] = ("fewer than 2 angles produced claims; dependence "
@@ -312,6 +332,37 @@ async def main_async(limit: Optional[int], args_no_derive: bool = False) -> int:
                  len(record["errors"]),
                  (record.get("note") or "")[:30]))
 
+    # Two counts, deliberately NOT summed into one "rows with no claims"
+    # figure: a provider error says nothing about the evidence, and a genuine
+    # zero says nothing about the provider. Blending them reports quota noise
+    # as a retrieval result.
+    provider_failed = [r for r in records if r.get("zero_claim_cause") == "provider_error"]
+    genuine_zero = [r for r in records if r.get("zero_claim_cause") == "genuine"]
+    # A row can produce claims on one angle and still have lost another angle
+    # to a provider error, so this is a third, overlapping count.
+    any_provider_error = [r for r in records
+                          if r.get("angles_with_reasoner_error")]
+    print()
+    print("ZERO-CLAIM ROWS, SPLIT BY CAUSE (not one blended number)")
+    print("  %d rows failed (provider error)        : %s"
+          % (len(provider_failed),
+             ", ".join(r["id"] for r in provider_failed) or "none"))
+    print("  %d rows genuinely returned zero claims : %s"
+          % (len(genuine_zero),
+             ", ".join(r["id"] for r in genuine_zero) or "none"))
+    print("  %d rows lost AT LEAST ONE angle to a provider error (overlaps the"
+          % len(any_provider_error))
+    print("    rows above and rows that still fused): %s"
+          % (", ".join(r["id"] for r in any_provider_error) or "none"))
+    if any_provider_error:
+        print("  per-angle provider errors:")
+        for failed in any_provider_error:
+            for name, entry in failed["angles"].items():
+                detail = entry.get("reasoner_error") or (
+                    entry["claims"] if str(entry.get("claims", "")).startswith("ERROR") else None)
+                if detail:
+                    print("    row %-4s %-11s %s" % (failed["id"], name, str(detail)[:90]))
+
     # Persisted BEFORE the metrics gate: on a run too degraded to produce
     # metrics the per-row detail is the whole result, and an early return
     # used to discard it.
@@ -327,6 +378,9 @@ async def main_async(limit: Optional[int], args_no_derive: bool = False) -> int:
         "seeds": None,
         "seed_note": "no seed loop: nothing on this path varies per seed",
         "n_rows": len(rows),
+        "zero_claim_rows_provider_error": [r["id"] for r in provider_failed],
+        "zero_claim_rows_genuine": [r["id"] for r in genuine_zero],
+        "rows_with_any_reasoner_error": [r["id"] for r in any_provider_error],
         "rows": records,
     }, indent=2), encoding="utf-8")
     print("\nper-row detail written to %s" % out)
