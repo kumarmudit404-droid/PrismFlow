@@ -1,0 +1,3592 @@
+{
+  "label": "PIPELINE-VERIFICATION RUN -- NOT PART 24 EVIDENCE\n  ONE PASS, N=48 of 48 committed rows (dataset target 50).\n  Reasoner is GROQ (openai/gpt-oss-120b) via the OpenAIReasoner\n  code path -- NOT Claude, NOT OpenAI (both unfunded).\n  Fusion adjudication is LEXICAL (offline LexicalAdjudicator), so\n  Part 23's Claude path is NOT exercised.\n  No seeds: nothing on this path varies as a function of a seed\n  (see module docstring), so no mean and no std are reported.\n  NOT A PART 24 FINDING under docs/CONTRACT.md section 5.",
+  "is_part24_evidence": false,
+  "reasoner": {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "note": "OpenAIReasoner code path; not OpenAI, not Claude"
+  },
+  "adjudicator": "LexicalAdjudicator (offline; Claude path not exercised)",
+  "passes": 1,
+  "seeds": null,
+  "seed_note": "no seed loop: nothing on this path varies per seed",
+  "n_rows": 48,
+  "zero_claim_rows_provider_error": [
+    "006",
+    "024",
+    "026",
+    "027",
+    "028",
+    "029",
+    "030",
+    "031",
+    "032",
+    "033",
+    "034",
+    "035",
+    "036",
+    "037",
+    "038",
+    "039",
+    "041",
+    "042",
+    "043",
+    "044",
+    "045",
+    "046",
+    "047",
+    "048",
+    "049",
+    "050"
+  ],
+  "zero_claim_rows_genuine": [
+    "017",
+    "020"
+  ],
+  "rows_with_any_reasoner_error": [
+    "006",
+    "016",
+    "024",
+    "025",
+    "026",
+    "027",
+    "028",
+    "029",
+    "030",
+    "031",
+    "032",
+    "033",
+    "034",
+    "035",
+    "036",
+    "037",
+    "038",
+    "039",
+    "041",
+    "042",
+    "043",
+    "044",
+    "045",
+    "046",
+    "047",
+    "048",
+    "049",
+    "050"
+  ],
+  "rows": [
+    {
+      "id": "002",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 860,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 274 chars -> 120 (limit 180, 12 terms)",
+            "query derived for arxiv: 274 chars -> 120 (limit 220, 12 terms)"
+          ],
+          "claims": 5,
+          "mean_claim_conf": 0.736
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 274 chars -> 120 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 274 chars -> 58 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 274 chars -> 120 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 6.21
+    },
+    {
+      "id": "003",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 210 chars -> 124 (limit 180, 12 terms)"
+          ],
+          "claims": 5,
+          "mean_claim_conf": 0.824
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 210 chars -> 59 (limit 60, 5 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 210 chars -> 124 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 7.21
+    },
+    {
+      "id": "004",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 896,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 424 chars -> 111 (limit 180, 12 terms)",
+            "query derived for arxiv: 424 chars -> 111 (limit 220, 12 terms)"
+          ],
+          "claims": 5,
+          "mean_claim_conf": 0.7
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 424 chars -> 111 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 424 chars -> 60 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 424 chars -> 111 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 3.11
+    },
+    {
+      "id": "005",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1746,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 247 chars -> 101 (limit 180, 12 terms)",
+            "query derived for arxiv: 247 chars -> 101 (limit 220, 12 terms)"
+          ],
+          "claims": 3,
+          "mean_claim_conf": 0.8433
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 247 chars -> 101 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 247 chars -> 59 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 247 chars -> 101 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 26.31
+    },
+    {
+      "id": "006",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1089,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "BadRequestError 400: Error code: 400 - {'error': {'message': \"Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': '",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 168 chars -> 60 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 168 chars -> 96 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 22.66
+    },
+    {
+      "id": "007",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 976,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 336 chars -> 103 (limit 180, 12 terms)",
+            "query derived for arxiv: 336 chars -> 103 (limit 220, 12 terms)"
+          ],
+          "claims": 4,
+          "mean_claim_conf": 0.7375
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 336 chars -> 103 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 336 chars -> 58 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 336 chars -> 103 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 21.2
+    },
+    {
+      "id": "008",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 943,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 3,
+          "mean_claim_conf": 0.85
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 122 chars -> 60 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 18.74
+    },
+    {
+      "id": "009",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1073,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 3,
+          "mean_claim_conf": 0.8833
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 166 chars -> 38 (limit 60, 4 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 3,
+          "tokens": 373,
+          "provenance": {
+            "stackexchange": 3
+          },
+          "warnings": [
+            "query derived for stackexchange: 166 chars -> 38 (limit 150, 4 terms)"
+          ],
+          "claims": 0,
+          "mean_claim_conf": null
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 30.71
+    },
+    {
+      "id": "010",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 883,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 1,
+          "mean_claim_conf": 0.92
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 137 chars -> 59 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 19.36
+    },
+    {
+      "id": "011",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 877,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 815 chars -> 85 (limit 180, 12 terms)",
+            "query derived for arxiv: 815 chars -> 85 (limit 220, 12 terms)"
+          ],
+          "claims": 4,
+          "mean_claim_conf": 0.85
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 815 chars -> 85 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 815 chars -> 60 (limit 60, 9 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 815 chars -> 85 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 23.46
+    },
+    {
+      "id": "012",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 928,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 310 chars -> 113 (limit 180, 12 terms)",
+            "query derived for arxiv: 310 chars -> 113 (limit 220, 12 terms)"
+          ],
+          "claims": 1,
+          "mean_claim_conf": 0.55
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 310 chars -> 113 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 310 chars -> 59 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 310 chars -> 113 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 25.6
+    },
+    {
+      "id": "013",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1065,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 831 chars -> 103 (limit 180, 12 terms)",
+            "query derived for arxiv: 831 chars -> 103 (limit 220, 12 terms)"
+          ],
+          "claims": 4,
+          "mean_claim_conf": 0.715
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 831 chars -> 103 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 831 chars -> 57 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 831 chars -> 103 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 21.93
+    },
+    {
+      "id": "014",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 910,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 263 chars -> 92 (limit 180, 12 terms)",
+            "query derived for arxiv: 263 chars -> 92 (limit 220, 12 terms)"
+          ],
+          "claims": 1,
+          "mean_claim_conf": 0.85
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 263 chars -> 92 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 263 chars -> 60 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 263 chars -> 92 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 15.99
+    },
+    {
+      "id": "015",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 881,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 561 chars -> 101 (limit 180, 12 terms)",
+            "query derived for arxiv: 561 chars -> 101 (limit 220, 12 terms)"
+          ],
+          "claims": 1,
+          "mean_claim_conf": 0.75
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 561 chars -> 101 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 561 chars -> 60 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 561 chars -> 101 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 22.31
+    },
+    {
+      "id": "016",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 902,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 688 chars -> 103 (limit 180, 12 terms)",
+            "query derived for arxiv: 688 chars -> 103 (limit 220, 12 terms)"
+          ],
+          "claims": 3,
+          "mean_claim_conf": 0.7833
+        },
+        "market": {
+          "records": 1,
+          "tokens": 83,
+          "provenance": {
+            "newsapi": 1
+          },
+          "warnings": [
+            "query derived for newsapi: 688 chars -> 103 (limit 240, 12 terms)",
+            "no bm25 term overlap between the query and any record; retrieval order preserved"
+          ],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 688 chars -> 56 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 688 chars -> 103 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "market reasoner"
+      ],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 25.68
+    },
+    {
+      "id": "017",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 873,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 275 chars -> 105 (limit 180, 12 terms)",
+            "query derived for arxiv: 275 chars -> 105 (limit 220, 12 terms)"
+          ],
+          "claims": 0,
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 275 chars -> 105 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 275 chars -> 58 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 275 chars -> 105 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": "genuine",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 8.91
+    },
+    {
+      "id": "018",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 882,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [
+            "query derived for github: 585 chars -> 92 (limit 180, 12 terms)",
+            "query derived for arxiv: 585 chars -> 92 (limit 220, 12 terms)"
+          ],
+          "claims": 2,
+          "mean_claim_conf": 0.84
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "query derived for newsapi: 585 chars -> 92 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 585 chars -> 60 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "query derived for stackexchange: 585 chars -> 92 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 18.36
+    },
+    {
+      "id": "019",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1143,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 4,
+          "mean_claim_conf": 0.775
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 96 chars -> 51 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 18.76
+    },
+    {
+      "id": "020",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 114 chars -> 58 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": "genuine",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 20.1
+    },
+    {
+      "id": "021",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1695,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 3,
+          "mean_claim_conf": 0.9067
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 90 chars -> 52 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 17.86
+    },
+    {
+      "id": "022",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 934,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 3,
+          "mean_claim_conf": 0.7133
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 97 chars -> 57 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 20.68
+    },
+    {
+      "id": "023",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 934,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 1,
+          "mean_claim_conf": 0.92
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 106 chars -> 59 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 25.39
+    },
+    {
+      "id": "024",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1057,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 95 chars -> 56 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 4.87
+    },
+    {
+      "id": "025",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1063,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 1,
+          "tokens": 78,
+          "provenance": {
+            "newsapi": 1
+          },
+          "warnings": [
+            "no bm25 term overlap between the query and any record; retrieval order preserved"
+          ],
+          "claims": 1,
+          "mean_claim_conf": 0.85
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 97 chars -> 55 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": null,
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 5.79
+    },
+    {
+      "id": "026",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 2,
+          "tokens": 164,
+          "provenance": {
+            "newsapi": 2
+          },
+          "warnings": [
+            "no bm25 term overlap between the query and any record; retrieval order preserved"
+          ],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 101 chars -> 55 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner",
+        "market reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 2,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 6.91
+    },
+    {
+      "id": "027",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 112 chars -> 59 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 5.27
+    },
+    {
+      "id": "028",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 968,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 112 chars -> 55 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 1.67
+    },
+    {
+      "id": "029",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 885,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 113 chars -> 56 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 6.03
+    },
+    {
+      "id": "030",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 818,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 129 chars -> 59 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 6.12
+    },
+    {
+      "id": "031",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 135 chars -> 56 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 8.95
+    },
+    {
+      "id": "032",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 3,
+          "tokens": 261,
+          "provenance": {
+            "newsapi": 3
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 117 chars -> 56 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner",
+        "market reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 2,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 7.09
+    },
+    {
+      "id": "033",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 856,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 1,
+          "tokens": 125,
+          "provenance": {
+            "newsapi": 1
+          },
+          "warnings": [
+            "no bm25 term overlap between the query and any record; retrieval order preserved"
+          ],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 109 chars -> 55 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner",
+        "market reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 2,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 1.87
+    },
+    {
+      "id": "034",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 94 chars -> 54 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 6.67
+    },
+    {
+      "id": "035",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1112,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 108 chars -> 58 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 5.63
+    },
+    {
+      "id": "036",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 119 chars -> 58 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 7.36
+    },
+    {
+      "id": "037",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1089,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 103 chars -> 60 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 9.49
+    },
+    {
+      "id": "038",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 106 chars -> 51 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 2.28
+    },
+    {
+      "id": "039",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 114 chars -> 57 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 7.33
+    },
+    {
+      "id": "041",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1089,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 113 chars -> 55 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 6.76
+    },
+    {
+      "id": "042",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 99 chars -> 56 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 4.21
+    },
+    {
+      "id": "043",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 870,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 111 chars -> 60 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 4.38
+    },
+    {
+      "id": "044",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 2,
+          "tokens": 200,
+          "provenance": {
+            "newsapi": 2
+          },
+          "warnings": [
+            "no bm25 term overlap between the query and any record; retrieval order preserved"
+          ],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 108 chars -> 55 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner",
+        "market reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 2,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 7.45
+    },
+    {
+      "id": "045",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 104 chars -> 57 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 10.98
+    },
+    {
+      "id": "046",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 112 chars -> 57 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 5.91
+    },
+    {
+      "id": "047",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 108 chars -> 58 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 5.87
+    },
+    {
+      "id": "048",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 129 chars -> 59 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 6.01
+    },
+    {
+      "id": "049",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 101 chars -> 55 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 5.99
+    },
+    {
+      "id": "050",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "tokens": 1076,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          },
+          "warnings": [],
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "mean_claim_conf": null
+        },
+        "market": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "newsapi": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "financial": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "yfinance": 0
+          },
+          "warnings": [
+            "query derived for yfinance: 115 chars -> 57 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "regulatory": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {},
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        },
+        "sentiment": {
+          "records": 0,
+          "tokens": 0,
+          "provenance": {
+            "stackexchange": 0
+          },
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ],
+          "claims": 0,
+          "note": "no evidence retrieved; reasoner not called"
+        }
+      },
+      "errors": [
+        "tech reasoner"
+      ],
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "fused": null,
+      "note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "seconds": 6.04
+    }
+  ]
+}
