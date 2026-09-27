@@ -40,16 +40,32 @@ claim counts did not, because the reasoner sends no temperature and no seed, so
 the provider samples at its own default. Where a claim count is quoted below it
 is flagged, because the second pass exhausted a daily quota (V2-L5).
 
-**What is not checkable from the repository.** The committed JSON is the second
-pass. The first pass wrote to the same path and was overwritten, so the two
-figures taken from it -- its 38/48 and 1/48 in V2-L6, and row 032's ENIV and
-confidence -- cannot be re-derived from a committed artefact. They are recorded
-here because a later pass cannot recover them: they need a day's unspent quota.
-The per-angle retrieval table in V2-L1 is unaffected, being identical in both
-passes and present in the committed file. Separately, the "roughly 100k tokens
-per pass" in V2-L5 is inferred from the provider's own TPD counter across the
-day, not measured per call -- the harness records evidence tokens, not reasoner
-tokens.
+**Where each pass lives.** Both passes are committed, so every figure below can
+be re-derived:
+
+* second pass -- `results/v2/part24_pipeline_verification.json`
+* first pass -- `results/v2/part24_pipeline_verification_pass1.json`
+
+The first pass wrote to the second pass's path and was overwritten there; the
+copy recovered under the `_pass1` name is byte-identical to what the harness
+produced. The two figures taken from it -- its 38/48 and 1/48 in V2-L6, and row
+032's ENIV and confidence -- are therefore checkable at that path. This mattered
+enough to recover because a later pass cannot reproduce them: they need a day's
+unspent quota (V2-L5).
+
+**The first-pass file predates `17f4123`,** the commit that split provider
+errors from genuine zeros, so it carries no `zero_claim_cause` and no
+`zero_claim_rows_*` fields and its 10 zero-claim rows remain unsplit. That is
+correct and expected for a pass that ran before the fix existed, not a gap in
+the file. The breakdown for that pass -- 5 provider failures (005, 018 on TPM
+429; 020, 042, 046 on `json_validate_failed`) and 5 genuine zeros (014, 021,
+031, 047, 048) -- was recovered from that run's log and is recorded in
+`17f4123`'s commit message.
+
+One figure remains an inference rather than a measurement: the "roughly 100k
+tokens per pass" in V2-L5 comes from the provider's own TPD counter across the
+day, not from per-call accounting, because the harness records evidence tokens
+and not reasoner tokens.
 
 ## V2-L1. Retrieval coverage: one angle of five contributes
 
