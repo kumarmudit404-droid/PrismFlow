@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PrismFlow</title>
+<meta name="description" content="Dependence-Discounted Evidential Fusion under Collusive View Compromise: a guided tour of what was measured, and what was not.">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#ch1">Skip to content</a>
+
+<nav class="site-nav" aria-label="Chapters">
+  <div class="wrap site-nav__inner">
+    <span class="site-nav__brand">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.5 16.5 15h-15z" fill="none" stroke="#FFF8E7" stroke-width="1.3"/></svg>
+      PrismFlow
+    </span>
+    <ul class="site-nav__list">
+      <li><a class="site-nav__link" href="#ch1">1 · Problem</a></li>
+      <li><a class="site-nav__link" href="#ch2">2 · V1</a></li>
+      <li><a class="site-nav__link" href="#ch3">3 · V2</a></li>
+      <li><a class="site-nav__link" href="#ch4">4 · Results</a></li>
+      <li><a class="site-nav__link" href="#ch5">5 · Explore</a></li>
+      <li><a class="site-nav__link site-nav__link--limits" href="#limits">Known limitations</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+
+<!-- ============================ HERO ============================ -->
+<header class="wrap hero">
+  <h1 class="hero__title">Agreement is not<br>evidence.</h1>
+  <p class="hero__thesis">
+    Agreement between views should contribute evidence in proportion to the
+    effective independence of those views, not in proportion to how many views
+    agree.
+  </p>
+
+  <div class="hero__prism" aria-hidden="true">
+    <!-- Phase (a): static. One beam enters, five angle-coloured beams leave.
+         Phase (c) animates this; it must remain legible without motion. -->
+    <svg viewBox="0 0 900 240" width="100%" height="240" role="img">
+      <line x1="0" y1="120" x2="330" y2="120" stroke="#FFF8E7" stroke-width="2.5"/>
+      <path d="M360 40 L470 190 L250 190 Z" fill="none" stroke="#AEAEC0" stroke-width="1.5"/>
+      <g stroke-width="2.2" opacity="0.95">
+        <line x1="400" y1="120" x2="900" y2="36"  stroke="#6F4FD6"/>
+        <line x1="400" y1="120" x2="900" y2="78"  stroke="#EF4A85"/>
+        <line x1="400" y1="120" x2="900" y2="120" stroke="#3FB5F0"/>
+        <line x1="400" y1="120" x2="900" y2="162" stroke="#57E0A4"/>
+        <line x1="400" y1="120" x2="900" y2="204" stroke="#FFEFBC"/>
+      </g>
+    </svg>
+  </div>
+
+  <p class="prose">
+    A research project, reported as a research project: this tour states what
+    was measured, on how many seeds, and — just as often — what could not be
+    measured at all. Every figure on these pages names the committed file it
+    came from.
+  </p>
+  <a class="limits-link" href="#limits">Known limitations →</a>
+</header>
+
+<!-- ============================ CH 1 ============================ -->
+<section class="chapter wrap" id="ch1" aria-labelledby="ch1-h">
+  <p class="chapter__num">Chapter 1</p>
+  <h2 class="chapter__title" id="ch1-h">The problem</h2>
+  <p class="chapter__lede">
+    When several sources agree, confidence goes up. That is only sound if the
+    sources are independent. If they are copies of one another, agreement is an
+    echo, and confidence built on it is counterfeit.
+  </p>
+
+  <div class="prose">
+    <p>
+      PrismFlow studies <em>Dependence-Discounted Evidential Fusion under
+      Collusive View Compromise</em>. It tests the hypothesis that discounting
+      fused confidence by estimated inter-view dependence — ENIV, the effective
+      number of independent views — yields fusion robust to colluding or
+      compromised views.
+    </p>
+
+    <h3>The scope of the claim, stated narrowly</h3>
+    <blockquote class="verbatim">
+      The hypothesis is about REDUNDANT evidence: views that are correlated with
+      each other. It is not a claim about UNRELIABLE evidence, meaning a view
+      that is individually noisy or corrupted but uncorrelated with the others.
+      <cite>docs/CONTRACT.md §1, annotation 2026-09-17</cite>
+    </blockquote>
+    <p>
+      Part 08 measured that boundary directly: ENIV is flat as view noise rises,
+      because noise makes a view <em>less</em> dependent, not more. Robustness to
+      individually degraded views is not claimed and is not tested for.
+    </p>
+
+    <h3>How much redundancy does a standard benchmark contain?</h3>
+    <p>
+      Multi-view methods are compared by their view count. Nobody reports how
+      many of those views are actually independent. On Handwritten (UCI Multiple
+      Features), the canonical 6-view benchmark, they are not six.
+    </p>
+  </div>
+
+  <div class="grid grid--3" style="margin-top:var(--sp-3)">
+    <div class="panel stat">
+      <span class="stat__value">6</span>
+      <span class="stat__label">nominal views</span>
+    </div>
+    <div class="panel stat">
+      <span class="stat__value" style="color:var(--angle-tech)">3.28 <small style="font-size:var(--step--1);color:var(--text-muted)">± 0.07</small></span>
+      <span class="stat__label">measured ENIV</span>
+      <span class="stat__src">5 seeds</span>
+    </div>
+    <div class="panel stat">
+      <span class="stat__value">0.547 <small style="font-size:var(--step--1);color:var(--text-muted)">± 0.011</small></span>
+      <span class="stat__label">efficiency ratio</span>
+      <span class="stat__src">5 seeds</span>
+    </div>
+  </div>
+  <p class="src">README.md — 5 seeds, mean ± sample std, 800 test samples, test accuracy 0.981 ± 0.003</p>
+
+  <div class="prose">
+    <p>
+      <strong>Six views behave like three and a quarter.</strong> That is not
+      estimator noise: permuting each view's features within class — which makes
+      the views independent by construction while leaving sample size, feature
+      dimension and marginals untouched — moves ENIV to
+      <strong>5.51 ± 0.08</strong> of 6. So 2.23 of the 2.72-view shortfall is
+      measured redundancy and roughly half a view is floor.
+    </p>
+    <p>
+      The redundancy is not spread evenly. Dropping <code>fou</code> or
+      <code>mor</code> costs 0.74 and 0.68 effective views; dropping
+      <code>fac</code> or <code>pix</code> — the two largest views, at 216 and
+      240 features — costs 0.24 and 0.21, because they are 0.85 dependent on each
+      other. Keeping <code>pix</code> alongside <code>fac</code> buys about a
+      fifth of an independent witness.
+    </p>
+    <blockquote class="verbatim">
+      Real views carry no ground-truth dependence, so ENIV is APPLIED here and
+      not VALIDATED here.
+      <cite>README.md — "What this is not"</cite>
+    </blockquote>
+  </div>
+  <a class="limits-link" href="#limits">Known limitations →</a>
+</section>
+
+<!-- ============================ CH 2 ============================ -->
+<section class="chapter wrap" id="ch2" aria-labelledby="ch2-h">
+  <p class="chapter__num">Chapter 2</p>
+  <h2 class="chapter__title" id="ch2-h">V1 — what the synthetic experiments showed</h2>
+  <p class="chapter__lede">
+    Parts 01–15 built and attacked the estimator on synthetic data, where the
+    true dependence <code>rho</code> is a parameter that was set. Two results
+    qualify the project's hypothesis, and they point in opposite directions.
+  </p>
+
+  <div class="grid grid--2">
+    <div class="panel">
+      <h4 style="color:var(--angle-market);margin-top:0">Detection — supported</h4>
+      <p style="color:var(--text-secondary)">
+        Under a coordinated attack, ENIV falls <strong>3.36 → 2.70</strong> and
+        dependence among the compromised views rises
+        <strong>+0.7351 ± 0.0914</strong>. The estimator identifies collusion
+        reliably.
+      </p>
+    </div>
+    <div class="panel">
+      <h4 style="color:var(--status-provider-error);margin-top:0">Defence — not supported</h4>
+      <p style="color:var(--text-secondary)">
+        PrismFlow's attack success rate was <strong>higher</strong> than naive
+        fusion's in <strong>12 of 12</strong> attacked cells
+        (<strong>+0.0267 ± 0.0071</strong> at ε = 1.0, 0/5 seeds better).
+      </p>
+    </div>
+  </div>
+  <p class="src">docs/CONTRACT.md §1, annotation 2026-09-18 (Part 09) — experiments/chorus/, 5 seeds</p>
+
+  <div class="prose">
+    <blockquote class="verbatim">
+      As tested, that half of the hypothesis is not supported. … Detection of
+      redundancy and robustness to it are separate capabilities, and only the
+      first is evidenced.
+      <cite>docs/CONTRACT.md §1</cite>
+    </blockquote>
+    <p>
+      Two further scope notes from the same experiment. The dependence signal is
+      blind to <em>uncoordinated</em> compromise: independent PGD reached 0.4640
+      success at ε = 2.0 while <code>rho_bar</code> moved −0.0290 ± 0.0251 and
+      ENIV stayed flat. And the one measured benefit of the discount under attack
+      is that belief in the wrong class is lower when the attack succeeds
+      (−0.0562 ± 0.0069 at ε = 1.0, 5/5 seeds, bars separate).
+    </p>
+
+    <h3>L1–L8, as written</h3>
+    <p style="color:var(--text-secondary)">
+      These are the limitations found as each Part ran, stated in their own
+      words — not softened, not summarised away.
+    </p>
+  </div>
+
+  <div class="panel" style="margin-top:var(--sp-3)">
+    <div class="limit"><span class="limit__id">L1.</span> <span class="limit__title">Flat confidence under duplication depends on training-time adaptation</span></div>
+    <div class="limit"><span class="limit__id">L2.</span> <span class="limit__title">Residual per-pair dependence accumulates with view count</span></div>
+    <div class="limit"><span class="limit__id">L3.</span> <span class="limit__title">The discount addresses redundant evidence, not unreliable evidence</span></div>
+    <div class="limit"><span class="limit__id">L4.</span> <span class="limit__title">The discount is proportional, not capping, and weakens as evidence grows</span></div>
+    <div class="limit"><span class="limit__id">L5.</span> <span class="limit__title">The suspicion detector inherits the dependence signal's blind spot, and inverts under missing evidence</span></div>
+    <div class="limit"><span class="limit__id">L6.</span> <span class="limit__title">The shared/private objective does not fix which branch carries cross-view information, and ENIV reads only one of them</span></div>
+    <div class="limit"><span class="limit__id">L7.</span> <span class="limit__title">Tail dependence is not the sharper instrument the argument predicted; it inverts under strong attack</span></div>
+    <div class="limit"><span class="limit__id">L8.</span> <span class="limit__title">Detection and correction fail together, because both read cross-view belief agreement</span></div>
+    <p class="src">docs/KNOWN_LIMITATIONS.md — headings verbatim</p>
+  </div>
+  <a class="limits-link" href="#limits">All limitations, including L9–L15 →</a>
+</section>
+
+<!-- ============================ CH 3 ============================ -->
+<section class="chapter wrap" id="ch3" aria-labelledby="ch3-h">
+  <p class="chapter__num">Chapter 3</p>
+  <h2 class="chapter__title" id="ch3-h">V2's challenge — real evidence</h2>
+  <p class="chapter__lede">
+    V1 ran on synthetic views where dependence was a dial. V2 asks the harder
+    question: can the same machinery work on real, retrieved evidence, gathered
+    from five different kinds of source about the same claim?
+  </p>
+
+  <div class="prose">
+    <p>
+      Five angles, each with its own connector chain. Their independence is the
+      whole point — a news aggregator and a press-release aggregator are far less
+      independent than their names suggest, which is something Part 21 measures
+      rather than assumes.
+    </p>
+  </div>
+
+  <div class="grid grid--3" style="margin-top:var(--sp-3)">
+    <div class="panel angle angle--tech angle-card">
+      <p class="angle-card__name">Tech <span class="pill pill--live">live</span></p>
+      <p class="angle-card__source">GitHub → arXiv</p>
+    </div>
+    <div class="panel angle angle--market angle-card">
+      <p class="angle-card__name">Market <span class="pill pill--live">live</span></p>
+      <p class="angle-card__source">NewsAPI</p>
+    </div>
+    <div class="panel angle angle--financial angle-card">
+      <p class="angle-card__name">Financial <span class="pill pill--live">live</span></p>
+      <p class="angle-card__source">yfinance</p>
+    </div>
+    <div class="panel angle angle--sentiment angle-card">
+      <p class="angle-card__name">Sentiment <span class="pill pill--live">live</span></p>
+      <p class="angle-card__source">StackExchange</p>
+    </div>
+    <div class="panel angle angle--regulatory angle-card angle-card--unbuilt">
+      <p class="angle-card__name">Regulatory <span class="pill pill--unbuilt">no connector</span></p>
+      <p class="angle-card__source">data.gov / EUR-Lex / RBI — unimplemented</p>
+    </div>
+    <div class="panel angle angle-card angle-card--excluded">
+      <p class="angle-card__name">Reddit <span class="pill pill--excluded">excluded</span></p>
+      <p class="angle-card__source">would-be sentiment source — not in the chain at all</p>
+    </div>
+  </div>
+
+  <div class="prose">
+    <h3>Why Reddit is excluded</h3>
+    <p>
+      The Part 19 brief orders the sentiment angle Reddit-primary,
+      StackExchange-secondary. That ordering is not followed, and the reason is
+      not that Reddit is unbuilt:
+    </p>
+    <blockquote class="verbatim">
+      it is that Reddit cannot work from this network. Measured 2026-09-24: DNS,
+      TCP and TLS are clean to both reddit.com and oauth.reddit.com, and
+      oauth.reddit.com returns 403 "blocked due to a network policy" with any
+      credential. The block is IP-scoped, so REDDIT_CLIENT_ID and
+      REDDIT_CLIENT_SECRET would authenticate and then fail on every fetch.
+      <cite>prismflow/v2/angles/sentiment_angle.py</cite>
+    </blockquote>
+    <p>
+      Regulatory is different again: no connector for it has ever been built, so
+      it retrieves nothing on every row. That is a property of this checkout, not
+      a fault of any run — which is why it is drawn dimmed everywhere on this
+      site.
+    </p>
+  </div>
+  <a class="limits-link" href="#limits">Known limitations →</a>
+</section>
+
+<!-- ============================ CH 4 ============================ -->
+<section class="chapter wrap" id="ch4" aria-labelledby="ch4-h">
+  <p class="chapter__num">Chapter 4</p>
+  <h2 class="chapter__title" id="ch4-h">Results — and what could not be measured</h2>
+  <p class="chapter__lede">
+    Part 24's dataset and harness are built and verified. The evaluation they
+    exist to run is blocked, and the blocker is upstream of everything Part 24
+    measures.
+  </p>
+
+  <h3>The dataset</h3>
+  <div class="grid grid--3">
+    <div class="panel stat"><span class="stat__value">48<small style="font-size:var(--step--1);color:var(--text-muted)"> / 50</small></span><span class="stat__label">rows committed</span><span class="stat__src">row 040 absent</span></div>
+    <div class="panel stat"><span class="stat__value">28</span><span class="stat__label">Tech-OSS</span></div>
+    <div class="panel stat"><span class="stat__value">10 · 10</span><span class="stat__label">Startup · Financial-Product</span></div>
+  </div>
+  <p class="src">data/v2/evaluation_queries.json</p>
+
+  <h3>The headline that is not a headline</h3>
+  <div class="panel" style="border-color:rgba(232,96,63,0.4)">
+    <p style="margin-top:0">
+      <strong>Calibration could not be computed.</strong> Only
+      <strong>1 of 48</strong> rows reached two angles, which is the minimum for
+      dependence, ENIV and fusion to be defined at all. The harness refused to
+      produce metrics rather than compute them on a handful of rows.
+    </p>
+    <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap">
+      <span class="pill pill--notmeasured">ECE — not measured</span>
+      <span class="pill pill--notmeasured">Brier — not measured</span>
+    </div>
+    <p class="src">docs/v2-known-limitations.md V2-L6; results/v2/part24_pipeline_verification*.json</p>
+  </div>
+
+  <div class="prose">
+    <blockquote class="verbatim">
+      With one fused row there is no distribution: an ECE over n=1 is the error
+      of a single point, and a Brier score over n=1 is a squared difference.
+      Reporting either would dress one cell as a curve.
+      <cite>docs/v2-known-limitations.md V2-L6</cite>
+    </blockquote>
+  </div>
+
+  <h3>Where the evidence actually came from</h3>
+  <div class="table-wrap panel">
+    <table>
+      <caption class="visually-hidden">Per-angle retrieval over 48 rows</caption>
+      <thead><tr><th>angle</th><th class="num">rows with ≥1 record</th><th class="num">records</th><th>source</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--angle-tech)">Tech</td><td class="num">48 / 48</td><td class="num">480</td><td>arXiv 480, GitHub 0</td></tr>
+        <tr><td style="color:var(--angle-market)">Market</td><td class="num">6 / 48</td><td class="num">10</td><td>NewsAPI</td></tr>
+        <tr><td style="color:var(--angle-financial)">Financial</td><td class="num">0 / 48</td><td class="num">0</td><td>yfinance</td></tr>
+        <tr><td style="color:var(--angle-sentiment)">Sentiment</td><td class="num">1 / 48</td><td class="num">3</td><td>StackExchange</td></tr>
+        <tr><td style="color:var(--angle-regulatory)">Regulatory</td><td class="num">0 / 48</td><td class="num">0</td><td>no connector exists</td></tr>
+      </tbody>
+    </table>
+    <p class="src">docs/v2-known-limitations.md V2-L1 — identical in both of the day's passes</p>
+  </div>
+
+  <h3>V2-L1 … V2-L6</h3>
+  <div class="panel">
+    <div class="limit"><span class="limit__id">V2-L1.</span> <span class="limit__title">Retrieval coverage: one angle of five contributes</span><p class="limit__body">The pipeline is fed by one angle on 42 of 48 rows.</p></div>
+    <div class="limit"><span class="limit__id">V2-L2.</span> <span class="limit__title">GitHub returns 0 records on every row (pre-existing)</span><p class="limit__body">Also 0 in the earlier 17-row run, which predates query derivation — so not a regression from that change.</p></div>
+    <div class="limit"><span class="limit__id">V2-L3.</span> <span class="limit__title">The arXiv fallback is query-independent in membership</span><p class="limit__body">Rows 020, 046 and 049 return the same ten records, 10/10 overlap on all three pairs. A query about Python <code>list[str]</code> syntax retrieves the LIGO-Virgo-KAGRA gravitational-wave catalogue.</p></div>
+    <div class="limit"><span class="limit__id">V2-L4.</span> <span class="limit__title">Financial is structurally incompatible with the dataset, by design conflict</span><p class="limit__body">yfinance resolves tickers; the pitches are deliberately anonymised, so there is nothing to resolve. Not a bug in either component.</p></div>
+    <div class="limit"><span class="limit__id">V2-L5.</span> <span class="limit__title">The free Groq tier cannot fund a 5-seed evaluation</span><p class="limit__body">About two passes per day against a 200,000 token/day limit. The 5-SEED RULE requires five.</p></div>
+    <div class="limit"><span class="limit__id">V2-L6.</span> <span class="limit__title">Consequence: ECE and Brier cannot yet be computed</span><p class="limit__body">Coverage first, then seeds, then metrics — each is a precondition for the next.</p></div>
+    <p class="src">docs/v2-known-limitations.md</p>
+  </div>
+
+  <h3>Part 20 — what "verified" means here</h3>
+  <div class="panel">
+    <p style="margin-top:0">
+      Groq verified the <strong>OpenAIReasoner code path only</strong>. Groq is
+      OpenAI-<em>compatible</em>, not OpenAI: this says nothing about gpt-4o and
+      nothing about Claude.
+    </p>
+    <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap">
+      <span class="pill pill--live">Groq · openai/gpt-oss-120b — code path exercised</span>
+      <span class="pill pill--notmeasured">gpt-4o — unverified</span>
+      <span class="pill pill--notmeasured">Claude — unverified</span>
+    </div>
+    <p class="src">docs/part20-groq-verification.md; docs/v2-known-limitations.md V2-L5</p>
+  </div>
+  <a class="limits-link" href="#limits">Known limitations →</a>
+</section>
+
+<!-- ============================ CH 5 ============================ -->
+<section class="chapter wrap" id="ch5" aria-labelledby="ch5-h">
+  <p class="chapter__num">Chapter 5</p>
+  <h2 class="chapter__title" id="ch5-h">Interactive exploration</h2>
+  <p class="chapter__lede">
+    Two views, both driven entirely by committed result files. Nothing here is
+    computed in the browser beyond reading what is already on disk.
+  </p>
+
+  <h3>V1 — the discount surface</h3>
+  <p class="prose" style="color:var(--text-secondary)">
+    k copies × ρ → ENIV, coloured by attack success.
+  </p>
+  <div class="placeholder" id="v1-surface" data-phase="b">
+    wired in phase (b) — from results/ ; no figures shown until the file is read
+  </div>
+
+  <h3>V2 — per-row angle coverage</h3>
+  <p class="prose" style="color:var(--text-secondary)">
+    Which angles retrieved, for each of the 48 rows.
+  </p>
+  <div class="placeholder" id="v2-coverage" data-phase="b">
+    wired in phase (b) — from results/v2/part24_pipeline_verification.json
+  </div>
+  <a class="limits-link" href="#limits">Known limitations →</a>
+</section>
+
+<!-- ============================ LIMITS ============================ -->
+<section class="chapter wrap" id="limits" aria-labelledby="limits-h">
+  <p class="chapter__num">First-class section</p>
+  <h2 class="chapter__title" id="limits-h">Known limitations</h2>
+  <p class="chapter__lede">
+    Not a footnote. Every chapter links here, because on this project the limits
+    are findings in their own right.
+  </p>
+
+  <h3>V1 — discovered as each Part ran</h3>
+  <div class="panel">
+    <div class="limit"><span class="limit__id">L1.</span> <span class="limit__title">Flat confidence under duplication depends on training-time adaptation</span></div>
+    <div class="limit"><span class="limit__id">L2.</span> <span class="limit__title">Residual per-pair dependence accumulates with view count</span></div>
+    <div class="limit"><span class="limit__id">L3.</span> <span class="limit__title">The discount addresses redundant evidence, not unreliable evidence</span></div>
+    <div class="limit"><span class="limit__id">L4.</span> <span class="limit__title">The discount is proportional, not capping, and weakens as evidence grows</span></div>
+    <div class="limit"><span class="limit__id">L5.</span> <span class="limit__title">The suspicion detector inherits the dependence signal's blind spot, and inverts under missing evidence</span></div>
+    <div class="limit"><span class="limit__id">L6.</span> <span class="limit__title">The shared/private objective does not fix which branch carries cross-view information, and ENIV reads only one of them</span></div>
+    <div class="limit"><span class="limit__id">L7.</span> <span class="limit__title">Tail dependence is not the sharper instrument the argument predicted; it inverts under strong attack</span></div>
+    <div class="limit"><span class="limit__id">L8.</span> <span class="limit__title">Detection and correction fail together, because both read cross-view belief agreement</span></div>
+  </div>
+
+  <h3>V1 — standing limitations of the project as a whole</h3>
+  <div class="panel">
+    <div class="limit"><span class="limit__id">L9.</span> <span class="limit__title">ENIV is validated only on synthetic data, where rho is a parameter we set</span></div>
+    <div class="limit"><span class="limit__id">L10.</span> <span class="limit__title">Dependence is estimated from finite batches, and the estimator is biased</span></div>
+    <div class="limit"><span class="limit__id">L11.</span> <span class="limit__title">Tail dependence is unreliable below 50 exceedances, and the threshold bites</span></div>
+    <div class="limit"><span class="limit__id">L12.</span> <span class="limit__title">The attacker capabilities that defeat the defence are specific, and only partly tested</span></div>
+    <div class="limit"><span class="limit__id">L13.</span> <span class="limit__title">V1 detaches the discount, so it corrects inference but never shapes representation</span></div>
+    <div class="limit"><span class="limit__id">L14.</span> <span class="limit__title">One dataset family, and five seeds that are five partitions of it</span></div>
+    <div class="limit"><span class="limit__id">L15.</span> <span class="limit__title">No human-subject evaluation and no deployment evaluation were run</span></div>
+    <p class="src">docs/KNOWN_LIMITATIONS.md — headings verbatim</p>
+  </div>
+
+  <h3>V2 — retrieval coverage blocks the evaluation</h3>
+  <div class="panel">
+    <div class="limit"><span class="limit__id">V2-L1.</span> <span class="limit__title">Retrieval coverage: one angle of five contributes</span></div>
+    <div class="limit"><span class="limit__id">V2-L2.</span> <span class="limit__title">GitHub returns 0 records on every row (pre-existing)</span></div>
+    <div class="limit"><span class="limit__id">V2-L3.</span> <span class="limit__title">The arXiv fallback is query-independent in membership</span></div>
+    <div class="limit"><span class="limit__id">V2-L4.</span> <span class="limit__title">Financial is structurally incompatible with the dataset, by design conflict</span></div>
+    <div class="limit"><span class="limit__id">V2-L5.</span> <span class="limit__title">The free Groq tier cannot fund a 5-seed evaluation</span></div>
+    <div class="limit"><span class="limit__id">V2-L6.</span> <span class="limit__title">Consequence: ECE and Brier cannot yet be computed</span></div>
+    <p class="src">docs/v2-known-limitations.md — headings verbatim</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p style="max-width:none;margin:0">
+      Static site. Reads committed files only — no live API calls, no credentials.
+      Every figure names its source file. Where a number does not exist in a
+      committed file, this site says <span class="pill pill--notmeasured">not measured</span>
+      rather than computing one.
+    </p>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+/* PrismFlow Part 25 -- layout and components. Colour lives in tokens.css. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  /* `overflow-x: clip`, NOT `hidden`. `hidden` forces the computed overflow-y
+   * to `auto`, which turns <body> into a second scroll container: the document
+   * then scrolls on <html> while <body> claims the full 12409px height. That
+   * broke programmatic scrolling and clipped the sticky nav. `clip` gives the
+   * same horizontal guard without establishing a scroll container. */
+  overflow-x: clip;
+}
+
+/* The spectrum wash: a single warm beam at the top bleeding into the five
+ * angle hues. Pure CSS, so it costs nothing and needs no GPU. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(60rem 40rem at 50% -10%, rgba(255, 248, 231, 0.10), transparent 60%),
+    radial-gradient(40rem 30rem at 8% 20%,  rgba(111, 79, 214, 0.10), transparent 65%),
+    radial-gradient(38rem 28rem at 92% 38%, rgba(63, 181, 240, 0.09), transparent 65%),
+    radial-gradient(34rem 26rem at 12% 72%, rgba(87, 224, 164, 0.07), transparent 65%),
+    radial-gradient(30rem 24rem at 88% 88%, rgba(239, 74, 133, 0.07), transparent 65%);
+}
+
+a { color: var(--angle-tech); text-decoration-color: rgba(63, 181, 240, 0.4); }
+a:hover { text-decoration-color: currentColor; }
+
+:focus-visible {
+  outline: 2px solid var(--angle-tech);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.skip-link {
+  position: absolute; left: -9999px;
+  background: var(--surface-raised); color: var(--text-primary);
+  padding: var(--sp-2) var(--sp-3); border-radius: var(--radius-sm); z-index: 100;
+}
+.skip-link:focus { left: var(--sp-3); top: var(--sp-3); }
+
+/* ---------- shell ---------------------------------------------------- */
+
+.wrap { width: min(100% - 2.5rem, var(--maxw)); margin-inline: auto; }
+.prose { max-width: var(--measure); }
+
+.site-nav {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: rgba(10, 10, 15, 0.72);
+  border-bottom: 1px solid var(--hairline);
+}
+.site-nav__inner {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding-block: var(--sp-2); flex-wrap: wrap;
+}
+.site-nav__brand {
+  font-weight: 650; letter-spacing: -0.01em; margin-right: auto;
+  display: flex; align-items: center; gap: var(--sp-2);
+}
+.site-nav__list { display: flex; gap: var(--sp-1); list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+.site-nav__link {
+  display: block; padding: 0.3rem 0.6rem; border-radius: var(--radius-sm);
+  font-size: var(--step--1); color: var(--text-secondary); text-decoration: none;
+  /* Background only. Transitioning COLOUR as well made the label unreadable
+   * for ~200ms on every scroll: the text was animating dark while the
+   * background was still mid-grey, so the link briefly rendered as a blank
+   * pill. The colour swap is instant; only the fill eases. */
+  transition: background-color 0.2s;
+}
+.site-nav__link:hover { color: var(--text-primary); background: rgba(244,244,248,0.06); }
+.site-nav__link[aria-current="true"] { color: var(--base); background: var(--beam-incident); font-weight: 600; }
+.site-nav__link--limits { color: var(--angle-financial); }
+
+/* ---------- chapters -------------------------------------------------- */
+
+.chapter { padding-block: var(--sp-6); border-top: 1px solid var(--hairline); scroll-margin-top: 4.5rem; }
+.chapter:first-of-type { border-top: 0; }
+.chapter__num {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase;
+}
+.chapter__title { font-size: var(--step-3); line-height: 1.1; letter-spacing: -0.02em; margin: var(--sp-2) 0 var(--sp-3); }
+.chapter__lede { font-size: var(--step-1); color: var(--text-secondary); max-width: var(--measure); margin-bottom: var(--sp-4); }
+
+h3 { font-size: var(--step-1); margin: var(--sp-5) 0 var(--sp-2); letter-spacing: -0.01em; }
+h4 { font-size: var(--step-0); margin: var(--sp-4) 0 var(--sp-1); }
+p { max-width: var(--measure); }
+
+/* ---------- hero ------------------------------------------------------ */
+
+.hero { padding-block: var(--sp-6) var(--sp-5); text-align: left; }
+.hero__title { font-size: var(--step-4); line-height: 1.02; letter-spacing: -0.035em; margin: 0 0 var(--sp-3); }
+.hero__thesis {
+  font-size: var(--step-1); color: var(--text-secondary);
+  max-width: 46rem; border-left: 2px solid var(--beam-incident); padding-left: var(--sp-3);
+}
+.hero__prism { margin: var(--sp-5) 0; }
+
+/* ---------- glass panel ----------------------------------------------- */
+
+.panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  padding: var(--sp-3) var(--sp-4);
+}
+.panel--tight { padding: var(--sp-3); }
+
+.grid { display: grid; gap: var(--sp-3); }
+@media (min-width: 52rem) {
+  .grid--2 { grid-template-columns: repeat(2, 1fr); }
+  .grid--3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ---------- angle chips ----------------------------------------------- */
+
+.angle { --c: var(--text-secondary); }
+.angle--tech       { --c: var(--angle-tech); }
+.angle--market     { --c: var(--angle-market); }
+.angle--financial  { --c: var(--angle-financial); }
+.angle--sentiment  { --c: var(--angle-sentiment); }
+.angle--regulatory { --c: var(--angle-regulatory); }
+
+.angle-card { border-top: 3px solid var(--c); }
+.angle-card--unbuilt { filter: var(--angle-unbuilt-filter); }
+/* Reddit is NOT a sixth angle -- it is a source excluded from the sentiment
+ * chain. Giving it an angle colour made it read as one, so it gets a neutral
+ * dashed edge instead: visibly not part of the spectrum. */
+.angle-card--excluded {
+  --c: var(--status-genuine-zero);
+  border-top-style: dashed;
+  opacity: 0.85;
+}
+.angle-card__name { color: var(--c); font-weight: 650; display: flex; align-items: center; gap: var(--sp-2); }
+.angle-card__source { font-family: var(--font-mono); font-size: var(--step--1); color: var(--text-secondary); }
+
+/* ---------- status pills ---------------------------------------------- */
+
+.pill {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-family: var(--font-mono); font-size: var(--step--1);
+  padding: 0.15rem 0.55rem; border-radius: 999px;
+  border: 1px solid currentColor; line-height: 1.5;
+}
+.pill::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 2px; background: currentColor; }
+.pill--live      { color: var(--angle-market); }
+.pill--unbuilt   { color: var(--status-not-measured); border-style: dashed; }
+.pill--excluded  { color: var(--status-provider-error); }
+.pill--error     { color: var(--status-provider-error); }
+.pill--zero      { color: var(--status-genuine-zero); }
+/* "not measured" is dashed AND dim AND labelled -- three signals, because a
+ * missing number must never be mistakable for a measured one. */
+.pill--notmeasured { color: var(--status-not-measured); border-style: dashed; }
+
+/* ---------- data callouts --------------------------------------------- */
+
+.stat { display: flex; flex-direction: column; gap: 0.15rem; }
+.stat__value { font-size: var(--step-2); font-family: var(--font-mono); line-height: 1; letter-spacing: -0.02em; }
+.stat__label { font-size: var(--step--1); color: var(--text-secondary); }
+.stat__src { font-size: var(--step--1); color: var(--text-muted); font-family: var(--font-mono); }
+
+/* Every figure on the site carries where it came from. A number with no
+ * source line is a bug, not a design choice. */
+.src {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--text-muted); margin-top: var(--sp-2);
+}
+.src::before { content: "source: "; }
+
+.notmeasured {
+  border: 1px dashed var(--status-not-measured);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  text-align: center;
+}
+
+blockquote.verbatim {
+  margin: var(--sp-3) 0; padding: var(--sp-2) var(--sp-3);
+  border-left: 2px solid var(--angle-financial);
+  background: rgba(255, 239, 188, 0.04);
+  color: var(--text-primary); max-width: var(--measure);
+}
+blockquote.verbatim cite { display: block; margin-top: var(--sp-2); font-size: var(--step--1); color: var(--text-muted); font-style: normal; font-family: var(--font-mono); }
+
+/* ---------- limitation entries ---------------------------------------- */
+
+.limit { border-left: 2px solid var(--hairline); padding-left: var(--sp-3); margin-bottom: var(--sp-3); }
+.limit__id { font-family: var(--font-mono); color: var(--angle-financial); font-weight: 650; }
+.limit__title { font-weight: 600; }
+.limit__body { color: var(--text-secondary); max-width: var(--measure); }
+
+.limits-link {
+  display: inline-block; margin-top: var(--sp-3);
+  font-size: var(--step--1); font-family: var(--font-mono);
+  color: var(--angle-financial); text-decoration: none;
+  border: 1px solid rgba(255, 239, 188, 0.3); border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+}
+.limits-link:hover { background: rgba(255, 239, 188, 0.08); }
+
+/* ---------- tables ---------------------------------------------------- */
+
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: var(--step--1); }
+th, td { text-align: left; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--hairline); }
+th { color: var(--text-secondary); font-weight: 600; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); }
+
+/* ---------- footer ---------------------------------------------------- */
+
+.site-foot { border-top: 1px solid var(--hairline); padding-block: var(--sp-4); color: var(--text-muted); font-size: var(--step--1); }
+
+/* ---------- phase-a placeholders -------------------------------------- */
+
+.placeholder {
+  border: 1px dashed var(--hairline); border-radius: var(--radius);
+  padding: var(--sp-5) var(--sp-3); text-align: center;
+  color: var(--text-muted); font-family: var(--font-mono); font-size: var(--step--1);
+}

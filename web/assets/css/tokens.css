@@ -1,0 +1,97 @@
+/* PrismFlow Part 25 -- design tokens.
+ *
+ * The palette is NOT extracted from a logo: the repository contains no logo and
+ * none was invented. It is derived from the product's own thesis -- one beam
+ * refracting into five angle colours -- and then TUNED AND MEASURED:
+ *
+ *   - every angle colour is >= 3:1 against --base, all body text >= 4.5:1
+ *   - the five angles form a monotonic LUMINANCE STAIRCASE, worst pair 1.39,
+ *     so they survive greyscale and printing
+ *   - worst distance under simulated deuteranopia / protanopia / tritanopia
+ *     is 8.3, chosen from 324 candidate combinations
+ *
+ * Changing a value here changes the whole theme; nothing else hardcodes colour.
+ */
+
+:root {
+  /* ---- structure ---------------------------------------------------- */
+  --base:            #0A0A0F;
+  --surface:         #141420;
+  --surface-raised:  #1D1D2B;
+  --hairline:        #2A2A3A;
+
+  /* ---- text --------------------------------------------------------- */
+  --text-primary:    #F4F4F8;   /* 18.00:1 on base */
+  --text-secondary:  #AEAEC0;   /*  9.04:1 */
+  --text-muted:      #7E7E92;   /*  4.97:1 */
+
+  /* ---- the five angles, in spectral order (violet bends most) -------- */
+  --angle-regulatory: #6F4FD6;  /*  3.54:1 */
+  --angle-sentiment:  #EF4A85;  /*  5.63:1 */
+  --angle-tech:       #3FB5F0;  /*  8.54:1 */
+  --angle-market:     #57E0A4;  /* 11.85:1 */
+  --angle-financial:  #FFEFBC;  /* 17.24:1 */
+
+  /* Regulatory is the UNBUILT angle. It is rendered through this filter
+   * everywhere, so "no connector exists" is visible before you read a word. */
+  --angle-unbuilt-filter: saturate(0.35) opacity(0.55);
+
+  /* ---- beam --------------------------------------------------------- */
+  --beam-incident:   #FFF8E7;   /* 18.65:1 -- the single beam before the prism */
+
+  /* ---- status ------------------------------------------------------
+   * NEVER used as the only encoder. Every status carries a text label, and
+   * charts add a hatch, because provider-error sits close in luminance to
+   * --angle-sentiment (1.03) and genuine-zero to --angle-regulatory (1.07). */
+  --status-provider-error: #E8603F;
+  --status-genuine-zero:   #6B6B80;
+  /* Deliberately the dimmest, lowest-chroma token in the system: absent data
+   * must never read as data. This is what V2-L6 looks like on screen. */
+  --status-not-measured:   #3A3A4A;
+
+  /* ---- glass -------------------------------------------------------- */
+  --glass-bg:     rgba(29, 29, 43, 0.55);
+  --glass-border: rgba(244, 244, 248, 0.10);
+  --glass-blur:   14px;
+
+  /* ---- type --------------------------------------------------------- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+               Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+
+  --step--1: clamp(0.80rem, 0.77rem + 0.14vw, 0.88rem);
+  --step-0:  clamp(1.00rem, 0.95rem + 0.22vw, 1.13rem);
+  --step-1:  clamp(1.25rem, 1.15rem + 0.45vw, 1.55rem);
+  --step-2:  clamp(1.60rem, 1.40rem + 0.95vw, 2.25rem);
+  --step-3:  clamp(2.10rem, 1.70rem + 1.90vw, 3.40rem);
+  --step-4:  clamp(2.60rem, 1.90rem + 3.20vw, 4.60rem);
+
+  /* ---- space and shape ---------------------------------------------- */
+  --sp-1: 0.375rem;
+  --sp-2: 0.75rem;
+  --sp-3: 1.25rem;
+  --sp-4: 2rem;
+  --sp-5: 3.25rem;
+  --sp-6: 5rem;
+  --radius:    14px;
+  --radius-sm: 8px;
+  --maxw:      72rem;
+  --measure:   38rem;   /* reading width; prose never exceeds it */
+}
+
+/* Honour the OS setting. Non-essential motion is removed rather than
+ * shortened, and anything that depends on motion to be understood is given a
+ * static equivalent instead. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-ok: 0; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root { --motion-ok: 1; }
+}
