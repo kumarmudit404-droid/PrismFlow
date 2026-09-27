@@ -49,14 +49,15 @@
   </p>
 
   <div class="hero__prism" aria-hidden="true">
-    <!-- THE MARK. No logo file exists in this repository, so the product's own
-         prism IS the mark: one incident beam refracting into five angle beams.
-         It is an SVG first and stays one -- the pose below is the static
-         fallback that reduced-motion users, no-JS users and anyone without
-         WebGL sees, unchanged from phase (a). motion.js only moves y2 on the
-         beams; hero3d.js layers a lit glass prism on top when it can. -->
+    <!-- THE MARK, and the only hero rendering there is. No logo file exists in
+         this repository, so the product's own prism IS the mark: one incident
+         beam refracting into five angle beams. It is SVG, full stop.
+         A ray-traced glass prism was built and layered over this in phase (c)
+         and dropped: it rendered as an opaque grey slab, offset from this
+         triangle and covering the beam origin, on a real GPU as well as in
+         software. The SVG below was always the better picture. motion.js only
+         moves y2 on the beams; nothing else draws here. -->
     <div class="hero__stage">
-      <div id="hero-3d" class="hero__gl"></div>
       <svg id="prism-mark" class="hero__svg" viewBox="0 0 900 240" width="100%" height="240"
            aria-hidden="true" focusable="false">
         <line x1="0" y1="120" x2="330" y2="120" stroke="var(--beam-incident)" stroke-width="2.5"/>

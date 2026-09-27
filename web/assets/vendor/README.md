@@ -7,12 +7,13 @@ anywhere else would break both properties.
 | package | version | licence | files |
 |---|---|---|---|
 | anime.js | 4.5.0 | MIT (`anime/LICENSE.md`) | `anime.esm.min.js` (118 KB) |
-| three.js | 0.186.1 | MIT (`three/LICENSE`) | `three.module.js` (663 KB) + `three.core.js` (1.46 MB) |
 
-Both obtained with `npm pack` and copied verbatim; neither has been edited.
+Obtained with `npm pack` and copied verbatim; it has not been edited.
 
-`three.module.js` imports `./three.core.js`, so the two must stay side by side.
-three.js no longer ships a minified build, and 2.1 MB is a lot to spend on one
-hero visual — so it is **lazy-loaded**, imported only when the hero scrolls into
-view AND WebGL is actually available AND motion is not reduced. A visitor who
-never reaches the hero, or who prefers reduced motion, never downloads it.
+## three.js was here, and is not any more
+
+three.js 0.186.1 was vendored for exactly one thing: a ray-traced glass prism
+layered over the hero. That hero was built, measured, found to render
+incorrectly, and dropped -- so its 2.1 MB went with it. The prism mark is SVG
+and always was; see the hero comment in `web/index.html`. Nothing in the site
+imports three.js now.

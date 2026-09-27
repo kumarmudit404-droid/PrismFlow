@@ -6,6 +6,10 @@
  * A "not measured" cell has no numeric state to animate towards, by
  * construction -- there is no code path that could turn one into a number.
  *
+ * THERE IS NO 3D HERO. One was attempted in phase (c) and dropped -- see the
+ * hero comment in index.html. The prism mark is SVG, and this file only moves
+ * it. Nothing here imports three.js, and nothing loads a WebGL context.
+ *
  * COLOUR. Every colour is read from tokens.css at runtime via
  * getComputedStyle. No hex literal appears in this file, so the palette cannot
  * drift from the approved tokens and a change to tokens.css changes the motion
@@ -379,43 +383,6 @@ function boot() {
   });
 
   start();
-
-  // The single ray-traced visual, loaded only when it can actually be used.
-  loadHero(svg);
-}
-
-async function loadHero(svg) {
-  const host = document.getElementById("hero-3d");
-  if (!host || reduceMotion.matches) { return; }
-
-  // WebGL check before importing 2.1 MB of three.js. No context, no download.
-  let ok = false;
-  try {
-    const c = document.createElement("canvas");
-    ok = !!(c.getContext("webgl2") || c.getContext("webgl"));
-  } catch (e) { ok = false; }
-  if (!ok) {
-    root.setAttribute("data-hero", "fallback-nowebgl");
-    return;
-  }
-
-  // ...and only once the hero is actually near the viewport.
-  await new Promise((res) => {
-    const io = new IntersectionObserver((en) => {
-      if (en[0].isIntersecting) { io.disconnect(); res(); }
-    }, { rootMargin: "200px" });
-    io.observe(host);
-  });
-
-  try {
-    const mod = await import("./hero3d.js");
-    await mod.mount(host, { palette, token, hexA });
-    root.setAttribute("data-hero", "webgl");
-  } catch (e) {
-    // Any failure leaves the SVG mark in place rather than an empty box.
-    root.setAttribute("data-hero", "fallback-error");
-    if (window.console) { console.warn("hero3d unavailable:", e && e.message); }
-  }
 }
 
 // Exposed for the phase-(d)-style measurement harness, not used by the page.
