@@ -30,7 +30,10 @@
   --angle-sentiment:  #EF4A85;  /*  5.63:1 */
   --angle-tech:       #3FB5F0;  /*  8.54:1 */
   --angle-market:     #57E0A4;  /* 11.85:1 */
-  --angle-financial:  #FFEFBC;  /* 17.24:1 */
+  --angle-financial:  #FFDE8A;  /* 15.11:1 -- chroma 0.110, above the
+                                 * grey-reading floor. #FFEFBC failed it at
+                                 * 0.068, which mattered here because the
+                                 * not-measured token is also neutral. */
 
   /* Regulatory is the UNBUILT angle. It is rendered through this filter
    * everywhere, so "no connector exists" is visible before you read a word. */
@@ -51,6 +54,10 @@
 
   /* ---- glass -------------------------------------------------------- */
   --glass-bg:     rgba(29, 29, 43, 0.55);
+  /* Opaque enough to need no live blur behind it. See the .panel rule: blur on
+   * every panel froze the compositor, so panels use this and only the sticky
+   * nav still pays for backdrop-filter. */
+  --glass-bg-solid: rgba(24, 24, 36, 0.88);
   --glass-border: rgba(244, 244, 248, 0.10);
   --glass-blur:   14px;
 

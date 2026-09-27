@@ -3,7 +3,8 @@
 One site holding both V1 and V2, as a narrative-first guided tour in five
 chapters, with Known Limitations as a first-class section linked from every one.
 
-    python web/serve.py      # http://127.0.0.1:825
+    python web/build_data.py   # copy committed results into web/data/
+    python web/serve.py        # http://127.0.0.1:825
 
 ## What this is, and what it is not
 
@@ -35,7 +36,9 @@ it. The two can run side by side.
       assets/css/app.css    layout and components
       assets/js/main.js     nav state + reduced-motion-aware reveal
       serve.py              loopback static server, web/ only
-      data/                 (phase b) committed JSON copied in by the build step
+      build_data.py         the copy step: committed results -> web/data/
+      assets/js/charts.js   the three data views
+      data/                 the ONLY files the site can read, each sha256-stamped
 
 ## The palette
 
@@ -63,7 +66,34 @@ label, and charts add a hatch.
 ## Build phases
 
 - **(a) done** — tokens, chapter skeleton, real text pulled from the docs.
-- **(b)** — charts and data views wired to committed JSON only.
+- **(b) done** — three views wired to committed JSON only.
 - **(c)** — anime.js transitions and the single ray-traced hero.
 - **(d)** — accessibility and performance pass, plus a key-leak grep of the
   build output for `sk-`, `gsk_` and the NewsAPI key pattern.
+
+## The join phase (b) could not make
+
+The brief asked for the V1 surface "coloured by attack success". That colour
+channel is not rendered, because no committed file supports it:
+
+| | `results/clone_eigen/` | `results/chorus/` |
+|---|---|---|
+| rho | swept, {0.0, 0.5} | **fixed at 0.3**, not an axis |
+| k | **duplicate copies** of view 0 | **colluding compromised** views |
+| attack success | **absent entirely** | present |
+
+The two `k` axes count different things and chorus's single rho is not one of
+the grid's two values, so there is no cell anywhere in the repository giving an
+attack success rate at a given (k, rho). Colouring the surface by it would have
+invented a correspondence between two experiments. The surface therefore ships
+with `attack_success: null` on all 30 cells, the page states why, and the real
+chorus numbers are shown separately on their own axes — where they happen to
+show the Part 09 finding directly: at eps 1.0, prismflow 0.481 ± 0.113 against
+naive 0.455 ± 0.116.
+
+## Why the ENIV column is empty
+
+In the committed pass, **no row reached two angles**, so no row has an ENIV.
+All 48 cells render `not measured`. That is the finding (V2-L6), not a gap in
+the wiring — and it is exactly the case the "never show a guessed value" rule
+exists for.

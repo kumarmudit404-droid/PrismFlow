@@ -1,0 +1,2910 @@
+{
+  "title": "Per-row angle coverage",
+  "angle_order": [
+    "tech",
+    "market",
+    "financial",
+    "regulatory",
+    "sentiment"
+  ],
+  "angle_notes": {
+    "regulatory": "No connector has been built. Retrieves nothing on every row.",
+    "sentiment": "StackExchange only. Reddit is excluded: an IP-scoped 403.",
+    "financial": "yfinance resolves tickers; the pitches are anonymised."
+  },
+  "n_rows": 48,
+  "label": "PIPELINE-VERIFICATION RUN -- NOT PART 24 EVIDENCE\n  ONE PASS, N=48 of 48 committed rows (dataset target 50).\n  Reasoner is GROQ (openai/gpt-oss-120b) via the OpenAIReasoner\n  code path -- NOT Claude, NOT OpenAI (both unfunded).\n  Fusion adjudication is LEXICAL (offline LexicalAdjudicator), so\n  Part 23's Claude path is NOT exercised.\n  No seeds: nothing on this path varies as a function of a seed\n  (see module docstring), so no mean and no std are reported.\n  NOT A PART 24 FINDING under docs/CONTRACT.md section 5.",
+  "zero_claim_rows_provider_error": [
+    "006",
+    "024",
+    "026",
+    "027",
+    "028",
+    "029",
+    "030",
+    "031",
+    "032",
+    "033",
+    "034",
+    "035",
+    "036",
+    "037",
+    "038",
+    "039",
+    "041",
+    "042",
+    "043",
+    "044",
+    "045",
+    "046",
+    "047",
+    "048",
+    "049",
+    "050"
+  ],
+  "zero_claim_rows_genuine": [
+    "017",
+    "020"
+  ],
+  "pass1": {
+    "rows": 48,
+    "fused_rows": [
+      "032"
+    ],
+    "note": "Retrieval is identical in both passes. The committed run above is the second pass, whose CLAIM counts are limited by an exhausted daily Groq quota; the first pass fused 1 row(s)."
+  },
+  "rows": [
+    {
+      "id": "002",
+      "domain": "Startup",
+      "outcome": "Failed",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 5,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "003",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 5,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "004",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 5,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "005",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 3,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "006",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "BadRequestError 400: Error code: 400 - {'error': {'message': \"Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': '",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "007",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "conflict_expected": "Unsure",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 4,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "008",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 3,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "009",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 3,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 3,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 3
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "010",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 1,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "011",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 4,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "012",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "Unsure",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 1,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "013",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "Unsure",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 4,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "014",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 1,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "015",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 1,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "016",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 3,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 1,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 1
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "017",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": "genuine",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "018",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 2,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "019",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 4,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "020",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": "genuine",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "021",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 3,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "022",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 3,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "023",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 1,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "024",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "025",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 1,
+          "claims": 1,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 1
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": null,
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "026",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 2,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 2
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 2,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "027",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "028",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "029",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "030",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "031",
+      "domain": "Startup",
+      "outcome": "Funded",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "032",
+      "domain": "Startup",
+      "outcome": "Funded",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 3,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 3
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 2,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "033",
+      "domain": "Startup",
+      "outcome": "Funded",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 1,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 1
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 2,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "034",
+      "domain": "Startup",
+      "outcome": "Funded",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "035",
+      "domain": "Startup",
+      "outcome": "Funded",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "036",
+      "domain": "Startup",
+      "outcome": "Failed",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "037",
+      "domain": "Startup",
+      "outcome": "Failed",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "038",
+      "domain": "Startup",
+      "outcome": "Failed",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "039",
+      "domain": "Startup",
+      "outcome": "Failed",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "041",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "042",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "043",
+      "domain": "Financial-Product",
+      "outcome": "Loss",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "044",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 2,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 2
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 2,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "045",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "046",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "047",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "048",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "049",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "conflict_expected": "No",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    },
+    {
+      "id": "050",
+      "domain": "Financial-Product",
+      "outcome": "Loss",
+      "conflict_expected": "Yes",
+      "angles": {
+        "tech": {
+          "records": 10,
+          "claims": 0,
+          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "retrieval_error": null,
+          "provenance": {
+            "github": 0,
+            "arxiv": 10
+          }
+        },
+        "market": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "newsapi": 0
+          }
+        },
+        "financial": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "yfinance": 0
+          }
+        },
+        "regulatory": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {}
+        },
+        "sentiment": {
+          "records": 0,
+          "claims": 0,
+          "reasoner_error": null,
+          "retrieval_error": null,
+          "provenance": {
+            "stackexchange": 0
+          }
+        }
+      },
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
+      "eniv": null,
+      "confidence": null,
+      "discount": null,
+      "contradictions": null
+    }
+  ],
+  "provenance": {
+    "generated_utc": "2026-09-27T11:31:27Z",
+    "sources": [
+      {
+        "path": "data/v2/evaluation_queries.json",
+        "sha256": "0731456e348a5163bf96f14c94ae952b124e350acd564dd23c26465ded17e17f",
+        "bytes": 28241
+      },
+      {
+        "path": "results/v2/part24_pipeline_verification.json",
+        "sha256": "d834a2a0736979d4dd2dbddb8753927081c3ac618f93607ab6b9e105735db4d5",
+        "bytes": 116209
+      },
+      {
+        "path": "results/v2/part24_pipeline_verification_pass1.json",
+        "sha256": "3e59210f79a425e1d2ce9928965d4875165c768177a07572f18ee167be8fa45f",
+        "bytes": 103202
+      }
+    ]
+  }
+}

@@ -1,0 +1,373 @@
+{
+  "title": "Attack success rate (chorus)",
+  "rho_fixed": 0.3,
+  "rho_note": "rho is a single fixed value in this experiment, not an axis.",
+  "rows": [
+    {
+      "condition": "clean",
+      "system": "naive",
+      "success_mean": 0.0,
+      "success_std": 0.0,
+      "n_seeds": 5,
+      "eniv_measured": 3.354984638189257,
+      "dependence_compromised": null
+    },
+    {
+      "condition": "clean",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.0,
+      "success_std": 0.0,
+      "n_seeds": 5,
+      "eniv_measured": 3.328088905783493,
+      "dependence_compromised": null
+    },
+    {
+      "condition": "clean",
+      "system": "prismflow",
+      "success_mean": 0.0,
+      "success_std": 0.0,
+      "n_seeds": 5,
+      "eniv_measured": 3.328088905783493,
+      "dependence_compromised": null
+    },
+    {
+      "condition": "chorus_k2_eps0.2",
+      "system": "naive",
+      "success_mean": 0.042,
+      "success_std": 0.021421692017412838,
+      "n_seeds": 5,
+      "eniv_measured": 3.274728638764016,
+      "dependence_compromised": 0.3055312745718204
+    },
+    {
+      "condition": "chorus_k2_eps0.2",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.03933333333333333,
+      "success_std": 0.01906130460732773,
+      "n_seeds": 5,
+      "eniv_measured": 3.2764825373631945,
+      "dependence_compromised": 0.2846936338293432
+    },
+    {
+      "condition": "chorus_k2_eps0.2",
+      "system": "prismflow",
+      "success_mean": 0.042666666666666665,
+      "success_std": 0.01876758434701233,
+      "n_seeds": 5,
+      "eniv_measured": 3.286597701190166,
+      "dependence_compromised": 0.2814555022370374
+    },
+    {
+      "condition": "chorus_k2_eps0.5",
+      "system": "naive",
+      "success_mean": 0.216,
+      "success_std": 0.07443863990637599,
+      "n_seeds": 5,
+      "eniv_measured": 3.1468323524026753,
+      "dependence_compromised": 0.430187536817203
+    },
+    {
+      "condition": "chorus_k2_eps0.5",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.21666666666666667,
+      "success_std": 0.07238016916869487,
+      "n_seeds": 5,
+      "eniv_measured": 3.144971543665841,
+      "dependence_compromised": 0.43219170030554827
+    },
+    {
+      "condition": "chorus_k2_eps0.5",
+      "system": "prismflow",
+      "success_mean": 0.23466666666666666,
+      "success_std": 0.06543020029857093,
+      "n_seeds": 5,
+      "eniv_measured": 3.1568559195180277,
+      "dependence_compromised": 0.41129778581688925
+    },
+    {
+      "condition": "chorus_k2_eps1.0",
+      "system": "naive",
+      "success_mean": 0.45466666666666666,
+      "success_std": 0.11625164276019691,
+      "n_seeds": 5,
+      "eniv_measured": 2.887517599185253,
+      "dependence_compromised": 0.7075914117135542
+    },
+    {
+      "condition": "chorus_k2_eps1.0",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.46399999999999997,
+      "success_std": 0.11317145301611081,
+      "n_seeds": 5,
+      "eniv_measured": 2.8826639683899016,
+      "dependence_compromised": 0.7279173589846307
+    },
+    {
+      "condition": "chorus_k2_eps1.0",
+      "system": "prismflow",
+      "success_mean": 0.48133333333333334,
+      "success_std": 0.1133480382617087,
+      "n_seeds": 5,
+      "eniv_measured": 2.904847927600456,
+      "dependence_compromised": 0.697018103561103
+    },
+    {
+      "condition": "chorus_k2_eps2.0",
+      "system": "naive",
+      "success_mean": 0.5966666666666667,
+      "success_std": 0.12830086169278487,
+      "n_seeds": 5,
+      "eniv_measured": 2.7093565814953804,
+      "dependence_compromised": 0.898907252763983
+    },
+    {
+      "condition": "chorus_k2_eps2.0",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.5893333333333333,
+      "success_std": 0.13402736039082966,
+      "n_seeds": 5,
+      "eniv_measured": 2.7085237420884756,
+      "dependence_compromised": 0.9030668884825505
+    },
+    {
+      "condition": "chorus_k2_eps2.0",
+      "system": "prismflow",
+      "success_mean": 0.6133333333333334,
+      "success_std": 0.12931443160847214,
+      "n_seeds": 5,
+      "eniv_measured": 2.6950753730112456,
+      "dependence_compromised": 0.8983673637288916
+    },
+    {
+      "condition": "pgd_k2_eps0.2",
+      "system": "naive",
+      "success_mean": 0.03666666666666667,
+      "success_std": 0.019436506316151004,
+      "n_seeds": 5,
+      "eniv_measured": 3.345264487911149,
+      "dependence_compromised": 0.15128068326807875
+    },
+    {
+      "condition": "pgd_k2_eps0.2",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.036000000000000004,
+      "success_std": 0.02203532517471788,
+      "n_seeds": 5,
+      "eniv_measured": 3.3147644582353055,
+      "dependence_compromised": 0.13434153097730359
+    },
+    {
+      "condition": "pgd_k2_eps0.2",
+      "system": "prismflow",
+      "success_mean": 0.038,
+      "success_std": 0.02180723631172817,
+      "n_seeds": 5,
+      "eniv_measured": 3.3353130347276605,
+      "dependence_compromised": 0.13137435547294285
+    },
+    {
+      "condition": "pgd_k2_eps0.5",
+      "system": "naive",
+      "success_mean": 0.18533333333333332,
+      "success_std": 0.0626985734376079,
+      "n_seeds": 5,
+      "eniv_measured": 3.340441383847642,
+      "dependence_compromised": 0.1278387821665549
+    },
+    {
+      "condition": "pgd_k2_eps0.5",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.19266666666666668,
+      "success_std": 0.061255385250786096,
+      "n_seeds": 5,
+      "eniv_measured": 3.3206393722141057,
+      "dependence_compromised": 0.11200573690753593
+    },
+    {
+      "condition": "pgd_k2_eps0.5",
+      "system": "prismflow",
+      "success_mean": 0.20066666666666666,
+      "success_std": 0.05663724726518563,
+      "n_seeds": 5,
+      "eniv_measured": 3.3039795160379577,
+      "dependence_compromised": 0.10643434886038139
+    },
+    {
+      "condition": "pgd_k2_eps1.0",
+      "system": "naive",
+      "success_mean": 0.36933333333333335,
+      "success_std": 0.09790585046643309,
+      "n_seeds": 5,
+      "eniv_measured": 3.3408988263928294,
+      "dependence_compromised": 0.12577132480335465
+    },
+    {
+      "condition": "pgd_k2_eps1.0",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.378,
+      "success_std": 0.10945826195911895,
+      "n_seeds": 5,
+      "eniv_measured": 3.344570120951032,
+      "dependence_compromised": 0.1141075295414924
+    },
+    {
+      "condition": "pgd_k2_eps1.0",
+      "system": "prismflow",
+      "success_mean": 0.38666666666666666,
+      "success_std": 0.1062753237795324,
+      "n_seeds": 5,
+      "eniv_measured": 3.343510411439254,
+      "dependence_compromised": 0.11110846898360692
+    },
+    {
+      "condition": "pgd_k2_eps2.0",
+      "system": "naive",
+      "success_mean": 0.464,
+      "success_std": 0.11084022534962455,
+      "n_seeds": 5,
+      "eniv_measured": 3.3358599955370445,
+      "dependence_compromised": 0.16407425340024945
+    },
+    {
+      "condition": "pgd_k2_eps2.0",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.48,
+      "success_std": 0.1152051310585697,
+      "n_seeds": 5,
+      "eniv_measured": 3.3513037342292082,
+      "dependence_compromised": 0.1819708868785071
+    },
+    {
+      "condition": "pgd_k2_eps2.0",
+      "system": "prismflow",
+      "success_mean": 0.4906666666666667,
+      "success_std": 0.11233382789208642,
+      "n_seeds": 5,
+      "eniv_measured": 3.3425711048937767,
+      "dependence_compromised": 0.18216107559235492
+    },
+    {
+      "condition": "chorus_k2_beta0",
+      "system": "naive",
+      "success_mean": 0.37,
+      "success_std": 0.09896688559535681,
+      "n_seeds": 5,
+      "eniv_measured": 3.339797709297666,
+      "dependence_compromised": 0.12463965402076314
+    },
+    {
+      "condition": "chorus_k2_beta0",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.378,
+      "success_std": 0.10945826195911895,
+      "n_seeds": 5,
+      "eniv_measured": 3.3459561803500124,
+      "dependence_compromised": 0.11385486249704921
+    },
+    {
+      "condition": "chorus_k2_beta0",
+      "system": "prismflow",
+      "success_mean": 0.38866666666666666,
+      "success_std": 0.1049497234129011,
+      "n_seeds": 5,
+      "eniv_measured": 3.3473069970228986,
+      "dependence_compromised": 0.10496107635485284
+    },
+    {
+      "condition": "chorus_k2_beta5",
+      "system": "naive",
+      "success_mean": 0.35333333333333333,
+      "success_std": 0.12016192778450623,
+      "n_seeds": 5,
+      "eniv_measured": 2.9265324372154584,
+      "dependence_compromised": 0.6800292018193388
+    },
+    {
+      "condition": "chorus_k2_beta5",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.3686666666666667,
+      "success_std": 0.1135194550139608,
+      "n_seeds": 5,
+      "eniv_measured": 2.880035660715295,
+      "dependence_compromised": 0.7205510912082498
+    },
+    {
+      "condition": "chorus_k2_beta5",
+      "system": "prismflow",
+      "success_mean": 0.396,
+      "success_std": 0.102669913368577,
+      "n_seeds": 5,
+      "eniv_measured": 2.870730306865123,
+      "dependence_compromised": 0.7391461577842531
+    },
+    {
+      "condition": "chorus_k1",
+      "system": "naive",
+      "success_mean": 0.222,
+      "success_std": 0.08581634136016546,
+      "n_seeds": 5,
+      "eniv_measured": 3.2131546820362087,
+      "dependence_compromised": null
+    },
+    {
+      "condition": "chorus_k1",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.21533333333333335,
+      "success_std": 0.08261692051605142,
+      "n_seeds": 5,
+      "eniv_measured": 3.200643102735992,
+      "dependence_compromised": null
+    },
+    {
+      "condition": "chorus_k1",
+      "system": "prismflow",
+      "success_mean": 0.25333333333333335,
+      "success_std": 0.09089065469623987,
+      "n_seeds": 5,
+      "eniv_measured": 3.212746293684585,
+      "dependence_compromised": null
+    },
+    {
+      "condition": "chorus_k3",
+      "system": "naive",
+      "success_mean": 0.5593333333333333,
+      "success_std": 0.13367456335776412,
+      "n_seeds": 5,
+      "eniv_measured": 2.8841660172318173,
+      "dependence_compromised": 0.4996944077509484
+    },
+    {
+      "condition": "chorus_k3",
+      "system": "prismflow_nodiscount",
+      "success_mean": 0.5686666666666667,
+      "success_std": 0.12075227166025124,
+      "n_seeds": 5,
+      "eniv_measured": 2.821036300139865,
+      "dependence_compromised": 0.5366194994148586
+    },
+    {
+      "condition": "chorus_k3",
+      "system": "prismflow",
+      "success_mean": 0.5806666666666667,
+      "success_std": 0.10988377698479626,
+      "n_seeds": 5,
+      "eniv_measured": 2.888675770093515,
+      "dependence_compromised": 0.5089928332452697
+    }
+  ],
+  "provenance": {
+    "generated_utc": "2026-09-27T11:31:27Z",
+    "sources": [
+      {
+        "path": "results/chorus/attack_metrics.json",
+        "sha256": "89a6e841ced086c527cf1866eefdc06b5dd24bae3ce8dc7611ae277d04d99b23",
+        "bytes": 274155
+      },
+      {
+        "path": "results/chorus/metadata.json",
+        "sha256": "6ab0211f6c2e014bac97e90ee4978bfb91543fc8d4490766b8a58f59774ea36b",
+        "bytes": 3461
+      }
+    ]
+  }
+}

@@ -60,7 +60,11 @@ a:hover { text-decoration-color: currentColor; }
   position: sticky; top: 0; z-index: 50;
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  background: rgba(10, 10, 15, 0.72);
+  /* 0.92, not 0.72: the coverage table's sticky header parks just under this
+   * bar, and at 0.72 the data rows scrolling behind it ghosted through as
+   * coloured smears that read as a rendering bug. Still glass, still blurred,
+   * but opaque enough that nothing shows through it. */
+  background: rgba(10, 10, 15, 0.92);
   border-bottom: 1px solid var(--hairline);
 }
 .site-nav__inner {
@@ -112,12 +116,21 @@ p { max-width: var(--measure); }
 
 /* ---------- glass panel ----------------------------------------------- */
 
+/* NO backdrop-filter here, deliberately, and it is a performance fix rather
+ * than a taste one. With blur on every panel the page carried 27 backdrop
+ * layers, each re-blurring a region of the fixed gradient behind it on any
+ * scroll or repaint. Measured result: requestAnimationFrame stopped firing
+ * entirely (0 frames sampled in 1.2s) and screenshot capture timed out at
+ * 30s once the 48-row table was on screen.
+ *
+ * Blur is now spent only where it buys something the eye actually uses: the
+ * sticky nav, which sits over moving content. A panel sits over a static
+ * gradient, so a slightly more opaque fill is visually equivalent and costs
+ * one paint instead of a live blur. */
 .panel {
-  background: var(--glass-bg);
+  background: var(--glass-bg-solid);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
   padding: var(--sp-3) var(--sp-4);
 }
 .panel--tight { padding: var(--sp-3); }
@@ -236,3 +249,75 @@ td.num, th.num { text-align: right; font-family: var(--font-mono); }
   padding: var(--sp-5) var(--sp-3); text-align: center;
   color: var(--text-muted); font-family: var(--font-mono); font-size: var(--step--1);
 }
+
+/* ====================================================================
+ * phase (b) -- chart components
+ * ==================================================================== */
+
+/* "not measured" is one visual idea everywhere it appears: dim, italic-free,
+ * and never mistakable for a value. It is used for null, for undefined and for
+ * NaN alike, so absence reads the same way whatever its cause. */
+.nm { color: var(--status-not-measured); font-family: var(--font-mono); font-size: 0.92em; }
+.pm { color: var(--text-muted); font-family: var(--font-mono); font-size: 0.88em; }
+.sha { color: var(--status-not-measured); }
+.mono { font-family: var(--font-mono); }
+
+.notmeasured--wide { text-align: left; max-width: none; line-height: 1.6; }
+.notmeasured--wide .nm { color: var(--text-secondary); }
+
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.legend__item { display: inline-flex; align-items: center; gap: 0.45rem; font-size: var(--step--1); color: var(--text-secondary); }
+.legend__item i { width: 0.85rem; height: 0.85rem; border-radius: 3px; display: inline-block; }
+.legend__item--unbuilt i { border: 1px dashed var(--text-muted); }
+.legend__note { font-size: var(--step--1); color: var(--text-muted); }
+
+/* ---- small multiples ---- */
+.chart-panel__title { margin: 0 0 var(--sp-2); font-family: var(--font-mono); font-size: var(--step--1); color: var(--text-secondary); font-weight: 600; }
+.spark { width: 100%; height: auto; display: block; }
+.spark .grid { stroke: var(--hairline); stroke-width: 1; }
+.spark .tick { fill: var(--text-muted); font-size: 8px; font-family: var(--font-mono); }
+.spark .tick--y { text-anchor: end; }
+.spark .tick--x { text-anchor: middle; }
+.axis-note { margin: var(--sp-1) 0 0; font-size: var(--step--1); color: var(--text-muted); font-family: var(--font-mono); }
+
+/* ---- bars ---- */
+.bars__group { padding: var(--sp-2) 0; border-bottom: 1px solid var(--hairline); }
+.bars__group:last-child { border-bottom: 0; }
+.bars__label { font-family: var(--font-mono); font-size: var(--step--1); color: var(--text-primary); margin-bottom: 0.3rem; }
+.bars__row { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: 3px; }
+.bars__fillwrap { flex: 1 1 auto; height: 10px; background: rgba(244,244,248,0.05); border-radius: 3px; overflow: hidden; min-width: 60px; }
+.bars__fill { display: block; height: 100%; border-radius: 3px; }
+.bars__val { flex: 0 0 auto; font-family: var(--font-mono); font-size: var(--step--1); color: var(--text-secondary); min-width: 11rem; text-align: right; }
+.bars__nm { font-size: var(--step--1); }
+
+/* ---- coverage grid ---- */
+.cov-table { font-size: var(--step--1); }
+.cov-table th { position: sticky; top: 3.4rem; background: var(--base); z-index: 2; }
+.cov-table th.th--unbuilt { color: var(--text-muted); border-bottom: 1px dashed var(--hairline); }
+.cov { text-align: center; padding: 0.3rem 0.2rem; }
+.cov__mark { font-family: var(--font-mono); font-size: 0.85em; }
+/* Angle identity is the COLUMN, not the fill: the header names it and the
+ * position fixes it, so a reader who cannot separate two hues loses nothing. */
+.cov--on { color: var(--base); font-weight: 650; }
+.cov--off .cov__mark { color: var(--status-not-measured); }
+.cov--nm .cov__mark, .cov--err .cov__mark { color: var(--status-not-measured); }
+.cov--err .cov__mark { color: var(--status-provider-error); }
+.cov--tech.cov--on       { background: color-mix(in srgb, var(--angle-tech)       calc(var(--strength) * 100%), transparent); }
+.cov--market.cov--on     { background: color-mix(in srgb, var(--angle-market)     calc(var(--strength) * 100%), transparent); }
+.cov--financial.cov--on  { background: color-mix(in srgb, var(--angle-financial)  calc(var(--strength) * 100%), transparent); }
+.cov--sentiment.cov--on  { background: color-mix(in srgb, var(--angle-sentiment)  calc(var(--strength) * 100%), transparent); }
+.cov--regulatory.cov--on { background: color-mix(in srgb, var(--angle-regulatory) calc(var(--strength) * 100%), transparent); }
+/* Regulatory has no connector, so its column is dashed on every row -- the
+ * same rule the hero cards use, applied to the grid. */
+.cov-table td.cov--regulatory { border-left: 1px dashed var(--hairline); border-right: 1px dashed var(--hairline); opacity: 0.6; }
+.legend__item i.cov--regulatory { background: var(--angle-regulatory); filter: var(--angle-unbuilt-filter); }
+.legend__item i.cov--tech { background: var(--angle-tech); }
+.legend__item i.cov--market { background: var(--angle-market); }
+.legend__item i.cov--financial { background: var(--angle-financial); }
+.legend__item i.cov--sentiment { background: var(--angle-sentiment); }
+
+.pass-note { font-size: var(--step--1); color: var(--text-secondary); max-width: none; border-left: 2px solid var(--hairline); padding-left: var(--sp-2); }
+
+.table-view { margin-top: var(--sp-3); }
+.table-view summary { cursor: pointer; font-size: var(--step--1); color: var(--text-secondary); font-family: var(--font-mono); }
+.table-view summary:hover { color: var(--text-primary); }

@@ -50,7 +50,7 @@
         <line x1="400" y1="120" x2="900" y2="78"  stroke="#EF4A85"/>
         <line x1="400" y1="120" x2="900" y2="120" stroke="#3FB5F0"/>
         <line x1="400" y1="120" x2="900" y2="162" stroke="#57E0A4"/>
-        <line x1="400" y1="120" x2="900" y2="204" stroke="#FFEFBC"/>
+        <line x1="400" y1="120" x2="900" y2="204" stroke="#FFDE8A"/>
       </g>
     </svg>
   </div>
@@ -382,21 +382,26 @@
     computed in the browser beyond reading what is already on disk.
   </p>
 
-  <h3>V1 — the discount surface</h3>
+  <h3>V1 — ENIV under duplication (k copies × ρ)</h3>
   <p class="prose" style="color:var(--text-secondary)">
-    k copies × ρ → ENIV, coloured by attack success.
+    Duplicating a view adds no information. A correct effective-view count
+    should barely move; ENIV rises anyway, which is what L1 and L2 are about.
   </p>
-  <div class="placeholder" id="v1-surface" data-phase="b">
-    wired in phase (b) — from results/ ; no figures shown until the file is read
-  </div>
+  <div class="placeholder" id="v1-surface">loading committed data…</div>
+
+  <h3>V1 — attack success, on its own axes</h3>
+  <p class="prose" style="color:var(--text-secondary)">
+    The colour channel the surface above could not carry, shown where it
+    actually exists — a different experiment, with a different k.
+  </p>
+  <div class="placeholder" id="v1-attack">loading committed data…</div>
 
   <h3>V2 — per-row angle coverage</h3>
   <p class="prose" style="color:var(--text-secondary)">
-    Which angles retrieved, for each of the 48 rows.
+    Which angles retrieved, for each of the 48 rows. The ENIV column is empty
+    by fact, not by omission: in the committed pass no row reached two angles.
   </p>
-  <div class="placeholder" id="v2-coverage" data-phase="b">
-    wired in phase (b) — from results/v2/part24_pipeline_verification.json
-  </div>
+  <div class="placeholder" id="v2-coverage">loading committed data…</div>
   <a class="limits-link" href="#limits">Known limitations →</a>
 </section>
 
@@ -459,5 +464,6 @@
 </footer>
 
 <script src="assets/js/main.js"></script>
+<script src="assets/js/charts.js"></script>
 </body>
 </html>
