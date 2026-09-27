@@ -42,7 +42,7 @@
   <div class="hero__prism" aria-hidden="true">
     <!-- Phase (a): static. One beam enters, five angle-coloured beams leave.
          Phase (c) animates this; it must remain legible without motion. -->
-    <svg viewBox="0 0 900 240" width="100%" height="240" role="img">
+    <svg viewBox="0 0 900 240" width="100%" height="240" aria-hidden="true" focusable="false">
       <line x1="0" y1="120" x2="330" y2="120" stroke="#FFF8E7" stroke-width="2.5"/>
       <path d="M360 40 L470 190 L250 190 Z" fill="none" stroke="#AEAEC0" stroke-width="1.5"/>
       <g stroke-width="2.2" opacity="0.95">
@@ -61,7 +61,7 @@
     measured at all. Every figure on these pages names the committed file it
     came from.
   </p>
-  <a class="limits-link" href="#limits">Known limitations →</a>
+  <a class="limits-link" href="#limits" aria-label="Known limitations, from the introduction">Known limitations →</a>
 </header>
 
 <!-- ============================ CH 1 ============================ -->
@@ -145,7 +145,7 @@
       <cite>README.md — "What this is not"</cite>
     </blockquote>
   </div>
-  <a class="limits-link" href="#limits">Known limitations →</a>
+  <a class="limits-link" href="#limits" aria-label="Known limitations, from Chapter 1: The problem">Known limitations →</a>
 </section>
 
 <!-- ============================ CH 2 ============================ -->
@@ -160,7 +160,7 @@
 
   <div class="grid grid--2">
     <div class="panel">
-      <h4 style="color:var(--angle-market);margin-top:0">Detection — supported</h4>
+      <h3 class="h-sm" style="color:var(--angle-market);margin-top:0">Detection — supported</h3>
       <p style="color:var(--text-secondary)">
         Under a coordinated attack, ENIV falls <strong>3.36 → 2.70</strong> and
         dependence among the compromised views rises
@@ -169,7 +169,7 @@
       </p>
     </div>
     <div class="panel">
-      <h4 style="color:var(--status-provider-error);margin-top:0">Defence — not supported</h4>
+      <h3 class="h-sm" style="color:var(--status-provider-error);margin-top:0">Defence — not supported</h3>
       <p style="color:var(--text-secondary)">
         PrismFlow's attack success rate was <strong>higher</strong> than naive
         fusion's in <strong>12 of 12</strong> attacked cells
@@ -213,7 +213,7 @@
     <div class="limit"><span class="limit__id">L8.</span> <span class="limit__title">Detection and correction fail together, because both read cross-view belief agreement</span></div>
     <p class="src">docs/KNOWN_LIMITATIONS.md — headings verbatim</p>
   </div>
-  <a class="limits-link" href="#limits">All limitations, including L9–L15 →</a>
+  <a class="limits-link" href="#limits" aria-label="All limitations including L9 to L15, from Chapter 2: V1">All limitations, including L9–L15 →</a>
 </section>
 
 <!-- ============================ CH 3 ============================ -->
@@ -284,7 +284,7 @@
       site.
     </p>
   </div>
-  <a class="limits-link" href="#limits">Known limitations →</a>
+  <a class="limits-link" href="#limits" aria-label="Known limitations, from Chapter 3: V2's challenge">Known limitations →</a>
 </section>
 
 <!-- ============================ CH 4 ============================ -->
@@ -333,13 +333,13 @@
   <div class="table-wrap panel">
     <table>
       <caption class="visually-hidden">Per-angle retrieval over 48 rows</caption>
-      <thead><tr><th>angle</th><th class="num">rows with ≥1 record</th><th class="num">records</th><th>source</th></tr></thead>
+      <thead><tr><th scope="col">angle</th><th scope="col" class="num">rows with ≥1 record</th><th scope="col" class="num">records</th><th scope="col">source</th></tr></thead>
       <tbody>
-        <tr><td style="color:var(--angle-tech)">Tech</td><td class="num">48 / 48</td><td class="num">480</td><td>arXiv 480, GitHub 0</td></tr>
-        <tr><td style="color:var(--angle-market)">Market</td><td class="num">6 / 48</td><td class="num">10</td><td>NewsAPI</td></tr>
-        <tr><td style="color:var(--angle-financial)">Financial</td><td class="num">0 / 48</td><td class="num">0</td><td>yfinance</td></tr>
-        <tr><td style="color:var(--angle-sentiment)">Sentiment</td><td class="num">1 / 48</td><td class="num">3</td><td>StackExchange</td></tr>
-        <tr><td style="color:var(--angle-regulatory)">Regulatory</td><td class="num">0 / 48</td><td class="num">0</td><td>no connector exists</td></tr>
+        <tr><th scope="row" style="color:var(--angle-tech);font-weight:600">Tech</th><td class="num">48 / 48</td><td class="num">480</td><td>arXiv 480, GitHub 0</td></tr>
+        <tr><th scope="row" style="color:var(--angle-market);font-weight:600">Market</th><td class="num">6 / 48</td><td class="num">10</td><td>NewsAPI</td></tr>
+        <tr><th scope="row" style="color:var(--angle-financial);font-weight:600">Financial</th><td class="num">0 / 48</td><td class="num">0</td><td>yfinance</td></tr>
+        <tr><th scope="row" style="color:var(--angle-sentiment);font-weight:600">Sentiment</th><td class="num">1 / 48</td><td class="num">3</td><td>StackExchange</td></tr>
+        <tr><th scope="row" style="color:var(--angle-regulatory);font-weight:600">Regulatory</th><td class="num">0 / 48</td><td class="num">0</td><td>no connector exists</td></tr>
       </tbody>
     </table>
     <p class="src">docs/v2-known-limitations.md V2-L1 — identical in both of the day's passes</p>
@@ -370,7 +370,7 @@
     </div>
     <p class="src">docs/part20-groq-verification.md; docs/v2-known-limitations.md V2-L5</p>
   </div>
-  <a class="limits-link" href="#limits">Known limitations →</a>
+  <a class="limits-link" href="#limits" aria-label="Known limitations, from Chapter 4: Results">Known limitations →</a>
 </section>
 
 <!-- ============================ CH 5 ============================ -->
@@ -402,7 +402,7 @@
     by fact, not by omission: in the committed pass no row reached two angles.
   </p>
   <div class="placeholder" id="v2-coverage">loading committed data…</div>
-  <a class="limits-link" href="#limits">Known limitations →</a>
+  <a class="limits-link" href="#limits" aria-label="Known limitations, from Chapter 5: Interactive exploration">Known limitations →</a>
 </section>
 
 <!-- ============================ LIMITS ============================ -->

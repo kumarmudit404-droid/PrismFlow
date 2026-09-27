@@ -86,7 +86,12 @@
     function x(k) { return PAD_L + (kValues.indexOf(k) / (kValues.length - 1)) * (W - PAD_L - PAD_R); }
     function y(v) { return PAD_T + (1 - (v - lo) / (hi - lo)) * (H - PAD_T - PAD_B); }
 
-    var svg = ['<svg viewBox="0 0 ' + W + " " + H + '" class="spark" role="img" aria-label="ENIV versus duplicate copies for ' + system + '">'];
+    // aria-describedby points at the table holding the same numbers, so the
+    // chart is not a dead end for anyone who cannot read the shape.
+    var svg = ['<svg viewBox="0 0 ' + W + " " + H + '" class="spark" role="img" ' +
+      'aria-describedby="v1-surface-table" ' +
+      'aria-label="ENIV versus duplicate copies for ' + system +
+      '. The numbers behind this chart are in the table view below it.">'];
 
     // recessive gridlines + axis ticks
     var ticks = 4, i;
@@ -175,14 +180,21 @@
     // Table view: the numbers themselves, for screen readers and for anyone
     // who wants the value rather than the shape.
     var details = el("details", "table-view");
+    details.id = "v1-surface-table";
     details.appendChild(el("summary", null, "Table view — every cell, as committed"));
-    var rows = ['<table><thead><tr><th>system</th><th class="num">rho</th><th class="num">k</th>' +
-                '<th class="num">ENIV mean</th><th class="num">std</th><th class="num">seeds</th>' +
-                '<th class="num">attack success</th></tr></thead><tbody>'];
+    var rows = ['<table><caption class="visually-hidden">ENIV by system, rho and ' +
+                'duplicate-copy count k, with sample standard deviation and seed ' +
+                'count. The attack success column is empty because no committed ' +
+                'file measures it on this grid.</caption>' +
+                '<thead><tr><th scope="col">system</th><th scope="col" class="num">rho</th>' +
+                '<th scope="col" class="num">k</th>' +
+                '<th scope="col" class="num">ENIV mean</th><th scope="col" class="num">std</th>' +
+                '<th scope="col" class="num">seeds</th>' +
+                '<th scope="col" class="num">attack success</th></tr></thead><tbody>'];
     data.cells.slice().sort(function (a, b) {
       return a.system.localeCompare(b.system) || a.rho - b.rho || a.k - b.k;
     }).forEach(function (c) {
-      rows.push("<tr><td>" + c.system + '</td><td class="num">' + c.rho + '</td><td class="num">' + c.k +
+      rows.push('<tr><th scope="row">' + c.system + '</th><td class="num">' + c.rho + '</td><td class="num">' + c.k +
         '</td><td class="num">' + num(c.eniv_mean, 4) + '</td><td class="num">' + num(c.eniv_std, 4) +
         '</td><td class="num">' + num(c.n_seeds, 0) + '</td><td class="num">' + num(c.attack_success, 3) +
         "</td></tr>");
@@ -251,6 +263,28 @@
       wrap.appendChild(group);
     });
     host.appendChild(wrap);
+
+    // The bars are divs, so their values exist only as pixel widths. This is
+    // real content, not decoration, so it gets a real table.
+    var det = el("details", "table-view");
+    det.appendChild(el("summary", null, "Table view — attack success, as committed"));
+    var t = ['<div class="table-wrap"><table><caption class="visually-hidden">' +
+      'Attack success rate by condition and system, mean and sample standard ' +
+      'deviation over seeds.</caption><thead><tr><th scope="col">condition</th>' +
+      '<th scope="col">system</th><th scope="col" class="num">success mean</th>' +
+      '<th scope="col" class="num">std</th><th scope="col" class="num">seeds</th>' +
+      '<th scope="col" class="num">ENIV measured</th></tr></thead><tbody>'];
+    data.rows.forEach(function (r) {
+      t.push('<tr><th scope="row">' + r.condition + "</th><td>" + r.system +
+        '</td><td class="num">' + num(r.success_mean, 4) +
+        '</td><td class="num">' + num(r.success_std, 4) +
+        '</td><td class="num">' + num(r.n_seeds, 0) +
+        '</td><td class="num">' + num(r.eniv_measured, 4) + "</td></tr>");
+    });
+    t.push("</tbody></table></div>");
+    det.insertAdjacentHTML("beforeend", t.join(""));
+    host.appendChild(det);
+
     host.insertAdjacentHTML("beforeend", '<p class="src">' + provenanceLine(data.provenance) + "</p>");
   }
 
@@ -274,9 +308,13 @@
     var style = records > 0 ? ' style="--strength:' + strength.toFixed(2) + '"' : "";
     var claims = a.claims === null ? "not measured" : a.claims + " claims";
     var errNote = a.reasoner_error ? " · reasoner error" : "";
+    // The visible glyph is the record count; the hidden span carries the units
+    // and the claim count, because a bare "10" announced on its own says
+    // nothing, and a title attribute is not reliably announced at all.
     return "<td class=\"" + cls + "\"" + style + ' title="' + ANGLE_LABEL[name] + ": " +
       records + " records, " + claims + errNote + '"><span class="cov__mark">' +
-      (records > 0 ? records : "0") + "</span></td>";
+      (records > 0 ? records : "0") + '</span><span class="visually-hidden"> records, ' +
+      claims + errNote + "</span></td>";
   }
 
   function renderV2Coverage(host, data) {
@@ -297,17 +335,26 @@
       "Regulatory is dashed throughout: no connector exists.</span>");
     host.appendChild(legend);
 
-    var head = ['<div class="table-wrap"><table class="cov-table"><thead><tr>' +
-      '<th>row</th><th>domain</th><th>outcome</th>'];
+    var head = ['<div class="table-wrap"><table class="cov-table">' +
+      '<caption class="visually-hidden">Per-row angle coverage over all ' +
+      (data.n_rows || data.rows.length) + ' evaluation rows. For each row: the ' +
+      'number of records each angle retrieved, how many angles produced claims, ' +
+      'the outcome of the run, and ENIV where the row fused.</caption>' +
+      '<thead><tr>' +
+      '<th scope="col">row</th><th scope="col">domain</th><th scope="col">outcome</th>'];
     angles.forEach(function (a) {
       var cls = (a === "regulatory") ? ' class="th--unbuilt"' : "";
-      head.push("<th" + cls + ">" + ANGLE_LABEL[a] + "</th>");
+      var note = (a === "regulatory") ? " (no connector exists)" : "";
+      head.push('<th scope="col"' + cls + ">" + ANGLE_LABEL[a] +
+        '<span class="visually-hidden"> records' + note + "</span></th>");
     });
-    head.push('<th class="num">angles</th><th>outcome of run</th><th class="num">ENIV</th></tr></thead><tbody>');
+    head.push('<th scope="col" class="num">angles with claims</th>' +
+      '<th scope="col">outcome of run</th>' +
+      '<th scope="col" class="num">ENIV</th></tr></thead><tbody>');
 
     data.rows.forEach(function (r) {
       var cells = ["<tr>"];
-      cells.push('<td class="mono">' + r.id + "</td>");
+      cells.push('<th scope="row" class="mono">' + r.id + "</th>");
       cells.push("<td>" + (r.domain || NOT_MEASURED) + "</td>");
       cells.push("<td>" + (r.outcome || NOT_MEASURED) + "</td>");
       angles.forEach(function (a) { cells.push(coverageCell(a, r.angles[a] || {})); });

@@ -68,4 +68,39 @@
       });
     }, 4000);
   }
+  /* ---- keyboard access to horizontally scrollable tables ---------------
+   * A wrapper with overflow-x:auto scrolls with a mouse or a trackpad but is
+   * unreachable by keyboard unless it is focusable. The 48-row coverage table
+   * overflows on a narrow window, so without this a keyboard-only user cannot
+   * see its right-hand columns at all (WCAG 2.1.1). tabindex is added ONLY to
+   * wrappers that actually overflow, so a table that fits does not become a
+   * dead tab stop -- and it is re-evaluated on resize, because whether a table
+   * overflows is a function of the viewport. */
+  function updateScrollRegions() {
+    var wraps = document.querySelectorAll(".table-wrap");
+    Array.prototype.forEach.call(wraps, function (w) {
+      var overflows = w.scrollWidth > w.clientWidth + 1;
+      if (overflows) {
+        if (!w.hasAttribute("tabindex")) {
+          w.setAttribute("tabindex", "0");
+          w.setAttribute("role", "region");
+          var table = w.querySelector("table");
+          var cap = table && table.querySelector("caption");
+          w.setAttribute("aria-label",
+            (cap ? cap.textContent.trim().slice(0, 80) : "Data table") +
+            " (scrollable — use arrow keys)");
+        }
+      } else if (w.hasAttribute("tabindex")) {
+        w.removeAttribute("tabindex");
+        w.removeAttribute("role");
+        w.removeAttribute("aria-label");
+      }
+    });
+  }
+
+  // Charts render asynchronously, so run after they land as well as on resize.
+  window.addEventListener("load", updateScrollRegions);
+  window.addEventListener("resize", updateScrollRegions);
+  setTimeout(updateScrollRegions, 600);
+  setTimeout(updateScrollRegions, 1800);
 })();

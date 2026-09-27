@@ -30,6 +30,23 @@ HERE = Path(__file__).resolve().parent
 class Handler(http.server.SimpleHTTPRequestHandler):
     """Static handler with no caching, so an edit shows up on reload."""
 
+    def send_head(self):
+        """Reject any path carrying a separator that Windows would honour.
+
+        Tested with 19 traversal payloads against this root: none returned the
+        bytes of ``.env``, ``CLAUDE.md`` or ``app.py``. But ``..%5c.env`` and
+        friends answered **200**, because the decoded backslash made the handler
+        discard the component and fall back to the directory index. Nothing
+        escaped -- yet a 200 on a traversal attempt is exactly the signal a
+        future regression would hide behind, and it makes an honest scan read
+        like a finding. Such paths are now refused outright, so 404 means 404.
+        """
+        raw = self.path.lower()
+        if "\\" in self.path or "%5c" in raw or "%255c" in raw or "%2e%2e" in raw:
+            self.send_error(404, "Not Found")
+            return None
+        return super().send_head()
+
     def end_headers(self) -> None:
         self.send_header("Cache-Control", "no-store, must-revalidate")
         # This site never needs to reach the network. Saying so in a header

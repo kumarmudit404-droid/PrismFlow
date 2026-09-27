@@ -116,17 +116,24 @@ p { max-width: var(--measure); }
 
 /* ---------- glass panel ----------------------------------------------- */
 
-/* NO backdrop-filter here, deliberately, and it is a performance fix rather
- * than a taste one. With blur on every panel the page carried 27 backdrop
- * layers, each re-blurring a region of the fixed gradient behind it on any
- * scroll or repaint. Measured result: requestAnimationFrame stopped firing
- * entirely (0 frames sampled in 1.2s) and screenshot capture timed out at
- * 30s once the 48-row table was on screen.
+/* NO backdrop-filter here: blur is spent only on the sticky nav, which sits
+ * over moving content. A panel sits over a static gradient, so a more opaque
+ * fill is visually equivalent.
  *
- * Blur is now spent only where it buys something the eye actually uses: the
- * sticky nav, which sits over moving content. A panel sits over a static
- * gradient, so a slightly more opaque fill is visually equivalent and costs
- * one paint instead of a live blur. */
+ * HONEST PROVENANCE OF THIS RULE. Phase (b) justified it as a performance fix,
+ * citing rAF firing 0 frames and screenshot capture timing out. BOTH were
+ * artifacts of a backgrounded tab: Chrome throttles rAF to nothing when the
+ * window is not visible, which also stalled the capture. Phase (d) re-measured
+ * in a genuinely foreground window (visibilityState "visible", 149 frames per
+ * trial, scrolling over the 48-row table, blur toggled at runtime):
+ *
+ *     27 blur layers   median 16.7ms  (59.9 fps)
+ *      1 blur layer    median 16.6ms  (60.2 fps)
+ *
+ * Both are vsync-bound; there is NO measurable difference on this machine. The
+ * rule is kept on precautionary grounds only -- 27 live backdrop layers cannot
+ * be cheaper than one, and the brief requires a weaker laptop GPU to cope --
+ * and explicitly NOT on the evidence phase (b) claimed. */
 .panel {
   background: var(--glass-bg-solid);
   border: 1px solid var(--glass-border);
@@ -321,3 +328,41 @@ td.num, th.num { text-align: right; font-family: var(--font-mono); }
 .table-view { margin-top: var(--sp-3); }
 .table-view summary { cursor: pointer; font-size: var(--step--1); color: var(--text-secondary); font-family: var(--font-mono); }
 .table-view summary:hover { color: var(--text-primary); }
+
+/* ====================================================================
+ * phase (d) -- accessibility
+ * ==================================================================== */
+
+/* This class was USED in phase (a) and never defined, so the coverage table's
+ * <caption> rendered as visible body text instead of being announced only to
+ * assistive tech. Defined now, and the pattern is the standard clip-rect one
+ * that keeps the text in the accessibility tree. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip: rect(0 0 0 0); clip-path: inset(50%);
+  overflow: hidden; white-space: nowrap;
+}
+
+/* A horizontally scrollable region must be reachable by keyboard: without a
+ * tab stop, a keyboard-only user cannot scroll the 48-row coverage table
+ * sideways at all (WCAG 2.1.1). JS adds tabindex only to wrappers that
+ * actually overflow, so non-scrolling tables do not become dead tab stops. */
+.table-wrap[tabindex] { outline-offset: 2px; }
+.table-wrap[tabindex]:focus-visible { outline: 2px solid var(--angle-tech); }
+.table-wrap__hint {
+  font-size: var(--step--1); color: var(--text-muted);
+  font-family: var(--font-mono); margin: 0 0 var(--sp-1);
+}
+
+/* Focus must be visible on a dark surface against every background the site
+ * uses, including inside a filled coverage cell. */
+a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--angle-tech);
+  outline-offset: 3px;
+}
+
+/* Chapter-2 panel headings are h3 (they sit directly under the chapter h2, so
+ * h4 skipped a level) but want h4's visual weight. */
+.h-sm { font-size: var(--step-0); margin: var(--sp-4) 0 var(--sp-1); }
