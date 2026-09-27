@@ -9,8 +9,10 @@ NOT Part 24 evidence under docs/CONTRACT.md section 5. Not partially, not
 "pending more rows". The standard needs the full dataset and the reasoners this
 project intends to report on, and this run has neither:
 
-* n = 17 of the eventual 50 rows, and all 17 are Tech-OSS but one. There is no
-  domain balance, so nothing here generalises past Swift/PEP decisions.
+* The committed dataset is 48 of the eventual 50 rows (row 040 absent). The
+  domain mix is 28 Tech-OSS, 10 Startup, 10 Financial-Product, so it is no
+  longer single-domain -- but it is still ONE pass over each row, which is a
+  count and not a measurement.
 * The reasoner is Groq (openai/gpt-oss-120b) through the OpenAIReasoner CODE
   PATH. Claude and OpenAI are both unfunded. Groq is OpenAI-*compatible*, not
   OpenAI: this says nothing about gpt-4o and nothing about Claude.
@@ -42,8 +44,8 @@ look stable, this one would make noise look controlled.
 
 Where the seeds in this repo DO select something -- experiments/v2's fusion e2e
 and ENIV redundancy runs -- they draw synthetic fixtures: banked queries,
-planted contradictions, confidence bands. Over 17 fixed real rows there is no
-fixture left to draw.
+planted contradictions, confidence bands. Over a fixed set of real rows there
+is no fixture left to draw.
 
 WHAT IT IS
 ----------
@@ -88,16 +90,24 @@ GROQ_MODEL = "openai/gpt-oss-120b"
 ANGLE_ORDER = ("tech", "market", "financial", "regulatory", "sentiment")
 
 BANNER = "=" * 78
-LABEL = (
-    "PARTIAL PIPELINE-VERIFICATION RUN -- NOT PART 24 EVIDENCE\n"
-    "  n=17 of the eventual 50 rows; reasoner is GROQ (openai/gpt-oss-120b)\n"
-    "  via the OpenAIReasoner code path -- NOT Claude, NOT OpenAI (unfunded).\n"
-    "  Fusion adjudication is the offline LexicalAdjudicator, so Part 23's\n"
-    "  Claude path is NOT exercised.\n"
-    "  ONE pass. No seeds: nothing on this path varies as a function of a\n"
-    "  seed (see module docstring), so no mean and no std are reported.\n"
-    "  Not evidence under docs/CONTRACT.md section 5."
-)
+def build_label(n_rows: int, n_total: int) -> str:
+    """The run's own disclaimer, carrying the n that was ACTUALLY run.
+
+    Hardcoded as n=17 until the dataset grew to 48. A stale n in a label is the
+    cheapest possible way to misreport a run, so it is derived now.
+    """
+    return (
+        "PIPELINE-VERIFICATION RUN -- NOT PART 24 EVIDENCE\n"
+        "  ONE PASS, N=%d of %d committed rows (dataset target 50).\n"
+        "  Reasoner is GROQ (openai/gpt-oss-120b) via the OpenAIReasoner\n"
+        "  code path -- NOT Claude, NOT OpenAI (both unfunded).\n"
+        "  Fusion adjudication is LEXICAL (offline LexicalAdjudicator), so\n"
+        "  Part 23's Claude path is NOT exercised.\n"
+        "  No seeds: nothing on this path varies as a function of a seed\n"
+        "  (see module docstring), so no mean and no std are reported.\n"
+        "  NOT A PART 24 FINDING under docs/CONTRACT.md section 5."
+        % (n_rows, n_total)
+    )
 
 
 def groq_key() -> str:
@@ -224,8 +234,9 @@ async def main_async(limit: Optional[int], args_no_derive: bool = False) -> int:
     dataset = load_evaluation_dataset(str(ROOT / "data/v2/evaluation_queries.json"))
     rows = dataset[:limit] if limit else dataset
 
+    label = build_label(len(rows), len(dataset))
     print(BANNER)
-    print(LABEL)
+    print(label)
     print(BANNER)
     print("rows: %d of %d loaded  |  angles: 4 of 5 wired live (regulatory has no connector)"
           "  |  one pass  |  query derivation: %s"
@@ -307,7 +318,7 @@ async def main_async(limit: Optional[int], args_no_derive: bool = False) -> int:
     out = ROOT / "results" / "v2" / "part24_pipeline_verification.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({
-        "label": LABEL,
+        "label": label,
         "is_part24_evidence": False,
         "reasoner": {"provider": "groq", "model": GROQ_MODEL,
                      "note": "OpenAIReasoner code path; not OpenAI, not Claude"},
@@ -334,7 +345,9 @@ async def main_async(limit: Optional[int], args_no_derive: bool = False) -> int:
     print(BANNER)
     print("METRICS -- NOT A PART 24 FINDING")
     print("  Single run, no seeds (nothing varies per seed on this path), no")
-    print("  comparison condition, n=%d of 50, Groq not Claude/OpenAI, and")
+    print("  comparison condition, n=%d scored of %d run, Groq not"
+          % (len(scored), len(rows)))
+    print("  Claude/OpenAI, and")
     print("  fusion adjudicated offline. Under CONTRACT.md section 5 and the")
     print("  5-SEED RULE these numbers are a smoke test, not a result.")
     print(BANNER)
