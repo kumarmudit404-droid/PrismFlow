@@ -7,9 +7,18 @@
 <meta name="description" content="Dependence-Discounted Evidential Fusion under Collusive View Compromise: a guided tour of what was measured, and what was not.">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/app.css">
+<!-- The reveal failsafe, FIRST and on its own. The scroll reveals hide real
+     content to fade it in; this file is the guarantee that it comes back, and
+     it is separate from motion.js on purpose -- the failure it survives is
+     motion.js dying. motion.js cannot hide anything unless this has loaded.
+     (A classic script, not inline: serve.py's CSP is script-src 'self'.) -->
+<script src="assets/js/reveal-failsafe.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#ch1">Skip to content</a>
+<!-- ONE canvas for all ambient motion. Phase (b) learned what a stack of
+     blurred layers costs; this is a single compositor layer. -->
+<canvas id="ambient" aria-hidden="true"></canvas>
 
 <nav class="site-nav" aria-label="Chapters">
   <div class="wrap site-nav__inner">
@@ -40,19 +49,32 @@
   </p>
 
   <div class="hero__prism" aria-hidden="true">
-    <!-- Phase (a): static. One beam enters, five angle-coloured beams leave.
-         Phase (c) animates this; it must remain legible without motion. -->
-    <svg viewBox="0 0 900 240" width="100%" height="240" aria-hidden="true" focusable="false">
-      <line x1="0" y1="120" x2="330" y2="120" stroke="#FFF8E7" stroke-width="2.5"/>
-      <path d="M360 40 L470 190 L250 190 Z" fill="none" stroke="#AEAEC0" stroke-width="1.5"/>
-      <g stroke-width="2.2" opacity="0.95">
-        <line x1="400" y1="120" x2="900" y2="36"  stroke="#6F4FD6"/>
-        <line x1="400" y1="120" x2="900" y2="78"  stroke="#EF4A85"/>
-        <line x1="400" y1="120" x2="900" y2="120" stroke="#3FB5F0"/>
-        <line x1="400" y1="120" x2="900" y2="162" stroke="#57E0A4"/>
-        <line x1="400" y1="120" x2="900" y2="204" stroke="#FFDE8A"/>
-      </g>
-    </svg>
+    <!-- THE MARK. No logo file exists in this repository, so the product's own
+         prism IS the mark: one incident beam refracting into five angle beams.
+         It is an SVG first and stays one -- the pose below is the static
+         fallback that reduced-motion users, no-JS users and anyone without
+         WebGL sees, unchanged from phase (a). motion.js only moves y2 on the
+         beams; hero3d.js layers a lit glass prism on top when it can. -->
+    <div class="hero__stage">
+      <div id="hero-3d" class="hero__gl"></div>
+      <svg id="prism-mark" class="hero__svg" viewBox="0 0 900 240" width="100%" height="240"
+           aria-hidden="true" focusable="false">
+        <line x1="0" y1="120" x2="330" y2="120" stroke="var(--beam-incident)" stroke-width="2.5"/>
+        <path d="M360 40 L470 190 L250 190 Z" fill="none" stroke="var(--text-secondary)" stroke-width="1.5"/>
+        <g class="beam-trails">
+          <line data-trail x1="400" y1="120" x2="900" y2="60"  stroke="var(--angle-sentiment)" stroke-width="6" opacity="0"/>
+          <line data-trail x1="400" y1="120" x2="900" y2="120" stroke="var(--angle-tech)"      stroke-width="6" opacity="0"/>
+          <line data-trail x1="400" y1="120" x2="900" y2="180" stroke="var(--angle-market)"    stroke-width="6" opacity="0"/>
+        </g>
+        <g class="beams">
+          <line data-beam class="beam beam--regulatory" x1="400" y1="120" x2="900" y2="38"  stroke="var(--angle-regulatory)"/>
+          <line data-beam class="beam" x1="400" y1="120" x2="900" y2="79"  stroke="var(--angle-sentiment)"/>
+          <line data-beam class="beam" x1="400" y1="120" x2="900" y2="120" stroke="var(--angle-tech)"/>
+          <line data-beam class="beam" x1="400" y1="120" x2="900" y2="161" stroke="var(--angle-market)"/>
+          <line data-beam class="beam" x1="400" y1="120" x2="900" y2="202" stroke="var(--angle-financial)"/>
+        </g>
+      </svg>
+    </div>
   </div>
 
   <p class="prose">
@@ -465,5 +487,6 @@
 
 <script src="assets/js/main.js"></script>
 <script src="assets/js/charts.js"></script>
+<script type="module" src="assets/js/motion.js"></script>
 </body>
 </html>

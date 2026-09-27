@@ -366,3 +366,75 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
 /* Chapter-2 panel headings are h3 (they sit directly under the chapter h2, so
  * h4 skipped a level) but want h4's visual weight. */
 .h-sm { font-size: var(--step-0); margin: var(--sp-4) 0 var(--sp-1); }
+
+/* ====================================================================
+ * phase (c) -- motion
+ * ==================================================================== */
+
+/* The single ambient layer. One canvas, one compositor layer, sitting under
+ * everything. body::before stays as the static wash AND doubles as the scrim
+ * that keeps text contrast where phase (a) measured it. */
+#ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -2;            /* below body::before, which is -1 */
+  pointer-events: none;
+  display: block;
+}
+
+/* The scrim. The animated canvas sits BELOW this, so the drifting light is
+ * always seen through a dim layer and can never lift the background under body
+ * text far enough to break the verified contrast ratios.
+ *
+ * 0.84 is solved, not chosen. The bound assumes every ambient blob overlaps on
+ * one pixel AND every body::before gradient is at full strength at once --
+ * impossible in practice, but it makes the guarantee hold however the blobs
+ * drift. At 0.55 the worst case was rgb(53,56,67) and --text-muted fell to
+ * 2.94:1. At 0.84 it is rgb(21,22,29) and the weakest token, --text-muted,
+ * holds 4.54:1 against its 4.5 threshold. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: rgba(10, 10, 15, 0.84);
+}
+
+/* ---- the prism mark ---- */
+.hero__stage { position: relative; }
+.hero__gl { position: absolute; inset: 0; pointer-events: none; }
+.hero__gl canvas { width: 100%; height: 100%; display: block; }
+.hero__svg { position: relative; display: block; }
+
+.beam { stroke-width: 2.2; }
+/* The unbuilt angle keeps its filter while animating. A moving beam must not
+ * imply that Regulatory retrieves anything -- it has no connector at all. */
+.beam--regulatory { filter: var(--angle-unbuilt-filter); }
+.beam-trails line { stroke-linecap: round; }
+
+/* Reduced motion: the canvas is removed by JS, the mark keeps its static
+ * pose, and nothing here animates. These rules make that explicit rather than
+ * relying on the script alone. */
+@media (prefers-reduced-motion: reduce) {
+  #ambient { display: none !important; }
+  .hero__gl { display: none !important; }
+  .beam-trails { display: none !important; }
+}
+
+/* Reveal targets start hidden ONLY while `data-reveal="armed"`.
+ *
+ * That attribute is NOT set by motion.js directly. It can only be set through
+ * reveal-failsafe.js, a separate file loaded first in <head>, which also holds
+ * the deadline that clears it. So the un-hider is proven present before
+ * anything is hidden, and the guarantee does not live inside the script it
+ * protects against.
+ *
+ * This used to key off `data-motion="live"`, which motion.js set optimistically
+ * before the reveal machinery had done anything. A throw one line later left
+ * all 67 targets invisible for good. `data-motion` still exists and still
+ * drives the ambient canvas and the hero -- it just no longer decides whether
+ * the reader can read the page. */
+:root[data-reveal="armed"] .chapter__lede,
+:root[data-reveal="armed"] .panel,
+:root[data-reveal="armed"] .limit { opacity: 0; }
