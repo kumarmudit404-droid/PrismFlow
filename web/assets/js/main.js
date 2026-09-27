@@ -1,14 +1,13 @@
 /* PrismFlow Part 25 -- phase (a) behaviour only.
  *
- * Deliberately tiny: nav state and a reduced-motion-aware reveal. anime.js and
- * the ray-traced hero arrive in phase (c). Nothing here fetches anything, and
- * no credential of any kind is referenced -- this site reads committed files
- * and nothing else.
+ * Deliberately tiny: nav state, and keyboard access to the scrollable tables.
+ * No reveal and no motion of any kind live here -- phase (c) moved all of that
+ * to motion.js, under the reveal-failsafe contract. Nothing here fetches
+ * anything, and no credential of any kind is referenced -- this site reads
+ * committed files and nothing else.
  */
 (function () {
   "use strict";
-
-  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ---- nav: mark the chapter currently in view ------------------------ */
   var links = Array.prototype.slice.call(document.querySelectorAll(".site-nav__link"));
@@ -37,37 +36,6 @@
     sections.forEach(function (s) { obs.observe(s); });
   }
 
-  /* ---- staggered reveal ----------------------------------------------
-   * Content is visible by default in the CSS; this only ADDS a fade when
-   * motion is welcome. If JS fails or motion is reduced, the page is simply
-   * already readable -- the reveal is never load-bearing. */
-  if (!reduceMotion && "IntersectionObserver" in window) {
-    var targets = document.querySelectorAll(".panel, .chapter__lede, .limit");
-    Array.prototype.forEach.call(targets, function (el) {
-      el.style.opacity = "0";
-      el.style.transform = "translateY(10px)";
-      el.style.transition = "opacity .5s ease, transform .5s ease";
-    });
-    var rev = new IntersectionObserver(function (entries, o) {
-      entries.forEach(function (e, i) {
-        if (!e.isIntersecting) { return; }
-        var el = e.target;
-        setTimeout(function () {
-          el.style.opacity = "1";
-          el.style.transform = "none";
-        }, Math.min(i * 45, 220));
-        o.unobserve(el);
-      });
-    }, { rootMargin: "0px 0px -8% 0px" });
-    Array.prototype.forEach.call(targets, function (el) { rev.observe(el); });
-
-    /* Safety net: if anything above misbehaves, nothing stays invisible. */
-    window.setTimeout(function () {
-      Array.prototype.forEach.call(targets, function (el) {
-        if (el.style.opacity === "0") { el.style.opacity = "1"; el.style.transform = "none"; }
-      });
-    }, 4000);
-  }
   /* ---- keyboard access to horizontally scrollable tables ---------------
    * A wrapper with overflow-x:auto scrolls with a mouse or a trackpad but is
    * unreachable by keyboard unless it is focusable. The 48-row coverage table
