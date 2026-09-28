@@ -16,6 +16,43 @@ urllib, and a future 406 here is a transport-header problem rather than a
 malformed query. The default AiohttpClient is correct as-is; the note exists
 so the next person does not spend an hour on it.
 
+PROSE IS NOT A SEARCH QUERY -- THE V2-L3 ROOT CAUSE
+---------------------------------------------------
+This connector used to send ``all:{query}`` verbatim. When ``query`` was a prose
+sentence, arXiv bound none of its terms and answered with its own default
+top-relevance listing: the same ten big-collaboration physics papers (GWTC-4.0,
+GWTC-5.0, ATLAS detector performance, KAGRA dark matter, IceCube follow-ups) for
+every unrelated query. That is V2-L3, and it reached this connector because
+``BaseAngle`` only derives a query when one EXCEEDS the connector's limit -- and
+this connector's 220-character limit is the most permissive in the table, so 36
+of the 48 Part 24 pitches were short enough to arrive as raw prose.
+
+Measured live on 2026-09-28, rows 020 / 046 / 049, k=10, mean over the three
+pairwise comparisons. "generic" is the fraction of returned titles that are
+big-collaboration physics; "term-hit" the fraction whose title contains at least
+one of that row's own query terms:
+
+    strategy                      mean n   overlap   term-hit   generic
+    as-built, raw prose            10.0     10.00      0.07      1.00
+    terms, space separated         10.0      0.00      0.97      0.00
+    terms, each all:-prefixed, OR  10.0      0.00      0.97      0.00   <- this
+    terms, each all:-prefixed, AND  0.0      0.00      0.00      0.00
+    top-4 ANDed                     0.3      0.00      1.00      0.00
+    top-6 ORed                     10.0      0.00      0.93      0.00
+
+Overlap 10.00 means all three unrelated queries returned the identical ten
+records. ANDing is unusable: arXiv's ``all:`` fields are conjunctive enough that
+four terms already reduce most rows to zero.
+
+Space-separated and explicitly-ORed scored identically, which says arXiv's
+implicit operator here is OR. The explicit form is used anyway: it does not rely
+on undocumented default behaviour, and it is visible in the URL when someone
+reads a request log.
+
+The fix is in this connector rather than in the length gate, because a connector
+should never accept prose in a field that takes a query language -- regardless
+of how short the prose happens to be. ``BaseAngle`` is untouched.
+
 WHY http AND NOT https FOR THE EXPORT HOST
 ------------------------------------------
 ``export.arxiv.org`` is the documented API host and answers on both schemes.
@@ -53,6 +90,14 @@ DEFAULT_RATE_PER_MIN = 20
 #: Brief: snippet is the summary truncated to 500 characters.
 SNIPPET_CHARS = 500
 
+#: Ceiling and term cap applied when reducing an incoming query to terms.
+#: 220 matches CONNECTOR_QUERY_LIMITS["arxiv"] so a query that HAS been derived
+#: upstream passes through this reduction unchanged; 12 matches derive_query's
+#: own default. Neither number is a new tuning knob -- they exist so this
+#: connector never depends on whether derivation ran before it.
+SEARCH_QUERY_LIMIT = 220
+MAX_SEARCH_TERMS = 12
+
 _ATOM = "{http://www.w3.org/2005/Atom}"
 
 
@@ -73,13 +118,52 @@ class ArxivConnector(AngleConnector):
             max_retries=max_retries,
         )
 
+    def build_search_query(self, query: str) -> str:
+        """Turn whatever arrives into a search_query arXiv can actually bind.
+
+        THIS EXISTS BECAUSE ``all:{query}`` WAS WRONG, AND V2-L3 WAS THE COST.
+        See the module docstring's "PROSE IS NOT A SEARCH QUERY" section for the
+        measurement. In short: pasting a prose sentence after ``all:`` binds
+        nothing, and arXiv answers with its default top-relevance listing -- the
+        same ten big-collaboration physics papers for every unrelated query.
+
+        A caller that supplies its own field prefix knows arXiv's syntax and is
+        passed through untouched. Everything else is reduced to terms and ORed
+        with an explicit ``all:`` on each one, so no term's binding depends on
+        arXiv's undocumented handling of a bare word after a prefixed one.
+
+        Reduction reuses ``derive_query`` rather than re-implementing term
+        extraction here: it is the module that owns stopwords and phrase
+        detection, it is already tested, and running it over an
+        already-derived term string is idempotent in practice.
+        """
+        if ":" in query:
+            return query
+
+        from prismflow.v2.angles.query_derivation import derive_query
+
+        derived = derive_query(
+            query, limit=SEARCH_QUERY_LIMIT, max_terms=MAX_SEARCH_TERMS
+        )
+        terms = [t for t in derived.terms if t.strip()]
+        if not terms:
+            # Nothing extractable. A trimmed prose prefix is a poor query, but
+            # an empty search_query is a 400, and dropping the call silently
+            # would report "no records" for a request never made.
+            return f"all:{derived.text or query}"
+
+        # A multi-word phrase MUST be quoted: unquoted, arXiv reads only its
+        # first word and silently widens the query.
+        return " OR ".join(
+            f'all:"{t}"' if " " in t else f"all:{t}" for t in terms
+        )
+
     async def fetch(self, query: str, k: int) -> RawResponse:
         if not query or not query.strip():
             raise ValueError("query must be a non-empty string")
         if k <= 0:
             raise ValueError("k must be positive")
-        # A bare term is not a valid search_query; arXiv wants a field prefix.
-        search = query if ":" in query else f"all:{query}"
+        search = self.build_search_query(query)
         url = (
             f"{API_URL}?search_query={quote_plus(search)}"
             f"&start=0&max_results={int(k)}"
@@ -177,4 +261,5 @@ def _parse_arxiv_date(value: Optional[str]) -> Optional[datetime]:
         return None
 
 
-__all__ = ["ArxivConnector", "API_URL", "DEFAULT_RATE_PER_MIN"]
+__all__ = ["ArxivConnector", "API_URL", "DEFAULT_RATE_PER_MIN",
+           "SEARCH_QUERY_LIMIT", "MAX_SEARCH_TERMS"]

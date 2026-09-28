@@ -17,6 +17,56 @@ partway through any Part 19 fan-out. The defaults below follow the measured
 limits; ``rate_limit_per_min`` is still a constructor argument, so the brief's
 values can be restored explicitly if GitHub's documented limits change.
 
+WHY EIGHT TERMS RETRIEVE NOTHING -- THE V2-L2 ROOT CAUSE
+--------------------------------------------------------
+GitHub's search ANDs space-separated terms across repository name, description
+and README. This connector used to forward whatever it was handed, which after
+Part 19's derivation was 8-12 terms, so every one of the 48 Part 24 rows came
+back HTTP **200** with ``total_count: 0``. Not a 422, not a 403, not a 401: a
+valid search that legitimately matches nothing, which is why it was silent.
+
+THE CREDENTIAL WAS NOT THE CAUSE. ``docs/v2-known-limitations.md`` recorded that
+``GITHUB_TOKEN`` looked like a placeholder and called it "the first thing to
+check". It was checked, on 2026-09-28, and it is not the cause: UNAUTHENTICATED
+search returns 200 with ``x-ratelimit-limit: 10`` and real results for a
+one-term query. The placeholder still costs three-fold throughput, and
+``_resolve_token`` still rejects it, but it never had anything to do with the
+zeros.
+
+Measured live on 2026-09-28, six rows, two per domain (002, 032, 020, 003, 046,
+049), phrases quoted, k=10. "overlap" is the mean pairwise count of shared
+repositories -- the number that has to be 0, or unrelated rows are getting the
+same evidence:
+
+    strategy                    rows with records   median total_count   overlap
+    as-built, 8-12 ANDed              0 of 6                  0            0.00
+    all terms ORed                    0 of 6        HTTP 422 (>5 ops)       n/a
+    top-1                             6 of 6            1,541,034          2.00
+    top-2 ANDed                       4 of 6                100            0.00  <- this
+    top-3 ANDed                       2 of 6                  0            0.00
+    top-3 ORed                        6 of 6              1,618,457        3.33
+    top-3 ORed in:name,description    6 of 6                983,735        3.33
+
+Top-1 and any OR variant retrieve plenty and retrieve the WRONG thing: totals in
+the millions, dominated by whichever mega-repository matches any single term, and
+a non-zero overlap between unrelated rows. Top-3 is too tight. Top-2 is the only
+setting that returns records while keeping overlap at zero and total_count in the
+tens-to-hundreds, i.e. a genuinely specific result set.
+
+Two rows still return zero at top-2 (002 "Bell Media" + mobile-only, 003
+"AVFoundation Camera" + platform). Those are honest zeros for a specific term
+pair, not the systematic zero this replaces.
+
+KNOWN AND NOT FIXED HERE: relevance is limited by what leads the derived term
+list. Commit 81c9550 records that all 32 newly sourced pitches follow one of two
+templates -- 12 open "Pitch a", 20 open "Build a" -- so "build" or "pitch" often
+takes one of the two AND slots. Dropping those verbs was measured (same 4 of 6
+coverage, same 0.00 overlap, median total 100 -> 60, and visibly more on-topic
+descriptions on 3 of the 4 rows that return records), but it is a STOPWORDS
+change, which rewrites every derived query and therefore every Part 18 cache
+key. It is not required to fix V2-L2, so it is reported and left out rather than
+bundled into a fix commit.
+
 WHY A PLACEHOLDER TOKEN IS TREATED AS NO TOKEN
 ----------------------------------------------
 ``.env`` ships from a template whose GITHUB_TOKEN is the literal string
@@ -62,6 +112,19 @@ SEARCH_RATE_AUTHENTICATED = 30
 
 #: Substrings that mark a value as an unfilled template placeholder.
 _PLACEHOLDER_MARKERS = ("...", "<", "your_", "xxx", "changeme")
+
+#: How many terms to AND. 2 is measured, not chosen -- see the module docstring.
+AND_TERMS = 2
+
+#: Character ceiling for the reduction. Matches CONNECTOR_QUERY_LIMITS["github"]
+#: so an already-derived query is not re-cut to a different length here.
+Q_LIMIT = 180
+
+#: GitHub rejects a query with more than five AND/OR/NOT operators (HTTP 422,
+#: "More than five AND / OR / NOT operators were used." -- measured). The
+#: conjunction above uses spaces, not operators, so it cannot trip this; the
+#: constant is recorded because it is what rules OR-joining out entirely.
+MAX_BOOLEAN_OPERATORS = 5
 
 
 def _resolve_token(explicit: Optional[str]) -> Optional[str]:
@@ -123,6 +186,36 @@ class GitHubConnector(AngleConnector):
             headers["Authorization"] = f"Bearer {self.token}"
         return headers
 
+    def build_q(self, query: str) -> str:
+        """Reduce an incoming query to the few terms GitHub can actually match.
+
+        THIS EXISTS BECAUSE GITHUB ANDs, AND V2-L2 WAS THE COST. See the module
+        docstring's "WHY EIGHT TERMS RETRIEVE NOTHING" section. GitHub treats
+        space-separated terms as a conjunction over repository name, description
+        and README, so the 8-12 term strings this connector used to forward
+        matched no repository on any of the 48 Part 24 rows -- HTTP 200,
+        ``total_count: 0``, every time.
+
+        A caller using GitHub's own qualifier syntax (``language:``, ``stars:``,
+        ``in:``) knows what it is doing and is passed through untouched.
+
+        Reduction reuses ``derive_query`` for term extraction, so stopwords and
+        phrase detection are not re-implemented here.
+        """
+        if ":" in query:
+            return query
+
+        from prismflow.v2.angles.query_derivation import derive_query
+
+        derived = derive_query(query, limit=Q_LIMIT, max_terms=AND_TERMS)
+        terms = [t for t in derived.terms if t.strip()]
+        if not terms:
+            return derived.text or query
+
+        # Quoted, because an unquoted multi-word phrase becomes N separate
+        # ANDed words and tightens the conjunction without meaning to.
+        return " ".join(f'"{t}"' if " " in t else t for t in terms)
+
     async def fetch(self, query: str, k: int) -> RawResponse:
         if not query or not query.strip():
             raise ValueError("query must be a non-empty string")
@@ -131,7 +224,8 @@ class GitHubConnector(AngleConnector):
         per_page = min(int(k), 100)  # GitHub caps per_page at 100
         url = (
             f"{API_ROOT}/search/repositories"
-            f"?q={quote_plus(query)}&sort=stars&order=desc&per_page={per_page}"
+            f"?q={quote_plus(self.build_q(query))}"
+            f"&sort=stars&order=desc&per_page={per_page}"
         )
         return await self._get(url, headers=self._headers())
 
@@ -224,4 +318,5 @@ def _parse_github_date(value: Any) -> Optional[datetime]:
 
 
 __all__ = ["GitHubConnector", "SEARCH_RATE_UNAUTHENTICATED",
-           "SEARCH_RATE_AUTHENTICATED"]
+           "SEARCH_RATE_AUTHENTICATED", "AND_TERMS", "Q_LIMIT",
+           "MAX_BOOLEAN_OPERATORS"]
