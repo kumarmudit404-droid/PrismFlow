@@ -807,3 +807,38 @@ body::after {
   color: var(--text-muted); font-size: var(--step--1); line-height: 1.6;
 }
 .rv-caveats li { margin-bottom: 0.35rem; }
+
+/* ==================================================================
+ * The GL prism hero -- phase (f) step 2
+ * ==================================================================
+ * The SVG mark is the page's prism. The WebGL canvas is layered over it and
+ * the SVG is hidden ONLY once [data-hero="gl"] is set, which motion.js does
+ * after mount() has returned a live renderer. Every other path -- no WebGL,
+ * reduced motion, a failed import, a throw inside the module -- leaves the
+ * attribute unset and the SVG exactly where it was. There is no state in which
+ * the hero is blank.
+ */
+.hero__stage { position: relative; }
+
+.hero__gl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;   /* the pointer drives it, but never eats a click */
+}
+
+:root[data-hero="gl"] .hero__svg { opacity: 0; }
+/* Not display:none. The SVG keeps its box, so the stage height and the page
+ * layout are identical whichever mark is drawn, and nothing shifts when the
+ * 3D arrives late. */
+.hero__svg { transition: opacity 420ms ease; }
+
+/* Reduced motion never reaches the GL path at all, but if a reader turns it on
+ * after load the canvas is left in place holding a still frame rather than
+ * disappearing under them. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-hero="gl"] .hero__svg { opacity: 1; }
+  .hero__gl { display: none; }
+}

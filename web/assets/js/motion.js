@@ -6,9 +6,14 @@
  * A "not measured" cell has no numeric state to animate towards, by
  * construction -- there is no code path that could turn one into a number.
  *
- * THERE IS NO 3D HERO. One was attempted in phase (c) and dropped -- see the
- * hero comment in index.html. The prism mark is SVG, and this file only moves
- * it. Nothing here imports three.js, and nothing loads a WebGL context.
+ * THE 3D HERO IS OPTIONAL AND LAZY. Phase (c) attempted one and dropped it
+ * because it rendered as a grey slab; phase (f) fixed the cause -- see the top
+ * of hero3d.js -- and it is back, but nothing about the page depends on it.
+ * three.js is imported dynamically, only once the hero is near the viewport AND
+ * WebGL 2 is actually available AND motion is not reduced. If the import fails,
+ * the context is lost, or the module throws for any reason at all, the static
+ * SVG mark stays exactly where it is and the page is unchanged. It is never on
+ * the critical path.
  *
  * COLOUR. Every colour is read from tokens.css at runtime via
  * getComputedStyle. No hex literal appears in this file, so the palette cannot
@@ -246,10 +251,53 @@ function hexA(hex, a) {
  * ==================================================================== */
 
 const state = {
-  prism: null, ambient: null, raf: 0,
+  prism: null, ambient: null, hero: null, raf: 0,
   heroVisible: true, running: false,
   samples: [], degraded: false, last: 0,
+  heroStatus: "not attempted",
 };
+
+/* WebGL 2, actually obtained -- not "is WebGL2RenderingContext defined". A
+ * browser can expose the constructor and still refuse the context on a
+ * blocklisted driver, in a low-power state, or once too many contexts are
+ * live. The probe canvas is discarded immediately. */
+function webglOk() {
+  try {
+    const c = document.createElement("canvas");
+    const gl = c.getContext("webgl2", { failIfMajorPerformanceCaveat: false });
+    if (!gl) { return false; }
+    const lose = gl.getExtension("WEBGL_lose_context");
+    if (lose) { lose.loseContext(); }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/* The only place three.js is ever loaded. 2.1 MB stays unrequested unless all
+ * three conditions hold, so a reader who never scrolls to the hero, or who has
+ * reduced motion on, or whose machine has no WebGL, never pays for it. */
+async function loadHero(stage) {
+  if (state.hero || state.heroStatus === "loading") { return; }
+  if (reduceMotion.matches) { state.heroStatus = "skipped: reduced motion"; return; }
+  if (!webglOk()) { state.heroStatus = "skipped: no WebGL 2"; return; }
+  state.heroStatus = "loading";
+  try {
+    const mod = await import("./hero3d.js");
+    const hero = await mod.mount(stage, { palette, token });
+    state.hero = hero;
+    state.heroStatus = "live";
+    root.setAttribute("data-hero", "gl");
+    // The SVG stays in the DOM as the fallback and as the thing the 3D is
+    // fitted to; it is hidden by CSS only once the GL canvas is really up.
+    window.__prismHero = hero;
+  } catch (e) {
+    state.heroStatus = "failed: " + (e && e.message ? e.message : e);
+    root.setAttribute("data-hero", "svg");
+    // Deliberately not rethrown. The mark is already on screen in SVG.
+    if (window.console) { console.warn("[PrismFlow] 3D hero unavailable:", e); }
+  }
+}
 
 function loop(t) {
   if (!state.running) { return; }
@@ -258,6 +306,9 @@ function loop(t) {
 
   if (state.ambient) { state.ambient.frame(t); }
   if (state.prism && state.heroVisible) { state.prism.frame(t); }
+  // The GL hero is the most expensive thing on the page, so it runs only
+  // while it is actually on screen. stop() covers the hidden-tab case.
+  if (state.hero && state.heroVisible) { state.hero.frame(t); }
 
   // Self-degrade: if the median frame over a window misses the budget, drop
   // to fewer blobs and a lower DPR once, then stop measuring.
@@ -370,10 +421,26 @@ function boot() {
 
   // Pause when the hero leaves the viewport: the prism is the only thing that
   // needs per-frame work tied to an element.
+  const stage = document.querySelector(".hero__stage");
   if (svg && "IntersectionObserver" in window) {
     new IntersectionObserver((entries) => {
       state.heroVisible = entries[0].isIntersecting;
     }, { threshold: 0.01 }).observe(svg);
+
+    // A second observer with a margin, purely to start the import a little
+    // before the hero is needed. It disconnects after one hit: this is a
+    // load trigger, not a visibility signal.
+    if (stage) {
+      const pre = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) { return; }
+        pre.disconnect();
+        loadHero(stage);
+      }, { rootMargin: "300px 0px 300px 0px", threshold: 0 });
+      pre.observe(stage);
+    }
+  } else if (stage) {
+    // No IntersectionObserver: load it once, rather than never.
+    loadHero(stage);
   }
 
   // Pause entirely when the tab is hidden -- rAF is throttled there anyway,
@@ -390,6 +457,8 @@ window.__prismMotion = {
   start, stop, state,
   isLive: () => state.running,
   frameSamples: () => state.samples.slice(),
+  heroStatus: () => state.heroStatus,
+  heroInfo: () => (state.hero ? state.hero.info : null),
 };
 
 reduceMotion.addEventListener("change", () => window.location.reload());

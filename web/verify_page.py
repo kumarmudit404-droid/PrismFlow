@@ -160,10 +160,30 @@ class WS:
 
 
 class Browser:
-    def __init__(self, extra_args=()) -> None:
+    """Headless Edge over CDP.
+
+    ``gpu=True`` drops ``--disable-gpu`` and forces the D3D11 ANGLE backend, so
+    WebGL runs on the real adapter instead of SwiftShader. That distinction is
+    the whole point of the phase (f) step 2 check: a screenshot of a WebGL
+    scene taken on a software rasteriser proves nothing about whether it draws
+    correctly on this laptop, and the phase (c) prism was reported as broken
+    "on a real GPU as well as in software" without that ever being separated.
+    ``verify_page.py gpu`` prints the unmasked renderer string so which one ran
+    is never in doubt.
+    """
+
+    def __init__(self, extra_args=(), gpu: bool = False) -> None:
         self.profile = tempfile.mkdtemp(prefix="prismflow_verify_")
+        gpu_args = ([
+            "--use-angle=d3d11",
+            "--enable-gpu-rasterization",
+            # Headless Chromium refuses the GPU for WebGL on some Windows
+            # configurations without this. It lifts the blocklist; it does not
+            # force software, and the renderer string proves which one ran.
+            "--ignore-gpu-blocklist",
+        ] if gpu else ["--disable-gpu"])
         self.proc = subprocess.Popen(
-            [browser_path(), "--headless=new", "--disable-gpu",
+            [browser_path(), "--headless=new", *gpu_args,
              "--remote-debugging-port=%d" % PORT,
              "--user-data-dir=%s" % self.profile,
              "--no-first-run", "--no-default-browser-check",
@@ -372,6 +392,54 @@ def main() -> int:
                     "width": 1440, "height": min(int(rect["h"]) + 40, 16000),
                     "deviceScaleFactor": 1, "mobile": False})
                 time.sleep(0.6)
+                data = b.ws.call("Page.captureScreenshot", {
+                    "format": "png", "captureBeyondViewport": True,
+                    "clip": {"x": rect["x"], "y": rect["y"], "width": rect["w"],
+                             "height": min(rect["h"], 16000), "scale": 1}})["data"]
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_bytes(base64.b64decode(data))
+            else:
+                b.shot(out)
+            print("wrote %s (%d bytes)" % (out, out.stat().st_size))
+        finally:
+            b.kill()
+        return 0
+    if mode == "gpu":
+        # gpu EXPR [PATH] -- same as `eval`, but on the real adapter.
+        b = Browser(gpu=True)
+        try:
+            b.goto(BASE + (sys.argv[3] if len(sys.argv) > 3 else "/"), settle=2.0)
+            time.sleep(9.0)
+            print(json.dumps(b.js(sys.argv[2]), indent=2)[:8000])
+        finally:
+            b.kill()
+        return 0
+    if mode == "gpushot":
+        # gpushot OUT [--path /] [--at SELECTOR] -- a screenshot on the real
+        # adapter. Kept separate from `shot` so no existing check silently
+        # changes which rasteriser it measured.
+        out = Path(sys.argv[2])
+        args = sys.argv[3:]
+        path, selector = "/", None
+        for i, a in enumerate(args):
+            if a == "--path" and i + 1 < len(args):
+                path = args[i + 1]
+            if a == "--at" and i + 1 < len(args):
+                selector = args[i + 1]
+        b = Browser(gpu=True)
+        try:
+            b.goto(BASE + path, settle=2.0)
+            time.sleep(9.0)
+            if selector:
+                box = b.js(
+                    "(() => { const e = document.querySelector(" +
+                    json.dumps(selector) + "); if (!e) return null;"
+                    " const r = e.getBoundingClientRect();"
+                    " return JSON.stringify({x: r.left + scrollX, y: r.top + scrollY,"
+                    " w: Math.ceil(r.width), h: Math.ceil(r.height)}); })()")
+                if not box:
+                    raise SystemExit("selector not found: %s" % selector)
+                rect = json.loads(box)
                 data = b.ws.call("Page.captureScreenshot", {
                     "format": "png", "captureBeyondViewport": True,
                     "clip": {"x": rect["x"], "y": rect["y"], "width": rect["w"],
