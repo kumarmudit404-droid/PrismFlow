@@ -59,6 +59,10 @@
       "domain": "Startup",
       "outcome": "Failed",
       "conflict_expected": "Yes",
+      "idea_pitch": "A mobile-only, short-form streaming platform delivering Hollywood-produced shows in 5-10 minute episodes built for on-the-go viewing. Backed by $1.75B in funding, exclusive studio content deals, and a Canadian telecom partnership (Bell Media) for launch-market distribution.",
+      "outcome_date": "2020-10-21",
+      "ground_truth_source": "https://www.pbs.org/newshour/arts/short-video-app-quibi-shutting-down-just-months-after-launch",
+      "dataset_notes": "Launched Apr 6 2020 with strong initial pickup -- 1.7M downloads in week one -- but only 72,000 of 910,000 first-3-day downloaders converted to paid after the 90-day trial (Sensor Tower, via Wikipedia). Wind-down announced Oct 21 2020; formal dissolution Dec 1 2020.",
       "angles": {
         "tech": {
           "records": 10,
@@ -68,7 +72,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.736,
+          "tokens": 860,
+          "note": null,
+          "warnings": [
+            "query derived for github: 274 chars -> 120 (limit 180, 12 terms)",
+            "query derived for arxiv: 274 chars -> 120 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -77,7 +88,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 274 chars -> 120 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -86,14 +104,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 274 chars -> 58 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -102,9 +133,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 274 chars -> 120 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 6.21,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -118,6 +159,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "No",
+      "idea_pitch": "This proposal introduces a platform condition to differentiate device and simulator builds. This condition subsumes a common pattern of conditional compilation for Metal, Keychain, and AVFoundation Camera code.",
+      "outcome_date": "2017-11-28",
+      "ground_truth_source": "https://forums.swift.org/t/accepted-se-0190-target-environment-platform-condition/7138",
+      "dataset_notes": "Source: Swift Evolution SE-0190",
       "angles": {
         "tech": {
           "records": 10,
@@ -127,7 +172,13 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.824,
+          "tokens": 1076,
+          "note": null,
+          "warnings": [
+            "query derived for github: 210 chars -> 124 (limit 180, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -136,7 +187,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -145,14 +202,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 210 chars -> 59 (limit 60, 5 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -161,9 +231,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 210 chars -> 124 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 7.21,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -177,6 +257,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "No",
+      "idea_pitch": "Playground literals tokenize colors, files, and images. They provide drag-and-drop convenience and in-context visualizations that offer easy reference and manipulation when designing playground content. These literals are built using a simple square bracket syntax that, in the current form, conflicts with collection literals. This proposal redesigns playground literals to follow the precedent of #available and #selector.",
+      "outcome_date": "2016-03-10",
+      "ground_truth_source": "https://forums.swift.org/t/accepted-se-0039-modernizing-playground-literals/1746",
+      "dataset_notes": "Source: Swift Evolution SE-0039",
       "angles": {
         "tech": {
           "records": 10,
@@ -186,7 +270,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.7,
+          "tokens": 896,
+          "note": null,
+          "warnings": [
+            "query derived for github: 424 chars -> 111 (limit 180, 12 terms)",
+            "query derived for arxiv: 424 chars -> 111 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -195,7 +286,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 424 chars -> 111 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -204,14 +302,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 424 chars -> 60 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -220,9 +331,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 424 chars -> 111 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 3.11,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -236,6 +357,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "No",
+      "idea_pitch": "Starting in Sierra, Apple's Mac-based OS (OS X) will be renamed \"macOS\". All user-facing Swift APIs must go through Swift Evolution. While this is a trivial API change, I have put together a formal proposal as is normal and usual for this process.",
+      "outcome_date": "2016-06-29",
+      "ground_truth_source": "https://forums.swift.org/t/accepted-se-0106-add-a-macos-alias-for-the-osx-platform-configuration-test/3176",
+      "dataset_notes": "Source: Swift Evolution SE-0106",
       "angles": {
         "tech": {
           "records": 10,
@@ -245,7 +370,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.8433,
+          "tokens": 1746,
+          "note": null,
+          "warnings": [
+            "query derived for github: 247 chars -> 101 (limit 180, 12 terms)",
+            "query derived for arxiv: 247 chars -> 101 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -254,7 +386,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 247 chars -> 101 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -263,14 +402,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 247 chars -> 59 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -279,9 +431,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 247 chars -> 101 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 26.31,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -295,6 +457,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "No",
+      "idea_pitch": "This proposal enhances the `Package.swift` manifest APIs to support custom target layouts, and removes a convention which allowed omission of targets from the manifest.",
+      "outcome_date": "2017-04-11",
+      "ground_truth_source": "https://forums.swift.org/t/accepted-se-0162-package-manager-custom-target-layouts/5647",
+      "dataset_notes": "Source: Swift Evolution SE-0162",
       "angles": {
         "tech": {
           "records": 10,
@@ -304,7 +470,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1089,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -313,7 +483,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -322,14 +498,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 168 chars -> 60 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -338,9 +527,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 168 chars -> 96 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 22.66,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -354,6 +553,10 @@
       "domain": "Tech-OSS",
       "outcome": "Rejected",
       "conflict_expected": "Unsure",
+      "idea_pitch": "The current version of Swift (2.1) requires using `self` when accessing instance members in closures. The proposal suggests extending this to all member accesses (as is intrinsically the case in Objective-C). It has the benefit of documenting instance properties vs local variables and instance functions vs local functions or closures.",
+      "outcome_date": "2016-01-06",
+      "ground_truth_source": "https://forums.swift.org/t/rejected-se-0009-require-self-for-accessing-instance-members/930",
+      "dataset_notes": "Source: Swift Evolution SE-0009",
       "angles": {
         "tech": {
           "records": 10,
@@ -363,7 +566,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.7375,
+          "tokens": 976,
+          "note": null,
+          "warnings": [
+            "query derived for github: 336 chars -> 103 (limit 180, 12 terms)",
+            "query derived for arxiv: 336 chars -> 103 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -372,7 +582,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 336 chars -> 103 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -381,14 +598,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 336 chars -> 58 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -397,9 +627,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 336 chars -> 103 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 21.2,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -413,6 +653,10 @@
       "domain": "Tech-OSS",
       "outcome": "Rejected",
       "conflict_expected": "No",
+      "idea_pitch": "This proposal removes `where` clauses from `for-in` loops, where they are better expressed (and read) as guard conditions.",
+      "outcome_date": "2016-06-30",
+      "ground_truth_source": "https://forums.swift.org/t/rejected-se-0105-removing-where-clauses-from-for-in-loops/3205",
+      "dataset_notes": "Source: Swift Evolution SE-0105",
       "angles": {
         "tech": {
           "records": 10,
@@ -422,7 +666,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.85,
+          "tokens": 943,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -431,7 +679,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -440,14 +694,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 122 chars -> 60 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -456,9 +723,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 18.74,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -472,6 +748,10 @@
       "domain": "Tech-OSS",
       "outcome": "Rejected",
       "conflict_expected": "No",
+      "idea_pitch": "Introduce a new operator an \"Optional Value Setter\". If the optional is set via this operator then the new value is only set if there isn't an already existing value.",
+      "outcome_date": "2016-02-23",
+      "ground_truth_source": "https://forums.swift.org/t/rejected-se-0024-optional-value-setter/1528",
+      "dataset_notes": "Source: Swift Evolution SE-0024",
       "angles": {
         "tech": {
           "records": 10,
@@ -481,7 +761,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.8833,
+          "tokens": 1073,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -490,7 +774,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -499,14 +789,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 166 chars -> 38 (limit 60, 4 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 3,
@@ -515,9 +818,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 3
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 373,
+          "note": null,
+          "warnings": [
+            "query derived for stackexchange: 166 chars -> 38 (limit 150, 4 terms)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 30.71,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -531,6 +843,10 @@
       "domain": "Tech-OSS",
       "outcome": "Rejected",
       "conflict_expected": "Yes",
+      "idea_pitch": "Swift permits trailing commas after the last element in array or dictionary literal. This proposal extends that to parameters and tuples.",
+      "outcome_date": "2016-05-26",
+      "ground_truth_source": "https://forums.swift.org/t/rejected-se-0084-allow-trailing-commas-in-parameter-lists-and-tuples/2777",
+      "dataset_notes": "Source: Swift Evolution SE-0084",
       "angles": {
         "tech": {
           "records": 10,
@@ -540,7 +856,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.92,
+          "tokens": 883,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -549,7 +869,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -558,14 +884,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 137 chars -> 59 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -574,9 +913,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 19.36,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -590,6 +938,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "No",
+      "idea_pitch": "This PEP describes changes to the PyPI infrastructure that are needed to ensure that users get valid packages from PyPI. These changes should have minimal impact on other parts of the ecosystem. The PEP focuses on communication between PyPI and users, and so does not require any action by package developers. Developers will upload packages using the current process, and PyPI will automatically generate signed repository metadata for these packages. In order for the security mechanism to be effective, additional work will need to be done by PyPI consumers (like pip) to verify the signatures and metadata provided by PyPI. This verification can be transparent to users (unless it fails) and provides an automatic security mechanism. There is documentation for how to consume TUF metadata in the TUF repository.",
+      "outcome_date": "2020-02-15",
+      "ground_truth_source": "https://discuss.python.org/t/pep-458-secure-pypi-downloads-with-package-signing/2648/115",
+      "dataset_notes": "Source: Python PEP 458 | abstract trimmed at a sentence boundary",
       "angles": {
         "tech": {
           "records": 10,
@@ -599,7 +951,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.85,
+          "tokens": 877,
+          "note": null,
+          "warnings": [
+            "query derived for github: 815 chars -> 85 (limit 180, 12 terms)",
+            "query derived for arxiv: 815 chars -> 85 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -608,7 +967,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 815 chars -> 85 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -617,14 +983,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 815 chars -> 60 (limit 60, 9 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -633,9 +1012,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 815 chars -> 85 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 23.46,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -649,6 +1038,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "Unsure",
+      "idea_pitch": "This document proposes language extensions that allow programs to raise and handle multiple unrelated exceptions simultaneously: * A new standard exception type, the ExceptionGroup, which represents a group of unrelated exceptions being propagated together. * A new syntax except* for handling ExceptionGroups.",
+      "outcome_date": "2021-09-24",
+      "ground_truth_source": "https://discuss.python.org/t/accepting-pep-654-exception-groups-and-except/10813/1",
+      "dataset_notes": "Source: Python PEP 654",
       "angles": {
         "tech": {
           "records": 10,
@@ -658,7 +1051,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.55,
+          "tokens": 928,
+          "note": null,
+          "warnings": [
+            "query derived for github: 310 chars -> 113 (limit 180, 12 terms)",
+            "query derived for arxiv: 310 chars -> 113 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -667,7 +1067,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 310 chars -> 113 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -676,14 +1083,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 310 chars -> 59 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -692,9 +1112,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 310 chars -> 113 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 25.6,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -708,6 +1138,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "Unsure",
+      "idea_pitch": "Type expressions provide a standardized way to specify types in the Python type system. When a type expression is evaluated at runtime, the resulting *type form object* encodes the information supplied in the type expression. This enables a variety of use cases including runtime type checking, introspection, and metaprogramming. Such use cases have proliferated, but there is currently no way to accurately annotate functions that accept type form objects. Developers are forced to use an overly-wide type like object, which makes some use cases impossible and generally reduces type safety. This PEP addresses this limitation by introducing a new special form typing.TypeForm. This PEP makes no changes to the Python grammar. Correct usage of TypeForm is intended to be enforced only by type checkers, not by the Python runtime.",
+      "outcome_date": "2026-02-20",
+      "ground_truth_source": "https://discuss.python.org/t/pep-747-typeexpr-type-hint-for-a-type-expression/55984/103",
+      "dataset_notes": "Source: Python PEP 747",
       "angles": {
         "tech": {
           "records": 10,
@@ -717,7 +1151,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.715,
+          "tokens": 1065,
+          "note": null,
+          "warnings": [
+            "query derived for github: 831 chars -> 103 (limit 180, 12 terms)",
+            "query derived for arxiv: 831 chars -> 103 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -726,7 +1167,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 831 chars -> 103 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -735,14 +1183,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 831 chars -> 57 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -751,9 +1212,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 831 chars -> 103 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 21.93,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -767,6 +1238,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "No",
+      "idea_pitch": "This PEP proposes the creation of a new standard library module named !profiling to organize Python's built-in profiling tools under a single, coherent namespace. This PEP also proposes the deprecation of the profile module, a legacy pure-Python tracing profiler.",
+      "outcome_date": "2025-08-21",
+      "ground_truth_source": "https://discuss.python.org/t/pep-799-a-dedicated-profilers-package-for-organizing-python-profiling-tool/100898/21",
+      "dataset_notes": "Source: Python PEP 799",
       "angles": {
         "tech": {
           "records": 10,
@@ -776,7 +1251,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.85,
+          "tokens": 910,
+          "note": null,
+          "warnings": [
+            "query derived for github: 263 chars -> 92 (limit 180, 12 terms)",
+            "query derived for arxiv: 263 chars -> 92 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -785,7 +1267,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 263 chars -> 92 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -794,14 +1283,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 263 chars -> 60 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -810,9 +1312,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 263 chars -> 92 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 15.99,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -826,6 +1338,10 @@
       "domain": "Tech-OSS",
       "outcome": "Rejected",
       "conflict_expected": "Yes",
+      "idea_pitch": "This PEP proposes extending the existing mechanism for setting up sys.path to include a new pypackages directory, in addition to the existing locations. The new directory will be added at the start of sys.path, after the current working directory and just before the system site-packages, to give packages installed there priority over other locations. This is similar to the existing mechanism of adding the current directory (or the directory the script is located in), but by using a subdirectory, additional libraries are kept separate from the user's work.",
+      "outcome_date": "2023-03-28",
+      "ground_truth_source": "https://discuss.python.org/t/pep-582-python-local-packages-directory/963/430",
+      "dataset_notes": "Source: Python PEP 582",
       "angles": {
         "tech": {
           "records": 10,
@@ -835,7 +1351,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.75,
+          "tokens": 881,
+          "note": null,
+          "warnings": [
+            "query derived for github: 561 chars -> 101 (limit 180, 12 terms)",
+            "query derived for arxiv: 561 chars -> 101 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -844,7 +1367,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 561 chars -> 101 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -853,14 +1383,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 561 chars -> 60 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -869,9 +1412,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 561 chars -> 101 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 22.31,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -885,6 +1438,10 @@
       "domain": "Tech-OSS",
       "outcome": "Rejected",
       "conflict_expected": "Yes",
+      "idea_pitch": "Python allows the with and async with statements to handle multiple context managers in a single statement, so long as they are all respectively synchronous or asynchronous. When mixing synchronous and asynchronous context managers, developers must use deeply nested statements or use risky workarounds such as overuse of contextlib.AsyncExitStack. We therefore propose to allow with statements to accept both synchronous and asynchronous context managers in a single statement by prefixing individual async context managers with the async keyword. This change eliminates unnecessary nesting, improves code readability, and improves ergonomics without making async code any less explicit.",
+      "outcome_date": "2026-04-23",
+      "ground_truth_source": "https://discuss.python.org/t/pep-806-mixed-sync-async-context-managers-with-precise-async-marking/103971/12",
+      "dataset_notes": "Source: Python PEP 806",
       "angles": {
         "tech": {
           "records": 10,
@@ -894,7 +1451,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.7833,
+          "tokens": 902,
+          "note": null,
+          "warnings": [
+            "query derived for github: 688 chars -> 103 (limit 180, 12 terms)",
+            "query derived for arxiv: 688 chars -> 103 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 1,
@@ -903,7 +1467,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 1
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 83,
+          "note": null,
+          "warnings": [
+            "query derived for newsapi: 688 chars -> 103 (limit 240, 12 terms)",
+            "no bm25 term overlap between the query and any record; retrieval order preserved"
+          ]
         },
         "financial": {
           "records": 0,
@@ -912,14 +1483,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 688 chars -> 56 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -928,9 +1512,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 688 chars -> 103 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 25.68,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": null,
@@ -944,6 +1538,10 @@
       "domain": "Tech-OSS",
       "outcome": "Rejected",
       "conflict_expected": "Yes",
+      "idea_pitch": "This PEP proposes allowing parentheses in the two-argument form of assert. The interpreter will reinterpret assert (expr, msg) as assert expr, msg, eliminating the common pitfall where such code was previously treated as asserting a two-element tuple, which is always truthy.",
+      "outcome_date": "2025-10-24",
+      "ground_truth_source": "https://discuss.python.org/t/pep-679-new-assert-statement-syntax-with-parentheses/103634/24",
+      "dataset_notes": "Source: Python PEP 679",
       "angles": {
         "tech": {
           "records": 10,
@@ -953,7 +1551,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 873,
+          "note": null,
+          "warnings": [
+            "query derived for github: 275 chars -> 105 (limit 180, 12 terms)",
+            "query derived for arxiv: 275 chars -> 105 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -962,7 +1567,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 275 chars -> 105 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -971,14 +1583,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 275 chars -> 58 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -987,9 +1612,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 275 chars -> 105 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 8.91,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": "genuine",
@@ -1003,6 +1638,10 @@
       "domain": "Tech-OSS",
       "outcome": "Rejected",
       "conflict_expected": "No",
+      "idea_pitch": "This PEP proposes to forbid return, break and continue statements within a finally suite where they would break out of the finally. Their use in such a location silently cancels any active exception being raised through the finally, leading to unclear code and possible bugs. continue is currently not supported in a finally in Python 3.7 (due to implementation issues) and the proposal is to not add support for it in Python 3.8. For return and break the proposal is to deprecate their use in Python 3.9, emit a compilation warning in Python 3.10 and then forbid their use after that.",
+      "outcome_date": "2019-09-17",
+      "ground_truth_source": "https://discuss.python.org/t/pep-601-forbid-return-break-continue-breaking-out-of-finally/2239/32",
+      "dataset_notes": "Source: Python PEP 601",
       "angles": {
         "tech": {
           "records": 10,
@@ -1012,7 +1651,14 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.84,
+          "tokens": 882,
+          "note": null,
+          "warnings": [
+            "query derived for github: 585 chars -> 92 (limit 180, 12 terms)",
+            "query derived for arxiv: 585 chars -> 92 (limit 220, 12 terms)"
+          ]
         },
         "market": {
           "records": 0,
@@ -1021,7 +1667,14 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for newsapi: 585 chars -> 92 (limit 240, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1030,14 +1683,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 585 chars -> 60 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1046,9 +1712,19 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for stackexchange: 585 chars -> 92 (limit 150, 12 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 18.36,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1062,6 +1738,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "Yes",
+      "idea_pitch": "Pitch a faster way to write compact conditional logic in Python without sacrificing readability.",
+      "outcome_date": "2019-10-14",
+      "ground_truth_source": "https://peps.python.org/pep-0572/",
+      "dataset_notes": "PEP 572; implemented in Python 3.8. Human pre-label: Yes (syntax ergonomics vs added language complexity).",
       "angles": {
         "tech": {
           "records": 10,
@@ -1071,7 +1751,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.775,
+          "tokens": 1143,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1080,7 +1764,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1089,14 +1779,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 96 chars -> 51 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1105,9 +1808,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 18.76,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1121,6 +1833,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "No",
+      "idea_pitch": "Pitch a standard way to write built-in generic collections such as list[str] and dict[str, int] for static typing.",
+      "outcome_date": "2020-10-05",
+      "ground_truth_source": "https://peps.python.org/pep-0585/",
+      "dataset_notes": "PEP 585; implemented in Python 3.9. Human pre-label: No.",
       "angles": {
         "tech": {
           "records": 10,
@@ -1130,7 +1846,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1139,7 +1859,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1148,14 +1874,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 114 chars -> 58 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1164,9 +1903,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 20.1,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": "genuine",
@@ -1180,6 +1928,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "No",
+      "idea_pitch": "Pitch a concise union-type syntax using X | Y instead of verbose typing.Union expressions.",
+      "outcome_date": "2021-10-04",
+      "ground_truth_source": "https://peps.python.org/pep-0604/",
+      "dataset_notes": "PEP 604; implemented in Python 3.10. Human pre-label: No.",
       "angles": {
         "tech": {
           "records": 10,
@@ -1189,7 +1941,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.9067,
+          "tokens": 1695,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1198,7 +1954,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1207,14 +1969,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 90 chars -> 52 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1223,9 +1998,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 17.86,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1239,6 +2023,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "Yes",
+      "idea_pitch": "Pitch structural pattern matching with match and case for clearer branching over structured data.",
+      "outcome_date": "2021-10-04",
+      "ground_truth_source": "https://peps.python.org/pep-0634/",
+      "dataset_notes": "PEP 634; implemented in Python 3.10. Human pre-label: Yes (expressiveness vs language surface area).",
       "angles": {
         "tech": {
           "records": 10,
@@ -1248,7 +2036,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.7133,
+          "tokens": 934,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1257,7 +2049,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1266,14 +2064,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 97 chars -> 57 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1282,9 +2093,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 20.68,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1298,6 +2118,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "No",
+      "idea_pitch": "Pitch fine-grained source locations so Python tracebacks can point to the expression that caused an error.",
+      "outcome_date": "2022-10-24",
+      "ground_truth_source": "https://peps.python.org/pep-0657/",
+      "dataset_notes": "PEP 657; implemented in Python 3.11. Human pre-label: No.",
       "angles": {
         "tech": {
           "records": 10,
@@ -1307,7 +2131,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": 0.92,
+          "tokens": 934,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1316,7 +2144,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1325,14 +2159,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 106 chars -> 59 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1341,9 +2188,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 25.39,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1357,6 +2213,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "No",
+      "idea_pitch": "Pitch a typing construct that lets a method state it returns the same specific subtype as self.",
+      "outcome_date": "2022-10-24",
+      "ground_truth_source": "https://peps.python.org/pep-0673/",
+      "dataset_notes": "PEP 673; implemented in Python 3.11. Human pre-label: No.",
       "angles": {
         "tech": {
           "records": 10,
@@ -1366,7 +2226,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1057,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1375,7 +2239,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1384,14 +2254,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 95 chars -> 56 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1400,9 +2283,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 4.87,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -1416,6 +2308,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "Yes",
+      "idea_pitch": "Pitch a safe Python-level API for libraries to inspect and provide the low-level buffer protocol.",
+      "outcome_date": "2023-03-07",
+      "ground_truth_source": "https://peps.python.org/pep-0688/",
+      "dataset_notes": "PEP 688; resolution dated 2023-03-07, implemented for Python 3.12. Human pre-label: Yes (API power vs compatibility complexity).",
       "angles": {
         "tech": {
           "records": 10,
@@ -1425,7 +2321,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1063,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 1,
@@ -1434,7 +2334,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 1
-          }
+          },
+          "mean_claim_conf": 0.85,
+          "tokens": 78,
+          "note": null,
+          "warnings": [
+            "no bm25 term overlap between the query and any record; retrieval order preserved"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1443,14 +2349,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 97 chars -> 55 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1459,9 +2378,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 5.79,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": null,
@@ -1475,6 +2403,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "Yes",
+      "idea_pitch": "Pitch a new syntax for declaring type parameters directly in generic classes, functions, and aliases.",
+      "outcome_date": "2023-10-02",
+      "ground_truth_source": "https://peps.python.org/pep-0695/",
+      "dataset_notes": "PEP 695; implemented in Python 3.12. Human pre-label: Yes (typing ergonomics vs added syntax).",
       "angles": {
         "tech": {
           "records": 10,
@@ -1484,7 +2416,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 2,
@@ -1493,7 +2429,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 2
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 164,
+          "note": null,
+          "warnings": [
+            "no bm25 term overlap between the query and any record; retrieval order preserved"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1502,14 +2444,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 101 chars -> 55 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1518,9 +2473,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 6.91,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 2,
       "zero_claim_cause": "provider_error",
@@ -1534,6 +2498,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "Yes",
+      "idea_pitch": "Pitch a formally specified f-string grammar so f-strings can support nested expressions and behave consistently.",
+      "outcome_date": "2023-03-14",
+      "ground_truth_source": "https://peps.python.org/pep-0701/",
+      "dataset_notes": "PEP 701; resolution dated 2023-03-14, implemented for Python 3.12. Human pre-label: Yes.",
       "angles": {
         "tech": {
           "records": 10,
@@ -1543,7 +2511,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1552,7 +2524,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1561,14 +2539,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 112 chars -> 59 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1577,9 +2568,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 5.27,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -1593,6 +2593,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "Yes",
+      "idea_pitch": "Pitch making the global interpreter lock local to each interpreter so isolated interpreters can run in parallel.",
+      "outcome_date": "2023-10-02",
+      "ground_truth_source": "https://peps.python.org/pep-0684/",
+      "dataset_notes": "PEP 684; implemented for Python 3.12. Human pre-label: Yes (parallelism gains vs runtime extension complexity).",
       "angles": {
         "tech": {
           "records": 10,
@@ -1602,7 +2606,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 968,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1611,7 +2619,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1620,14 +2634,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 112 chars -> 55 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1636,9 +2663,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 1.67,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -1652,6 +2688,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "Yes",
+      "idea_pitch": "Pitch immutable reference counts for selected Python objects to reduce lifetime coordination across interpreters.",
+      "outcome_date": "2022-10-24",
+      "ground_truth_source": "https://peps.python.org/pep-0683/",
+      "dataset_notes": "PEP 683; implemented in Python 3.12. Human pre-label: Yes (runtime performance trade-offs).",
       "angles": {
         "tech": {
           "records": 10,
@@ -1661,7 +2701,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 885,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1670,7 +2714,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1679,14 +2729,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 113 chars -> 56 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1695,9 +2758,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 6.03,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -1711,6 +2783,10 @@
       "domain": "Tech-OSS",
       "outcome": "Adopted",
       "conflict_expected": "Yes",
+      "idea_pitch": "Pitch lazy annotation evaluation so annotations can be resolved later while preserving forward references and typing flexibility.",
+      "outcome_date": "2023-05-08",
+      "ground_truth_source": "https://peps.python.org/pep-0649/",
+      "dataset_notes": "PEP 649; resolution dated 2023-05-08. Human pre-label: Yes (annotation semantics vs backward compatibility).",
       "angles": {
         "tech": {
           "records": 10,
@@ -1720,7 +2796,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 818,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1729,7 +2809,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1738,14 +2824,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 129 chars -> 59 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1754,9 +2853,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 6.12,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -1770,6 +2878,10 @@
       "domain": "Startup",
       "outcome": "Funded",
       "conflict_expected": "No",
+      "idea_pitch": "Build a developer-first payment API that lets online businesses accept cards, bank payments, and wallets with minimal integration work.",
+      "outcome_date": "2011-09-30",
+      "ground_truth_source": "https://techcrunch.com/2011/09/30/sequoia-backed-stripe-launches-to-disrupt-the-online-payments-industry-with-a-developer-friendly-platform/",
+      "dataset_notes": "Contemporaneous launch/funding coverage; Stripe had publicly launched after raising about $2M. Human pre-label: No.",
       "angles": {
         "tech": {
           "records": 10,
@@ -1779,7 +2891,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1788,7 +2904,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1797,14 +2919,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 135 chars -> 56 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1813,9 +2948,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 8.95,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -1829,6 +2973,10 @@
       "domain": "Startup",
       "outcome": "Funded",
       "conflict_expected": "No",
+      "idea_pitch": "Build a browser-based collaborative design tool that lets users create and edit visual work without desktop software.",
+      "outcome_date": "2013-06-26",
+      "ground_truth_source": "https://techcrunch.com/2013/06/26/21-years-4-million-dollars/",
+      "dataset_notes": "TechCrunch reported Figma's $3.8M funding and browser-based product. Human pre-label: No.",
       "angles": {
         "tech": {
           "records": 10,
@@ -1838,7 +2986,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 3,
@@ -1847,7 +2999,11 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 3
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 261,
+          "note": null,
+          "warnings": []
         },
         "financial": {
           "records": 0,
@@ -1856,14 +3012,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 117 chars -> 56 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1872,9 +3041,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 7.09,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 2,
       "zero_claim_cause": "provider_error",
@@ -1888,6 +3066,10 @@
       "domain": "Startup",
       "outcome": "Funded",
       "conflict_expected": "No",
+      "idea_pitch": "Build an Indian online payment gateway focused on simplifying digital payments for businesses and developers.",
+      "outcome_date": "2015-10-27",
+      "ground_truth_source": "https://razorpay.com/blog/?p=587",
+      "dataset_notes": "Razorpay announced a seed + Series A totaling $11.5M on 2015-10-27. Human pre-label: No.",
       "angles": {
         "tech": {
           "records": 10,
@@ -1897,7 +3079,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 856,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 1,
@@ -1906,7 +3092,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 1
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 125,
+          "note": null,
+          "warnings": [
+            "no bm25 term overlap between the query and any record; retrieval order preserved"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1915,14 +3107,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 109 chars -> 55 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1931,9 +3136,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 1.87,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 2,
       "zero_claim_cause": "provider_error",
@@ -1947,6 +3161,10 @@
       "domain": "Startup",
       "outcome": "Funded",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build an IoT home-awareness system that combines smart sensors into a single consumer product.",
+      "outcome_date": "2016-06-02",
+      "ground_truth_source": "https://www.crowdfundinsider.com/2016/06/87008-kickstarter-success-notion-secures-3-2m-during-seed-round-led-by-xl-innovate/",
+      "dataset_notes": "PRNewswire reported Notion's $3.2M seed round for its smart-home sensor system. Human pre-label: Yes (hardware adoption vs complexity).",
       "angles": {
         "tech": {
           "records": 10,
@@ -1956,7 +3174,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -1965,7 +3187,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -1974,14 +3202,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 94 chars -> 54 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -1990,9 +3231,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 6.67,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2006,6 +3256,10 @@
       "domain": "Startup",
       "outcome": "Funded",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build a B2B commerce marketplace that lets small retailers source products online from brands and suppliers.",
+      "outcome_date": "2016-11-23",
+      "ground_truth_source": "https://www.medianama.com/2016/11/223-udaan-raises-10m/",
+      "dataset_notes": "Economic Times reported Udaan's $10M funding and B2B commerce focus. Human pre-label: Yes (marketplace liquidity requirements).",
       "angles": {
         "tech": {
           "records": 10,
@@ -2015,7 +3269,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1112,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2024,7 +3282,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2033,14 +3297,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 108 chars -> 58 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2049,9 +3326,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 5.63,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2065,6 +3351,10 @@
       "domain": "Startup",
       "outcome": "Failed",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build a travel marketplace for hotels and stays, using technology to aggregate supply and make booking easier in India.",
+      "outcome_date": "2017-02-24",
+      "ground_truth_source": "https://www.medianama.com/2017/02/223-stayzilla-shutdown/",
+      "dataset_notes": "Contemporaneous report: Stayzilla suspended operations and planned a reboot; later history treats the shutdown as a failure. Human pre-label: Yes.",
       "angles": {
         "tech": {
           "records": 10,
@@ -2074,7 +3364,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2083,7 +3377,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2092,14 +3392,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 119 chars -> 58 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2108,9 +3421,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 7.36,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2124,6 +3446,10 @@
       "domain": "Startup",
       "outcome": "Failed",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build an on-demand grocery delivery service that lets households order essentials through a mobile app.",
+      "outcome_date": "2016-04-25",
+      "ground_truth_source": "https://yourstory.com/2016/04/peppertap-shutdown/",
+      "dataset_notes": "Contemporaneous coverage reported PepperTap shutting its main grocery business after failing to reach profitability. Human pre-label: Yes.",
       "angles": {
         "tech": {
           "records": 10,
@@ -2133,7 +3459,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1089,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2142,7 +3472,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2151,14 +3487,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 103 chars -> 60 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2167,9 +3516,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 9.49,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2183,6 +3541,10 @@
       "domain": "Startup",
       "outcome": "Failed",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build a managed marketplace for used cars with inspection, financing, and technology-enabled transactions.",
+      "outcome_date": "2016-08-26",
+      "ground_truth_source": "https://www.medianama.com/2016/08/223-gozoomo-shuts-down/",
+      "dataset_notes": "Contemporaneous report: GoZoomo shut down after finding its unit economics unsustainable. Human pre-label: Yes.",
       "angles": {
         "tech": {
           "records": 10,
@@ -2192,7 +3554,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2201,7 +3567,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2210,14 +3582,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 106 chars -> 51 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2226,9 +3611,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 2.28,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2242,6 +3636,10 @@
       "domain": "Startup",
       "outcome": "Failed",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build a local-language social network for Indian internet users with short-form posts and community conversations.",
+      "outcome_date": "2024-07-02",
+      "ground_truth_source": "https://techcrunch.com/2024/07/02/indian-social-network-koo-to-shut-down",
+      "dataset_notes": "TechCrunch reported Koo shutting down after funding and acquisition efforts did not produce a transaction. Human pre-label: Yes.",
       "angles": {
         "tech": {
           "records": 10,
@@ -2251,7 +3649,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2260,7 +3662,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2269,14 +3677,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 114 chars -> 57 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2285,9 +3706,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 7.33,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2301,6 +3731,10 @@
       "domain": "Financial-Product",
       "outcome": "Profitable",
       "conflict_expected": "No",
+      "idea_pitch": "Build a digital lender that uses technology and alternative data to expand access to personal financial products.",
+      "outcome_date": "2025-02-24",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1818874/000181887425000016/sofi-20241231.htm",
+      "dataset_notes": "SoFi 2024 Form 10-K: Lending segment contribution profit was $890.5M. Segment result, not consolidated GAAP net income.",
       "angles": {
         "tech": {
           "records": 10,
@@ -2310,7 +3744,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1089,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2319,7 +3757,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2328,14 +3772,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 113 chars -> 55 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2344,9 +3801,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 6.76,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2360,6 +3826,10 @@
       "domain": "Financial-Product",
       "outcome": "Profitable",
       "conflict_expected": "No",
+      "idea_pitch": "Build a technology-led consumer credit platform that originates and services personal loans online.",
+      "outcome_date": "2025-02-13",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1409970/000140997025000009/lc-20241231.htm",
+      "dataset_notes": "LendingClub 2024 Form 10-K: net income was $51.33M and total net revenue was $787M.",
       "angles": {
         "tech": {
           "records": 10,
@@ -2369,7 +3839,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2378,7 +3852,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2387,14 +3867,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 99 chars -> 56 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2403,9 +3896,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 4.21,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2419,6 +3921,10 @@
       "domain": "Financial-Product",
       "outcome": "Loss",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build an AI-powered lending marketplace that matches borrowers with banks using machine-learning credit models.",
+      "outcome_date": "2025-02-14",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1647639/000164763925000018/upst-20241231.htm",
+      "dataset_notes": "Upstart 2024 Form 10-K: net loss was $128.6M. Human pre-label: Yes (AI underwriting scale vs credit-cycle risk).",
       "angles": {
         "tech": {
           "records": 10,
@@ -2428,7 +3934,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 870,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2437,7 +3947,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2446,14 +3962,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 111 chars -> 60 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2462,9 +3991,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 4.38,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2478,6 +4016,10 @@
       "domain": "Financial-Product",
       "outcome": "Profitable",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build a technology-driven health insurance platform that sells and manages individual and small-group plans.",
+      "outcome_date": "2025-02-20",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1568651/000156865125000008/oscr-20241231.htm",
+      "dataset_notes": "Oscar Health 2024 Form 10-K: net income was $26.121M, compared with a 2023 loss.",
       "angles": {
         "tech": {
           "records": 10,
@@ -2487,7 +4029,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 2,
@@ -2496,7 +4042,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 2
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 200,
+          "note": null,
+          "warnings": [
+            "no bm25 term overlap between the query and any record; retrieval order preserved"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2505,14 +4057,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 108 chars -> 55 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2521,9 +4086,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 7.45,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 2,
       "zero_claim_cause": "provider_error",
@@ -2537,6 +4111,10 @@
       "domain": "Financial-Product",
       "outcome": "Profitable",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build a mobile-first auto insurer that uses telematics and direct digital distribution to price drivers.",
+      "outcome_date": "2025-02-26",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1788882/000162828025008137/root-20241231.htm",
+      "dataset_notes": "Root 2024 10-K: operating income $78.5M and net income $30.9M. Human pre-label: Yes (pricing/underwriting model dependence).",
       "angles": {
         "tech": {
           "records": 10,
@@ -2546,7 +4124,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2555,7 +4137,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2564,14 +4152,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 104 chars -> 57 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2580,9 +4181,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 10.98,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2596,6 +4206,10 @@
       "domain": "Financial-Product",
       "outcome": "Profitable",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build a regulated crypto exchange and financial platform for buying, selling, storing, and using digital assets.",
+      "outcome_date": "2025-02-13",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1679788/000167978825000022/coin-20241231.htm",
+      "dataset_notes": "Coinbase 2024 10-K: net income was $2.579B. Human pre-label: Yes (high regulatory and market-cycle exposure).",
       "angles": {
         "tech": {
           "records": 10,
@@ -2605,7 +4219,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2614,7 +4232,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2623,14 +4247,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 112 chars -> 57 (limit 60, 7 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2639,9 +4276,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 5.91,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2655,6 +4301,10 @@
       "domain": "Financial-Product",
       "outcome": "Profitable",
       "conflict_expected": "No",
+      "idea_pitch": "Build a global digital payments platform that lets consumers and merchants move money online across markets.",
+      "outcome_date": "2025-02-04",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1633917/000163391725000019/pypl-20241231.htm",
+      "dataset_notes": "PayPal 2024 10-K: net income was $4.147B.",
       "angles": {
         "tech": {
           "records": 10,
@@ -2664,7 +4314,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2673,7 +4327,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2682,14 +4342,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 108 chars -> 58 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2698,9 +4371,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 5.87,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2714,6 +4396,10 @@
       "domain": "Financial-Product",
       "outcome": "Profitable",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build a mobile investing and brokerage app that makes stocks, options, and related financial products accessible to retail users.",
+      "outcome_date": "2025-02-18",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1783879/000178387925000049/hood-20241231.htm",
+      "dataset_notes": "Robinhood 2024 10-K: net income was $1.411B. Human pre-label: Yes (retail-volume and market-cycle exposure).",
       "angles": {
         "tech": {
           "records": 10,
@@ -2723,7 +4409,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2732,7 +4422,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2741,14 +4437,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 129 chars -> 59 (limit 60, 8 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2757,9 +4466,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 6.01,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2773,6 +4491,10 @@
       "domain": "Financial-Product",
       "outcome": "Profitable",
       "conflict_expected": "No",
+      "idea_pitch": "Build a low-cost international money-transfer product with a transparent exchange-rate and fee model.",
+      "outcome_date": "2024-07-12",
+      "ground_truth_source": "https://www.investegate.co.uk/announcement/rns/wise-class-a--wise/wise-plc-preliminary-results-fy-end-31-march-2024/8256893",
+      "dataset_notes": "Wise FY2024 annual report: operating profit \u00a3501.9M and profit for the year \u00a3354.6M; annual report published in July 2024.",
       "angles": {
         "tech": {
           "records": 10,
@@ -2782,7 +4504,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2791,7 +4517,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2800,14 +4532,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 101 chars -> 55 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2816,9 +4561,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 5.99,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2832,6 +4586,10 @@
       "domain": "Financial-Product",
       "outcome": "Loss",
       "conflict_expected": "Yes",
+      "idea_pitch": "Build a consumer buy-now-pay-later product that underwrites purchases instantly and lets customers repay over time.",
+      "outcome_date": "2024-10-25",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1820953/000182095324000049/afrm-20241025.htm",
+      "dataset_notes": "Affirm FY2024 filing materials: total revenue about $2.3B, operating loss $615.8M and net loss $517.8M.",
       "angles": {
         "tech": {
           "records": 10,
@@ -2841,7 +4599,11 @@
           "provenance": {
             "github": 0,
             "arxiv": 10
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 1076,
+          "note": null,
+          "warnings": []
         },
         "market": {
           "records": 0,
@@ -2850,7 +4612,13 @@
           "retrieval_error": null,
           "provenance": {
             "newsapi": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "financial": {
           "records": 0,
@@ -2859,14 +4627,27 @@
           "retrieval_error": null,
           "provenance": {
             "yfinance": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "query derived for yfinance: 115 chars -> 57 (limit 60, 6 terms)",
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         },
         "regulatory": {
           "records": 0,
           "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
-          "provenance": {}
+          "provenance": {},
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no connector is configured for the regulatory angle (slots tried: primary, secondary, tertiary); returning empty evidence"
+          ]
         },
         "sentiment": {
           "records": 0,
@@ -2875,9 +4656,18 @@
           "retrieval_error": null,
           "provenance": {
             "stackexchange": 0
-          }
+          },
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "no records retrieved from any of 1 configured source(s)"
+          ]
         }
       },
+      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "fused": null,
+      "seconds": 6.04,
       "angles_with_claims": 0,
       "angles_with_reasoner_error": 1,
       "zero_claim_cause": "provider_error",
@@ -2888,7 +4678,7 @@
     }
   ],
   "provenance": {
-    "generated_utc": "2026-09-27T11:31:27Z",
+    "generated_utc": "2026-09-28T05:47:26Z",
     "sources": [
       {
         "path": "data/v2/evaluation_queries.json",

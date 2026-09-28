@@ -51,6 +51,18 @@
     return out;
   }
 
+  /* Everything below builds HTML strings, and the row-detail view is the first
+   * thing on this page to print FREE TEXT from a data file -- pitches, dataset
+   * notes, provider error bodies. Those contain quotes, ampersands and angle
+   * brackets, so they are escaped rather than trusted. Numbers and known enum
+   * strings elsewhere in this file were never a concern; free prose is. */
+  function esc(value) {
+    if (value === null || value === undefined) { return ""; }
+    return String(value)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
   function fail(host, message) {
     host.className = "notmeasured";
     host.innerHTML = "could not load committed data — " + message +
@@ -317,6 +329,231 @@
       claims + errNote + "</span></td>";
   }
 
+  /* ---- row detail ------------------------------------------------------
+   * The grid answers "which angles retrieved"; it has no room for the row
+   * itself. This opens the whole row: the pitch the pipeline was actually
+   * given, the label and the URL that label came from, and every per-angle
+   * field the committed run wrote.
+   *
+   * WHAT IS NOT HERE, AND WHY IT IS STATED RATHER THAN LEFT BLANK.
+   * There is no claim text. results/v2/part24_pipeline_verification.json
+   * records, per angle, a record count, a claim count, a token count and the
+   * mean of the reasoner's self-reported per-claim confidence -- it never
+   * wrote the claims. So the detail view prints that sentence instead of an
+   * empty panel, because an empty panel reads as a load failure and a dash
+   * reads as "no claims". Neither is true: the claims existed and were not
+   * retained.
+   *
+   * mean_claim_conf is labelled as what it is. It is the reasoner's own
+   * confidence in its own claims, averaged -- not a calibrated probability,
+   * and not the fused confidence, which does not exist on any row because no
+   * row fused.
+   */
+
+  function sourceLink(url) {
+    if (!url) { return NOT_MEASURED; }
+    // Only http(s) becomes a link. Anything else is printed as text, so a
+    // javascript: or data: value in a data file cannot become clickable.
+    if (!/^https?:\/\//i.test(url)) {
+      return '<span class="mono">' + esc(url) + "</span>";
+    }
+    return '<a class="detail__link" href="' + esc(url) +
+      '" target="_blank" rel="noopener noreferrer">' + esc(url) +
+      '<span class="visually-hidden"> (opens in a new tab)</span></a>';
+  }
+
+  function detailAngleRow(name, a, angleNote) {
+    var cells = [];
+    cells.push('<th scope="row" class="detail__angle detail__angle--' + name + '">' +
+      ANGLE_LABEL[name] +
+      (angleNote ? '<span class="detail__anglenote">' + esc(angleNote) + "</span>" : "") +
+      "</th>");
+
+    // A retrieval exception is not a count of zero, so it has no records cell.
+    if (a.retrieval_error) {
+      cells.push('<td class="num">' + NOT_MEASURED + "</td>");
+    } else {
+      cells.push('<td class="num">' + num(a.records, 0) + "</td>");
+    }
+    cells.push('<td class="num">' + num(a.claims, 0) + "</td>");
+    cells.push('<td class="num">' + num(a.mean_claim_conf, 3) + "</td>");
+    cells.push('<td class="num">' + num(a.tokens, 0) + "</td>");
+
+    // Which connectors ran, and what each returned. An empty provenance map
+    // means no connector was called at all -- printed as such, not as 0.
+    var keys = Object.keys(a.provenance || {});
+    if (!keys.length) {
+      cells.push("<td>" + NOT_MEASURED + "</td>");
+    } else {
+      cells.push("<td>" + keys.sort().map(function (k) {
+        return '<span class="detail__conn' + (a.provenance[k] > 0 ? " detail__conn--on" : "") +
+          '">' + esc(k) + " " + num(a.provenance[k], 0) + "</span>";
+      }).join(" ") + "</td>");
+    }
+
+    // One state column, in the run's own words wherever it wrote any.
+    var state = [];
+    if (a.retrieval_error) {
+      state.push('<span class="pill pill--error">retrieval error</span>' +
+        '<span class="detail__err">' + esc(a.retrieval_error) + "</span>");
+    }
+    if (a.reasoner_error) {
+      state.push('<span class="pill pill--error">reasoner error</span>' +
+        '<span class="detail__err">' + esc(a.reasoner_error) + "</span>");
+    }
+    if (a.note) { state.push('<span class="detail__note">' + esc(a.note) + "</span>"); }
+    if (!state.length && a.claims > 0) {
+      state.push('<span class="pill pill--live">claims produced</span>');
+    }
+    cells.push("<td>" + (state.length ? state.join("") : NOT_MEASURED) + "</td>");
+    return "<tr>" + cells.join("") + "</tr>";
+  }
+
+  function detailHTML(data, row, index) {
+    var angles = data.angle_order;
+    var out = [];
+
+    out.push('<div class="detail__head">' +
+      '<p class="detail__id mono">row ' + esc(row.id) + '<span class="detail__pos">' +
+      (index + 1) + " of " + data.rows.length + "</span></p>" +
+      '<h4 class="detail__title" id="rowdetail-title">' +
+      esc(row.domain || "domain not measured") + " — " +
+      esc(row.outcome || "outcome not measured") + "</h4></div>");
+
+    out.push('<dl class="detail__meta">' +
+      '<dt>idea pitch</dt><dd class="detail__pitch">' +
+      (row.idea_pitch ? esc(row.idea_pitch) : NOT_MEASURED) + "</dd>" +
+      "<dt>domain</dt><dd>" + (row.domain ? esc(row.domain) : NOT_MEASURED) + "</dd>" +
+      "<dt>actual outcome</dt><dd>" + (row.outcome ? esc(row.outcome) : NOT_MEASURED) +
+      (row.outcome_date ? ' <span class="pm">' + esc(row.outcome_date) + "</span>" : "") + "</dd>" +
+      "<dt>ground truth source</dt><dd>" + sourceLink(row.ground_truth_source) + "</dd>" +
+      "<dt>conflict expected</dt><dd>" +
+      (row.conflict_expected ? esc(row.conflict_expected) : NOT_MEASURED) + "</dd>" +
+      "<dt>dataset notes</dt><dd>" +
+      (row.dataset_notes ? esc(row.dataset_notes) : NOT_MEASURED) + "</dd>" +
+      "</dl>");
+
+    out.push('<h5 class="detail__h">Per-angle detail</h5>');
+    out.push('<div class="table-wrap"><table class="detail__table">' +
+      '<caption class="visually-hidden">For row ' + esc(row.id) +
+      ": records retrieved, claims produced, mean self-reported claim " +
+      "confidence, evidence tokens, which connectors ran, and the run state " +
+      "for each of the five angles.</caption><thead><tr>" +
+      '<th scope="col">angle</th><th scope="col" class="num">records</th>' +
+      '<th scope="col" class="num">claims</th>' +
+      '<th scope="col" class="num">mean claim conf</th>' +
+      '<th scope="col" class="num">tokens</th>' +
+      '<th scope="col">connectors</th><th scope="col">state</th>' +
+      "</tr></thead><tbody>");
+    angles.forEach(function (name) {
+      out.push(detailAngleRow(name, row.angles[name] || {},
+        (data.angle_notes || {})[name]));
+    });
+    out.push("</tbody></table></div>");
+
+    // The honest sentence about claim text. Stated, not implied by a blank.
+    out.push('<p class="detail__absent"><span class="nm">claim text — not ' +
+      "measured</span> The committed run wrote per-angle counts, a token count " +
+      "and the mean of the reasoner's self-reported per-claim confidence. It " +
+      "never wrote the claims themselves, so no claim text exists in any file " +
+      "this site can read, and none is shown. <em>mean claim conf</em> is the " +
+      "reasoner grading its own claims, averaged — not a calibrated " +
+      "probability.</p>");
+
+    out.push('<h5 class="detail__h">Fusion</h5>');
+    out.push('<dl class="detail__meta detail__meta--num">' +
+      "<dt>angles with claims</dt><dd>" + num(row.angles_with_claims, 0) + "</dd>" +
+      "<dt>angles with reasoner error</dt><dd>" + num(row.angles_with_reasoner_error, 0) + "</dd>" +
+      "<dt>ENIV</dt><dd>" + num(row.eniv, 3) + "</dd>" +
+      "<dt>discount</dt><dd>" + num(row.discount, 3) + "</dd>" +
+      "<dt>fused confidence</dt><dd>" + num(row.confidence, 3) + "</dd>" +
+      "<dt>contradictions</dt><dd>" + num(row.contradictions, 0) + "</dd>" +
+      "<dt>wall clock</dt><dd>" + num(row.seconds, 2) +
+      (row.seconds === null || row.seconds === undefined ? "" : " s") + "</dd>" +
+      "</dl>");
+    if (row.run_note) {
+      out.push('<p class="pass-note">' + esc(row.run_note) + "</p>");
+    }
+
+    // Retrieval warnings are the only place the run explains WHY an angle got
+    // nothing -- query truncation, and the missing regulatory connector. They
+    // are verbose, so they collapse.
+    var warnings = [];
+    angles.forEach(function (name) {
+      ((row.angles[name] || {}).warnings || []).forEach(function (w) {
+        warnings.push('<li><span class="mono">' + ANGLE_LABEL[name] + "</span> " + esc(w) + "</li>");
+      });
+    });
+    if (warnings.length) {
+      out.push('<details class="table-view"><summary>Retrieval warnings (' +
+        warnings.length + ") — verbatim from the run</summary>" +
+        '<ul class="detail__warn">' + warnings.join("") + "</ul></details>");
+    }
+
+    return out.join("");
+  }
+
+  /* One dialog, reused. Building 48 of them up front would put 48 copies of
+   * every pitch in the DOM for a view that shows one row at a time. */
+  function mountRowDetail(host, data) {
+    var dlg = el("dialog", "rowdlg");
+    dlg.setAttribute("aria-labelledby", "rowdetail-title");
+    var nav = el("div", "rowdlg__nav");
+    nav.innerHTML =
+      '<button type="button" class="rowdlg__btn" data-step="-1">‹ previous row</button>' +
+      '<button type="button" class="rowdlg__btn" data-step="1">next row ›</button>' +
+      '<button type="button" class="rowdlg__btn rowdlg__btn--close" data-close="1">Close</button>';
+    var body = el("div", "rowdlg__body");
+    dlg.appendChild(nav);
+    dlg.appendChild(body);
+    host.appendChild(dlg);
+
+    var current = -1;
+
+    function show(index) {
+      if (index < 0 || index >= data.rows.length) { return; }
+      current = index;
+      body.innerHTML = detailHTML(data, data.rows[index], index);
+      body.scrollTop = 0;
+      Array.prototype.forEach.call(nav.querySelectorAll("[data-step]"), function (b) {
+        var next = index + Number(b.getAttribute("data-step"));
+        b.disabled = (next < 0 || next >= data.rows.length);
+      });
+      if (!dlg.open) {
+        // <dialog> is baseline in every browser this site targets, but a
+        // missing showModal must still leave the content reachable rather
+        // than swallow the click.
+        if (dlg.showModal) { dlg.showModal(); } else { dlg.setAttribute("open", ""); }
+      }
+    }
+
+    function close() {
+      if (dlg.close) { dlg.close(); } else { dlg.removeAttribute("open"); }
+    }
+
+    nav.addEventListener("click", function (e) {
+      var btn = e.target.closest ? e.target.closest("button") : null;
+      if (!btn) { return; }
+      if (btn.hasAttribute("data-close")) { close(); return; }
+      show(current + Number(btn.getAttribute("data-step")));
+    });
+
+    // A click on the backdrop lands on the dialog element itself, never on a
+    // child. Esc is handled by the element.
+    dlg.addEventListener("click", function (e) {
+      if (e.target === dlg) { close(); }
+    });
+
+    // Arrow keys step rows while the dialog is open, which is how anyone
+    // actually reads 48 of these.
+    dlg.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight") { show(current + 1); }
+      else if (e.key === "ArrowLeft") { show(current - 1); }
+    });
+
+    return show;
+  }
+
   function renderV2Coverage(host, data) {
     host.className = "";
     host.innerHTML = "";
@@ -352,9 +589,16 @@
       '<th scope="col">outcome of run</th>' +
       '<th scope="col" class="num">ENIV</th></tr></thead><tbody>');
 
-    data.rows.forEach(function (r) {
-      var cells = ["<tr>"];
-      cells.push('<th scope="row" class="mono">' + r.id + "</th>");
+    data.rows.forEach(function (r, i) {
+      // The whole row is clickable, but the CONTROL is the button in the row
+      // header. A click handler on a <tr> is invisible to a keyboard and to
+      // assistive tech; a real button is focusable, announced, and works with
+      // Enter and Space for free.
+      var cells = ['<tr class="cov-row" data-index="' + i + '">'];
+      cells.push('<th scope="row" class="mono"><button type="button" ' +
+        'class="cov-row__btn" data-index="' + i + '" aria-haspopup="dialog">' +
+        r.id + '<span class="visually-hidden">: open full detail for this row' +
+        "</span></button></th>");
       cells.push("<td>" + (r.domain || NOT_MEASURED) + "</td>");
       cells.push("<td>" + (r.outcome || NOT_MEASURED) + "</td>");
       angles.forEach(function (a) { cells.push(coverageCell(a, r.angles[a] || {})); });
@@ -378,6 +622,25 @@
     });
     head.push("</tbody></table></div>");
     host.insertAdjacentHTML("beforeend", head.join(""));
+
+    host.insertAdjacentHTML("beforeend",
+      '<p class="table-wrap__hint">Every row opens: click it, or tab to a row ' +
+      "number and press Enter, for the pitch, the ground-truth link and the " +
+      "per-angle detail.</p>");
+
+    // One delegated handler for all 48 rows, and one dialog for all of them.
+    var showRow = mountRowDetail(host, data);
+    var tbody = host.querySelector(".cov-table tbody");
+    if (tbody) {
+      tbody.addEventListener("click", function (e) {
+        var tr = e.target.closest ? e.target.closest("tr[data-index]") : null;
+        // A click on the ground-truth link inside a row must follow the link,
+        // not open the dialog. There is no such link in the grid today, but
+        // the guard costs nothing and is the usual trap here.
+        if (!tr || (e.target.closest && e.target.closest("a"))) { return; }
+        showRow(Number(tr.getAttribute("data-index")));
+      });
+    }
 
     if (data.pass1) {
       host.insertAdjacentHTML("beforeend",

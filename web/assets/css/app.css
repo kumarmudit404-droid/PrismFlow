@@ -368,6 +368,142 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
 .h-sm { font-size: var(--step-0); margin: var(--sp-4) 0 var(--sp-1); }
 
 /* ====================================================================
+ * row detail -- the 48-row coverage grid, opened one row at a time
+ *
+ * No new colour is introduced here. Every value is an existing token, which
+ * is the point of tokens.css: the dialog inherits the measured contrast
+ * ratios rather than re-deriving them.
+ * ==================================================================== */
+
+/* The row number is the control. It is styled as text until focused or
+ * hovered, so the grid still reads as a table and not as 48 buttons. */
+.cov-row__btn {
+  font: inherit;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  background: none;
+  border: 0;
+  border-bottom: 1px dotted var(--text-muted);
+  padding: 0;
+  cursor: pointer;
+}
+.cov-row__btn:hover { color: var(--angle-tech); border-bottom-color: var(--angle-tech); }
+.cov-row { cursor: pointer; }
+/* The whole row responds, so it is obvious the row -- not just the number --
+ * is the target. Hover is a hint, never the only affordance: the button
+ * underline is there before any pointer moves. */
+.cov-row:hover td, .cov-row:hover th { background: var(--surface); }
+/* A filled coverage cell already carries an angle colour; do not wash it out. */
+.cov-row:hover td.cov--on { background-blend-mode: normal; filter: brightness(1.12); }
+
+.rowdlg {
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-primary);
+  padding: 0;
+  width: min(54rem, calc(100vw - 2rem));
+  max-height: min(86vh, 54rem);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.rowdlg::backdrop { background: rgba(10, 10, 15, 0.72); }
+
+.rowdlg__nav {
+  display: flex; gap: var(--sp-2); align-items: center;
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface-raised);
+  flex: 0 0 auto;
+}
+.rowdlg__btn {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--text-secondary); background: none;
+  border: 1px solid var(--hairline); border-radius: 999px;
+  padding: 0.2rem 0.7rem; cursor: pointer;
+}
+.rowdlg__btn:hover:not(:disabled) { color: var(--text-primary); border-color: var(--text-muted); }
+/* A disabled step is dimmed AND unclickable AND announced disabled -- the
+ * first and last row must not look like they have a neighbour. */
+.rowdlg__btn:disabled { color: var(--status-not-measured); cursor: default; }
+.rowdlg__btn--close { margin-left: auto; }
+
+.rowdlg__body { padding: var(--sp-3); overflow-y: auto; flex: 1 1 auto; }
+
+.detail__head { border-bottom: 1px solid var(--hairline); padding-bottom: var(--sp-2); margin-bottom: var(--sp-3); }
+.detail__id { margin: 0; font-size: var(--step--1); color: var(--text-muted); display: flex; gap: var(--sp-2); }
+.detail__pos { color: var(--status-not-measured); }
+.detail__title { margin: 0.2rem 0 0; font-size: var(--step-1); }
+
+.detail__meta { display: grid; grid-template-columns: 11rem 1fr; gap: 0.4rem var(--sp-3); margin: 0 0 var(--sp-3); }
+.detail__meta dt { font-family: var(--font-mono); font-size: var(--step--1); color: var(--text-muted); }
+.detail__meta dd { margin: 0; color: var(--text-secondary); font-size: var(--step--1); }
+.detail__meta--num dd { font-family: var(--font-mono); }
+.detail__pitch { color: var(--text-primary) !important; max-width: var(--measure); }
+
+.detail__link { color: var(--angle-tech); word-break: break-all; font-family: var(--font-mono); }
+
+.detail__h { margin: var(--sp-3) 0 var(--sp-1); font-size: var(--step-0); }
+
+.detail__table { font-size: var(--step--1); }
+.detail__angle { font-weight: 650; white-space: nowrap; }
+/* Same rule as the grid: the angle name is the identifier, the colour is
+ * redundant reinforcement on top of it. */
+.detail__angle--tech       { color: var(--angle-tech); }
+.detail__angle--market     { color: var(--angle-market); }
+.detail__angle--financial  { color: var(--angle-financial); }
+.detail__angle--sentiment  { color: var(--angle-sentiment); }
+.detail__angle--regulatory { color: var(--angle-regulatory); filter: var(--angle-unbuilt-filter); }
+.detail__anglenote {
+  display: block; white-space: normal; max-width: 13rem;
+  font-family: var(--font-sans); font-weight: 400; font-size: 0.92em;
+  color: var(--text-muted);
+}
+
+.detail__conn {
+  display: inline-block; font-family: var(--font-mono); font-size: 0.92em;
+  color: var(--status-not-measured);
+  border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+  padding: 0.05rem 0.35rem; margin: 0 0.15rem 0.15rem 0;
+}
+/* A connector that returned something is lit; one that returned 0 stays in
+ * the not-measured token, because "ran and found nothing" and "found
+ * something" must not look the same. */
+.detail__conn--on { color: var(--text-primary); border-color: var(--text-muted); }
+
+.detail__note { display: block; color: var(--text-muted); font-size: 0.95em; }
+.detail__err {
+  display: block; font-family: var(--font-mono); font-size: 0.88em;
+  color: var(--text-muted); word-break: break-word;
+  max-width: 24rem; margin-top: 0.2rem;
+}
+
+/* The absent-data sentence. Dashed and dim, the same visual idea as every
+ * other "not measured" on the site, because this is the same fact. */
+.detail__absent {
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-2);
+  border: 1px dashed var(--status-not-measured);
+  border-radius: var(--radius-sm);
+  font-size: var(--step--1);
+  color: var(--text-muted);
+  max-width: none;
+  line-height: 1.6;
+}
+.detail__absent .nm { color: var(--text-secondary); }
+
+.detail__warn { margin: var(--sp-1) 0 0; padding-left: var(--sp-3); font-size: var(--step--1); color: var(--text-muted); }
+.detail__warn li { margin-bottom: 0.2rem; }
+.detail__warn .mono { color: var(--text-secondary); }
+
+@media (max-width: 40rem) {
+  .detail__meta { grid-template-columns: 1fr; gap: 0 0; }
+  .detail__meta dt { margin-top: var(--sp-2); }
+  .rowdlg__nav { flex-wrap: wrap; }
+}
+
+/* ====================================================================
  * phase (c) -- motion
  * ==================================================================== */
 

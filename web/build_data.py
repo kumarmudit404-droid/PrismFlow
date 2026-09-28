@@ -218,13 +218,45 @@ def build_v2_coverage() -> dict:
                 "reasoner_error": entry.get("reasoner_error"),
                 "retrieval_error": entry.get("retrieval"),
                 "provenance": entry.get("provenance") or {},
+                # The row-detail view needs the per-angle fields the grid has no
+                # room for. Only two numbers exist beyond the counts, and only on
+                # the angles that reached a reasoner:
+                #
+                #   mean_claim_conf  a real value on 20 of 240 angle cells --
+                #                    the key exists on 55, but is null wherever
+                #                    the reasoner produced no claims, so the
+                #                    detail view shows "not measured" on 220
+                #   tokens           the evidence bundle handed to the reasoner
+                #
+                # CLAIM TEXT DOES NOT EXIST IN ANY COMMITTED FILE. The run wrote
+                # counts and a mean confidence, not the claims themselves, so the
+                # detail view says so rather than leaving a blank that looks like
+                # a value that failed to load. No field is invented here.
+                "mean_claim_conf": clean(entry.get("mean_claim_conf")),
+                "tokens": clean(entry.get("tokens")),
+                "note": entry.get("note"),
+                "warnings": entry.get("warnings") or [],
             }
         rows.append({
             "id": rec["id"],
             "domain": meta.get("domain"),
             "outcome": meta.get("actual_outcome"),
             "conflict_expected": meta.get("conflict_expected"),
+            # Dataset side of the row, for the detail view. Copied verbatim from
+            # evaluation_queries.json -- the same file this build already reads
+            # for domain and outcome, so the detail view adds no source. The
+            # pitch is the anonymised text the pipeline was actually given; the
+            # ground-truth source is the URL the label was taken from, and it is
+            # rendered as a real link so a reader can check the label.
+            "idea_pitch": meta.get("idea_pitch"),
+            "outcome_date": meta.get("outcome_date"),
+            "ground_truth_source": meta.get("ground_truth_source"),
+            "dataset_notes": meta.get("notes"),
             "angles": angles,
+            # Why this row did or did not fuse, in the run's own words.
+            "run_note": rec.get("note"),
+            "fused": rec.get("fused"),
+            "seconds": clean(rec.get("seconds")),
             "angles_with_claims": rec.get("angles_with_claims"),
             "angles_with_reasoner_error": rec.get("angles_with_reasoner_error"),
             "zero_claim_cause": rec.get("zero_claim_cause"),
