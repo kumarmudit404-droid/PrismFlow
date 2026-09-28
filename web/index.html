@@ -401,9 +401,26 @@
   <p class="chapter__num">Chapter 5</p>
   <h2 class="chapter__title" id="ch5-h">Interactive exploration</h2>
   <p class="chapter__lede">
-    Two views, both driven entirely by committed result files. Nothing here is
-    computed in the browser beyond reading what is already on disk.
+    Every view here is driven by a committed file or by the real V1 engine run
+    ahead of time. Nothing is computed in the browser beyond reading what is
+    already on disk.
   </p>
+
+  <h3>V1 — the engine, run per scenario</h3>
+  <p class="prose" style="color:var(--text-secondary)">
+    The Streamlit app's own controls, over outputs the real engine already
+    produced. <code>web/build_v1.py</code> imports <code>app.py</code> and runs
+    every scenario it offers at a recorded seed, so these are the app's numbers,
+    not a re-implementation. Each is one seed and therefore not a finding.
+  </p>
+  <div class="placeholder" id="v1-scenarios">loading committed data…</div>
+
+  <h3>V1 — the committed experiment figures</h3>
+  <p class="prose" style="color:var(--text-secondary)">
+    The 5-seed results, as the experiments plotted them. Each figure names the
+    file it came from and the file its numbers are in.
+  </p>
+  <div class="placeholder" id="v1-figures">loading committed data…</div>
 
   <h3>V1 — ENIV under duplication (k copies × ρ)</h3>
   <p class="prose" style="color:var(--text-secondary)">
@@ -489,6 +506,7 @@
 
 <script src="assets/js/main.js"></script>
 <script src="assets/js/charts.js"></script>
+<script src="assets/js/v1_scenarios.js"></script>
 <script type="module" src="assets/js/motion.js"></script>
 </body>
 </html>
