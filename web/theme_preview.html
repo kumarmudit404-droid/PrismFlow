@@ -17,10 +17,13 @@
 <header class="ph">
   <h1>Theme variants — phase (f) step 1</h1>
   <p>
-    Two candidates. Neither is applied: <code>assets/css/tokens.css</code> is
-    still the live theme. Every number below comes from
-    <code>python web/check_palette.py assets/css/tokens-a-light.css
-    assets/css/tokens-b-ember.css</code>.
+    Two candidates. <strong>Variant B was chosen and is applied</strong>, so
+    the B block below reads <code>assets/css/tokens.css</code> itself rather
+    than a copy — this sheet cannot show a variant B that differs from the one
+    the site ships. Variant A is kept at
+    <code>assets/css/tokens-a-light.css</code> so the decision stays
+    inspectable. Every number below comes from
+    <code>python web/check_palette.py</code>.
   </p>
   <p class="ph__rule">
     The five angle colours are <strong>not five oranges</strong>. Orange is UI
@@ -37,7 +40,7 @@
 <!-- ======================= VARIANT A ======================= -->
 <section class="variant variant--a">
   <div class="variant__inner">
-    <h2>Variant A — Light</h2>
+    <h2>Variant A — Light <span class="tag tag--off">not applied</span></h2>
     <p class="variant__sub">
       Warm off-white base, deep-orange accent, dark text.
       <strong>Worst greyscale step 1.42:1 · worst CVD separation 10.48</strong>
@@ -120,7 +123,7 @@
 <!-- ======================= VARIANT B ======================= -->
 <section class="variant variant--b">
   <div class="variant__inner">
-    <h2>Variant B — Dark ember</h2>
+    <h2>Variant B — Dark ember <span class="tag">applied</span></h2>
     <p class="variant__sub">
       Warm near-black base, white text, bright-orange glow accent.
       <strong>Worst greyscale step 1.32:1 · worst CVD separation 11.01</strong>
@@ -201,8 +204,8 @@
 
 <footer class="pf">
   <p>
-    Candidate sheet only. Nothing here is applied to the site, and no number,
-    chart value, source line or limitation text is touched by either variant.
+    Variant B is applied; variant A is kept for the record. No number, chart
+    value, source line or limitation text was touched by the theme change.
   </p>
 </footer>
 

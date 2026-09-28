@@ -35,11 +35,11 @@ body::before {
     radial-gradient(30rem 24rem at 88% 88%, var(--wash-sentiment), transparent 65%);
 }
 
-a { color: var(--angle-tech); text-decoration-color: var(--link-underline); }
+a { color: var(--accent-text); text-decoration-color: var(--link-underline); }
 a:hover { text-decoration-color: currentColor; }
 
 :focus-visible {
-  outline: 2px solid var(--angle-tech);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
   border-radius: 3px;
 }
@@ -86,8 +86,8 @@ a:hover { text-decoration-color: currentColor; }
   transition: background-color 0.2s;
 }
 .site-nav__link:hover { color: var(--text-primary); background: rgba(244,244,248,0.06); }
-.site-nav__link[aria-current="true"] { color: var(--base); background: var(--beam-incident); font-weight: 600; }
-.site-nav__link--limits { color: var(--angle-financial); }
+.site-nav__link[aria-current="true"] { color: var(--accent-ink); background: var(--accent); font-weight: 600; }
+.site-nav__link--limits { color: var(--accent-text); }
 
 /* ---------- chapters -------------------------------------------------- */
 
@@ -215,7 +215,7 @@ p { max-width: var(--measure); }
 
 blockquote.verbatim {
   margin: var(--sp-3) 0; padding: var(--sp-2) var(--sp-3);
-  border-left: 2px solid var(--angle-financial);
+  border-left: 2px solid var(--accent);
   background: var(--quote-bg);
   color: var(--text-primary); max-width: var(--measure);
 }
@@ -224,14 +224,14 @@ blockquote.verbatim cite { display: block; margin-top: var(--sp-2); font-size: v
 /* ---------- limitation entries ---------------------------------------- */
 
 .limit { border-left: 2px solid var(--hairline); padding-left: var(--sp-3); margin-bottom: var(--sp-3); }
-.limit__id { font-family: var(--font-mono); color: var(--angle-financial); font-weight: 650; }
+.limit__id { font-family: var(--font-mono); color: var(--accent-text); font-weight: 650; }
 .limit__title { font-weight: 600; }
 .limit__body { color: var(--text-secondary); max-width: var(--measure); }
 
 .limits-link {
   display: inline-block; margin-top: var(--sp-3);
   font-size: var(--step--1); font-family: var(--font-mono);
-  color: var(--angle-financial); text-decoration: none;
+  color: var(--accent-text); text-decoration: none;
   border: 1px solid var(--limits-border); border-radius: 999px;
   padding: 0.25rem 0.75rem;
 }
@@ -350,7 +350,7 @@ td.num, th.num { text-align: right; font-family: var(--font-mono); }
  * sideways at all (WCAG 2.1.1). JS adds tabindex only to wrappers that
  * actually overflow, so non-scrolling tables do not become dead tab stops. */
 .table-wrap[tabindex] { outline-offset: 2px; }
-.table-wrap[tabindex]:focus-visible { outline: 2px solid var(--angle-tech); }
+.table-wrap[tabindex]:focus-visible { outline: 2px solid var(--accent); }
 .table-wrap__hint {
   font-size: var(--step--1); color: var(--text-muted);
   font-family: var(--font-mono); margin: 0 0 var(--sp-1);
@@ -359,7 +359,7 @@ td.num, th.num { text-align: right; font-family: var(--font-mono); }
 /* Focus must be visible on a dark surface against every background the site
  * uses, including inside a filled coverage cell. */
 a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
-  outline: 2px solid var(--angle-tech);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -387,7 +387,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
   padding: 0;
   cursor: pointer;
 }
-.cov-row__btn:hover { color: var(--angle-tech); border-bottom-color: var(--angle-tech); }
+.cov-row__btn:hover { color: var(--accent-text); border-bottom-color: var(--accent-text); }
 .cov-row { cursor: pointer; }
 /* The whole row responds, so it is obvious the row -- not just the number --
  * is the target. Hover is a hint, never the only affordance: the button
@@ -442,7 +442,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
 .detail__meta--num dd { font-family: var(--font-mono); }
 .detail__pitch { color: var(--text-primary) !important; max-width: var(--measure); }
 
-.detail__link { color: var(--angle-tech); word-break: break-all; font-family: var(--font-mono); }
+.detail__link { color: var(--accent-text); word-break: break-all; font-family: var(--font-mono); }
 
 .detail__h { margin: var(--sp-3) 0 var(--sp-1); font-size: var(--step-0); }
 
@@ -530,8 +530,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
 /* The selected button carries colour AND aria-pressed AND a filled background,
  * so which one is active does not depend on hue alone. */
 .picker__btn.is-on {
-  color: var(--base); background: var(--angle-tech);
-  border-color: var(--angle-tech); font-weight: 650;
+  color: var(--accent-ink); background: var(--accent);
+  border-color: var(--accent); font-weight: 650;
 }
 
 .scenario__desc { color: var(--text-secondary); font-size: var(--step--1); max-width: var(--measure); margin: 0 0 var(--sp-3); }
@@ -688,11 +688,11 @@ body::after {
   cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;
 }
 .ds-sort:hover { color: var(--text-primary); }
-.ds-sort__mark { font-size: 0.7em; color: var(--angle-tech); }
+.ds-sort__mark { font-size: 0.7em; color: var(--accent-text); }
 
 .ds-row__btn {
   font-family: var(--font-mono); font-size: var(--step--1);
-  color: var(--angle-tech); background: none;
+  color: var(--accent-text); background: none;
   border: 1px solid transparent; border-radius: var(--radius-sm);
   padding: 0.1rem 0.4rem; cursor: pointer;
 }
@@ -715,7 +715,7 @@ body::after {
 .ds-foot h4 { margin-top: 0; }
 .ds-download {
   display: inline-block; font-family: var(--font-mono); font-size: var(--step--1);
-  color: var(--base); background: var(--angle-tech);
+  color: var(--accent-ink); background: var(--accent);
   border-radius: var(--radius-sm); padding: 0.4rem 0.9rem; text-decoration: none;
 }
 .ds-foot--gap { border-color: var(--status-not-measured); }
@@ -749,7 +749,7 @@ body::after {
 .fail-table thead th { white-space: normal; }
 .fail-row__btn {
   font-family: var(--font-mono); font-size: var(--step--1);
-  color: var(--angle-tech); background: none;
+  color: var(--accent-text); background: none;
   border: 1px solid transparent; border-radius: var(--radius-sm);
   padding: 0.1rem 0.4rem; cursor: pointer; text-align: left;
 }
@@ -799,7 +799,7 @@ body::after {
 .rv-after { color: var(--text-secondary); }
 /* A value that moved is marked, so a reader scanning the column can see which
  * cells the fix actually touched rather than comparing 6 rows by eye. */
-.rv-after--moved { color: var(--angle-tech); font-weight: 650; }
+.rv-after--moved { color: var(--accent-text); font-weight: 650; }
 .rv-table td, .rv-table th { white-space: nowrap; }
 .rv-table td:last-child { white-space: normal; min-width: 14rem; color: var(--text-muted); }
 .rv-caveats {

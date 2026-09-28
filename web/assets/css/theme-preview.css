@@ -52,6 +52,15 @@
   .variant--b { background: var(--base); color: var(--text-primary); }
 
   .variant h2 { font-size: 1.6rem; margin: 0 0 0.3rem; letter-spacing: -0.02em; }
+  .tag {
+    font-family: var(--font-mono); font-size: 0.68rem; vertical-align: 0.35em;
+    background: var(--accent); color: var(--accent-ink);
+    border-radius: 999px; padding: 0.15rem 0.6rem; letter-spacing: 0.04em;
+  }
+  .tag--off {
+    background: none; color: var(--text-muted);
+    border: 1px dashed var(--hairline);
+  }
   .variant h3 {
     font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em;
     color: var(--text-muted); margin: 2rem 0 0.7rem; font-family: var(--font-mono);

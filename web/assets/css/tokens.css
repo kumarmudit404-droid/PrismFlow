@@ -1,101 +1,116 @@
-/* PrismFlow Part 25 -- design tokens.
+/* PrismFlow Part 25 -- design tokens. THE ONLY PLACE COLOUR LIVES.
+ *
+ * That sentence was aspirational until phase (f). 13 colour literals were in
+ * app.css and 2 in index.html, and one of them WAS the page background:
+ * body::after, a fixed full-screen scrim. A palette change that only touched
+ * --base therefore changed the text and left the page dark. Every literal is a
+ * token now, including the ones that carry their own alpha, and
+ * web/check_palette.py gates the result.
  *
  * The palette is NOT extracted from a logo: the repository contains no logo and
  * none was invented. It is derived from the product's own thesis -- one beam
- * refracting into five angle colours -- and then TUNED AND MEASURED:
+ * refracting into five angle colours -- and then SEARCHED AND MEASURED.
  *
- *   - every angle colour is >= 3:1 against --base, all body text >= 4.5:1
- *   - the five angles form a monotonic LUMINANCE STAIRCASE, worst pair 1.39,
- *     so they survive greyscale and printing
- *   - worst distance under simulated deuteranopia / protanopia / tritanopia
- *     is 8.3, chosen from 324 candidate combinations
+ * THIS IS VARIANT B, "dark ember", chosen in phase (f) step 1 over a light
+ * variant. web/theme_preview.html still shows both, and the alternative is kept
+ * at assets/css/tokens-a-light.css so the choice stays inspectable.
+ *
+ * Measured by `python web/check_palette.py`:
+ *
+ *   - every angle colour >= 3:1 against --base, all body text >= 4.5:1
+ *   - --accent-ink on --accent is 7.20:1, because WHITE ON BRIGHT ORANGE FAILS:
+ *     white is 2.60:1 on this accent. Orange fills carry dark ink.
+ *   - the five angles form a monotonic LUMINANCE STAIRCASE, worst adjacent
+ *     step 1.32:1, so they survive greyscale and printing
+ *   - worst CIEDE2000 separation across normal vision and simulated
+ *     deuteranopia / protanopia / tritanopia is 11.01, from 4,481 candidate
+ *     combinations -- against 8.27 for the palette this replaces
+ *
+ * ORANGE IS UI CHROME ONLY: base, surfaces, nav, buttons, links, focus rings.
+ * The five angles stay categorical. A data colour is never an orange, and every
+ * angle is held >= 16 CIEDE2000 from the accent so a measured value can never
+ * be mistaken for a control.
  *
  * Changing a value here changes the whole theme; nothing else hardcodes colour.
  */
 
 :root {
-  /* ---- structure ---------------------------------------------------- */
-  --base:            #0A0A0F;
-  --surface:         #141420;
-  --surface-raised:  #1D1D2B;
-  --hairline:        #2A2A3A;
+  /* ---- structure ----------------------------------------------------
+   * Warm near-black rather than the old blue-black #0A0A0F: an orange theme
+   * on a blue-black base reads as two separate colour systems stacked. */
+  --base:            #0C0907;
+  --surface:         #16110D;
+  --surface-raised:  #201811;
+  --hairline:        #33261C;
 
   /* ---- text --------------------------------------------------------- */
-  --text-primary:    #F4F4F8;   /* 18.00:1 on base */
-  --text-secondary:  #AEAEC0;   /*  9.04:1 */
-  --text-muted:      #7E7E92;   /*  4.97:1 */
+  --text-primary:    #FBF4EC;   /* 18.06:1 on base */
+  --text-secondary:  #C4B3A2;   /*  9.60:1 */
+  --text-muted:      #8E7D6C;   /*  4.83:1 */
+
+  /* ---- the orange UI accent -----------------------------------------
+   * On a dark base the bright orange is the one that belongs, and it carries
+   * DARK ink, not white: measured, white on #FF7A2F is 2.60:1 and fails,
+   * while #1A1008 on it is 7.20:1. Anywhere orange is a fill, the label is
+   * dark. --accent-text is the orange used AS text on the base. */
+  --accent:          #FF7A2F;   /*  7.64:1 on base */
+  --accent-ink:      #1A1008;   /*  7.20:1 on accent */
+  --accent-strong:   #FF9A5A;   /*  9.47:1 -- hover and active */
+  --accent-text:     #FF9A5A;   /*  9.47:1 on base, for link text */
+  --accent-glow:     #FF7A2F;
+  --accent-wash:     #2A1A10;
 
   /* ---- the five angles, in spectral order (violet bends most) -------- */
-  --angle-regulatory: #6F4FD6;  /*  3.54:1 */
-  --angle-sentiment:  #EF4A85;  /*  5.63:1 */
-  --angle-tech:       #3FB5F0;  /*  8.54:1 */
-  --angle-market:     #57E0A4;  /* 11.85:1 */
-  --angle-financial:  #FFDE8A;  /* 15.11:1 -- chroma 0.110, above the
-                                 * grey-reading floor. #FFEFBC failed it at
-                                 * 0.068, which mattered here because the
-                                 * not-measured token is also neutral. */
+  --angle-regulatory: #583DFC;  /*  3.31:1  L*42 C110 */
+  --angle-sentiment:  #E6097A;  /*  4.43:1  L*50 C 78 */
+  --angle-tech:       #1B95C9;  /*  5.85:1  L*58 C 38 */
+  --angle-market:     #10C166;  /*  8.39:1  L*69 C 70 */
+  /* Chroma 78, and that is deliberate. The pale cream the search first
+   * returned (#FEE2B0) sits 13.9 CIEDE2000 from --text-primary, close enough
+   * that a gold data point starts reading as body text; this gold is 28.0
+   * away. The chroma floor is raised for this angle only, because it is the
+   * pale end of the staircase where the collision can happen. */
+  --angle-financial:  #FFC72A;  /* 12.70:1  L*83 C 78 */
 
-  /* Regulatory is the UNBUILT angle. It is rendered through this filter
-   * everywhere, so "no connector exists" is visible before you read a word. */
   --angle-unbuilt-filter: saturate(0.35) opacity(0.55);
 
   /* ---- beam --------------------------------------------------------- */
-  --beam-incident:   #FFF8E7;   /* 18.65:1 -- the single beam before the prism */
+  --beam-incident:   #FFF6EA;   /* 17.34:1 -- the single beam before the prism */
 
-  /* ---- status ------------------------------------------------------
-   * NEVER used as the only encoder. Every status carries a text label, and
-   * charts add a hatch, because provider-error sits close in luminance to
-   * --angle-sentiment (1.03) and genuine-zero to --angle-regulatory (1.07). */
-  --status-provider-error: #E8603F;
-  --status-genuine-zero:   #6B6B80;
-  /* Deliberately the dimmest, lowest-chroma token in the system: absent data
-   * must never read as data. This is what V2-L6 looks like on screen. */
-  --status-not-measured:   #3A3A4A;
+  /* ---- status ------------------------------------------------------- */
+  --status-provider-error: #FF5C3D;
+  --status-genuine-zero:   #7A6A5C;
+  /* The dimmest, lowest-chroma DATA token in the system. */
+  --status-not-measured:   #4A3C30;
+
+  /* ---- surfaces that carry their own alpha ---------------------------- */
+  --scrim:           rgba(12, 9, 7, 0.84);
+  --nav-bg:          rgba(12, 9, 7, 0.92);
+  --dialog-backdrop: rgba(12, 9, 7, 0.72);
+
+  /* The spectrum wash, warmed to the ember base. */
+  --wash-beam:       rgba(255, 122, 47, 0.12);
+  --wash-regulatory: rgba(88, 61, 252, 0.10);
+  --wash-tech:       rgba(27, 149, 201, 0.09);
+  --wash-market:     rgba(16, 193, 102, 0.07);
+  --wash-sentiment:  rgba(230, 9, 122, 0.07);
+
+  --quote-bg:        rgba(255, 199, 42, 0.05);
+  --limits-border:   rgba(255, 122, 47, 0.35);
+  --limits-hover:    rgba(255, 122, 47, 0.10);
+
+  --track:           rgba(251, 244, 236, 0.06);
+  --link-underline:  rgba(255, 154, 90, 0.45);
+  --wrong-tint:      rgba(255, 92, 61, 0.10);
+  --alert-border:    rgba(255, 92, 61, 0.45);
 
   /* ---- glass -------------------------------------------------------- */
-  --glass-bg:     rgba(29, 29, 43, 0.55);
-  /* Opaque enough to need no live blur behind it. See the .panel rule: blur on
-   * every panel froze the compositor, so panels use this and only the sticky
-   * nav still pays for backdrop-filter. */
-  --glass-bg-solid: rgba(24, 24, 36, 0.88);
-  --glass-border: rgba(244, 244, 248, 0.10);
-  --glass-blur:   14px;
-
-  /* ---- surfaces that carry their own alpha ---------------------------
-   * These were literals in app.css until phase (f), which made the header
-   * comment above false: the page background is the SCRIM, not --base, so a
-   * new palette applied to --base changed the text and left the page dark.
-   * They live here now, and every value below is the exact literal that was
-   * in app.css -- this move changes no pixel of the current theme. */
-
-  /* The page background proper. The animated canvas and the spectrum wash sit
-   * beneath it, so drifting light can never lift the background under body
-   * text far enough to break the verified contrast ratios. 0.84 is solved,
-   * not chosen; the derivation is on the body::after rule in app.css. */
-  --scrim:           rgba(10, 10, 15, 0.84);
-  /* The sticky nav, opaque enough that nothing shows through it. */
-  --nav-bg:          rgba(10, 10, 15, 0.92);
-  --dialog-backdrop: rgba(10, 10, 15, 0.72);
-
-  /* The spectrum wash: one warm beam at the top bleeding into the five angle
-   * hues. Each is its own angle colour at low alpha. */
-  --wash-beam:       rgba(255, 248, 231, 0.10);
-  --wash-regulatory: rgba(111, 79, 214, 0.10);
-  --wash-tech:       rgba(63, 181, 240, 0.09);
-  --wash-market:     rgba(87, 224, 164, 0.07);
-  --wash-sentiment:  rgba(239, 74, 133, 0.07);
-
-  /* Quotes and the limits link, tinted with --angle-financial. */
-  --quote-bg:        rgba(255, 239, 188, 0.04);
-  --limits-border:   rgba(255, 239, 188, 0.30);
-  --limits-hover:    rgba(255, 239, 188, 0.08);
-
-  --track:           rgba(244, 244, 248, 0.05);
-  --link-underline:  rgba(63, 181, 240, 0.40);
-  /* The tint behind a row whose prediction was wrong. */
-  --wrong-tint:      rgba(232, 96, 63, 0.09);
-  /* The one panel that is an alert. */
-  --alert-border:    rgba(232, 96, 63, 0.40);
+  --glass-bg:       rgba(32, 24, 17, 0.58);
+  --glass-bg-solid: rgba(22, 17, 13, 0.90);
+  --glass-border:   rgba(255, 122, 47, 0.22);
+  --glass-blur:     14px;
+  --glass-sheen:    rgba(255, 214, 184, 0.16);
+  --glass-shadow:   rgba(0, 0, 0, 0.55);
 
   /* ---- type --------------------------------------------------------- */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
