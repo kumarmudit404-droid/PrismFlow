@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PrismFlow — Scores</title>
+<meta name="description" content="Every committed number PrismFlow has produced, with its source file, filterable by domain, angle and system. Nothing here is sample data.">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/app.css">
+<script src="assets/js/reveal-failsafe.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#sc-kpis">Skip to content</a>
+
+<nav class="site-nav" aria-label="Chapters">
+  <div class="wrap site-nav__inner">
+    <span class="site-nav__brand">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.5 16.5 15h-15z" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+      PrismFlow
+    </span>
+    <ul class="site-nav__list">
+      <li><a class="site-nav__link" href="index.html#ch1">1 · Problem</a></li>
+      <li><a class="site-nav__link" href="index.html#ch2">2 · V1</a></li>
+      <li><a class="site-nav__link" href="index.html#ch3">3 · V2</a></li>
+      <li><a class="site-nav__link" href="index.html#ch4">4 · Results</a></li>
+      <li><a class="site-nav__link" href="index.html#ch5">5 · Explore</a></li>
+      <li><a class="site-nav__link" href="scores.html" aria-current="page">Scores</a></li>
+      <li><a class="site-nav__link site-nav__link--limits" href="index.html#limits">Known limitations</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+
+<section class="chapter wrap" id="sc-kpis" aria-labelledby="sc-h">
+  <p class="chapter__num">Scores</p>
+  <h2 class="chapter__title" id="sc-h">Every committed number, in one place</h2>
+  <p class="chapter__lede">
+    Nothing on this page is sample, mock or placeholder data. Every figure is
+    read from a file under <code>web/data/</code>, which
+    <code>web/build_data.py</code> copied from a committed result file and
+    stamped with a sha256 — hover any figure, table caption or the
+    <span class="src">source</span> line under a panel to see exactly which
+    file and field it came from. Where a committed file has no value for a
+    cell, this page prints <span class="pill pill--notmeasured">not measured</span>
+    — never a zero, a blank, or a guess.
+  </p>
+
+  <div class="grid grid--4" id="sc-kpi-cards">
+    <div class="panel stat"><span class="stat__value">loading…</span></div>
+  </div>
+
+  <div class="panel panel--tight" id="sc-filters" style="margin-top:var(--sp-3)">
+    <div class="ds-controls" style="margin:0">
+      <label class="ds-ctl"><span class="ds-ctl__label">domain</span>
+        <select class="ds-ctl__input" id="sc-f-domain"><option value="">all</option></select>
+      </label>
+      <label class="ds-ctl"><span class="ds-ctl__label">angle</span>
+        <select class="ds-ctl__input" id="sc-f-angle"><option value="">all</option></select>
+      </label>
+      <label class="ds-ctl"><span class="ds-ctl__label">system</span>
+        <select class="ds-ctl__input" id="sc-f-system"><option value="">all</option></select>
+      </label>
+      <button type="button" class="ds-ctl__reset" id="sc-f-reset">reset</button>
+    </div>
+    <p class="axis-note" style="margin-top:var(--sp-2)">
+      domain and angle filter the two V2 panels below; system filters the
+      three V1 panels. A filter that does not apply to a panel is ignored by
+      that panel, not silently misapplied.
+    </p>
+  </div>
+</section>
+
+<section class="chapter wrap" id="sc-v2dataset" aria-labelledby="sc-v2dataset-h">
+  <p class="chapter__num">V2</p>
+  <h2 class="chapter__title" id="sc-v2dataset-h">Dataset composition</h2>
+  <div class="placeholder" id="sc-panel-domains">loading committed data…</div>
+</section>
+
+<section class="chapter wrap" id="sc-v2coverage" aria-labelledby="sc-v2coverage-h">
+  <p class="chapter__num">V2</p>
+  <h2 class="chapter__title" id="sc-v2coverage-h">Per-angle retrieval coverage</h2>
+  <p class="chapter__lede">
+    Single-pass pipeline run (GROQ, LexicalAdjudicator) — <strong>not a Part 24
+    finding</strong>: no seed loop, no mean, no standard deviation.
+  </p>
+  <div class="placeholder" id="sc-panel-coverage">loading committed data…</div>
+</section>
+
+<section class="chapter wrap" id="sc-failures" aria-labelledby="sc-failures-h">
+  <p class="chapter__num">Real failures</p>
+  <h2 class="chapter__title" id="sc-failures-h">Where PrismFlow lost, and where V2 produced nothing</h2>
+  <p class="chapter__lede">
+    Every non-clean V1 attack condition where PrismFlow's mean success rate
+    was higher than naive's — not the worst one, all of them — plus every V2
+    row that produced zero claims, split by cause.
+  </p>
+  <div class="placeholder" id="sc-panel-failures">loading committed data…</div>
+</section>
+
+<section class="chapter wrap" id="sc-attack" aria-labelledby="sc-attack-h">
+  <p class="chapter__num">V1</p>
+  <h2 class="chapter__title" id="sc-attack-h">Attack success rate (Chorus / PGD)</h2>
+  <p class="chapter__lede">Part 09. 5 seeds per cell, mean and standard deviation. Higher is worse.</p>
+  <div class="placeholder" id="sc-panel-attack">loading committed data…</div>
+</section>
+
+<section class="chapter wrap" id="sc-calibration" aria-labelledby="sc-calibration-h">
+  <p class="chapter__num">V1</p>
+  <h2 class="chapter__title" id="sc-calibration-h">Calibration under view duplication</h2>
+  <p class="chapter__lede">5 seeds per cell. naive has no ENIV or efficiency ratio by construction — those cells read "not measured", not zero.</p>
+  <div class="placeholder" id="sc-panel-calibration">loading committed data…</div>
+</section>
+
+<section class="chapter wrap" id="sc-eniv" aria-labelledby="sc-eniv-h">
+  <p class="chapter__num">V1</p>
+  <h2 class="chapter__title" id="sc-eniv-h">ENIV under view duplication</h2>
+  <p class="chapter__lede">rho = 0.0 shown; the committed grid also has rho = 0.5 — see the table.</p>
+  <div class="placeholder" id="sc-panel-eniv">loading committed data…</div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p style="max-width:none;margin:0">
+      Static site. Reads committed files only — no live API calls, no credentials.
+      Every figure names its source file. Where a number does not exist in a
+      committed file, this page says <span class="pill pill--notmeasured">not measured</span>
+      rather than computing one.
+    </p>
+  </div>
+</footer>
+
+<script src="assets/js/scores.js"></script>
+</body>
+</html>

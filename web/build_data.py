@@ -320,6 +320,67 @@ def build_v1_failures() -> dict:
 
 
 # --------------------------------------------------------------------------
+# 2c. V1 -- calibration under view duplication
+# --------------------------------------------------------------------------
+
+CALIBRATION_K = (0, 2, 4)
+CALIBRATION_SYSTEMS = ("naive", "prismflow", "naive_weights_discounted")
+CALIBRATION_METRICS = (
+    "accuracy", "prob_mean_confidence", "prob_ece", "prob_mce", "brier",
+    "brier_reliability", "brier_resolution", "prob_aurc", "eniv",
+    "efficiency_ratio", "mean_dependence",
+)
+
+
+def build_calibration() -> dict:
+    """Calibration under view duplication -- results/calibration_duplicated/.
+
+    Same shape as build_v1_surface(): a flat grid of cells, one per (k,
+    system), each carrying mean/std/n_seeds per metric straight out of the
+    committed metrics.json. naive's eniv/efficiency_ratio/mean_dependence are
+    genuinely absent (ENIV is not defined for the undiscounted baseline) --
+    metrics.json itself records them as {"mean": null, "n_seeds": 0}, so they
+    are copied through as null and the page renders "not measured", not 0.
+    """
+    base = ROOT / "results/calibration_duplicated"
+    sources = [base / "config_used.json"]
+    cells = []
+    for k in CALIBRATION_K:
+        for system in CALIBRATION_SYSTEMS:
+            src = base / ("k%d_%s" % (k, system)) / "metrics.json"
+            if not src.exists():
+                continue
+            sources.append(src)
+            raw = json.loads(src.read_text(encoding="utf-8"))
+            summary = raw.get("summary", {})
+            cell = {
+                "k": k, "system": system,
+                "n_views": 4 + k,
+                "n_seeds": clean((summary.get("accuracy") or {}).get("n_seeds")),
+            }
+            for metric in CALIBRATION_METRICS:
+                m = summary.get(metric) or {}
+                cell[metric + "_mean"] = clean(m.get("mean"))
+                cell[metric + "_std"] = clean(m.get("std"))
+            cells.append(cell)
+
+    return {
+        "title": "Calibration under view duplication",
+        "axes": {
+            "k": {"label": "duplicate copies of view 0", "values": list(CALIBRATION_K)},
+            "system": {"label": "system", "values": list(CALIBRATION_SYSTEMS)},
+        },
+        "metrics": list(CALIBRATION_METRICS),
+        "cells": cells,
+        "label": ("5 seeds per cell, mean and standard deviation, from the "
+                  "committed calibration_duplicated run. naive has no ENIV, "
+                  "efficiency_ratio or mean_dependence by construction -- "
+                  "those cells are \"not measured\", not zero."),
+        "provenance": provenance(*sources),
+    }
+
+
+# --------------------------------------------------------------------------
 # 3. V2 -- per-row angle coverage over the 48 rows
 # --------------------------------------------------------------------------
 
@@ -888,6 +949,7 @@ def main() -> int:
         "v1_surface.json": build_v1_surface,
         "v1_attack.json": build_v1_attack,
         "v1_failures.json": build_v1_failures,
+        "calibration_duplicated.json": build_calibration,
         "v2_coverage.json": build_v2_coverage,
         "v2_dataset.json": build_v2_dataset,
         "v1_figures.json": build_figures,
