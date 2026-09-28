@@ -1,0 +1,9 @@
+{
+  "file": "part24_labeled_dataset.xlsx",
+  "title": "Part 24 labelled dataset (workbook)",
+  "source": "data/v2/part24_labeled_dataset.xlsx",
+  "sha256": "b9604dee9a645efce12461fdb2497545761bc6ccf6a8d86ac6f9919de377b4cc",
+  "bytes": 19505,
+  "note": "the sheet the exporter reads. Row 040 is present in the sheet with every field empty, and id 001 does not exist because the EX example row occupies that slot.",
+  "missing": null
+}

@@ -1,0 +1,3200 @@
+{
+  "title": "V1 engine, run per scenario",
+  "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+  "is_evidence": false,
+  "seed": 0,
+  "n_samples": 256,
+  "training": {
+    "epochs": 12,
+    "batch_size": 64,
+    "lr": 0.001,
+    "anneal_epochs": 6,
+    "per_view_loss_weight": 1.0
+  },
+  "data": {
+    "n_views": 4,
+    "rho": 0.3
+  },
+  "scenario_order": [
+    "clean",
+    "clone",
+    "missing",
+    "noisy",
+    "chorus",
+    "adaptive"
+  ],
+  "scenario_descriptions": {
+    "clean": "No corruption. The baseline every other scenario is read against.",
+    "clone": "k exact duplicates of one view are appended -- redundancy with no new information.",
+    "missing": "Each (sample, view) is dropped independently at the given rate.",
+    "noisy": "Gaussian noise on one view. Part 08: this makes a view LESS dependent, not more.",
+    "chorus": "Part 09 collusive attack: k views optimised jointly to agree on one wrong class.",
+    "adaptive": "Part 14: the Chorus attacker plus an evasion term that penalises measured dependence."
+  },
+  "engine": {
+    "note": "every value is a return value of these functions, reached through app.py, which this build imports and does not edit",
+    "synthetic_loader": "experiments.calibration.run_calibration.build_dataset + train",
+    "real_loader": "prismflow.data.real_datasets.build_real_dataset + experiments.real.run_real.train_real",
+    "corruptions": "prismflow.data.corruption.drop_views / add_noise",
+    "attacks": "prismflow.attacks.chorus.chorus_attack / prismflow.attacks.adaptive.adaptive_attack",
+    "forward": "prismflow.models.defended.DefendedPrismFlow",
+    "dependence": "prismflow.statistics.dependence.feature_dependence_matrix",
+    "eniv": "prismflow.eniv.eniv.compute_eniv",
+    "tail": "prismflow.statistics.tail_dependence.tail_dependence_matrix",
+    "threshold": "prismflow.statistics.suspicion.calibrate_threshold"
+  },
+  "datasets": {
+    "synthetic": {
+      "title": "synthetic (known rho)",
+      "scenarios": {
+        "clean": {
+          "scenario": "clean",
+          "description": "No corruption. The baseline every other scenario is read against.",
+          "options": {},
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "view 0",
+            "view 1",
+            "view 2",
+            "view 3"
+          ],
+          "view_states": [
+            "available",
+            "available",
+            "available",
+            "available"
+          ],
+          "compromised_views": [],
+          "present_fraction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 4,
+          "effective_views": 3.164406460956875,
+          "efficiency_ratio": 0.7911016152392187,
+          "mean_dependence": 0.2768840147109833,
+          "dependence": [
+            [
+              1.0,
+              0.3112522501035227,
+              0.24526612581317894,
+              0.2622681586650996
+            ],
+            [
+              0.3112522501035227,
+              1.0,
+              0.3656766791735717,
+              0.26999330438833896
+            ],
+            [
+              0.24526612581317894,
+              0.3656766791735717,
+              1.0,
+              0.2068475701221877
+            ],
+            [
+              0.2622681586650996,
+              0.26999330438833896,
+              0.2068475701221877,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "view 1",
+            "view 2"
+          ],
+          "most_redundant_lambda_u": 0.16,
+          "tail_lambda_u_mean": 0.17999999999999997,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.828125,
+          "sample_0": {
+            "prediction": 1,
+            "true_label": 1,
+            "confidence": 0.8368451595306396,
+            "uncertainty": 0.16315482556819916,
+            "max_probability": 0.8902902603149414,
+            "per_view_evidence": [
+              [
+                7.610177362948889e-06,
+                4.842965126037598,
+                1.3300739283295115e-06
+              ],
+              [
+                7.659733455511741e-06,
+                2.4567155838012695,
+                0.0001594087079865858
+              ],
+              [
+                0.0003312937042210251,
+                4.09562873840332,
+                2.6621471988619305e-05
+              ],
+              [
+                0.02934696152806282,
+                1.5204461812973022,
+                2.7287553621135885e-06
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 44,
+            "n_correct": 212,
+            "examples": [
+              {
+                "index": 21,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.6638175249099731,
+                "max_probability": 0.4983094334602356,
+                "uncertainty": 0.33618244528770447
+              },
+              {
+                "index": 26,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.501835823059082,
+                "max_probability": 0.4204349219799042,
+                "uncertainty": 0.49816417694091797
+              },
+              {
+                "index": 29,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.7298802137374878,
+                "max_probability": 0.6471766233444214,
+                "uncertainty": 0.2701197862625122
+              },
+              {
+                "index": 37,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.6193078756332397,
+                "max_probability": 0.721895694732666,
+                "uncertainty": 0.38069209456443787
+              },
+              {
+                "index": 41,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.4507354497909546,
+                "max_probability": 0.46546438336372375,
+                "uncertainty": 0.5492645502090454
+              },
+              {
+                "index": 45,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.4612577557563782,
+                "max_probability": 0.48083004355430603,
+                "uncertainty": 0.5387422442436218
+              },
+              {
+                "index": 52,
+                "predicted": 0,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.4690238833427429,
+                "max_probability": 0.4380592703819275,
+                "uncertainty": 0.5309761166572571
+              },
+              {
+                "index": 60,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.43705713748931885,
+                "max_probability": 0.4167802035808563,
+                "uncertainty": 0.5629428625106812
+              },
+              {
+                "index": 66,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.6183836460113525,
+                "max_probability": 0.4553675651550293,
+                "uncertainty": 0.3816163241863251
+              },
+              {
+                "index": 0,
+                "predicted": 1,
+                "true": 1,
+                "correct": true,
+                "confidence": 0.8368451595306396,
+                "max_probability": 0.8902902603149414,
+                "uncertainty": 0.16315482556819916
+              },
+              {
+                "index": 1,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.7102912664413452,
+                "max_probability": 0.791228711605072,
+                "uncertainty": 0.2897087633609772
+              },
+              {
+                "index": 2,
+                "predicted": 1,
+                "true": 1,
+                "correct": true,
+                "confidence": 0.7794962525367737,
+                "max_probability": 0.8509639501571655,
+                "uncertainty": 0.22050374746322632
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.28623136339653166,
+            "flag_rate": 0.05078125,
+            "threshold": 0.31241860486591483,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        },
+        "clone": {
+          "scenario": "clone",
+          "description": "k exact duplicates of one view are appended -- redundancy with no new information.",
+          "options": {
+            "clone_k": 2
+          },
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "view 0",
+            "view 1",
+            "view 2",
+            "view 3",
+            "view 4",
+            "view 5"
+          ],
+          "view_states": [
+            "available",
+            "available",
+            "available",
+            "available",
+            "duplicate",
+            "duplicate"
+          ],
+          "compromised_views": [],
+          "present_fraction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 6,
+          "effective_views": 4.942482696353938,
+          "efficiency_ratio": 0.8237471160589896,
+          "mean_dependence": 0.2105030325782193,
+          "dependence": [
+            [
+              1.0,
+              0.22570341854420406,
+              0.19645256697489338,
+              0.20451476485943337,
+              0.15101154352276153,
+              0.25639905450264827
+            ],
+            [
+              0.22570341854420406,
+              1.0,
+              0.2696994588161839,
+              0.3554408760057238,
+              0.11930763804323857,
+              0.14651601642315543
+            ],
+            [
+              0.19645256697489338,
+              0.2696994588161839,
+              1.0,
+              0.1900803752297887,
+              0.19182720199263367,
+              0.18255792202047885
+            ],
+            [
+              0.20451476485943337,
+              0.3554408760057238,
+              0.1900803752297887,
+              1.0,
+              0.2762508025093629,
+              0.15822016375740913
+            ],
+            [
+              0.15101154352276153,
+              0.11930763804323857,
+              0.19182720199263367,
+              0.2762508025093629,
+              1.0,
+              0.233563685471374
+            ],
+            [
+              0.25639905450264827,
+              0.14651601642315543,
+              0.18255792202047885,
+              0.15822016375740913,
+              0.233563685471374,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "view 1",
+            "view 3"
+          ],
+          "most_redundant_lambda_u": 0.16,
+          "tail_lambda_u_mean": 0.14400000000000004,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.86328125,
+          "sample_0": {
+            "prediction": 0,
+            "true_label": 0,
+            "confidence": 0.9039011597633362,
+            "uncertainty": 0.09609886258840561,
+            "max_probability": 0.9057915210723877,
+            "per_view_evidence": [
+              [
+                7.971238136291504,
+                3.514672286542009e-08,
+                4.997583891963586e-05
+              ],
+              [
+                7.861070116632618e-06,
+                2.0206398963928223,
+                6.994468293441969e-08
+              ],
+              [
+                4.495527267456055,
+                8.11711506685242e-05,
+                1.6170617982425028e-06
+              ],
+              [
+                0.963034987449646,
+                0.0015069120563566685,
+                0.009005011059343815
+              ],
+              [
+                4.514718532562256,
+                0.00017796497559174895,
+                2.4384202333749272e-05
+              ],
+              [
+                1.536388874053955,
+                0.0007378775044344366,
+                1.709220327938965e-06
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 35,
+            "n_correct": 221,
+            "examples": [
+              {
+                "index": 9,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.3990700840950012,
+                "max_probability": 0.4158695340156555,
+                "uncertainty": 0.6009299159049988
+              },
+              {
+                "index": 13,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.6439439058303833,
+                "max_probability": 0.5151184797286987,
+                "uncertainty": 0.3560560941696167
+              },
+              {
+                "index": 31,
+                "predicted": 0,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.5014430284500122,
+                "max_probability": 0.40517160296440125,
+                "uncertainty": 0.4985569715499878
+              },
+              {
+                "index": 38,
+                "predicted": 0,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.4808644652366638,
+                "max_probability": 0.5489109754562378,
+                "uncertainty": 0.5191355347633362
+              },
+              {
+                "index": 52,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.2357291579246521,
+                "max_probability": 0.3456314206123352,
+                "uncertainty": 0.7642708420753479
+              },
+              {
+                "index": 57,
+                "predicted": 1,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.46619582176208496,
+                "max_probability": 0.44983768463134766,
+                "uncertainty": 0.533804178237915
+              },
+              {
+                "index": 78,
+                "predicted": 0,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.5950522422790527,
+                "max_probability": 0.4724634885787964,
+                "uncertainty": 0.4049477279186249
+              },
+              {
+                "index": 84,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.4384514093399048,
+                "max_probability": 0.41601017117500305,
+                "uncertainty": 0.5615485906600952
+              },
+              {
+                "index": 85,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.271989107131958,
+                "max_probability": 0.3443787097930908,
+                "uncertainty": 0.728010892868042
+              },
+              {
+                "index": 0,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9039011597633362,
+                "max_probability": 0.9057915210723877,
+                "uncertainty": 0.09609886258840561
+              },
+              {
+                "index": 1,
+                "predicted": 2,
+                "true": 2,
+                "correct": true,
+                "confidence": 0.4859728217124939,
+                "max_probability": 0.5924728512763977,
+                "uncertainty": 0.5140271782875061
+              },
+              {
+                "index": 2,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.8786826729774475,
+                "max_probability": 0.918674886226654,
+                "uncertainty": 0.12131732702255249
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.34739362514279404,
+            "flag_rate": 0.05078125,
+            "threshold": 0.3659703249751537,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        },
+        "missing": {
+          "scenario": "missing",
+          "description": "Each (sample, view) is dropped independently at the given rate.",
+          "options": {
+            "rate": 0.3
+          },
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "view 0",
+            "view 1",
+            "view 2",
+            "view 3"
+          ],
+          "view_states": [
+            "available",
+            "available",
+            "available",
+            "available"
+          ],
+          "compromised_views": [],
+          "present_fraction": [
+            0.74609375,
+            0.69921875,
+            0.69921875,
+            0.7265625
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 4,
+          "effective_views": 2.9668484659116423,
+          "efficiency_ratio": 0.7417121164779106,
+          "mean_dependence": 0.34351691021356395,
+          "dependence": [
+            [
+              1.0,
+              0.3278315205015639,
+              0.3420069949371354,
+              0.28844449317557225
+            ],
+            [
+              0.3278315205015639,
+              1.0,
+              0.3587958761693605,
+              0.4357136480312393
+            ],
+            [
+              0.3420069949371354,
+              0.3587958761693605,
+              1.0,
+              0.3083089284665122
+            ],
+            [
+              0.28844449317557225,
+              0.4357136480312393,
+              0.3083089284665122,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "view 1",
+            "view 3"
+          ],
+          "most_redundant_lambda_u": 0.16,
+          "tail_lambda_u_mean": 0.12,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.8125,
+          "sample_0": {
+            "prediction": 1,
+            "true_label": 1,
+            "confidence": 0.4513510465621948,
+            "uncertainty": 0.5486489534378052,
+            "max_probability": 0.6342332363128662,
+            "per_view_evidence": [
+              [
+                7.610177362948889e-06,
+                4.842965126037598,
+                1.3300739283295115e-06
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 48,
+            "n_correct": 208,
+            "examples": [
+              {
+                "index": 5,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.051842689514160156,
+                "max_probability": 0.3495323359966278,
+                "uncertainty": 0.9481573104858398
+              },
+              {
+                "index": 21,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.6332669854164124,
+                "max_probability": 0.4992196559906006,
+                "uncertainty": 0.36673301458358765
+              },
+              {
+                "index": 29,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.5132448673248291,
+                "max_probability": 0.5842307806015015,
+                "uncertainty": 0.4867551028728485
+              },
+              {
+                "index": 31,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.003317415714263916,
+                "max_probability": 0.3350684940814972,
+                "uncertainty": 0.9966825842857361
+              },
+              {
+                "index": 37,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.5675541162490845,
+                "max_probability": 0.6881065368652344,
+                "uncertainty": 0.4324459135532379
+              },
+              {
+                "index": 41,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.4084393382072449,
+                "max_probability": 0.4525511860847473,
+                "uncertainty": 0.5915606617927551
+              },
+              {
+                "index": 52,
+                "predicted": 0,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.387239933013916,
+                "max_probability": 0.4740195870399475,
+                "uncertainty": 0.612760066986084
+              },
+              {
+                "index": 72,
+                "predicted": 1,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.2132474184036255,
+                "max_probability": 0.4395103454589844,
+                "uncertainty": 0.7867525815963745
+              },
+              {
+                "index": 79,
+                "predicted": 0,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.5183944702148438,
+                "max_probability": 0.44475415349006653,
+                "uncertainty": 0.48160555958747864
+              },
+              {
+                "index": 0,
+                "predicted": 1,
+                "true": 1,
+                "correct": true,
+                "confidence": 0.4513510465621948,
+                "max_probability": 0.6342332363128662,
+                "uncertainty": 0.5486489534378052
+              },
+              {
+                "index": 1,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.6862805485725403,
+                "max_probability": 0.7761954069137573,
+                "uncertainty": 0.3137194514274597
+              },
+              {
+                "index": 2,
+                "predicted": 1,
+                "true": 1,
+                "correct": true,
+                "confidence": 0.5946242809295654,
+                "max_probability": 0.7263616919517517,
+                "uncertainty": 0.40537571907043457
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.10853967710242468,
+            "flag_rate": 0.0,
+            "threshold": 0.31241860486591483,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        },
+        "noisy": {
+          "scenario": "noisy",
+          "description": "Gaussian noise on one view. Part 08: this makes a view LESS dependent, not more.",
+          "options": {
+            "sigma": 2.0
+          },
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "view 0",
+            "view 1",
+            "view 2",
+            "view 3"
+          ],
+          "view_states": [
+            "noisy",
+            "available",
+            "available",
+            "available"
+          ],
+          "compromised_views": [],
+          "present_fraction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 4,
+          "effective_views": 3.2769989969569453,
+          "efficiency_ratio": 0.8192497492392363,
+          "mean_dependence": 0.217543074391267,
+          "dependence": [
+            [
+              1.0,
+              0.14993409811103334,
+              0.06700252240947716,
+              0.07347361660950336
+            ],
+            [
+              0.14993409811103334,
+              1.0,
+              0.4211419137804197,
+              0.3597329512580993
+            ],
+            [
+              0.06700252240947716,
+              0.4211419137804197,
+              1.0,
+              0.23397334417906931
+            ],
+            [
+              0.07347361660950336,
+              0.3597329512580993,
+              0.23397334417906931,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "view 1",
+            "view 2"
+          ],
+          "most_redundant_lambda_u": 0.16,
+          "tail_lambda_u_mean": 0.14666666666666664,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.80078125,
+          "sample_0": {
+            "prediction": 1,
+            "true_label": 1,
+            "confidence": 0.7023627758026123,
+            "uncertainty": 0.2976372241973877,
+            "max_probability": 0.7997795343399048,
+            "per_view_evidence": [
+              [
+                2.951255964944721e-06,
+                0.03161431849002838,
+                0.00034335057716816664
+              ],
+              [
+                7.659733455511741e-06,
+                2.4567155838012695,
+                0.0001594087079865858
+              ],
+              [
+                0.0003312937042210251,
+                4.09562873840332,
+                2.6621471988619305e-05
+              ],
+              [
+                0.02934696152806282,
+                1.5204461812973022,
+                2.7287553621135885e-06
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 51,
+            "n_correct": 205,
+            "examples": [
+              {
+                "index": 3,
+                "predicted": 0,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.7808682918548584,
+                "max_probability": 0.5342198014259338,
+                "uncertainty": 0.2191317230463028
+              },
+              {
+                "index": 5,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.08045417070388794,
+                "max_probability": 0.35236960649490356,
+                "uncertainty": 0.9195458292961121
+              },
+              {
+                "index": 19,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.3274352550506592,
+                "max_probability": 0.3906986713409424,
+                "uncertainty": 0.6725647449493408
+              },
+              {
+                "index": 20,
+                "predicted": 0,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.6857265830039978,
+                "max_probability": 0.7554726004600525,
+                "uncertainty": 0.3142734169960022
+              },
+              {
+                "index": 26,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.5262207388877869,
+                "max_probability": 0.4513304829597473,
+                "uncertainty": 0.47377926111221313
+              },
+              {
+                "index": 37,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.619406521320343,
+                "max_probability": 0.7440679669380188,
+                "uncertainty": 0.380593478679657
+              },
+              {
+                "index": 41,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.39120638370513916,
+                "max_probability": 0.40905043482780457,
+                "uncertainty": 0.6087936162948608
+              },
+              {
+                "index": 45,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.47170543670654297,
+                "max_probability": 0.4854850769042969,
+                "uncertainty": 0.528294563293457
+              },
+              {
+                "index": 51,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.5980395078659058,
+                "max_probability": 0.5402032136917114,
+                "uncertainty": 0.40196049213409424
+              },
+              {
+                "index": 0,
+                "predicted": 1,
+                "true": 1,
+                "correct": true,
+                "confidence": 0.7023627758026123,
+                "max_probability": 0.7997795343399048,
+                "uncertainty": 0.2976372241973877
+              },
+              {
+                "index": 1,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.6727454662322998,
+                "max_probability": 0.7638317942619324,
+                "uncertainty": 0.3272545635700226
+              },
+              {
+                "index": 2,
+                "predicted": 1,
+                "true": 1,
+                "correct": true,
+                "confidence": 0.5784095525741577,
+                "max_probability": 0.7147031426429749,
+                "uncertainty": 0.4215904772281647
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.36327405657034845,
+            "flag_rate": 0.70703125,
+            "threshold": 0.31241860486591483,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        },
+        "chorus": {
+          "scenario": "chorus",
+          "description": "Part 09 collusive attack: k views optimised jointly to agree on one wrong class.",
+          "options": {
+            "k": 2,
+            "epsilon": 1.0,
+            "steps": 20
+          },
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "view 0",
+            "view 1",
+            "view 2",
+            "view 3"
+          ],
+          "view_states": [
+            "compromised",
+            "compromised",
+            "available",
+            "available"
+          ],
+          "compromised_views": [
+            0,
+            1
+          ],
+          "present_fraction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 4,
+          "effective_views": 2.697985092343142,
+          "efficiency_ratio": 0.6744962730857855,
+          "mean_dependence": 0.4313767479435371,
+          "dependence": [
+            [
+              1.0,
+              0.638585287020656,
+              0.35418759599627203,
+              0.38934444301559756
+            ],
+            [
+              0.638585287020656,
+              1.0,
+              0.4052449028891444,
+              0.38098482822776186
+            ],
+            [
+              0.35418759599627203,
+              0.4052449028891444,
+              1.0,
+              0.419913430511791
+            ],
+            [
+              0.38934444301559756,
+              0.38098482822776186,
+              0.419913430511791,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "view 0",
+            "view 1"
+          ],
+          "most_redundant_lambda_u": 0.16,
+          "tail_lambda_u_mean": 0.08666666666666667,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.46875,
+          "sample_0": {
+            "prediction": 1,
+            "true_label": 1,
+            "confidence": 0.5987963676452637,
+            "uncertainty": 0.4012036621570587,
+            "max_probability": 0.5352743268013,
+            "per_view_evidence": [
+              [
+                0.0007765170885249972,
+                7.776452548569068e-05,
+                0.6768746972084045
+              ],
+              [
+                2.299002289873897e-06,
+                9.732385478855576e-06,
+                2.5986392498016357
+              ],
+              [
+                0.0003312937042210251,
+                4.09562873840332,
+                2.6621471988619305e-05
+              ],
+              [
+                0.02934696152806282,
+                1.5204461812973022,
+                2.7287553621135885e-06
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 136,
+            "n_correct": 120,
+            "examples": [
+              {
+                "index": 1,
+                "predicted": 2,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.6287327408790588,
+                "max_probability": 0.5706555843353271,
+                "uncertainty": 0.37126725912094116
+              },
+              {
+                "index": 2,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.642351508140564,
+                "max_probability": 0.509301483631134,
+                "uncertainty": 0.35764846205711365
+              },
+              {
+                "index": 3,
+                "predicted": 0,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.3680998682975769,
+                "max_probability": 0.4299217462539673,
+                "uncertainty": 0.6319001317024231
+              },
+              {
+                "index": 5,
+                "predicted": 0,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.683610200881958,
+                "max_probability": 0.77320396900177,
+                "uncertainty": 0.316389799118042
+              },
+              {
+                "index": 8,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.4235379695892334,
+                "max_probability": 0.47729235887527466,
+                "uncertainty": 0.5764620304107666
+              },
+              {
+                "index": 9,
+                "predicted": 0,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.631195068359375,
+                "max_probability": 0.44873347878456116,
+                "uncertainty": 0.368804931640625
+              },
+              {
+                "index": 14,
+                "predicted": 0,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.556949257850647,
+                "max_probability": 0.6709116101264954,
+                "uncertainty": 0.44305071234703064
+              },
+              {
+                "index": 16,
+                "predicted": 1,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.5059932470321655,
+                "max_probability": 0.562697172164917,
+                "uncertainty": 0.4940067231655121
+              },
+              {
+                "index": 19,
+                "predicted": 1,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.7212275266647339,
+                "max_probability": 0.7651940584182739,
+                "uncertainty": 0.2787725031375885
+              },
+              {
+                "index": 0,
+                "predicted": 1,
+                "true": 1,
+                "correct": true,
+                "confidence": 0.5987963676452637,
+                "max_probability": 0.5352743268013,
+                "uncertainty": 0.4012036621570587
+              },
+              {
+                "index": 4,
+                "predicted": 1,
+                "true": 1,
+                "correct": true,
+                "confidence": 0.6009272336959839,
+                "max_probability": 0.5828455090522766,
+                "uncertainty": 0.3990727663040161
+              },
+              {
+                "index": 6,
+                "predicted": 2,
+                "true": 2,
+                "correct": true,
+                "confidence": 0.7374380230903625,
+                "max_probability": 0.4958963096141815,
+                "uncertainty": 0.26256197690963745
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.28850116776207135,
+            "flag_rate": 0.61328125,
+            "threshold": 0.31241860486591483,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        },
+        "adaptive": {
+          "scenario": "adaptive",
+          "description": "Part 14: the Chorus attacker plus an evasion term that penalises measured dependence.",
+          "options": {
+            "k": 2,
+            "epsilon": 1.0,
+            "steps": 20,
+            "gamma": 5.0,
+            "tau": 0.2
+          },
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "view 0",
+            "view 1",
+            "view 2",
+            "view 3"
+          ],
+          "view_states": [
+            "compromised",
+            "compromised",
+            "available",
+            "available"
+          ],
+          "compromised_views": [
+            0,
+            1
+          ],
+          "present_fraction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 4,
+          "effective_views": 2.9528338777371186,
+          "efficiency_ratio": 0.7382084694342796,
+          "mean_dependence": 0.34661634529710494,
+          "dependence": [
+            [
+              1.0,
+              0.3213345738760883,
+              0.26509515823404,
+              0.2893280308783736
+            ],
+            [
+              0.3213345738760883,
+              1.0,
+              0.37912489821150985,
+              0.3656426128525305
+            ],
+            [
+              0.26509515823404,
+              0.37912489821150985,
+              1.0,
+              0.45917279773008735
+            ],
+            [
+              0.2893280308783736,
+              0.3656426128525305,
+              0.45917279773008735,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "view 2",
+            "view 3"
+          ],
+          "most_redundant_lambda_u": 0.2,
+          "tail_lambda_u_mean": 0.06,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.51953125,
+          "sample_0": {
+            "prediction": 1,
+            "true_label": 1,
+            "confidence": 0.5984328389167786,
+            "uncertainty": 0.40156716108322144,
+            "max_probability": 0.56511390209198,
+            "per_view_evidence": [
+              [
+                0.0003317938244435936,
+                0.06655733287334442,
+                0.0011484269052743912
+              ],
+              [
+                2.3494155811931705e-06,
+                1.0144910447706934e-05,
+                2.5584559440612793
+              ],
+              [
+                0.0003312937042210251,
+                4.09562873840332,
+                2.6621471988619305e-05
+              ],
+              [
+                0.02934696152806282,
+                1.5204461812973022,
+                2.7287553621135885e-06
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 123,
+            "n_correct": 133,
+            "examples": [
+              {
+                "index": 2,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.6651046276092529,
+                "max_probability": 0.5310771465301514,
+                "uncertainty": 0.33489540219306946
+              },
+              {
+                "index": 3,
+                "predicted": 0,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.36964768171310425,
+                "max_probability": 0.4370858669281006,
+                "uncertainty": 0.6303523182868958
+              },
+              {
+                "index": 5,
+                "predicted": 0,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.7125468254089355,
+                "max_probability": 0.7933434247970581,
+                "uncertainty": 0.28745317459106445
+              },
+              {
+                "index": 8,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.46154534816741943,
+                "max_probability": 0.48167210817337036,
+                "uncertainty": 0.5384546518325806
+              },
+              {
+                "index": 9,
+                "predicted": 0,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.6710792779922485,
+                "max_probability": 0.4752855598926544,
+                "uncertainty": 0.32892075181007385
+              },
+              {
+                "index": 12,
+                "predicted": 0,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.6475293636322021,
+                "max_probability": 0.45297643542289734,
+                "uncertainty": 0.35247060656547546
+              },
+              {
+                "index": 14,
+                "predicted": 0,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.5940845012664795,
+                "max_probability": 0.6506469249725342,
+                "uncertainty": 0.4059155285358429
+              },
+              {
+                "index": 16,
+                "predicted": 1,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.5381286144256592,
+                "max_probability": 0.5795209407806396,
+                "uncertainty": 0.4618714153766632
+              },
+              {
+                "index": 19,
+                "predicted": 1,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.7389811277389526,
+                "max_probability": 0.7780912518501282,
+                "uncertainty": 0.261018842458725
+              },
+              {
+                "index": 0,
+                "predicted": 1,
+                "true": 1,
+                "correct": true,
+                "confidence": 0.5984328389167786,
+                "max_probability": 0.56511390209198,
+                "uncertainty": 0.40156716108322144
+              },
+              {
+                "index": 1,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.6185822486877441,
+                "max_probability": 0.43396222591400146,
+                "uncertainty": 0.38141778111457825
+              },
+              {
+                "index": 4,
+                "predicted": 1,
+                "true": 1,
+                "correct": true,
+                "confidence": 0.5870372653007507,
+                "max_probability": 0.5826113224029541,
+                "uncertainty": 0.41296273469924927
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.36474016876044957,
+            "flag_rate": 0.78125,
+            "threshold": 0.31241860486591483,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        }
+      },
+      "errors": {}
+    },
+    "handwritten": {
+      "title": "handwritten (real, 6 views)",
+      "scenarios": {
+        "clean": {
+          "scenario": "clean",
+          "description": "No corruption. The baseline every other scenario is read against.",
+          "options": {},
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "fou",
+            "fac",
+            "kar",
+            "pix",
+            "zer",
+            "mor"
+          ],
+          "view_states": [
+            "available",
+            "available",
+            "available",
+            "available",
+            "available",
+            "available"
+          ],
+          "compromised_views": [],
+          "present_fraction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 6,
+          "effective_views": 3.615908872960445,
+          "efficiency_ratio": 0.6026514788267409,
+          "mean_dependence": 0.4458610119096252,
+          "dependence": [
+            [
+              1.0,
+              0.2707550259596099,
+              0.33424311995927686,
+              0.33168433596795205,
+              0.23042753740519792,
+              0.1930231852905587
+            ],
+            [
+              0.2707550259596099,
+              1.0,
+              0.6487750117657399,
+              0.8111874913419345,
+              0.6438763205238355,
+              0.4304474534424895
+            ],
+            [
+              0.33424311995927686,
+              0.6487750117657399,
+              1.0,
+              0.8162308289293674,
+              0.493610255492038,
+              0.134781776895338
+            ],
+            [
+              0.33168433596795205,
+              0.8111874913419345,
+              0.8162308289293674,
+              1.0,
+              0.6625143788391052,
+              0.2744636969228229
+            ],
+            [
+              0.23042753740519792,
+              0.6438763205238355,
+              0.493610255492038,
+              0.6625143788391052,
+              1.0,
+              0.411894759909114
+            ],
+            [
+              0.1930231852905587,
+              0.4304474534424895,
+              0.134781776895338,
+              0.2744636969228229,
+              0.411894759909114,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "kar",
+            "pix"
+          ],
+          "most_redundant_lambda_u": 0.32,
+          "tail_lambda_u_mean": 0.08533333333333332,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.99609375,
+          "sample_0": {
+            "prediction": 0,
+            "true_label": 0,
+            "confidence": 0.9554722309112549,
+            "uncertainty": 0.04452773928642273,
+            "max_probability": 0.958511233329773,
+            "per_view_evidence": [
+              [
+                59.89262390136719,
+                3.4844418905777275e-08,
+                1.074556482807574e-28,
+                1.567985993831903e-28,
+                0.00013098277850076556,
+                5.7295856427386216e-12,
+                0.0001014950466924347,
+                0.00026927809813059866,
+                3.539959937595011e-13,
+                0.0017114004585891962
+              ],
+              [
+                23.340559005737305,
+                1.1670013636152864e-16,
+                1.5930095287330914e-07,
+                7.662984558010066e-08,
+                6.640005767444279e-10,
+                2.442094454514266e-16,
+                2.6971719128965344e-13,
+                2.3156708495175593e-10,
+                0.006372247822582722,
+                4.932344706715158e-21
+              ],
+              [
+                0.15408110618591309,
+                0.0015936220297589898,
+                0.0004714526003226638,
+                1.1559245649550576e-06,
+                4.6049496660316436e-08,
+                0.003959821071475744,
+                1.1617962627497036e-06,
+                0.00010211316839559004,
+                0.13395915925502777,
+                0.009624429047107697
+              ],
+              [
+                19.79586410522461,
+                0.742686927318573,
+                1.6614288824712276e-06,
+                1.3116769878251944e-05,
+                3.110814641897397e-21,
+                3.717540598274782e-12,
+                4.976237200082778e-10,
+                1.3257958743166914e-15,
+                2.420391638224828e-07,
+                1.801453002612044e-13
+              ],
+              [
+                9.575661659240723,
+                5.4029642342356965e-06,
+                0.001252814196050167,
+                0.005693214945495129,
+                0.00012070687080267817,
+                0.028902987018227577,
+                0.00047053268644958735,
+                1.700636576007497e-10,
+                0.0002150815853383392,
+                1.4610367543355096e-05
+              ],
+              [
+                24.80673599243164,
+                0.06629273295402527,
+                0.001281311153434217,
+                4.895477800914705e-08,
+                1.5511291140413164e-09,
+                4.42218265561678e-07,
+                0.0641324371099472,
+                0.0019627686124294996,
+                1.0069738376472515e-09,
+                0.042683348059654236
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 1,
+            "n_correct": 255,
+            "examples": [
+              {
+                "index": 216,
+                "predicted": 9,
+                "true": 7,
+                "correct": false,
+                "confidence": 0.6470258235931396,
+                "max_probability": 0.4890667200088501,
+                "uncertainty": 0.35297417640686035
+              },
+              {
+                "index": 0,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9554722309112549,
+                "max_probability": 0.958511233329773,
+                "uncertainty": 0.04452773928642273
+              },
+              {
+                "index": 1,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9522632956504822,
+                "max_probability": 0.9551742076873779,
+                "uncertainty": 0.04773670434951782
+              },
+              {
+                "index": 2,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9552910327911377,
+                "max_probability": 0.9591253399848938,
+                "uncertainty": 0.044708993285894394
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.2772926879779002,
+            "flag_rate": 0.05078125,
+            "threshold": 0.35237787812853383,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        },
+        "clone": {
+          "scenario": "clone",
+          "description": "k exact duplicates of one view are appended -- redundancy with no new information.",
+          "options": {
+            "clone_k": 2
+          },
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "fou",
+            "fac",
+            "kar",
+            "pix",
+            "zer",
+            "mor",
+            "fou copy 1",
+            "fou copy 2"
+          ],
+          "view_states": [
+            "available",
+            "available",
+            "available",
+            "available",
+            "available",
+            "available",
+            "duplicate",
+            "duplicate"
+          ],
+          "compromised_views": [],
+          "present_fraction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 8,
+          "effective_views": 3.8885195534985075,
+          "efficiency_ratio": 0.48606494418731344,
+          "mean_dependence": 0.44700141211656186,
+          "dependence": [
+            [
+              1.0,
+              0.25413391856992945,
+              0.2446046567748842,
+              0.2905137805508521,
+              0.23330937049875192,
+              0.23345232005855462,
+              0.9542390319847655,
+              0.9409272027357777
+            ],
+            [
+              0.25413391856992945,
+              1.0,
+              0.6717023024958684,
+              0.7885496112796742,
+              0.614386085010225,
+              0.4053651391661385,
+              0.36711665688471457,
+              0.411223739464087
+            ],
+            [
+              0.2446046567748842,
+              0.6717023024958684,
+              1.0,
+              0.7950940271489317,
+              0.5101479689807996,
+              0.24821361321260227,
+              0.32609855498952,
+              0.28335483552244484
+            ],
+            [
+              0.2905137805508521,
+              0.7885496112796742,
+              0.7950940271489317,
+              1.0,
+              0.6460883892111073,
+              0.19850231990829217,
+              0.3490143105869799,
+              0.33406719173364247
+            ],
+            [
+              0.23330937049875192,
+              0.614386085010225,
+              0.5101479689807996,
+              0.6460883892111073,
+              1.0,
+              0.40606787563850194,
+              0.2590306276203697,
+              0.22040414112429657
+            ],
+            [
+              0.23345232005855462,
+              0.4053651391661385,
+              0.24821361321260227,
+              0.19850231990829217,
+              0.40606787563850194,
+              1.0,
+              0.28984352721510115,
+              0.31291941039967924
+            ],
+            [
+              0.9542390319847655,
+              0.36711665688471457,
+              0.32609855498952,
+              0.3490143105869799,
+              0.2590306276203697,
+              0.28984352721510115,
+              1.0,
+              0.9276689304972395
+            ],
+            [
+              0.9409272027357777,
+              0.411223739464087,
+              0.28335483552244484,
+              0.33406719173364247,
+              0.22040414112429657,
+              0.31291941039967924,
+              0.9276689304972395,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "fou",
+            "fou copy 1"
+          ],
+          "most_redundant_lambda_u": 1.0,
+          "tail_lambda_u_mean": 0.1857142857142857,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.984375,
+          "sample_0": {
+            "prediction": 0,
+            "true_label": 0,
+            "confidence": 0.9795480370521545,
+            "uncertainty": 0.020451989024877548,
+            "max_probability": 0.9814034700393677,
+            "per_view_evidence": [
+              [
+                38.26625061035156,
+                5.2269673034288644e-08,
+                2.0453704932766066e-17,
+                1.1374905951122424e-18,
+                1.9965462172422122e-07,
+                8.00921261543408e-05,
+                7.825701322872192e-05,
+                3.3161474867310895e-21,
+                4.696506294976643e-09,
+                0.001921681105159223
+              ],
+              [
+                11.771729469299316,
+                3.223425437681726e-06,
+                3.3267119477041343e-15,
+                6.341005736980321e-13,
+                1.3704645803066205e-14,
+                1.3706276114078264e-09,
+                4.568041944708057e-08,
+                0.000761049275752157,
+                0.07408727705478668,
+                1.0790440396217463e-17
+              ],
+              [
+                0.6730158925056458,
+                0.0325765460729599,
+                0.00033596300636418164,
+                1.3872495401301421e-05,
+                1.0062893096574044e-07,
+                1.773956864781212e-05,
+                2.4129519715643255e-07,
+                0.0001268629712285474,
+                0.004348799120634794,
+                4.833072307519615e-05
+              ],
+              [
+                23.082874298095703,
+                0.004944950807839632,
+                9.2477828983451e-16,
+                1.4510260650725312e-18,
+                1.8824162228980867e-09,
+                1.0771956659993975e-09,
+                2.1631695119503878e-14,
+                2.6246592824463733e-05,
+                0.0002542214351706207,
+                7.359111350524472e-06
+              ],
+              [
+                12.220184326171875,
+                5.8288794235750174e-08,
+                0.0010261856950819492,
+                6.57977579976432e-07,
+                5.489252544066403e-06,
+                0.0700625628232956,
+                0.016937345266342163,
+                1.2996945770282764e-05,
+                0.015606851316988468,
+                0.008010385558009148
+              ],
+              [
+                22.439340591430664,
+                0.02298281528055668,
+                0.004247363191097975,
+                4.101574631931726e-06,
+                6.651225135101413e-07,
+                2.954074716399191e-06,
+                0.03109879046678543,
+                0.010884200222790241,
+                3.011568425193012e-11,
+                0.03958326578140259
+              ],
+              [
+                65.63642120361328,
+                1.53505657761662e-20,
+                0.0022696154192090034,
+                7.738935580830228e-16,
+                2.942407428818683e-10,
+                1.0015436373578268e-06,
+                6.212871106470175e-09,
+                5.8588899264577776e-05,
+                1.3220296439606788e-13,
+                4.3528658011382504e-08
+              ],
+              [
+                57.29546356201172,
+                3.125549241644876e-08,
+                3.25123240502294e-17,
+                2.9256504620214612e-30,
+                0.000758084817789495,
+                0.00025757483672350645,
+                2.572903889941358e-09,
+                0.0012896794360131025,
+                7.965328396863924e-11,
+                5.556893029279308e-06
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 4,
+            "n_correct": 252,
+            "examples": [
+              {
+                "index": 37,
+                "predicted": 4,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.5573656558990479,
+                "max_probability": 0.3243275582790375,
+                "uncertainty": 0.44263431429862976
+              },
+              {
+                "index": 155,
+                "predicted": 5,
+                "true": 4,
+                "correct": false,
+                "confidence": 0.416587233543396,
+                "max_probability": 0.19676771759986877,
+                "uncertainty": 0.583412766456604
+              },
+              {
+                "index": 171,
+                "predicted": 2,
+                "true": 5,
+                "correct": false,
+                "confidence": 0.4042958617210388,
+                "max_probability": 0.2913602590560913,
+                "uncertainty": 0.5957041382789612
+              },
+              {
+                "index": 216,
+                "predicted": 9,
+                "true": 7,
+                "correct": false,
+                "confidence": 0.5618423223495483,
+                "max_probability": 0.3974820375442505,
+                "uncertainty": 0.43815770745277405
+              },
+              {
+                "index": 0,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9795480370521545,
+                "max_probability": 0.9814034700393677,
+                "uncertainty": 0.020451989024877548
+              },
+              {
+                "index": 1,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9719841480255127,
+                "max_probability": 0.9746001958847046,
+                "uncertainty": 0.02801583521068096
+              },
+              {
+                "index": 2,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9784000515937805,
+                "max_probability": 0.9803611040115356,
+                "uncertainty": 0.021599942818284035
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.28294538378704837,
+            "flag_rate": 0.05078125,
+            "threshold": 0.3314167399788503,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        },
+        "missing": {
+          "scenario": "missing",
+          "description": "Each (sample, view) is dropped independently at the given rate.",
+          "options": {
+            "rate": 0.3
+          },
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "fou",
+            "fac",
+            "kar",
+            "pix",
+            "zer",
+            "mor"
+          ],
+          "view_states": [
+            "available",
+            "available",
+            "available",
+            "available",
+            "available",
+            "available"
+          ],
+          "compromised_views": [],
+          "present_fraction": [
+            0.72265625,
+            0.7265625,
+            0.7109375,
+            0.7265625,
+            0.71484375,
+            0.66015625
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 6,
+          "effective_views": 3.26318764407508,
+          "efficiency_ratio": 0.5438646073458467,
+          "mean_dependence": 0.5470141305906111,
+          "dependence": [
+            [
+              1.0,
+              0.3894513503213578,
+              0.36742455151353837,
+              0.5984315704595231,
+              0.30955883207336765,
+              0.19228269646399926
+            ],
+            [
+              0.3894513503213578,
+              1.0,
+              0.8858914471700727,
+              0.8801599489614605,
+              0.7053766500898386,
+              0.7731781630958395
+            ],
+            [
+              0.36742455151353837,
+              0.8858914471700727,
+              1.0,
+              0.8848553195267064,
+              0.4895716222560518,
+              0.1715716561630427
+            ],
+            [
+              0.5984315704595231,
+              0.8801599489614605,
+              0.8848553195267064,
+              1.0,
+              0.6464829839511026,
+              0.5644670492445815
+            ],
+            [
+              0.30955883207336765,
+              0.7053766500898386,
+              0.4895716222560518,
+              0.6464829839511026,
+              1.0,
+              0.34650811756868505
+            ],
+            [
+              0.19228269646399926,
+              0.7731781630958395,
+              0.1715716561630427,
+              0.5644670492445815,
+              0.34650811756868505,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "fac",
+            "kar"
+          ],
+          "most_redundant_lambda_u": 0.12,
+          "tail_lambda_u_mean": 0.11466666666666667,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.96484375,
+          "sample_0": {
+            "prediction": 0,
+            "true_label": 0,
+            "confidence": 0.8626658320426941,
+            "uncertainty": 0.1373341679573059,
+            "max_probability": 0.8754278421401978,
+            "per_view_evidence": [
+              [
+                59.89262390136719,
+                3.4844418905777275e-08,
+                1.074556482807574e-28,
+                1.567985993831903e-28,
+                0.00013098277850076556,
+                5.7295856427386216e-12,
+                0.0001014950466924347,
+                0.00026927809813059866,
+                3.539959937595011e-13,
+                0.0017114004585891962
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                9.575661659240723,
+                5.4029642342356965e-06,
+                0.001252814196050167,
+                0.005693214945495129,
+                0.00012070687080267817,
+                0.028902987018227577,
+                0.00047053268644958735,
+                1.700636576007497e-10,
+                0.0002150815853383392,
+                1.4610367543355096e-05
+              ],
+              [
+                24.80673599243164,
+                0.06629273295402527,
+                0.001281311153434217,
+                4.895477800914705e-08,
+                1.5511291140413164e-09,
+                4.42218265561678e-07,
+                0.0641324371099472,
+                0.0019627686124294996,
+                1.0069738376472515e-09,
+                0.042683348059654236
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 9,
+            "n_correct": 247,
+            "examples": [
+              {
+                "index": 37,
+                "predicted": 4,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.5218068361282349,
+                "max_probability": 0.3899347484111786,
+                "uncertainty": 0.4781931936740875
+              },
+              {
+                "index": 98,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.13971930742263794,
+                "max_probability": 0.17103074491024017,
+                "uncertainty": 0.8602806925773621
+              },
+              {
+                "index": 153,
+                "predicted": 1,
+                "true": 4,
+                "correct": false,
+                "confidence": 0.07862019538879395,
+                "max_probability": 0.15168391168117523,
+                "uncertainty": 0.921379804611206
+              },
+              {
+                "index": 168,
+                "predicted": 2,
+                "true": 5,
+                "correct": false,
+                "confidence": 0.0888558030128479,
+                "max_probability": 0.17812693119049072,
+                "uncertainty": 0.9111441969871521
+              },
+              {
+                "index": 201,
+                "predicted": 9,
+                "true": 6,
+                "correct": false,
+                "confidence": 0.01524043083190918,
+                "max_probability": 0.10419200360774994,
+                "uncertainty": 0.9847595691680908
+              },
+              {
+                "index": 206,
+                "predicted": 9,
+                "true": 6,
+                "correct": false,
+                "confidence": 0.025515198707580566,
+                "max_probability": 0.10683341324329376,
+                "uncertainty": 0.9744848012924194
+              },
+              {
+                "index": 208,
+                "predicted": 9,
+                "true": 6,
+                "correct": false,
+                "confidence": 0.015978515148162842,
+                "max_probability": 0.10525321215391159,
+                "uncertainty": 0.9840214848518372
+              },
+              {
+                "index": 216,
+                "predicted": 9,
+                "true": 7,
+                "correct": false,
+                "confidence": 0.6076062917709351,
+                "max_probability": 0.460965096950531,
+                "uncertainty": 0.39239373803138733
+              },
+              {
+                "index": 220,
+                "predicted": 1,
+                "true": 7,
+                "correct": false,
+                "confidence": 0.006109952926635742,
+                "max_probability": 0.10233671218156815,
+                "uncertainty": 0.9938900470733643
+              },
+              {
+                "index": 0,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.8626658320426941,
+                "max_probability": 0.8754278421401978,
+                "uncertainty": 0.1373341679573059
+              },
+              {
+                "index": 1,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.8762750625610352,
+                "max_probability": 0.8851863741874695,
+                "uncertainty": 0.12372490763664246
+              },
+              {
+                "index": 2,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.8543545603752136,
+                "max_probability": 0.8671542406082153,
+                "uncertainty": 0.14564543962478638
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.19274275037007435,
+            "flag_rate": 0.09765625,
+            "threshold": 0.35237787812853383,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        },
+        "noisy": {
+          "scenario": "noisy",
+          "description": "Gaussian noise on one view. Part 08: this makes a view LESS dependent, not more.",
+          "options": {
+            "sigma": 2.0
+          },
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "fou",
+            "fac",
+            "kar",
+            "pix",
+            "zer",
+            "mor"
+          ],
+          "view_states": [
+            "noisy",
+            "available",
+            "available",
+            "available",
+            "available",
+            "available"
+          ],
+          "compromised_views": [],
+          "present_fraction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 6,
+          "effective_views": 3.5939455356176975,
+          "efficiency_ratio": 0.5989909226029496,
+          "mean_dependence": 0.4137801502574055,
+          "dependence": [
+            [
+              1.0,
+              0.13631349169896728,
+              0.08863528693666155,
+              0.07653561973245554,
+              0.10528056718260687,
+              -0.008503211119520558
+            ],
+            [
+              0.13631349169896728,
+              1.0,
+              0.6457392359934245,
+              0.8673921286305233,
+              0.634865541741298,
+              0.5893662468472404
+            ],
+            [
+              0.08863528693666155,
+              0.6457392359934245,
+              1.0,
+              0.8640290442419986,
+              0.48334306469403,
+              0.23724406940341217
+            ],
+            [
+              0.07653561973245554,
+              0.8673921286305233,
+              0.8640290442419986,
+              1.0,
+              0.6595989705861017,
+              0.39265414839741686
+            ],
+            [
+              0.10528056718260687,
+              0.634865541741298,
+              0.48334306469403,
+              0.6595989705861017,
+              1.0,
+              0.43420804889446646
+            ],
+            [
+              -0.008503211119520558,
+              0.5893662468472404,
+              0.23724406940341217,
+              0.39265414839741686,
+              0.43420804889446646,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "fac",
+            "pix"
+          ],
+          "most_redundant_lambda_u": 0.0,
+          "tail_lambda_u_mean": 0.08800000000000001,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.984375,
+          "sample_0": {
+            "prediction": 0,
+            "true_label": 0,
+            "confidence": 0.9737216830253601,
+            "uncertainty": 0.026278294622898102,
+            "max_probability": 0.9755136966705322,
+            "per_view_evidence": [
+              [
+                76.30254364013672,
+                1.0294647079245323e-12,
+                2.1636048289175176e-42,
+                6.194860251087151e-41,
+                1.1754385013773572e-05,
+                1.3232285174535636e-16,
+                3.3000869734678417e-06,
+                0.0003964770876336843,
+                3.2397284782262547e-26,
+                0.0005846436251886189
+              ],
+              [
+                23.340559005737305,
+                1.1670013636152864e-16,
+                1.5930095287330914e-07,
+                7.662984558010066e-08,
+                6.640005767444279e-10,
+                2.442094454514266e-16,
+                2.6971719128965344e-13,
+                2.3156708495175593e-10,
+                0.006372247822582722,
+                4.932344706715158e-21
+              ],
+              [
+                0.15408110618591309,
+                0.0015936220297589898,
+                0.0004714526003226638,
+                1.1559245649550576e-06,
+                4.6049496660316436e-08,
+                0.003959821071475744,
+                1.1617962627497036e-06,
+                0.00010211316839559004,
+                0.13395915925502777,
+                0.009624429047107697
+              ],
+              [
+                19.79586410522461,
+                0.742686927318573,
+                1.6614288824712276e-06,
+                1.3116769878251944e-05,
+                3.110814641897397e-21,
+                3.717540598274782e-12,
+                4.976237200082778e-10,
+                1.3257958743166914e-15,
+                2.420391638224828e-07,
+                1.801453002612044e-13
+              ],
+              [
+                9.575661659240723,
+                5.4029642342356965e-06,
+                0.001252814196050167,
+                0.005693214945495129,
+                0.00012070687080267817,
+                0.028902987018227577,
+                0.00047053268644958735,
+                1.700636576007497e-10,
+                0.0002150815853383392,
+                1.4610367543355096e-05
+              ],
+              [
+                24.80673599243164,
+                0.06629273295402527,
+                0.001281311153434217,
+                4.895477800914705e-08,
+                1.5511291140413164e-09,
+                4.42218265561678e-07,
+                0.0641324371099472,
+                0.0019627686124294996,
+                1.0069738376472515e-09,
+                0.042683348059654236
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 4,
+            "n_correct": 252,
+            "examples": [
+              {
+                "index": 98,
+                "predicted": 1,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.15684378147125244,
+                "max_probability": 0.18067774176597595,
+                "uncertainty": 0.8431562185287476
+              },
+              {
+                "index": 125,
+                "predicted": 2,
+                "true": 3,
+                "correct": false,
+                "confidence": 0.5511013865470886,
+                "max_probability": 0.38084185123443604,
+                "uncertainty": 0.4488986134529114
+              },
+              {
+                "index": 155,
+                "predicted": 5,
+                "true": 4,
+                "correct": false,
+                "confidence": 0.5456544160842896,
+                "max_probability": 0.37960848212242126,
+                "uncertainty": 0.45434558391571045
+              },
+              {
+                "index": 216,
+                "predicted": 9,
+                "true": 7,
+                "correct": false,
+                "confidence": 0.7536291480064392,
+                "max_probability": 0.345232754945755,
+                "uncertainty": 0.2463708519935608
+              },
+              {
+                "index": 0,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9737216830253601,
+                "max_probability": 0.9755136966705322,
+                "uncertainty": 0.026278294622898102
+              },
+              {
+                "index": 1,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9723660349845886,
+                "max_probability": 0.9740611910820007,
+                "uncertainty": 0.027633974328637123
+              },
+              {
+                "index": 2,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9643310308456421,
+                "max_probability": 0.9674269556999207,
+                "uncertainty": 0.035668984055519104
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.35156345004592504,
+            "flag_rate": 0.43359375,
+            "threshold": 0.35237787812853383,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        },
+        "chorus": {
+          "scenario": "chorus",
+          "description": "Part 09 collusive attack: k views optimised jointly to agree on one wrong class.",
+          "options": {
+            "k": 2,
+            "epsilon": 1.0,
+            "steps": 20
+          },
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "fou",
+            "fac",
+            "kar",
+            "pix",
+            "zer",
+            "mor"
+          ],
+          "view_states": [
+            "compromised",
+            "compromised",
+            "available",
+            "available",
+            "available",
+            "available"
+          ],
+          "compromised_views": [
+            0,
+            1
+          ],
+          "present_fraction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 6,
+          "effective_views": 2.656920424383692,
+          "efficiency_ratio": 0.44282007073061536,
+          "mean_dependence": 0.6182811750352146,
+          "dependence": [
+            [
+              1.0,
+              0.7106801502660125,
+              0.4366335882853319,
+              0.5701016378326491,
+              0.37066857697045064,
+              0.5874504438694388
+            ],
+            [
+              0.7106801502660125,
+              1.0,
+              0.3544559220363458,
+              0.5158926079094147,
+              0.15290377240166192,
+              0.44328681254801683
+            ],
+            [
+              0.4366335882853319,
+              0.3544559220363458,
+              1.0,
+              0.9596976113275502,
+              0.8042435032750357,
+              0.7404319413545238
+            ],
+            [
+              0.5701016378326491,
+              0.5158926079094147,
+              0.9596976113275502,
+              1.0,
+              0.9106699854210807,
+              0.8927551929737442
+            ],
+            [
+              0.37066857697045064,
+              0.15290377240166192,
+              0.8042435032750357,
+              0.9106699854210807,
+              1.0,
+              0.8243458790569631
+            ],
+            [
+              0.5874504438694388,
+              0.44328681254801683,
+              0.7404319413545238,
+              0.8927551929737442,
+              0.8243458790569631,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "kar",
+            "pix"
+          ],
+          "most_redundant_lambda_u": 0.36,
+          "tail_lambda_u_mean": 0.08,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.8359375,
+          "sample_0": {
+            "prediction": 0,
+            "true_label": 0,
+            "confidence": 0.7565706372261047,
+            "uncertainty": 0.24342936277389526,
+            "max_probability": 0.7598568797111511,
+            "per_view_evidence": [
+              [
+                11.630448341369629,
+                0.01232682541012764,
+                1.9614225266195717e-07,
+                8.357666843039624e-07,
+                0.20714348554611206,
+                0.002945428481325507,
+                0.1184391900897026,
+                0.36421942710876465,
+                1.2636033716262318e-05,
+                0.1815117746591568
+              ],
+              [
+                4.051947116851807,
+                2.978954227934351e-14,
+                1.3954878141930749e-08,
+                3.1603283332515275e-06,
+                9.558112523677664e-09,
+                1.2272647786915059e-08,
+                3.0869718673637303e-13,
+                1.0613290246652696e-09,
+                1.2391952276229858,
+                7.186277614645853e-12
+              ],
+              [
+                0.15408110618591309,
+                0.0015936220297589898,
+                0.0004714526003226638,
+                1.1559245649550576e-06,
+                4.6049496660316436e-08,
+                0.003959821071475744,
+                1.1617962627497036e-06,
+                0.00010211316839559004,
+                0.13395915925502777,
+                0.009624429047107697
+              ],
+              [
+                19.79586410522461,
+                0.742686927318573,
+                1.6614288824712276e-06,
+                1.3116769878251944e-05,
+                3.110814641897397e-21,
+                3.717540598274782e-12,
+                4.976237200082778e-10,
+                1.3257958743166914e-15,
+                2.420391638224828e-07,
+                1.801453002612044e-13
+              ],
+              [
+                9.575661659240723,
+                5.4029642342356965e-06,
+                0.001252814196050167,
+                0.005693214945495129,
+                0.00012070687080267817,
+                0.028902987018227577,
+                0.00047053268644958735,
+                1.700636576007497e-10,
+                0.0002150815853383392,
+                1.4610367543355096e-05
+              ],
+              [
+                24.80673599243164,
+                0.06629273295402527,
+                0.001281311153434217,
+                4.895477800914705e-08,
+                1.5511291140413164e-09,
+                4.42218265561678e-07,
+                0.0641324371099472,
+                0.0019627686124294996,
+                1.0069738376472515e-09,
+                0.042683348059654236
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 42,
+            "n_correct": 214,
+            "examples": [
+              {
+                "index": 37,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.762067437171936,
+                "max_probability": 0.5197278261184692,
+                "uncertainty": 0.23793256282806396
+              },
+              {
+                "index": 41,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.6820239424705505,
+                "max_probability": 0.5325079560279846,
+                "uncertainty": 0.31797605752944946
+              },
+              {
+                "index": 44,
+                "predicted": 3,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.8303651809692383,
+                "max_probability": 0.5782318115234375,
+                "uncertainty": 0.16963481903076172
+              },
+              {
+                "index": 47,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.7746407985687256,
+                "max_probability": 0.6540462374687195,
+                "uncertainty": 0.22535920143127441
+              },
+              {
+                "index": 52,
+                "predicted": 2,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.8223689794540405,
+                "max_probability": 0.4276662766933441,
+                "uncertainty": 0.17763099074363708
+              },
+              {
+                "index": 54,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.7524096369743347,
+                "max_probability": 0.7031291127204895,
+                "uncertainty": 0.24759037792682648
+              },
+              {
+                "index": 60,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.7026242613792419,
+                "max_probability": 0.6489816904067993,
+                "uncertainty": 0.29737573862075806
+              },
+              {
+                "index": 65,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.765238344669342,
+                "max_probability": 0.48699215054512024,
+                "uncertainty": 0.23476165533065796
+              },
+              {
+                "index": 78,
+                "predicted": 8,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.719814658164978,
+                "max_probability": 0.4996987581253052,
+                "uncertainty": 0.2801853120326996
+              },
+              {
+                "index": 0,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.7565706372261047,
+                "max_probability": 0.7598568797111511,
+                "uncertainty": 0.24342936277389526
+              },
+              {
+                "index": 1,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.7486057877540588,
+                "max_probability": 0.6774642467498779,
+                "uncertainty": 0.25139421224594116
+              },
+              {
+                "index": 2,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9222999215126038,
+                "max_probability": 0.9291583895683289,
+                "uncertainty": 0.07770006358623505
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.26928570367690197,
+            "flag_rate": 0.4140625,
+            "threshold": 0.35237787812853383,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        },
+        "adaptive": {
+          "scenario": "adaptive",
+          "description": "Part 14: the Chorus attacker plus an evasion term that penalises measured dependence.",
+          "options": {
+            "k": 2,
+            "epsilon": 1.0,
+            "steps": 20,
+            "gamma": 5.0,
+            "tau": 0.2
+          },
+          "seed": 0,
+          "n_samples_scored": 256,
+          "is_evidence": false,
+          "label": "Illustrative run, seed 0 -- the findings are the 5-seed results in Chapter 2. 12 epochs on one seed (the experiments use 40 epochs over 5 seeds), so this is not evidence under docs/CONTRACT.md section 5.",
+          "view_names": [
+            "fou",
+            "fac",
+            "kar",
+            "pix",
+            "zer",
+            "mor"
+          ],
+          "view_states": [
+            "compromised",
+            "compromised",
+            "available",
+            "available",
+            "available",
+            "available"
+          ],
+          "compromised_views": [
+            0,
+            1
+          ],
+          "present_fraction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "per_view_alpha": null,
+          "nominal_views": 6,
+          "effective_views": 3.3451678412817065,
+          "efficiency_ratio": 0.557527973546951,
+          "mean_dependence": 0.5153466183736287,
+          "dependence": [
+            [
+              1.0,
+              0.35425947605473906,
+              0.1549302848717675,
+              0.4074228116532542,
+              0.2810970020265215,
+              0.3808691170666623
+            ],
+            [
+              0.35425947605473906,
+              1.0,
+              0.34804646468745687,
+              0.592602658284723,
+              0.26212286549307423,
+              0.2461061106450856
+            ],
+            [
+              0.1549302848717675,
+              0.34804646468745687,
+              1.0,
+              0.9620811323063572,
+              0.6467211262816731,
+              0.5265663751578227
+            ],
+            [
+              0.4074228116532542,
+              0.592602658284723,
+              0.9620811323063572,
+              1.0,
+              0.8857157666620581,
+              0.8671688332137133
+            ],
+            [
+              0.2810970020265215,
+              0.26212286549307423,
+              0.6467211262816731,
+              0.8857157666620581,
+              1.0,
+              0.8144892511995211
+            ],
+            [
+              0.3808691170666623,
+              0.2461061106450856,
+              0.5265663751578227,
+              0.8671688332137133,
+              0.8144892511995211,
+              1.0
+            ]
+          ],
+          "most_redundant_pair": [
+            "kar",
+            "pix"
+          ],
+          "most_redundant_lambda_u": 0.32,
+          "tail_lambda_u_mean": 0.10400000000000001,
+          "tail_n_min": 25,
+          "tail_min_samples_required": 50,
+          "tail_quantile": 0.9,
+          "accuracy": 0.9375,
+          "sample_0": {
+            "prediction": 0,
+            "true_label": 0,
+            "confidence": 0.7628483772277832,
+            "uncertainty": 0.2371516078710556,
+            "max_probability": 0.7286983728408813,
+            "per_view_evidence": [
+              [
+                9.527142524719238,
+                0.010079056955873966,
+                2.821930991103727e-07,
+                1.1166996500833193e-06,
+                0.18887187540531158,
+                0.005106059834361076,
+                0.10726532340049744,
+                0.3700932264328003,
+                5.5306750255113e-06,
+                0.18975841999053955
+              ],
+              [
+                6.482761818915606e-05,
+                1.457167984518314e-16,
+                1.0424951873977406e-10,
+                2.577695283889625e-07,
+                9.475638329536906e-11,
+                5.392196180764586e-05,
+                6.509507491955606e-16,
+                1.794037141067406e-12,
+                5.125974178314209,
+                1.584407627319706e-08
+              ],
+              [
+                0.15408110618591309,
+                0.0015936220297589898,
+                0.0004714526003226638,
+                1.1559245649550576e-06,
+                4.6049496660316436e-08,
+                0.003959821071475744,
+                1.1617962627497036e-06,
+                0.00010211316839559004,
+                0.13395915925502777,
+                0.009624429047107697
+              ],
+              [
+                19.79586410522461,
+                0.742686927318573,
+                1.6614288824712276e-06,
+                1.3116769878251944e-05,
+                3.110814641897397e-21,
+                3.717540598274782e-12,
+                4.976237200082778e-10,
+                1.3257958743166914e-15,
+                2.420391638224828e-07,
+                1.801453002612044e-13
+              ],
+              [
+                9.575661659240723,
+                5.4029642342356965e-06,
+                0.001252814196050167,
+                0.005693214945495129,
+                0.00012070687080267817,
+                0.028902987018227577,
+                0.00047053268644958735,
+                1.700636576007497e-10,
+                0.0002150815853383392,
+                1.4610367543355096e-05
+              ],
+              [
+                24.80673599243164,
+                0.06629273295402527,
+                0.001281311153434217,
+                4.895477800914705e-08,
+                1.5511291140413164e-09,
+                4.42218265561678e-07,
+                0.0641324371099472,
+                0.0019627686124294996,
+                1.0069738376472515e-09,
+                0.042683348059654236
+              ]
+            ]
+          },
+          "predictions": {
+            "n_scored": 256,
+            "n_wrong": 16,
+            "n_correct": 240,
+            "examples": [
+              {
+                "index": 13,
+                "predicted": 5,
+                "true": 0,
+                "correct": false,
+                "confidence": 0.649607241153717,
+                "max_probability": 0.34540459513664246,
+                "uncertainty": 0.35039275884628296
+              },
+              {
+                "index": 37,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.6805665493011475,
+                "max_probability": 0.31529179215431213,
+                "uncertainty": 0.31943342089653015
+              },
+              {
+                "index": 41,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.6025831699371338,
+                "max_probability": 0.3917767405509949,
+                "uncertainty": 0.3974168300628662
+              },
+              {
+                "index": 47,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.7053583264350891,
+                "max_probability": 0.3372563123703003,
+                "uncertainty": 0.2946416735649109
+              },
+              {
+                "index": 54,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.6428356170654297,
+                "max_probability": 0.5115039944648743,
+                "uncertainty": 0.3571643531322479
+              },
+              {
+                "index": 60,
+                "predicted": 5,
+                "true": 1,
+                "correct": false,
+                "confidence": 0.5179533958435059,
+                "max_probability": 0.4169180393218994,
+                "uncertainty": 0.48204657435417175
+              },
+              {
+                "index": 87,
+                "predicted": 9,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.6338728070259094,
+                "max_probability": 0.4103506803512573,
+                "uncertainty": 0.3661271929740906
+              },
+              {
+                "index": 98,
+                "predicted": 0,
+                "true": 2,
+                "correct": false,
+                "confidence": 0.44226062297821045,
+                "max_probability": 0.48146501183509827,
+                "uncertainty": 0.5577393770217896
+              },
+              {
+                "index": 102,
+                "predicted": 1,
+                "true": 3,
+                "correct": false,
+                "confidence": 0.6609048843383789,
+                "max_probability": 0.4530094265937805,
+                "uncertainty": 0.3390951454639435
+              },
+              {
+                "index": 0,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.7628483772277832,
+                "max_probability": 0.7286983728408813,
+                "uncertainty": 0.2371516078710556
+              },
+              {
+                "index": 1,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.7346927523612976,
+                "max_probability": 0.6984140276908875,
+                "uncertainty": 0.2653072476387024
+              },
+              {
+                "index": 2,
+                "predicted": 0,
+                "true": 0,
+                "correct": true,
+                "confidence": 0.9457970261573792,
+                "max_probability": 0.950569748878479,
+                "uncertainty": 0.05420297011733055
+              }
+            ],
+            "selection": "wrong examples in index order, then three correct ones; NOT ranked by confidence"
+          },
+          "suspicion": {
+            "score_mean": 0.3189639503945193,
+            "flag_rate": 0.48828125,
+            "threshold": 0.35237787812853383,
+            "calibrated_at": 0.05,
+            "threshold_note": "calibrated on THIS configuration's clean scores at a 5% target rate, the same protocol Part 10 uses per seed"
+          }
+        }
+      },
+      "errors": {}
+    }
+  },
+  "provenance": {
+    "generated_utc": "2026-09-28T07:13:48Z",
+    "computed_not_copied": true,
+    "sources": [
+      {
+        "path": "app.py",
+        "sha256": "c9ee89b7462961c9d0f7d1f066d17fbf6151cefd69ccbcf681017e368a7c9869",
+        "bytes": 17340
+      }
+    ],
+    "note": "unlike the other web/data files, this one is COMPUTED by running the V1 engine rather than copied from results/. The sha256 is of app.py, the wiring it was computed through, so a stale file is detectable."
+  }
+}

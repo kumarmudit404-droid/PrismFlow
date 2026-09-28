@@ -1,0 +1,226 @@
+{
+  "title": "V2-L2 and V2-L3: retrieval before and after the connector fix",
+  "label": "ONE PASS, N=6, GROQ, LEXICAL FUSION, NOT A PART 24 FINDING. Six rows of the 48 committed, two per domain. No seeds, no mean, no std -- see docs/CONTRACT.md section 5.",
+  "is_part24_evidence": false,
+  "angle_order": [
+    "tech",
+    "market",
+    "financial",
+    "regulatory",
+    "sentiment"
+  ],
+  "rows": [
+    {
+      "id": "002",
+      "domain": "Startup",
+      "records_before": {
+        "tech": 10,
+        "market": 0,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "records_after": {
+        "tech": 10,
+        "market": 0,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "github_before": 0,
+      "github_after": 0,
+      "arxiv_before": 10,
+      "arxiv_after": 10,
+      "tech_tokens_before": 860,
+      "tech_tokens_after": 889,
+      "angles_with_claims_before": 1,
+      "angles_with_claims_after": 1,
+      "eniv_before": null,
+      "eniv_after": null,
+      "confidence_after": null,
+      "note_after": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row"
+    },
+    {
+      "id": "032",
+      "domain": "Startup",
+      "records_before": {
+        "tech": 10,
+        "market": 3,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "records_after": {
+        "tech": 10,
+        "market": 3,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "github_before": 0,
+      "github_after": 10,
+      "arxiv_before": 10,
+      "arxiv_after": null,
+      "tech_tokens_before": 1076,
+      "tech_tokens_after": 314,
+      "angles_with_claims_before": 0,
+      "angles_with_claims_after": 2,
+      "eniv_before": null,
+      "eniv_after": 1.7634,
+      "confidence_after": 0.558,
+      "note_after": null
+    },
+    {
+      "id": "003",
+      "domain": "Tech-OSS",
+      "records_before": {
+        "tech": 10,
+        "market": 0,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "records_after": {
+        "tech": 10,
+        "market": 0,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "github_before": 0,
+      "github_after": 0,
+      "arxiv_before": 10,
+      "arxiv_after": 10,
+      "tech_tokens_before": 1076,
+      "tech_tokens_after": 882,
+      "angles_with_claims_before": 1,
+      "angles_with_claims_after": 1,
+      "eniv_before": null,
+      "eniv_after": null,
+      "confidence_after": null,
+      "note_after": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row"
+    },
+    {
+      "id": "020",
+      "domain": "Tech-OSS",
+      "records_before": {
+        "tech": 10,
+        "market": 0,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "records_after": {
+        "tech": 7,
+        "market": 0,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "github_before": 0,
+      "github_after": 10,
+      "arxiv_before": 10,
+      "arxiv_after": null,
+      "tech_tokens_before": 1076,
+      "tech_tokens_after": 637,
+      "angles_with_claims_before": 0,
+      "angles_with_claims_after": 1,
+      "eniv_before": null,
+      "eniv_after": null,
+      "confidence_after": null,
+      "note_after": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row"
+    },
+    {
+      "id": "046",
+      "domain": "Financial-Product",
+      "records_before": {
+        "tech": 10,
+        "market": 0,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "records_after": {
+        "tech": 10,
+        "market": 0,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "github_before": 0,
+      "github_after": 10,
+      "arxiv_before": 10,
+      "arxiv_after": null,
+      "tech_tokens_before": 1076,
+      "tech_tokens_after": 659,
+      "angles_with_claims_before": 0,
+      "angles_with_claims_after": 0,
+      "eniv_before": null,
+      "eniv_after": null,
+      "confidence_after": null,
+      "note_after": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row"
+    },
+    {
+      "id": "049",
+      "domain": "Financial-Product",
+      "records_before": {
+        "tech": 10,
+        "market": 0,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "records_after": {
+        "tech": 10,
+        "market": 0,
+        "financial": 0,
+        "regulatory": 0,
+        "sentiment": 0
+      },
+      "github_before": 0,
+      "github_after": 10,
+      "arxiv_before": 10,
+      "arxiv_after": null,
+      "tech_tokens_before": 1076,
+      "tech_tokens_after": 496,
+      "angles_with_claims_before": 0,
+      "angles_with_claims_after": 1,
+      "eniv_before": null,
+      "eniv_after": null,
+      "confidence_after": null,
+      "note_after": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row"
+    }
+  ],
+  "summary": {
+    "fusible_before": 0,
+    "fusible_after": 1,
+    "github_rows_with_records_before": 0,
+    "github_rows_with_records_after": 4,
+    "distinct_tech_token_totals_before": 2,
+    "distinct_tech_token_totals_after": 6,
+    "rows_on_collapsed_1076_before": 5,
+    "rows_on_collapsed_1076_after": 0,
+    "n_rows": 6
+  },
+  "caveats": [
+    "The tech angle SWAPPED sources rather than gaining both: GitHub is the primary slot, so on rows where it now returns records the fallback chain stops before arXiv.",
+    "Row 020's tech records fell 10 -> 7 because three GitHub records each exceed the entire 2000-token angle budget. That is V2-L7, a new limitation created by this fix.",
+    "Row 046 produced no claims on a Groq TPD 429 (V2-L5). Its retrieval returned 10 records; the reasoner never ran.",
+    "One fused row is not a calibration result. V2-L6 is unchanged."
+  ],
+  "provenance": {
+    "generated_utc": "2026-09-28T07:15:36Z",
+    "sources": [
+      {
+        "path": "results/v2/part24_pipeline_verification.json",
+        "sha256": "d834a2a0736979d4dd2dbddb8753927081c3ac618f93607ab6b9e105735db4d5",
+        "bytes": 116209
+      },
+      {
+        "path": "results/v2/part24_reverify_n6.json",
+        "sha256": "6c88c7147c64381a6cabe8208a7606b7ae1d8223759e82c60e7456f104faf119",
+        "bytes": 15569
+      }
+    ]
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "title": "Committed V1 figures",
+  "note": "copied byte-for-byte from results/. The site cannot read results/ at runtime, so these are files in web/data/figures/ and each carries the sha256 of its source.",
+  "figures": [
+    {
+      "file": "figures/v1_eniv_vs_duplicates.png",
+      "title": "ENIV against duplicate copies of one view",
+      "caption": "Duplicating a view adds no information, so a correct effective-view count should barely move. It rises. This is V1-L1 and V1-L2 as a picture.",
+      "source": "results/clone_eigen/eniv_vs_duplicates.png",
+      "sha256": "2480942c0ad079e3fbfec8b3d78f1fabb7f52fa6086a944a38de3edf239ec343",
+      "bytes": 99461,
+      "numbers_from": "results/clone_eigen/summary.json",
+      "missing": null
+    },
+    {
+      "file": "figures/v1_confidence_vs_duplicates.png",
+      "title": "Confidence against duplicate copies",
+      "caption": "The same duplication, seen through confidence rather than ENIV.",
+      "source": "results/clone_eigen/confidence_vs_duplicates.png",
+      "sha256": "0c1066e05392e1615e8d89fc1586edf82f5572baa68414445bf0367f4cb6828a",
+      "bytes": 95708,
+      "numbers_from": "results/clone_eigen/summary.json",
+      "missing": null
+    },
+    {
+      "file": "figures/v1_estimator_vs_truth.png",
+      "title": "ENIV estimator against known truth",
+      "caption": "The only place ENIV is VALIDATED rather than applied: synthetic data where rho is a parameter we set.",
+      "source": "results/eniv_validation/estimator_vs_truth.png",
+      "sha256": "61594555224463d26b0533357adc58c48bc886f9d2e3e0b1ffeb3efc560a5fce",
+      "bytes": 201206,
+      "numbers_from": "results/eniv_validation/summary.json",
+      "missing": null
+    },
+    {
+      "file": "figures/v1_reliability_prismflow.png",
+      "title": "Reliability diagram -- PrismFlow",
+      "caption": "Calibration on synthetic data, 5 seeds.",
+      "source": "results/calibration/prismflow/reliability_diagram.png",
+      "sha256": "84438151cb65d75c6ed8605a4f9422656d2671cdc8a5406c63f664d59fbe2c12",
+      "bytes": 104028,
+      "numbers_from": "results/calibration/prismflow/metrics.json",
+      "missing": null
+    },
+    {
+      "file": "figures/v1_reliability_naive.png",
+      "title": "Reliability diagram -- naive baseline",
+      "caption": "The same axes for the undiscounted baseline, so the pair can be read against each other.",
+      "source": "results/calibration/naive/reliability_diagram.png",
+      "sha256": "74dbeb055259fe8a187fd0b3e1aa07a2c0c46af0797d06473f15f85be5070a29",
+      "bytes": 110922,
+      "numbers_from": "results/calibration/naive/metrics.json",
+      "missing": null
+    },
+    {
+      "file": "figures/v1_reliability_chorus_prismflow.png",
+      "title": "Reliability under the Chorus attack -- PrismFlow, k=2, eps 1.0",
+      "caption": "The condition where PrismFlow is fooled MORE often than naive. See the failures section.",
+      "source": "results/chorus/chorus_k2_eps1.0_prismflow/reliability_diagram.png",
+      "sha256": "67378d77379c10a7eab6eced793284a2251743f6e7124778736d7ec9a6219967",
+      "bytes": 110268,
+      "numbers_from": "results/chorus/chorus_k2_eps1.0_prismflow/metrics.json",
+      "missing": null
+    },
+    {
+      "file": "figures/v1_reliability_chorus_naive.png",
+      "title": "Reliability under the Chorus attack -- naive, k=2, eps 1.0",
+      "caption": "The baseline for the same condition.",
+      "source": "results/chorus/chorus_k2_eps1.0_naive/reliability_diagram.png",
+      "sha256": "32002298c225e15d86dc43a82e0ae085d85b41ec54a2935650d631d79313d0e0",
+      "bytes": 113953,
+      "numbers_from": "results/chorus/chorus_k2_eps1.0_naive/metrics.json",
+      "missing": null
+    },
+    {
+      "file": "figures/v1_missing_overview.png",
+      "title": "Robustness to missing views",
+      "caption": "Behaviour as views are dropped, across rates.",
+      "source": "results/robustness/missing_overview.png",
+      "sha256": "a0165472e1588f31fade65bb5ebce30df3d570944cbc1ab5deeb5c07ea65e9bb",
+      "bytes": 193064,
+      "numbers_from": "results/robustness/missing_r0.30_prismflow/metrics.json",
+      "missing": null
+    },
+    {
+      "file": "figures/v1_tail_vs_correlation.png",
+      "title": "Tail dependence against correlation",
+      "caption": "Why linear correlation is not the quantity the discount needs.",
+      "source": "results/tail/tail_vs_correlation.png",
+      "sha256": "852f3e545eea3c5928a4f0624c9f555dadfabc465a78287e720a70d7a7071290",
+      "bytes": 317836,
+      "numbers_from": "results/tail/tail.json",
+      "missing": null
+    },
+    {
+      "file": "figures/v1_audit_gap.png",
+      "title": "Trained against audited dependence -- the gap",
+      "caption": "The per-sample audit: what the model trained on versus what an independent audit measures.",
+      "source": "results/per_sample/audit_gap.png",
+      "sha256": "e8bf412b17adafc2d5aa12a34a711aca87fd600ff0326d29a80e9ee8b7fbcdb1",
+      "bytes": 244522,
+      "numbers_from": "results/per_sample/per_sample.json",
+      "missing": null
+    }
+  ],
+  "not_shown": "results/ holds 141 reliability diagrams and 26 other figures. One figure per claim is shown, not all of them.",
+  "provenance": {
+    "generated_utc": "2026-09-28T07:15:36Z",
+    "sources": [
+      {
+        "path": "results/clone_eigen/eniv_vs_duplicates.png",
+        "sha256": "2480942c0ad079e3fbfec8b3d78f1fabb7f52fa6086a944a38de3edf239ec343",
+        "bytes": 99461
+      },
+      {
+        "path": "results/clone_eigen/confidence_vs_duplicates.png",
+        "sha256": "0c1066e05392e1615e8d89fc1586edf82f5572baa68414445bf0367f4cb6828a",
+        "bytes": 95708
+      },
+      {
+        "path": "results/eniv_validation/estimator_vs_truth.png",
+        "sha256": "61594555224463d26b0533357adc58c48bc886f9d2e3e0b1ffeb3efc560a5fce",
+        "bytes": 201206
+      },
+      {
+        "path": "results/calibration/prismflow/reliability_diagram.png",
+        "sha256": "84438151cb65d75c6ed8605a4f9422656d2671cdc8a5406c63f664d59fbe2c12",
+        "bytes": 104028
+      },
+      {
+        "path": "results/calibration/naive/reliability_diagram.png",
+        "sha256": "74dbeb055259fe8a187fd0b3e1aa07a2c0c46af0797d06473f15f85be5070a29",
+        "bytes": 110922
+      },
+      {
+        "path": "results/chorus/chorus_k2_eps1.0_prismflow/reliability_diagram.png",
+        "sha256": "67378d77379c10a7eab6eced793284a2251743f6e7124778736d7ec9a6219967",
+        "bytes": 110268
+      },
+      {
+        "path": "results/chorus/chorus_k2_eps1.0_naive/reliability_diagram.png",
+        "sha256": "32002298c225e15d86dc43a82e0ae085d85b41ec54a2935650d631d79313d0e0",
+        "bytes": 113953
+      },
+      {
+        "path": "results/robustness/missing_overview.png",
+        "sha256": "a0165472e1588f31fade65bb5ebce30df3d570944cbc1ab5deeb5c07ea65e9bb",
+        "bytes": 193064
+      },
+      {
+        "path": "results/tail/tail_vs_correlation.png",
+        "sha256": "852f3e545eea3c5928a4f0624c9f555dadfabc465a78287e720a70d7a7071290",
+        "bytes": 317836
+      },
+      {
+        "path": "results/per_sample/audit_gap.png",
+        "sha256": "e8bf412b17adafc2d5aa12a34a711aca87fd600ff0326d29a80e9ee8b7fbcdb1",
+        "bytes": 244522
+      }
+    ]
+  }
+}
