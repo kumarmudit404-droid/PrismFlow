@@ -17,6 +17,29 @@ reached. **No calibration metric (ECE, Brier) has been computed on real data,
 and none can be computed meaningfully today.** This is a coverage problem in the
 connectors, not a defect in the fusion mathematics.
 
+**Updated 2026-09-28.** Two of the coverage blockers are now fixed at the root.
+**V2-L2** (GitHub returned 0 on every row) and **V2-L3** (arXiv returned the same
+ten records for unrelated queries) were both caused by a connector accepting a
+bag of words into a field that takes a query language; both are fixed in the
+connectors and re-verified at N=6, where fusible rows went 0 of 6 to 1 of 6 and
+row 032 produced this pipeline's first ENIV from live retrieval (1.7634,
+confidence 0.5580). **That is one row, one pass, no seeds, and it is not a
+calibration result.**
+
+What stays open, and still blocks the evaluation:
+
+* **V2-L4** -- financial is structurally incompatible with the dataset. Unchanged
+  and not fixable in a connector: the pitches are deliberately anonymised and
+  yfinance needs a ticker. It is a design conflict requiring a decision.
+* **V2-L5** -- the free Groq tier funds about two passes a day against the
+  5-SEED RULE's five. Unchanged. Row 046 lost its claims to a TPD 429 in the
+  N=6 run.
+* **V2-L6** -- ECE and Brier still cannot be computed. One fused row out of six
+  is not a distribution. **Coverage first, then seeds, then metrics** still
+  holds; this work advanced coverage only.
+* **V2-L7** -- new, and created by the V2-L2 fix: some GitHub records exceed the
+  entire per-angle token budget and are dropped whole.
+
 ## Provenance of the numbers below
 
 | | |
@@ -91,31 +114,86 @@ statement about anything.
 **What would change it:** a connector whose queries match the dataset's
 language, for any of the four thin angles.
 
-## V2-L2. GitHub returns 0 records on every row (pre-existing)
+## V2-L2. RESOLVED 2026-09-28. GitHub returned 0 records because the query was an 8-12 term conjunction
 
-**Evidence:** tech-angle provenance is `{'github': 0, 'arxiv': N}` on all 48
-rows. The same holds in the earlier 17-row run (`github=0, arxiv=170`), which
-predates the Part 19 query-derivation addendum.
+**Status: fixed** in `prismflow/v2/connectors/github.py` (commit `d25d0f5`),
+re-verified at N=6 (commit `185beb5`). The original entry's evidence and its
+reasoning are kept below, because the zero it recorded was real.
 
-**What this shows.** Derivation fixed the *shape* problem it was written for --
-GitHub's documented 422 on over-long queries, recorded in
-`docs/part24-query-mismatch.md` -- but GitHub still contributes nothing, so the
-tech angle is arXiv alone with no working fallback chain. Because the zero is
-present on both sides of the derivation change, **it is not a regression from
-that change.** `GITHUB_TOKEN` in `.env` is 7 characters and is very likely a
-placeholder, which is the first thing to check.
+**Original evidence (unchanged):** tech-angle provenance was `{'github': 0,
+'arxiv': N}` on all 48 rows. The same held in the earlier 17-row run
+(`github=0, arxiv=170`), which predates the Part 19 query-derivation addendum.
+Because the zero was present on both sides of the derivation change, it was not
+a regression from it -- that inference was correct.
 
-**Frozen-module note:** reported, not fixed, per the FROZEN MODULES rule in
-`CLAUDE.md`. Connector code belongs to Part 17/19.
+**Root cause.** GitHub's search ANDs space-separated terms across repository
+name, description and README. The connector forwarded whatever it was handed,
+which after derivation was 8-12 terms, so no repository matched all of them.
+Every call returned HTTP **200** with `total_count: 0` -- not a 422, not a 403,
+not a 401 -- which is why it was silent for two runs. Measured live on
+2026-09-28, row 002:
 
-**What would change it:** a valid credential, or the request and response of one
-live GitHub search captured and read.
+| terms ANDed | `total_count` |
+|---|---|
+| 12 / 8 / 6 / 4 / 3 / 2 | 0 |
+| 1 (`Bell Media`) | 87 |
+| 2, joined with explicit `OR` | 69,906 |
 
-## V2-L3. The arXiv fallback is query-independent in membership
+Two ANDed terms already return zero on some rows. Eight never had a chance.
 
-**Evidence, verified live on 2026-09-27 (retrieval only, no reasoner):** the tech
-angle was asked for three unrelated rows and returned **the same ten records
-every time** -- identical set membership, differing only in BM25 order.
+**The GITHUB_TOKEN hypothesis was tested and is DISPROVEN.** This entry
+previously said the 7-character `GITHUB_TOKEN` was "very likely a placeholder,
+which is the first thing to check". It was checked. It is not the cause:
+unauthenticated search answers **200** with `x-ratelimit-limit: 10` and returns
+real results for a one-term query. The placeholder still costs three-fold
+throughput and `_resolve_token` still rejects it, but it never had anything to do
+with the zeros. Recorded plainly because the guess was wrong and the wrong guess
+is in the git history.
+
+**The fix.** `GitHubConnector.build_q()` reduces an incoming query to
+`AND_TERMS = 2` quoted terms. 2 is measured, not chosen -- six rows, two per
+domain, k=10, phrases quoted; "overlap" is the mean pairwise count of shared
+repositories between unrelated rows, and has to be 0:
+
+| strategy | rows with records | median `total_count` | overlap |
+|---|---|---|---|
+| as-built, 8-12 ANDed | 0 of 6 | 0 | 0.00 |
+| all terms ORed | 0 of 6 | HTTP 422, >5 operators | n/a |
+| top-1 | 6 of 6 | 1,541,034 | 2.00 |
+| **top-2 ANDed** | **4 of 6** | **100** | **0.00** |
+| top-3 ANDed | 2 of 6 | 0 | 0.00 |
+| top-3 ORed | 6 of 6 | 1,618,457 | 3.33 |
+| top-3 ORed `in:name,description` | 6 of 6 | 983,735 | 3.33 |
+
+Top-1 and every OR variant retrieve plenty and retrieve the wrong thing: totals
+in the millions, dominated by whichever mega-repository matches any one term, and
+a non-zero overlap between unrelated rows. GitHub also rejects more than five
+boolean operators outright ("More than five AND / OR / NOT operators were used",
+HTTP 422), which rules OR-joining out on its own.
+
+**Before / after, N=6:** GitHub tech provenance went **0 records on 6 of 6 rows
+-> 10 records on 4 of 6** (032, 020, 046, 049). Rows 002 and 003 still return 0;
+those are honest zeros for one specific term pair, not the systematic zero.
+
+**What remains true.** Relevance is still limited by what leads the derived term
+list. Commit `81c9550` records that all 32 newly sourced pitches follow one of
+two templates -- 12 open "Pitch a", 20 open "Build a" -- so `build` or `pitch`
+often takes one of the two AND slots. Dropping those verbs was measured (same
+4-of-6 coverage, same 0.00 overlap, median `total_count` 100 -> 60, and visibly
+more on-topic descriptions on 3 of the 4 rows returning records). It is a
+`STOPWORDS` change, which rewrites every derived query and therefore every Part
+18 cache key, and it is not required to fix this limitation, so it is **not
+applied**. It is the cheapest remaining retrieval-quality improvement.
+
+## V2-L3. RESOLVED 2026-09-28. The arXiv query was query-independent because the connector was sent raw prose
+
+**Status: fixed** in `prismflow/v2/connectors/arxiv.py` (commit `d25d0f5`),
+re-verified at N=6 (commit `185beb5`). The original entry said "mechanism not
+identified"; it is identified now. Its evidence is kept below unchanged.
+
+**Original evidence (unchanged), verified live on 2026-09-27:** the tech angle
+was asked for three unrelated rows and returned **the same ten records every
+time** -- identical set membership, differing only in BM25 order.
 
 | row | domain | pitch, opening words |
 |---|---|---|
@@ -134,24 +212,76 @@ the byte-identical tech token total of 1076** (28 distinct totals across 48
 rows), and those 18 span all three domains -- 003, 020, 026, 027, 031, 032, 034,
 036, 038, 039, 042, 044, 045, 046, 047, 048, 049, 050.
 
-**What this shows.** On a large subset of rows, "tech retrieves on 48/48" states
-reachability, not relevance: the angle returns a fixed corpus unrelated to the
-query. Any downstream number computed over those rows -- dependence between tech
-and another angle, ENIV, a discount -- would be computed over evidence that does
-not answer the question asked. The reasoner behaved correctly and said so, e.g.
-"None of the retrieved records discuss regulated cryptocurrency exchanges", which
-is why this surfaced as low claim counts rather than as confident wrong claims.
+*Both of those reproduce exactly from the committed run and from live calls on
+2026-09-28. The corroborating signal was the thread that led to the mechanism.*
 
-**Mechanism not identified.** Ten unrelated hits is not the signature of a query
-that matched nothing -- that returns zero. It is the signature of a query whose
-terms are dropped or ignored, leaving a generic listing. Whether that happens in
-the derived query, in the arXiv request construction, or in arXiv's own handling
-is not established here, and this document does not guess.
+**Root cause.** `ArxivConnector.fetch` sent `all:{query}` verbatim. `BaseAngle`
+derives a query only when it EXCEEDS that connector's limit
+(`prismflow/v2/angles/base.py`, `if len(query) <= limit: return query`), and
+arXiv's limit of 220 is the most permissive in `CONNECTOR_QUERY_LIMITS`. So any
+pitch of 220 characters or fewer reached arXiv as **prose**. arXiv binds nothing
+in a prose sentence and falls back to its own default top-relevance listing --
+the big-collaboration physics papers above, the same ones for every query.
 
-**Frozen-module note:** reported, not fixed. Part 17/19 own it.
+The set of rows this affects is exact: **the 36 rows whose pitch is <= 220
+characters are precisely the 36 rows that recorded no `query derived for arxiv`
+warning.** Commit `81c9550` had already recorded why so many pitches are short:
+29 of the 32 newly sourced ones fall under `MIN_PITCH_CHARS = 120`, mean ~108
+characters against ~290 for the original 17.
 
-**What would change it:** the exact URL the arXiv connector sends for row 020,
-compared against the same search issued by hand.
+Measured live on 2026-09-28, rows 020 / 046 / 049, k=10:
+
+| what was sent | mean n | pairwise overlap | term-hit | generic physics |
+|---|---|---|---|---|
+| raw pitch (as-built) | 10.0 | **10/10 identical** | 0.07 | **1.00** |
+| derived terms | 10.0 | **0** | 0.97 | 0.00 |
+
+"generic physics" is the fraction of returned titles that are big-collaboration
+physics; "term-hit" the fraction whose title contains at least one of that row's
+own query terms. An empty or bare `all:` query was ruled out separately: it
+returns HTTP 400 with no records, so this was never "the query matched nothing".
+
+**The fix.** `ArxivConnector.build_search_query()` reduces whatever arrives to
+terms and ORs them with an explicit `all:` on each, quoting multi-word phrases.
+It never pastes prose into `search_query`, **regardless of length**. Strategies
+measured:
+
+| strategy | mean n | overlap | term-hit | generic |
+|---|---|---|---|---|
+| as-built, raw prose | 10.0 | 10.00 | 0.07 | 1.00 |
+| terms, space separated | 10.0 | 0.00 | 0.97 | 0.00 |
+| **terms, each `all:`-prefixed, OR** | **10.0** | **0.00** | **0.97** | **0.00** |
+| terms, each `all:`-prefixed, AND | 0.0 | 0.00 | 0.00 | 0.00 |
+| top-4 ANDed | 0.3 | 0.00 | 1.00 | 0.00 |
+| top-6 ORed | 10.0 | 0.00 | 0.93 | 0.00 |
+
+ANDing is unusable: four terms already reduce most rows to zero. Space-separated
+and explicitly-ORed score identically, so arXiv's implicit operator here is OR;
+the explicit form is used anyway, because it does not rely on undocumented
+default behaviour and it is legible in a request log.
+
+**`base.py` was NOT changed.** The length gate still behaves as documented. The
+fix belongs in the connector because a connector should not accept prose in a
+field that takes a query language, however short the prose is.
+
+**Before / after, N=6:** distinct tech token totals went **2 of 6 -> 6 of 6**,
+and rows sitting on the collapsed 1076 total went **5 -> 0**:
+
+| row | tokens before | after |
+|---|---|---|
+| 002 | 860 | 889 |
+| 032 | 1076 | 314 |
+| 003 | 1076 | 882 |
+| 020 | 1076 | 637 |
+| 046 | 1076 | 659 |
+| 049 | 1076 | 496 |
+
+**A caveat on what the N=6 run proves.** On the 4 rows where GitHub now returns
+records, arXiv provenance is absent: GitHub occupies the primary slot, so the
+fallback chain stops before arXiv. The tech angle swapped one source for the
+other rather than gaining both. The arXiv fix is therefore exercised at N=6 only
+on rows 002 and 003 -- where it is visible regardless (003: 1076 -> 882 with
+arXiv still serving 10 records).
 
 ## V2-L4. Financial is structurally incompatible with the dataset, by design conflict
 
@@ -232,6 +362,27 @@ more.
 create a second angle on a row where nothing was retrieved. **Coverage first,
 then seeds, then metrics** -- in that order, because each is a precondition for
 the next.
+
+## V2-L7. NEW, created by the V2-L2 fix: some GitHub records exceed the whole token budget
+
+**Evidence:** the N=6 re-verification
+(`results/v2/part24_reverify_n6.json`, commit `185beb5`). Row 020's tech records
+dropped from 10 to 7, with the warning "3 record(s) exceed the entire 2000-token
+budget on their own and can never be included (largest 5255)".
+
+**What this shows.** A GitHub README is far longer than an arXiv abstract, so now
+that GitHub returns records, some individual records cannot fit the angle's
+entire evidence budget and are dropped whole. This limitation did not exist while
+GitHub returned nothing -- it is a direct consequence of fixing V2-L2, and it
+costs real coverage on at least one of six rows.
+
+**What this is not.** It is not a defect in either connector: they returned the
+records they were asked for. It is a budgeting and truncation question in Part
+19's evidence assembly, which is outside the narrow authorisation under which
+V2-L2 and V2-L3 were fixed, so it is reported and not fixed.
+
+**What would change it:** per-record truncation instead of whole-record
+rejection, or a per-record cap set as a fraction of the angle budget.
 
 ## How the two failure modes are told apart
 
