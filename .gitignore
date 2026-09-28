@@ -100,6 +100,9 @@ cache/v2/
 /PrismFlow_File_Catalog.pdf
 /PrismFlow_Interview_Guide.pdf
 
+# Part 24 extractor fetch cache (re-creatable from the live APIs)
+scripts/.part24_cache/
+
 # The incoming 49-row workbook, now merged into the tracked dataset. Kept on
 # disk as the audit trail for row 040, the one row no source could confirm.
 data/v2/part24_labeled_dataset_completed.xlsx

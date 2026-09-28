@@ -3,6 +3,10 @@
     python web/serve.py            # http://127.0.0.1:825
     python web/serve.py --port 9000
 
+Use 127.0.0.1 rather than localhost: on a dual-stack Windows box localhost
+resolves to ::1 first and this server binds IPv4 only, so localhost costs a
+failed connection before the client falls back.
+
 WHY THE ROOT IS ``web/`` AND NOT THE REPOSITORY ROOT
 -----------------------------------------------------
 Serving the repository root would put ``.env`` one URL away from a browser on
@@ -21,6 +25,7 @@ import argparse
 import functools
 import http.server
 import os
+import socket
 import socketserver
 from pathlib import Path
 
@@ -64,6 +69,45 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         print("  %s" % (fmt % args))
 
 
+class Server(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    """Threaded, and deliberately *not* address-reusing on Windows.
+
+    Both properties are bug fixes, not preferences.
+
+    THREADED: the single-threaded ``TCPServer`` this used to be deadlocked on
+    any browser. Chrome and Edge open speculative "preconnect" sockets and hold
+    them open without sending a request line. A single-threaded server accepts
+    one, blocks in ``readline()`` waiting for bytes that never arrive, and stops
+    answering everything else. ``curl`` sends its request immediately and so
+    never triggers it -- which is why this looked like a browser problem and not
+    a server problem. Measured: one idle socket, and every later request timed
+    out until that socket closed.
+
+    NO ADDRESS REUSE ON WINDOWS: ``SO_REUSEADDR`` does not mean on Windows what
+    it means on POSIX. There it permits rebinding a port stuck in TIME_WAIT;
+    here it lets a second process bind a port another process is *actively
+    listening on*. The second one then prints a correct-looking banner and
+    receives no traffic at all, because the kernel keeps delivering to the
+    first. Measured: a second instance bound 825 and stayed up while
+    ``Get-NetTCPConnection`` still showed only the original owner.
+    """
+
+    daemon_threads = True
+    allow_reuse_address = os.name != "nt"
+
+
+def port_is_taken(host: str, port: int) -> bool:
+    """True if something is already listening, so the bind can refuse loudly.
+
+    ``allow_reuse_address = False`` already makes a duplicate bind raise on
+    Windows, but this probe is what turns that into a message naming the real
+    problem instead of a bare OSError 10048.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.settimeout(0.3)
+        return probe.connect_ex((host, port)) == 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--port", type=int, default=825)
@@ -73,10 +117,24 @@ def main() -> int:
 
     os.chdir(HERE)
     handler = functools.partial(Handler, directory=str(HERE))
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer((args.host, args.port), handler) as httpd:
+
+    if port_is_taken(args.host, args.port):
+        print("refusing to start: %s:%d is already serving something."
+              % (args.host, args.port))
+        print("  a stale server would otherwise keep the port and this one")
+        print("  would print a working URL while answering nothing.")
+        print("  stop it, or pass --port for a different one.")
+        return 1
+
+    with Server((args.host, args.port), handler) as httpd:
+        # Report the port the socket actually got, never the one that was
+        # asked for. With --port 0 they differ, and a banner that cannot be
+        # wrong is worth more here than one that is usually right.
+        bound_host, bound_port = httpd.server_address[:2]
         print("PrismFlow Part 25 -- serving %s" % HERE)
-        print("  http://%s:%d" % (args.host, args.port))
+        print("  http://%s:%d" % (bound_host, bound_port))
+        print("  use 127.0.0.1, not localhost: localhost resolves to ::1 first")
+        print("  on this box and this server binds IPv4 only")
         print("  document root is web/ only; the repository root is NOT served")
         try:
             httpd.serve_forever()

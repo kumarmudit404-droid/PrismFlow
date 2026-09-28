@@ -50,7 +50,12 @@ EDGE_CANDIDATES = [
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
 ]
 PORT = 9411
-BASE = "http://127.0.0.1:8251"
+# The site under test. 825 is web/serve.py's own default, and these must
+# agree or every check silently measures a chrome-error page instead of the
+# site -- which is what a stale 8251 here did. Override with PRISMFLOW_WEB_PORT.
+# 127.0.0.1 and never localhost: localhost resolves to ::1 first on this box
+# and serve.py binds IPv4 only.
+BASE = "http://127.0.0.1:%s" % os.environ.get("PRISMFLOW_WEB_PORT", "825")
 
 
 def browser_path() -> str:
@@ -315,13 +320,45 @@ def main() -> int:
     if mode == "reveal":
         return reveal_matrix(sys.argv[2] if len(sys.argv) > 2 else "/")
     if mode == "shot":
+        # shot OUT [--path /] [--at SELECTOR]
         out = Path(sys.argv[2])
-        path = sys.argv[4] if len(sys.argv) > 4 and sys.argv[3] == "--path" else "/"
+        args = sys.argv[3:]
+        path = "/"
+        selector = None
+        for i, a in enumerate(args):
+            if a == "--path" and i + 1 < len(args):
+                path = args[i + 1]
+            if a == "--at" and i + 1 < len(args):
+                selector = args[i + 1]
         b = Browser()
         try:
             b.goto(BASE + path, settle=2.0)
             time.sleep(7.0)          # past the reveal deadline, so nothing is mid-fade
-            b.shot(out)
+            if selector:
+                # Clip to one element's own box. A full-page shot of this site is
+                # 20000px tall, which is a file rather than something anyone can
+                # read, so each view is captured where it lives.
+                box = b.js(
+                    "(() => { const e = document.querySelector(" +
+                    json.dumps(selector) + "); if (!e) return null;"
+                    " const r = e.getBoundingClientRect();"
+                    " return JSON.stringify({x: r.left + scrollX, y: r.top + scrollY,"
+                    " w: Math.ceil(r.width), h: Math.ceil(r.height)}); })()")
+                if not box:
+                    raise SystemExit("selector not found: %s" % selector)
+                rect = json.loads(box)
+                b.ws.call("Emulation.setDeviceMetricsOverride", {
+                    "width": 1440, "height": min(int(rect["h"]) + 40, 16000),
+                    "deviceScaleFactor": 1, "mobile": False})
+                time.sleep(0.6)
+                data = b.ws.call("Page.captureScreenshot", {
+                    "format": "png", "captureBeyondViewport": True,
+                    "clip": {"x": rect["x"], "y": rect["y"], "width": rect["w"],
+                             "height": min(rect["h"], 16000), "scale": 1}})["data"]
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_bytes(base64.b64decode(data))
+            else:
+                b.shot(out)
             print("wrote %s (%d bytes)" % (out, out.stat().st_size))
         finally:
             b.kill()
