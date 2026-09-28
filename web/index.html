@@ -326,7 +326,8 @@
     <div class="panel stat"><span class="stat__value">28</span><span class="stat__label">Tech-OSS</span></div>
     <div class="panel stat"><span class="stat__value">10 · 10</span><span class="stat__label">Startup · Financial-Product</span></div>
   </div>
-  <p class="src">data/v2/evaluation_queries.json</p>
+  <p class="src">data/v2/evaluation_queries.json —
+    <a href="#v2-dataset">all 48 rows, with their sources, in Chapter 5</a></p>
 
   <h3>The headline that is not a headline</h3>
   <div class="panel" style="border-color:rgba(232,96,63,0.4)">
@@ -436,6 +437,16 @@
   </p>
   <div class="placeholder" id="v1-attack">loading committed data…</div>
 
+  <h3>V2 — the evaluation dataset, all 48 rows</h3>
+  <p class="prose" style="color:var(--text-secondary)">
+    The benchmark itself, filterable, sortable and searchable, with every
+    ground-truth source as a link you can open and check. Open a row for the
+    pitch the model receives and the note recording why that outcome is the
+    recorded one. There is no prediction column and no score here, because
+    none has been computed on these rows — that is V2-L6.
+  </p>
+  <div class="placeholder" id="v2-dataset">loading committed data…</div>
+
   <h3>V2 — per-row angle coverage</h3>
   <p class="prose" style="color:var(--text-secondary)">
     Which angles retrieved, for each of the 48 rows. Open any row for its
@@ -507,6 +518,7 @@
 <script src="assets/js/main.js"></script>
 <script src="assets/js/charts.js"></script>
 <script src="assets/js/v1_scenarios.js"></script>
+<script src="assets/js/v2_dataset.js"></script>
 <script type="module" src="assets/js/motion.js"></script>
 </body>
 </html>

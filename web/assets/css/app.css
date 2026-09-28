@@ -639,3 +639,96 @@ body::after {
 :root[data-reveal="armed"] .chapter__lede,
 :root[data-reveal="armed"] .panel,
 :root[data-reveal="armed"] .limit { opacity: 0; }
+
+/* ==================================================================
+ * V2 evaluation dataset table -- phase (e), step 3
+ * ================================================================== */
+
+.ds-stats { margin-bottom: var(--sp-2); }
+.ds-stats .stat__value { font-size: var(--step-1); }
+
+.ds-controls {
+  display: flex; flex-wrap: wrap; align-items: flex-end;
+  gap: var(--sp-2); margin: var(--sp-3) 0 var(--sp-1);
+}
+.ds-ctl { display: flex; flex-direction: column; gap: 0.25rem; }
+.ds-ctl--search { flex: 1 1 18rem; }
+.ds-ctl__label {
+  font-family: var(--font-mono); font-size: var(--step--1); color: var(--text-muted);
+}
+.ds-ctl__input {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--text-primary); background: var(--surface-raised);
+  border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+  padding: 0.35rem 0.6rem; width: 100%;
+}
+.ds-ctl__reset {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--text-secondary); background: none;
+  border: 1px solid var(--hairline); border-radius: 999px;
+  padding: 0.35rem 0.9rem; cursor: pointer;
+}
+.ds-ctl__reset:hover { color: var(--text-primary); border-color: var(--text-muted); }
+.ds-count {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--text-secondary); margin: var(--sp-1) 0;
+}
+
+.ds-table th { vertical-align: bottom; white-space: nowrap; }
+/* The sort control is a real button inside the <th>, so the column is
+ * reachable by keyboard and announced; aria-sort on the <th> carries the
+ * direction, and the arrow is decorative reinforcement of it. */
+.ds-sort {
+  font: inherit; color: inherit; background: none; border: 0; padding: 0;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;
+}
+.ds-sort:hover { color: var(--text-primary); }
+.ds-sort__mark { font-size: 0.7em; color: var(--angle-tech); }
+
+.ds-row__btn {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--angle-tech); background: none;
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  padding: 0.1rem 0.4rem; cursor: pointer;
+}
+.ds-row__btn:hover { border-color: var(--hairline); }
+.ds-row__btn[aria-expanded="true"] {
+  background: var(--surface-raised); border-color: var(--hairline);
+}
+.ds-src { max-width: 16rem; }
+.ds-src .detail__link { word-break: break-word; }
+
+.ds-detail > td { background: var(--surface-raised); }
+.ds-detail__body { padding: var(--sp-2) 0 var(--sp-3); max-width: var(--measure); }
+.ds-detail__body h4 { margin-top: var(--sp-2); }
+.ds-detail__pitch, .ds-detail__notes {
+  color: var(--text-secondary); font-size: var(--step--1); line-height: 1.65;
+  margin: 0 0 var(--sp-2);
+}
+
+.ds-foot { margin-top: var(--sp-3); }
+.ds-foot h4 { margin-top: 0; }
+.ds-download {
+  display: inline-block; font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--base); background: var(--angle-tech);
+  border-radius: var(--radius-sm); padding: 0.4rem 0.9rem; text-decoration: none;
+}
+.ds-foot--gap { border-color: var(--status-not-measured); }
+/* The row-040 justification is quoted from the commit, so it keeps the
+ * commit's own line breaks rather than being reflowed into prose. */
+.quote { margin: var(--sp-2) 0 0; }
+.quote blockquote { margin: 0; border-left: 2px solid var(--hairline); padding-left: var(--sp-2); }
+.quote__pre {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--text-secondary); line-height: 1.55;
+  white-space: pre-wrap; margin: 0; overflow-x: auto;
+}
+.quote figcaption {
+  margin-top: var(--sp-2); font-size: var(--step--1); color: var(--text-muted);
+}
+.quote figcaption .src { display: block; margin-top: 0.2rem; }
+
+@media (max-width: 720px) {
+  .ds-controls { flex-direction: column; align-items: stretch; }
+  .ds-src { max-width: none; }
+}

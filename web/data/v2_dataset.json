@@ -1,0 +1,539 @@
+{
+  "title": "The Part 24 evaluation dataset",
+  "n_rows": 48,
+  "columns": [
+    "id",
+    "domain",
+    "outcome",
+    "outcome_date",
+    "conflict_expected",
+    "ground_truth_source"
+  ],
+  "domains": {
+    "Tech-OSS": 28,
+    "Financial-Product": 10,
+    "Startup": 10
+  },
+  "outcomes": {
+    "Adopted": 20,
+    "Profitable": 8,
+    "Rejected": 8,
+    "Failed": 5,
+    "Funded": 5,
+    "Loss": 2
+  },
+  "conflict": {
+    "Yes": 25,
+    "No": 20,
+    "Unsure": 3
+  },
+  "denominators": {
+    "calibration_n": 48,
+    "conflict_n": 45,
+    "note": "the two denominators differ and are not interchangeable: conflict excludes the rows labelled Unsure. Every figure computed from this dataset carries its own n."
+  },
+  "id_gaps": [
+    "040"
+  ],
+  "gap_note": "id 001 does not exist: the EX example row occupies that slot in the sheet. 040 is blank on purpose -- see below.",
+  "row_040": {
+    "commit": "81c9550",
+    "commit_full": "81c9550660e76795000d4bd807b65c21a4d06408",
+    "subject": "part24: 48 of 50 dataset rows, every source live-corroborated",
+    "heading": "ROW 040 IS BLANK ON PURPOSE",
+    "text": "Not an oversight and not a gap to be filled later without thought. Three\nindependent problems:\n\n  * its pitch describes an Indian food-delivery app routing restaurant meals,\n    while the cited entity is WhatsOnRent -- an online rental marketplace;\n  * sources place the shutdown in July 2016, contradicting the row's\n    2016-11-14;\n  * no working primary source exists. Only aggregator profile pages\n    (CBInsights, Tracxn, Crunchbase) and a listicle, none of which states the\n    outcome as a reportable fact.\n\nWriting an uncorroborated row to reach 49 would have put a guess into the\nbenchmark. The id stays in the sheet with every other field empty, so the\nexporter skips it and the count is honestly 48."
+  },
+  "rows": [
+    {
+      "id": "002",
+      "domain": "Startup",
+      "outcome": "Failed",
+      "outcome_date": "2020-10-21",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.pbs.org/newshour/arts/short-video-app-quibi-shutting-down-just-months-after-launch",
+      "idea_pitch": "A mobile-only, short-form streaming platform delivering Hollywood-produced shows in 5-10 minute episodes built for on-the-go viewing. Backed by $1.75B in funding, exclusive studio content deals, and a Canadian telecom partnership (Bell Media) for launch-market distribution.",
+      "notes": "Launched Apr 6 2020 with strong initial pickup -- 1.7M downloads in week one -- but only 72,000 of 910,000 first-3-day downloaders converted to paid after the 90-day trial (Sensor Tower, via Wikipedia). Wind-down announced Oct 21 2020; formal dissolution Dec 1 2020."
+    },
+    {
+      "id": "003",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2017-11-28",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://forums.swift.org/t/accepted-se-0190-target-environment-platform-condition/7138",
+      "idea_pitch": "This proposal introduces a platform condition to differentiate device and simulator builds. This condition subsumes a common pattern of conditional compilation for Metal, Keychain, and AVFoundation Camera code.",
+      "notes": "Source: Swift Evolution SE-0190"
+    },
+    {
+      "id": "004",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2016-03-10",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://forums.swift.org/t/accepted-se-0039-modernizing-playground-literals/1746",
+      "idea_pitch": "Playground literals tokenize colors, files, and images. They provide drag-and-drop convenience and in-context visualizations that offer easy reference and manipulation when designing playground content. These literals are built using a simple square bracket syntax that, in the current form, conflicts with collection literals. This proposal redesigns playground literals to follow the precedent of #available and #selector.",
+      "notes": "Source: Swift Evolution SE-0039"
+    },
+    {
+      "id": "005",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2016-06-29",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://forums.swift.org/t/accepted-se-0106-add-a-macos-alias-for-the-osx-platform-configuration-test/3176",
+      "idea_pitch": "Starting in Sierra, Apple's Mac-based OS (OS X) will be renamed \"macOS\". All user-facing Swift APIs must go through Swift Evolution. While this is a trivial API change, I have put together a formal proposal as is normal and usual for this process.",
+      "notes": "Source: Swift Evolution SE-0106"
+    },
+    {
+      "id": "006",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2017-04-11",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://forums.swift.org/t/accepted-se-0162-package-manager-custom-target-layouts/5647",
+      "idea_pitch": "This proposal enhances the `Package.swift` manifest APIs to support custom target layouts, and removes a convention which allowed omission of targets from the manifest.",
+      "notes": "Source: Swift Evolution SE-0162"
+    },
+    {
+      "id": "007",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "outcome_date": "2016-01-06",
+      "conflict_expected": "Unsure",
+      "ground_truth_source": "https://forums.swift.org/t/rejected-se-0009-require-self-for-accessing-instance-members/930",
+      "idea_pitch": "The current version of Swift (2.1) requires using `self` when accessing instance members in closures. The proposal suggests extending this to all member accesses (as is intrinsically the case in Objective-C). It has the benefit of documenting instance properties vs local variables and instance functions vs local functions or closures.",
+      "notes": "Source: Swift Evolution SE-0009"
+    },
+    {
+      "id": "008",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "outcome_date": "2016-06-30",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://forums.swift.org/t/rejected-se-0105-removing-where-clauses-from-for-in-loops/3205",
+      "idea_pitch": "This proposal removes `where` clauses from `for-in` loops, where they are better expressed (and read) as guard conditions.",
+      "notes": "Source: Swift Evolution SE-0105"
+    },
+    {
+      "id": "009",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "outcome_date": "2016-02-23",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://forums.swift.org/t/rejected-se-0024-optional-value-setter/1528",
+      "idea_pitch": "Introduce a new operator an \"Optional Value Setter\". If the optional is set via this operator then the new value is only set if there isn't an already existing value.",
+      "notes": "Source: Swift Evolution SE-0024"
+    },
+    {
+      "id": "010",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "outcome_date": "2016-05-26",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://forums.swift.org/t/rejected-se-0084-allow-trailing-commas-in-parameter-lists-and-tuples/2777",
+      "idea_pitch": "Swift permits trailing commas after the last element in array or dictionary literal. This proposal extends that to parameters and tuples.",
+      "notes": "Source: Swift Evolution SE-0084"
+    },
+    {
+      "id": "011",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2020-02-15",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://discuss.python.org/t/pep-458-secure-pypi-downloads-with-package-signing/2648/115",
+      "idea_pitch": "This PEP describes changes to the PyPI infrastructure that are needed to ensure that users get valid packages from PyPI. These changes should have minimal impact on other parts of the ecosystem. The PEP focuses on communication between PyPI and users, and so does not require any action by package developers. Developers will upload packages using the current process, and PyPI will automatically generate signed repository metadata for these packages. In order for the security mechanism to be effective, additional work will need to be done by PyPI consumers (like pip) to verify the signatures and metadata provided by PyPI. This verification can be transparent to users (unless it fails) and provides an automatic security mechanism. There is documentation for how to consume TUF metadata in the TUF repository.",
+      "notes": "Source: Python PEP 458 | abstract trimmed at a sentence boundary"
+    },
+    {
+      "id": "012",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2021-09-24",
+      "conflict_expected": "Unsure",
+      "ground_truth_source": "https://discuss.python.org/t/accepting-pep-654-exception-groups-and-except/10813/1",
+      "idea_pitch": "This document proposes language extensions that allow programs to raise and handle multiple unrelated exceptions simultaneously: * A new standard exception type, the ExceptionGroup, which represents a group of unrelated exceptions being propagated together. * A new syntax except* for handling ExceptionGroups.",
+      "notes": "Source: Python PEP 654"
+    },
+    {
+      "id": "013",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2026-02-20",
+      "conflict_expected": "Unsure",
+      "ground_truth_source": "https://discuss.python.org/t/pep-747-typeexpr-type-hint-for-a-type-expression/55984/103",
+      "idea_pitch": "Type expressions provide a standardized way to specify types in the Python type system. When a type expression is evaluated at runtime, the resulting *type form object* encodes the information supplied in the type expression. This enables a variety of use cases including runtime type checking, introspection, and metaprogramming. Such use cases have proliferated, but there is currently no way to accurately annotate functions that accept type form objects. Developers are forced to use an overly-wide type like object, which makes some use cases impossible and generally reduces type safety. This PEP addresses this limitation by introducing a new special form typing.TypeForm. This PEP makes no changes to the Python grammar. Correct usage of TypeForm is intended to be enforced only by type checkers, not by the Python runtime.",
+      "notes": "Source: Python PEP 747"
+    },
+    {
+      "id": "014",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2025-08-21",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://discuss.python.org/t/pep-799-a-dedicated-profilers-package-for-organizing-python-profiling-tool/100898/21",
+      "idea_pitch": "This PEP proposes the creation of a new standard library module named !profiling to organize Python's built-in profiling tools under a single, coherent namespace. This PEP also proposes the deprecation of the profile module, a legacy pure-Python tracing profiler.",
+      "notes": "Source: Python PEP 799"
+    },
+    {
+      "id": "015",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "outcome_date": "2023-03-28",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://discuss.python.org/t/pep-582-python-local-packages-directory/963/430",
+      "idea_pitch": "This PEP proposes extending the existing mechanism for setting up sys.path to include a new pypackages directory, in addition to the existing locations. The new directory will be added at the start of sys.path, after the current working directory and just before the system site-packages, to give packages installed there priority over other locations. This is similar to the existing mechanism of adding the current directory (or the directory the script is located in), but by using a subdirectory, additional libraries are kept separate from the user's work.",
+      "notes": "Source: Python PEP 582"
+    },
+    {
+      "id": "016",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "outcome_date": "2026-04-23",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://discuss.python.org/t/pep-806-mixed-sync-async-context-managers-with-precise-async-marking/103971/12",
+      "idea_pitch": "Python allows the with and async with statements to handle multiple context managers in a single statement, so long as they are all respectively synchronous or asynchronous. When mixing synchronous and asynchronous context managers, developers must use deeply nested statements or use risky workarounds such as overuse of contextlib.AsyncExitStack. We therefore propose to allow with statements to accept both synchronous and asynchronous context managers in a single statement by prefixing individual async context managers with the async keyword. This change eliminates unnecessary nesting, improves code readability, and improves ergonomics without making async code any less explicit.",
+      "notes": "Source: Python PEP 806"
+    },
+    {
+      "id": "017",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "outcome_date": "2025-10-24",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://discuss.python.org/t/pep-679-new-assert-statement-syntax-with-parentheses/103634/24",
+      "idea_pitch": "This PEP proposes allowing parentheses in the two-argument form of assert. The interpreter will reinterpret assert (expr, msg) as assert expr, msg, eliminating the common pitfall where such code was previously treated as asserting a two-element tuple, which is always truthy.",
+      "notes": "Source: Python PEP 679"
+    },
+    {
+      "id": "018",
+      "domain": "Tech-OSS",
+      "outcome": "Rejected",
+      "outcome_date": "2019-09-17",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://discuss.python.org/t/pep-601-forbid-return-break-continue-breaking-out-of-finally/2239/32",
+      "idea_pitch": "This PEP proposes to forbid return, break and continue statements within a finally suite where they would break out of the finally. Their use in such a location silently cancels any active exception being raised through the finally, leading to unclear code and possible bugs. continue is currently not supported in a finally in Python 3.7 (due to implementation issues) and the proposal is to not add support for it in Python 3.8. For return and break the proposal is to deprecate their use in Python 3.9, emit a compilation warning in Python 3.10 and then forbid their use after that.",
+      "notes": "Source: Python PEP 601"
+    },
+    {
+      "id": "019",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2019-10-14",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://peps.python.org/pep-0572/",
+      "idea_pitch": "Pitch a faster way to write compact conditional logic in Python without sacrificing readability.",
+      "notes": "PEP 572; implemented in Python 3.8. Human pre-label: Yes (syntax ergonomics vs added language complexity)."
+    },
+    {
+      "id": "020",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2020-10-05",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://peps.python.org/pep-0585/",
+      "idea_pitch": "Pitch a standard way to write built-in generic collections such as list[str] and dict[str, int] for static typing.",
+      "notes": "PEP 585; implemented in Python 3.9. Human pre-label: No."
+    },
+    {
+      "id": "021",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2021-10-04",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://peps.python.org/pep-0604/",
+      "idea_pitch": "Pitch a concise union-type syntax using X | Y instead of verbose typing.Union expressions.",
+      "notes": "PEP 604; implemented in Python 3.10. Human pre-label: No."
+    },
+    {
+      "id": "022",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2021-10-04",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://peps.python.org/pep-0634/",
+      "idea_pitch": "Pitch structural pattern matching with match and case for clearer branching over structured data.",
+      "notes": "PEP 634; implemented in Python 3.10. Human pre-label: Yes (expressiveness vs language surface area)."
+    },
+    {
+      "id": "023",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2022-10-24",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://peps.python.org/pep-0657/",
+      "idea_pitch": "Pitch fine-grained source locations so Python tracebacks can point to the expression that caused an error.",
+      "notes": "PEP 657; implemented in Python 3.11. Human pre-label: No."
+    },
+    {
+      "id": "024",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2022-10-24",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://peps.python.org/pep-0673/",
+      "idea_pitch": "Pitch a typing construct that lets a method state it returns the same specific subtype as self.",
+      "notes": "PEP 673; implemented in Python 3.11. Human pre-label: No."
+    },
+    {
+      "id": "025",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2023-03-07",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://peps.python.org/pep-0688/",
+      "idea_pitch": "Pitch a safe Python-level API for libraries to inspect and provide the low-level buffer protocol.",
+      "notes": "PEP 688; resolution dated 2023-03-07, implemented for Python 3.12. Human pre-label: Yes (API power vs compatibility complexity)."
+    },
+    {
+      "id": "026",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2023-10-02",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://peps.python.org/pep-0695/",
+      "idea_pitch": "Pitch a new syntax for declaring type parameters directly in generic classes, functions, and aliases.",
+      "notes": "PEP 695; implemented in Python 3.12. Human pre-label: Yes (typing ergonomics vs added syntax)."
+    },
+    {
+      "id": "027",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2023-03-14",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://peps.python.org/pep-0701/",
+      "idea_pitch": "Pitch a formally specified f-string grammar so f-strings can support nested expressions and behave consistently.",
+      "notes": "PEP 701; resolution dated 2023-03-14, implemented for Python 3.12. Human pre-label: Yes."
+    },
+    {
+      "id": "028",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2023-10-02",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://peps.python.org/pep-0684/",
+      "idea_pitch": "Pitch making the global interpreter lock local to each interpreter so isolated interpreters can run in parallel.",
+      "notes": "PEP 684; implemented for Python 3.12. Human pre-label: Yes (parallelism gains vs runtime extension complexity)."
+    },
+    {
+      "id": "029",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2022-10-24",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://peps.python.org/pep-0683/",
+      "idea_pitch": "Pitch immutable reference counts for selected Python objects to reduce lifetime coordination across interpreters.",
+      "notes": "PEP 683; implemented in Python 3.12. Human pre-label: Yes (runtime performance trade-offs)."
+    },
+    {
+      "id": "030",
+      "domain": "Tech-OSS",
+      "outcome": "Adopted",
+      "outcome_date": "2023-05-08",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://peps.python.org/pep-0649/",
+      "idea_pitch": "Pitch lazy annotation evaluation so annotations can be resolved later while preserving forward references and typing flexibility.",
+      "notes": "PEP 649; resolution dated 2023-05-08. Human pre-label: Yes (annotation semantics vs backward compatibility)."
+    },
+    {
+      "id": "031",
+      "domain": "Startup",
+      "outcome": "Funded",
+      "outcome_date": "2011-09-30",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://techcrunch.com/2011/09/30/sequoia-backed-stripe-launches-to-disrupt-the-online-payments-industry-with-a-developer-friendly-platform/",
+      "idea_pitch": "Build a developer-first payment API that lets online businesses accept cards, bank payments, and wallets with minimal integration work.",
+      "notes": "Contemporaneous launch/funding coverage; Stripe had publicly launched after raising about $2M. Human pre-label: No."
+    },
+    {
+      "id": "032",
+      "domain": "Startup",
+      "outcome": "Funded",
+      "outcome_date": "2013-06-26",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://techcrunch.com/2013/06/26/21-years-4-million-dollars/",
+      "idea_pitch": "Build a browser-based collaborative design tool that lets users create and edit visual work without desktop software.",
+      "notes": "TechCrunch reported Figma's $3.8M funding and browser-based product. Human pre-label: No."
+    },
+    {
+      "id": "033",
+      "domain": "Startup",
+      "outcome": "Funded",
+      "outcome_date": "2015-10-27",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://razorpay.com/blog/?p=587",
+      "idea_pitch": "Build an Indian online payment gateway focused on simplifying digital payments for businesses and developers.",
+      "notes": "Razorpay announced a seed + Series A totaling $11.5M on 2015-10-27. Human pre-label: No."
+    },
+    {
+      "id": "034",
+      "domain": "Startup",
+      "outcome": "Funded",
+      "outcome_date": "2016-06-02",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.crowdfundinsider.com/2016/06/87008-kickstarter-success-notion-secures-3-2m-during-seed-round-led-by-xl-innovate/",
+      "idea_pitch": "Build an IoT home-awareness system that combines smart sensors into a single consumer product.",
+      "notes": "PRNewswire reported Notion's $3.2M seed round for its smart-home sensor system. Human pre-label: Yes (hardware adoption vs complexity)."
+    },
+    {
+      "id": "035",
+      "domain": "Startup",
+      "outcome": "Funded",
+      "outcome_date": "2016-11-23",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.medianama.com/2016/11/223-udaan-raises-10m/",
+      "idea_pitch": "Build a B2B commerce marketplace that lets small retailers source products online from brands and suppliers.",
+      "notes": "Economic Times reported Udaan's $10M funding and B2B commerce focus. Human pre-label: Yes (marketplace liquidity requirements)."
+    },
+    {
+      "id": "036",
+      "domain": "Startup",
+      "outcome": "Failed",
+      "outcome_date": "2017-02-24",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.medianama.com/2017/02/223-stayzilla-shutdown/",
+      "idea_pitch": "Build a travel marketplace for hotels and stays, using technology to aggregate supply and make booking easier in India.",
+      "notes": "Contemporaneous report: Stayzilla suspended operations and planned a reboot; later history treats the shutdown as a failure. Human pre-label: Yes."
+    },
+    {
+      "id": "037",
+      "domain": "Startup",
+      "outcome": "Failed",
+      "outcome_date": "2016-04-25",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://yourstory.com/2016/04/peppertap-shutdown/",
+      "idea_pitch": "Build an on-demand grocery delivery service that lets households order essentials through a mobile app.",
+      "notes": "Contemporaneous coverage reported PepperTap shutting its main grocery business after failing to reach profitability. Human pre-label: Yes."
+    },
+    {
+      "id": "038",
+      "domain": "Startup",
+      "outcome": "Failed",
+      "outcome_date": "2016-08-26",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.medianama.com/2016/08/223-gozoomo-shuts-down/",
+      "idea_pitch": "Build a managed marketplace for used cars with inspection, financing, and technology-enabled transactions.",
+      "notes": "Contemporaneous report: GoZoomo shut down after finding its unit economics unsustainable. Human pre-label: Yes."
+    },
+    {
+      "id": "039",
+      "domain": "Startup",
+      "outcome": "Failed",
+      "outcome_date": "2024-07-02",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://techcrunch.com/2024/07/02/indian-social-network-koo-to-shut-down",
+      "idea_pitch": "Build a local-language social network for Indian internet users with short-form posts and community conversations.",
+      "notes": "TechCrunch reported Koo shutting down after funding and acquisition efforts did not produce a transaction. Human pre-label: Yes."
+    },
+    {
+      "id": "041",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "outcome_date": "2025-02-24",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1818874/000181887425000016/sofi-20241231.htm",
+      "idea_pitch": "Build a digital lender that uses technology and alternative data to expand access to personal financial products.",
+      "notes": "SoFi 2024 Form 10-K: Lending segment contribution profit was $890.5M. Segment result, not consolidated GAAP net income."
+    },
+    {
+      "id": "042",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "outcome_date": "2025-02-13",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1409970/000140997025000009/lc-20241231.htm",
+      "idea_pitch": "Build a technology-led consumer credit platform that originates and services personal loans online.",
+      "notes": "LendingClub 2024 Form 10-K: net income was $51.33M and total net revenue was $787M."
+    },
+    {
+      "id": "043",
+      "domain": "Financial-Product",
+      "outcome": "Loss",
+      "outcome_date": "2025-02-14",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1647639/000164763925000018/upst-20241231.htm",
+      "idea_pitch": "Build an AI-powered lending marketplace that matches borrowers with banks using machine-learning credit models.",
+      "notes": "Upstart 2024 Form 10-K: net loss was $128.6M. Human pre-label: Yes (AI underwriting scale vs credit-cycle risk)."
+    },
+    {
+      "id": "044",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "outcome_date": "2025-02-20",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1568651/000156865125000008/oscr-20241231.htm",
+      "idea_pitch": "Build a technology-driven health insurance platform that sells and manages individual and small-group plans.",
+      "notes": "Oscar Health 2024 Form 10-K: net income was $26.121M, compared with a 2023 loss."
+    },
+    {
+      "id": "045",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "outcome_date": "2025-02-26",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1788882/000162828025008137/root-20241231.htm",
+      "idea_pitch": "Build a mobile-first auto insurer that uses telematics and direct digital distribution to price drivers.",
+      "notes": "Root 2024 10-K: operating income $78.5M and net income $30.9M. Human pre-label: Yes (pricing/underwriting model dependence)."
+    },
+    {
+      "id": "046",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "outcome_date": "2025-02-13",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1679788/000167978825000022/coin-20241231.htm",
+      "idea_pitch": "Build a regulated crypto exchange and financial platform for buying, selling, storing, and using digital assets.",
+      "notes": "Coinbase 2024 10-K: net income was $2.579B. Human pre-label: Yes (high regulatory and market-cycle exposure)."
+    },
+    {
+      "id": "047",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "outcome_date": "2025-02-04",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1633917/000163391725000019/pypl-20241231.htm",
+      "idea_pitch": "Build a global digital payments platform that lets consumers and merchants move money online across markets.",
+      "notes": "PayPal 2024 10-K: net income was $4.147B."
+    },
+    {
+      "id": "048",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "outcome_date": "2025-02-18",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1783879/000178387925000049/hood-20241231.htm",
+      "idea_pitch": "Build a mobile investing and brokerage app that makes stocks, options, and related financial products accessible to retail users.",
+      "notes": "Robinhood 2024 10-K: net income was $1.411B. Human pre-label: Yes (retail-volume and market-cycle exposure)."
+    },
+    {
+      "id": "049",
+      "domain": "Financial-Product",
+      "outcome": "Profitable",
+      "outcome_date": "2024-07-12",
+      "conflict_expected": "No",
+      "ground_truth_source": "https://www.investegate.co.uk/announcement/rns/wise-class-a--wise/wise-plc-preliminary-results-fy-end-31-march-2024/8256893",
+      "idea_pitch": "Build a low-cost international money-transfer product with a transparent exchange-rate and fee model.",
+      "notes": "Wise FY2024 annual report: operating profit \u00a3501.9M and profit for the year \u00a3354.6M; annual report published in July 2024."
+    },
+    {
+      "id": "050",
+      "domain": "Financial-Product",
+      "outcome": "Loss",
+      "outcome_date": "2024-10-25",
+      "conflict_expected": "Yes",
+      "ground_truth_source": "https://www.sec.gov/Archives/edgar/data/1820953/000182095324000049/afrm-20241025.htm",
+      "idea_pitch": "Build a consumer buy-now-pay-later product that underwrites purchases instantly and lets customers repay over time.",
+      "notes": "Affirm FY2024 filing materials: total revenue about $2.3B, operating loss $615.8M and net loss $517.8M."
+    }
+  ],
+  "label": "This is the dataset, not a result. No prediction, score or calibration metric appears in this table, because none has been computed on these rows -- see V2-L6.",
+  "provenance": {
+    "generated_utc": "2026-09-28T11:35:33Z",
+    "sources": [
+      {
+        "path": "data/v2/evaluation_queries.json",
+        "sha256": "0731456e348a5163bf96f14c94ae952b124e350acd564dd23c26465ded17e17f",
+        "bytes": 28241
+      }
+    ]
+  }
+}

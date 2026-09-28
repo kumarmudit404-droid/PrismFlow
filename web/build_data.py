@@ -48,6 +48,7 @@ import json
 import math
 import re
 import shutil
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -419,7 +420,134 @@ def build_figures() -> dict:
 
 
 # --------------------------------------------------------------------------
-# 5. The labelled workbook, offered as a download
+# 5. The evaluation dataset itself, all 48 rows
+# --------------------------------------------------------------------------
+
+# The commit that brought the dataset to 48 rows and left 040 out. The page has
+# to say WHY a row is missing, and the only honest text for that is the repo's
+# own, so it is read from the commit rather than retyped here.
+ROW_040_COMMIT = "81c9550"
+
+
+def commit_paragraph(commit: str, heading: str) -> dict:
+    """One section of a commit message, quoted verbatim.
+
+    Verbatim matters: this is the page's justification for a gap in a benchmark.
+    Paraphrasing it here would put a second, drifting version of the reason in
+    the repository. If the commit or the heading cannot be found the build
+    fails, because a footer that silently loses its citation is worse than no
+    footer.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "log", "-1", "--format=%B", commit],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError) as exc:      # pragma: no cover
+        raise SystemExit("cannot read commit %s: %s" % (commit, exc))
+    if out.returncode != 0:
+        raise SystemExit("cannot read commit %s: %s" % (commit, out.stderr.strip()))
+
+    lines = out.stdout.splitlines()
+    try:
+        start = next(i for i, ln in enumerate(lines) if ln.strip() == heading)
+    except StopIteration:
+        raise SystemExit("commit %s has no section %r" % (commit, heading))
+
+    body, i = [], start + 1
+    if i < len(lines) and set(lines[i].strip()) <= {"-"} and lines[i].strip():
+        i += 1                                   # the ---- underline
+    while i < len(lines):
+        ln = lines[i]
+        # A section ends at the next ALL-CAPS heading, which is this message's
+        # own convention, not at a blank line -- the section has blank lines in it.
+        if ln.strip() and ln == ln.upper() and ln[:1].isalpha() and len(ln.strip()) > 8:
+            break
+        body.append(ln)
+        i += 1
+
+    full = subprocess.run(["git", "rev-parse", commit], cwd=str(ROOT),
+                          capture_output=True, text=True).stdout.strip()
+    return {
+        "commit": commit,
+        "commit_full": full or None,
+        "subject": lines[0] if lines else None,
+        "heading": heading,
+        "text": "\n".join(body).strip("\n"),
+    }
+
+
+def build_v2_dataset() -> dict:
+    """All 48 evaluation rows, as the exporter wrote them.
+
+    The source is data/v2/evaluation_queries.json -- the derived file the
+    harness actually loads -- not the workbook, so the table shows exactly the
+    rows the evaluation would run on. The workbook is offered separately as a
+    download, and the two can be compared because both carry a sha256.
+
+    Nothing here is computed except counts over the rows that are present, and
+    the id gaps, which are found by comparing the ids to the range they sit in
+    rather than being asserted.
+    """
+    src = ROOT / "data/v2/evaluation_queries.json"
+    rows_raw = json.loads(src.read_text(encoding="utf-8"))
+
+    rows = [{
+        "id": r.get("id"),
+        "domain": clean(r.get("domain")),
+        "outcome": clean(r.get("actual_outcome")),
+        "outcome_date": clean(r.get("outcome_date")),
+        "conflict_expected": clean(r.get("conflict_expected")),
+        "ground_truth_source": clean(r.get("ground_truth_source")),
+        "idea_pitch": clean(r.get("idea_pitch")),
+        "notes": clean(r.get("notes")),
+    } for r in rows_raw]
+
+    present = {r["id"] for r in rows}
+    numeric = sorted(int(i) for i in present if str(i).isdigit())
+    gaps = [] if not numeric else [
+        "%03d" % n for n in range(min(numeric), max(numeric) + 1)
+        if "%03d" % n not in present
+    ]
+
+    def tally(field):
+        counts = {}
+        for r in rows:
+            counts[r[field] or "not recorded"] = counts.get(r[field] or "not recorded", 0) + 1
+        return dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))
+
+    # The two denominators are different and are not interchangeable. Both are
+    # counted here rather than quoted, so they cannot drift from the file.
+    conflict_n = sum(1 for r in rows if (r["conflict_expected"] or "") in ("Yes", "No"))
+
+    return {
+        "title": "The Part 24 evaluation dataset",
+        "n_rows": len(rows),
+        "columns": ["id", "domain", "outcome", "outcome_date",
+                    "conflict_expected", "ground_truth_source"],
+        "domains": tally("domain"),
+        "outcomes": tally("outcome"),
+        "conflict": tally("conflict_expected"),
+        "denominators": {
+            "calibration_n": len(rows),
+            "conflict_n": conflict_n,
+            "note": ("the two denominators differ and are not interchangeable: "
+                     "conflict excludes the rows labelled Unsure. Every figure "
+                     "computed from this dataset carries its own n."),
+        },
+        "id_gaps": gaps,
+        "gap_note": ("id 001 does not exist: the EX example row occupies that "
+                     "slot in the sheet. 040 is blank on purpose -- see below."),
+        "row_040": commit_paragraph(ROW_040_COMMIT, "ROW 040 IS BLANK ON PURPOSE"),
+        "rows": rows,
+        "label": ("This is the dataset, not a result. No prediction, score or "
+                  "calibration metric appears in this table, because none has "
+                  "been computed on these rows -- see V2-L6."),
+        "provenance": provenance(src),
+    }
+
+
+# --------------------------------------------------------------------------
+# 6. The labelled workbook, offered as a download
 # --------------------------------------------------------------------------
 
 def build_dataset_download() -> dict:
@@ -442,7 +570,7 @@ def build_dataset_download() -> dict:
 
 
 # --------------------------------------------------------------------------
-# 6. V2-L2 / V2-L3: the N=6 re-verification, before against after
+# 7. V2-L2 / V2-L3: the N=6 re-verification, before against after
 # --------------------------------------------------------------------------
 
 REVERIFY_ANGLES = ("tech", "market", "financial", "regulatory", "sentiment")
@@ -539,6 +667,7 @@ def main() -> int:
         "v1_surface.json": build_v1_surface,
         "v1_attack.json": build_v1_attack,
         "v2_coverage.json": build_v2_coverage,
+        "v2_dataset.json": build_v2_dataset,
         "v1_figures.json": build_figures,
     }
     reverify = build_v2_reverify()
