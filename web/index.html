@@ -218,24 +218,11 @@
       (−0.0562 ± 0.0069 at ε = 1.0, 5/5 seeds, bars separate).
     </p>
 
-    <h3>L1–L8, as written</h3>
-    <p style="color:var(--text-secondary)">
-      These are the limitations found as each Part ran, stated in their own
-      words — not softened, not summarised away.
-    </p>
+    <h3>The limitations this raised</h3>
   </div>
 
-  <div class="panel" style="margin-top:var(--sp-3)">
-    <div class="limit"><span class="limit__id">L1.</span> <span class="limit__title">Flat confidence under duplication depends on training-time adaptation</span></div>
-    <div class="limit"><span class="limit__id">L2.</span> <span class="limit__title">Residual per-pair dependence accumulates with view count</span></div>
-    <div class="limit"><span class="limit__id">L3.</span> <span class="limit__title">The discount addresses redundant evidence, not unreliable evidence</span></div>
-    <div class="limit"><span class="limit__id">L4.</span> <span class="limit__title">The discount is proportional, not capping, and weakens as evidence grows</span></div>
-    <div class="limit"><span class="limit__id">L5.</span> <span class="limit__title">The suspicion detector inherits the dependence signal's blind spot, and inverts under missing evidence</span></div>
-    <div class="limit"><span class="limit__id">L6.</span> <span class="limit__title">The shared/private objective does not fix which branch carries cross-view information, and ENIV reads only one of them</span></div>
-    <div class="limit"><span class="limit__id">L7.</span> <span class="limit__title">Tail dependence is not the sharper instrument the argument predicted; it inverts under strong attack</span></div>
-    <div class="limit"><span class="limit__id">L8.</span> <span class="limit__title">Detection and correction fail together, because both read cross-view belief agreement</span></div>
-    <p class="src">docs/KNOWN_LIMITATIONS.md — headings verbatim</p>
-  </div>
+  <div class="placeholder" id="limits-ch2">loading committed data…</div>
+
   <a class="limits-link" href="#limits" aria-label="All limitations including L9 to L15, from Chapter 2: V1">All limitations, including L9–L15 →</a>
 </section>
 
@@ -369,16 +356,17 @@
     <p class="src">docs/v2-known-limitations.md V2-L1 — identical in both of the day's passes</p>
   </div>
 
-  <h3>V2-L1 … V2-L6</h3>
-  <div class="panel">
-    <div class="limit"><span class="limit__id">V2-L1.</span> <span class="limit__title">Retrieval coverage: one angle of five contributes</span><p class="limit__body">The pipeline is fed by one angle on 42 of 48 rows.</p></div>
-    <div class="limit"><span class="limit__id">V2-L2.</span> <span class="limit__title">GitHub returns 0 records on every row (pre-existing)</span><p class="limit__body">Also 0 in the earlier 17-row run, which predates query derivation — so not a regression from that change.</p></div>
-    <div class="limit"><span class="limit__id">V2-L3.</span> <span class="limit__title">The arXiv fallback is query-independent in membership</span><p class="limit__body">Rows 020, 046 and 049 return the same ten records, 10/10 overlap on all three pairs. A query about Python <code>list[str]</code> syntax retrieves the LIGO-Virgo-KAGRA gravitational-wave catalogue.</p></div>
-    <div class="limit"><span class="limit__id">V2-L4.</span> <span class="limit__title">Financial is structurally incompatible with the dataset, by design conflict</span><p class="limit__body">yfinance resolves tickers; the pitches are deliberately anonymised, so there is nothing to resolve. Not a bug in either component.</p></div>
-    <div class="limit"><span class="limit__id">V2-L5.</span> <span class="limit__title">The free Groq tier cannot fund a 5-seed evaluation</span><p class="limit__body">About two passes per day against a 200,000 token/day limit. The 5-SEED RULE requires five.</p></div>
-    <div class="limit"><span class="limit__id">V2-L6.</span> <span class="limit__title">Consequence: ECE and Brier cannot yet be computed</span><p class="limit__body">Coverage first, then seeds, then metrics — each is a precondition for the next.</p></div>
-    <p class="src">docs/v2-known-limitations.md</p>
-  </div>
+  <h3>The limitations this raised, and two that are now closed</h3>
+  <div class="placeholder" id="limits-ch4">loading committed data…</div>
+
+  <h3>V2-L2 and V2-L3 — retrieval before and after the connector fix</h3>
+  <p class="prose" style="color:var(--text-secondary)">
+    Both were one fault: a connector was handed a bag of words where it expects
+    a query language. GitHub ANDed 8–12 terms and returned nothing; arXiv was
+    sent raw prose and answered with its generic listing. The same six rows,
+    before the fix and after it.
+  </p>
+  <div class="placeholder" id="v2-reverify">loading committed data…</div>
 
   <h3>Part 20 — what "verified" means here</h3>
   <div class="panel">
@@ -477,40 +465,16 @@
     are findings in their own right.
   </p>
 
+  <p class="axis-note" id="limits-note"></p>
+
   <h3>V1 — discovered as each Part ran</h3>
-  <div class="panel">
-    <div class="limit"><span class="limit__id">L1.</span> <span class="limit__title">Flat confidence under duplication depends on training-time adaptation</span></div>
-    <div class="limit"><span class="limit__id">L2.</span> <span class="limit__title">Residual per-pair dependence accumulates with view count</span></div>
-    <div class="limit"><span class="limit__id">L3.</span> <span class="limit__title">The discount addresses redundant evidence, not unreliable evidence</span></div>
-    <div class="limit"><span class="limit__id">L4.</span> <span class="limit__title">The discount is proportional, not capping, and weakens as evidence grows</span></div>
-    <div class="limit"><span class="limit__id">L5.</span> <span class="limit__title">The suspicion detector inherits the dependence signal's blind spot, and inverts under missing evidence</span></div>
-    <div class="limit"><span class="limit__id">L6.</span> <span class="limit__title">The shared/private objective does not fix which branch carries cross-view information, and ENIV reads only one of them</span></div>
-    <div class="limit"><span class="limit__id">L7.</span> <span class="limit__title">Tail dependence is not the sharper instrument the argument predicted; it inverts under strong attack</span></div>
-    <div class="limit"><span class="limit__id">L8.</span> <span class="limit__title">Detection and correction fail together, because both read cross-view belief agreement</span></div>
-  </div>
+  <div class="placeholder" id="limits-v1-parts">loading committed data…</div>
 
   <h3>V1 — standing limitations of the project as a whole</h3>
-  <div class="panel">
-    <div class="limit"><span class="limit__id">L9.</span> <span class="limit__title">ENIV is validated only on synthetic data, where rho is a parameter we set</span></div>
-    <div class="limit"><span class="limit__id">L10.</span> <span class="limit__title">Dependence is estimated from finite batches, and the estimator is biased</span></div>
-    <div class="limit"><span class="limit__id">L11.</span> <span class="limit__title">Tail dependence is unreliable below 50 exceedances, and the threshold bites</span></div>
-    <div class="limit"><span class="limit__id">L12.</span> <span class="limit__title">The attacker capabilities that defeat the defence are specific, and only partly tested</span></div>
-    <div class="limit"><span class="limit__id">L13.</span> <span class="limit__title">V1 detaches the discount, so it corrects inference but never shapes representation</span></div>
-    <div class="limit"><span class="limit__id">L14.</span> <span class="limit__title">One dataset family, and five seeds that are five partitions of it</span></div>
-    <div class="limit"><span class="limit__id">L15.</span> <span class="limit__title">No human-subject evaluation and no deployment evaluation were run</span></div>
-    <p class="src">docs/KNOWN_LIMITATIONS.md — headings verbatim</p>
-  </div>
+  <div class="placeholder" id="limits-v1-standing">loading committed data…</div>
 
   <h3>V2 — retrieval coverage blocks the evaluation</h3>
-  <div class="panel">
-    <div class="limit"><span class="limit__id">V2-L1.</span> <span class="limit__title">Retrieval coverage: one angle of five contributes</span></div>
-    <div class="limit"><span class="limit__id">V2-L2.</span> <span class="limit__title">GitHub returns 0 records on every row (pre-existing)</span></div>
-    <div class="limit"><span class="limit__id">V2-L3.</span> <span class="limit__title">The arXiv fallback is query-independent in membership</span></div>
-    <div class="limit"><span class="limit__id">V2-L4.</span> <span class="limit__title">Financial is structurally incompatible with the dataset, by design conflict</span></div>
-    <div class="limit"><span class="limit__id">V2-L5.</span> <span class="limit__title">The free Groq tier cannot fund a 5-seed evaluation</span></div>
-    <div class="limit"><span class="limit__id">V2-L6.</span> <span class="limit__title">Consequence: ECE and Brier cannot yet be computed</span></div>
-    <p class="src">docs/v2-known-limitations.md — headings verbatim</p>
-  </div>
+  <div class="placeholder" id="limits-v2">loading committed data…</div>
 </section>
 
 </main>
@@ -531,6 +495,7 @@
 <script src="assets/js/v1_scenarios.js"></script>
 <script src="assets/js/v1_failures.js"></script>
 <script src="assets/js/v2_dataset.js"></script>
+<script src="assets/js/limits.js"></script>
 <script type="module" src="assets/js/motion.js"></script>
 </body>
 </html>

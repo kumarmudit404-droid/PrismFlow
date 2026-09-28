@@ -1,0 +1,199 @@
+{
+  "title": "Known limitations",
+  "note": "Headings are read from the documents at build time, never retyped, so an entry that is resolved there cannot stay open here.",
+  "v1": {
+    "source": "docs/KNOWN_LIMITATIONS.md",
+    "entries": [
+      {
+        "id": "L1",
+        "n": 1,
+        "title": "Flat confidence under duplication depends on training-time adaptation",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "L2",
+        "n": 2,
+        "title": "Residual per-pair dependence accumulates with view count",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "L3",
+        "n": 3,
+        "title": "The discount addresses redundant evidence, not unreliable evidence",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "L4",
+        "n": 4,
+        "title": "The discount is proportional, not capping, and weakens as evidence grows",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "L5",
+        "n": 5,
+        "title": "The suspicion detector inherits the dependence signal's blind spot, and inverts under missing evidence",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "L6",
+        "n": 6,
+        "title": "The shared/private objective does not fix which branch carries cross-view information, and ENIV reads only one of them",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "L7",
+        "n": 7,
+        "title": "Tail dependence is not the sharper instrument the argument predicted; it inverts under strong attack",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "L8",
+        "n": 8,
+        "title": "Detection and correction fail together, because both read cross-view belief agreement",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "L9",
+        "n": 9,
+        "title": "ENIV is validated only on synthetic data, where rho is a parameter we set",
+        "status": null,
+        "group": "standing"
+      },
+      {
+        "id": "L10",
+        "n": 10,
+        "title": "Dependence is estimated from finite batches, and the estimator is biased",
+        "status": null,
+        "group": "standing"
+      },
+      {
+        "id": "L11",
+        "n": 11,
+        "title": "Tail dependence is unreliable below 50 exceedances, and the threshold bites",
+        "status": null,
+        "group": "standing"
+      },
+      {
+        "id": "L12",
+        "n": 12,
+        "title": "The attacker capabilities that defeat the defence are specific, and only partly tested",
+        "status": null,
+        "group": "standing"
+      },
+      {
+        "id": "L13",
+        "n": 13,
+        "title": "V1 detaches the discount, so it corrects inference but never shapes representation",
+        "status": null,
+        "group": "standing"
+      },
+      {
+        "id": "L14",
+        "n": 14,
+        "title": "One dataset family, and five seeds that are five partitions of it",
+        "status": null,
+        "group": "standing"
+      },
+      {
+        "id": "L15",
+        "n": 15,
+        "title": "No human-subject evaluation and no deployment evaluation were run",
+        "status": null,
+        "group": "standing"
+      }
+    ],
+    "counts": {
+      "total": 15,
+      "resolved": 0,
+      "new": 0,
+      "open": 15
+    },
+    "group_labels": {
+      "per_part": "discovered as each Part ran",
+      "standing": "standing limitations of the project as a whole"
+    }
+  },
+  "v2": {
+    "source": "docs/v2-known-limitations.md",
+    "entries": [
+      {
+        "id": "V2-L1",
+        "n": 1,
+        "title": "Retrieval coverage: one angle of five contributes",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "V2-L2",
+        "n": 2,
+        "title": "GitHub returned 0 records because the query was an 8-12 term conjunction",
+        "status": "RESOLVED 2026-09-28",
+        "group": "per_part"
+      },
+      {
+        "id": "V2-L3",
+        "n": 3,
+        "title": "The arXiv query was query-independent because the connector was sent raw prose",
+        "status": "RESOLVED 2026-09-28",
+        "group": "per_part"
+      },
+      {
+        "id": "V2-L4",
+        "n": 4,
+        "title": "Financial is structurally incompatible with the dataset, by design conflict",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "V2-L5",
+        "n": 5,
+        "title": "The free Groq tier cannot fund a 5-seed evaluation",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "V2-L6",
+        "n": 6,
+        "title": "Consequence: ECE and Brier cannot yet be computed",
+        "status": null,
+        "group": "per_part"
+      },
+      {
+        "id": "V2-L7",
+        "n": 7,
+        "title": "NEW, created by the V2-L2 fix: some GitHub records exceed the whole token budget",
+        "status": "NEW",
+        "group": "per_part"
+      }
+    ],
+    "counts": {
+      "total": 7,
+      "resolved": 2,
+      "new": 1,
+      "open": 5
+    }
+  },
+  "provenance": {
+    "generated_utc": "2026-09-28T11:52:46Z",
+    "sources": [
+      {
+        "path": "docs/KNOWN_LIMITATIONS.md",
+        "sha256": "64b5e45917c08b04c57995d841401a5edc0c32c6b8907b7d55f466c8491f1091",
+        "bytes": 48787
+      },
+      {
+        "path": "docs/v2-known-limitations.md",
+        "sha256": "924d2bee69bbaee53c9ccc9c183ffb78ffe419225b2c17791c2477ee24100448",
+        "bytes": 21699
+      }
+    ]
+  }
+}

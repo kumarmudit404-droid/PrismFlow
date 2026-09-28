@@ -765,3 +765,40 @@ body::after {
   color: var(--text-secondary); font-size: var(--step--1);
   line-height: 1.65; margin: 0;
 }
+
+/* ==================================================================
+ * Limitations hub + the V2-L2/L3 before-and-after -- phase (e), step 5
+ * ================================================================== */
+
+/* A resolved entry stays in the list and stays readable. It is marked, not
+ * struck through and not removed: the docs keep resolved entries, and a page
+ * that quietly drops them would be a different record from the repository. */
+.limit--resolved .limit__title { color: var(--text-muted); }
+
+.limits-summary { margin: var(--sp-2) 0; }
+.limits-summary__line { color: var(--text-secondary); font-size: var(--step--1); margin: 0 0 var(--sp-1); }
+.limits-summary__ids { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0 0 var(--sp-1); }
+.limits-summary__id {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--text-secondary); text-decoration: none;
+  border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+  padding: 0.12rem 0.5rem;
+}
+.limits-summary__id:hover { color: var(--text-primary); border-color: var(--text-muted); }
+.limits-summary__id--resolved { color: var(--angle-market); border-color: var(--angle-market); }
+
+.rv-stats { margin-bottom: var(--sp-3); }
+.rv-stats .stat__value { font-size: var(--step-1); }
+.rv-before { color: var(--text-muted); }
+.rv-arrow { color: var(--text-muted); margin: 0 0.35rem; }
+.rv-after { color: var(--text-secondary); }
+/* A value that moved is marked, so a reader scanning the column can see which
+ * cells the fix actually touched rather than comparing 6 rows by eye. */
+.rv-after--moved { color: var(--angle-tech); font-weight: 650; }
+.rv-table td, .rv-table th { white-space: nowrap; }
+.rv-table td:last-child { white-space: normal; min-width: 14rem; color: var(--text-muted); }
+.rv-caveats {
+  margin: var(--sp-2) 0 0; padding-left: 1.1rem;
+  color: var(--text-muted); font-size: var(--step--1); line-height: 1.6;
+}
+.rv-caveats li { margin-bottom: 0.35rem; }

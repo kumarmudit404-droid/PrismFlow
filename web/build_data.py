@@ -550,6 +550,97 @@ def build_figures() -> dict:
 
 
 # --------------------------------------------------------------------------
+# 4b. The limitations, read from the two docs rather than retyped
+# --------------------------------------------------------------------------
+
+# `## L7. Tail dependence is not the sharper instrument ...`
+LIMIT_HEADING = re.compile(r"^##\s+((?:V2-)?L\d+)\.\s+(.*?)\s*$")
+# A title may open with a status marker the docs add when an entry changes:
+#   "RESOLVED 2026-09-28. GitHub returned 0 records because ..."
+#   "NEW, created by the V2-L2 fix: some GitHub records exceed ..."
+STATUS_MARKER = re.compile(r"^(RESOLVED\s+[\d-]+|NEW)\b[.,:]?\s*(.*)$")
+
+
+def read_limitations(path: Path, group_at: int | None = None) -> list:
+    """Every `## Lx. title` heading in a limitations doc, verbatim.
+
+    THE HEADINGS ARE READ, NOT RETYPED, and that is the whole point of this
+    step. The page carried V2-L2 and V2-L3 as open for the entire session in
+    which they were fixed, because two hand-written copies of the list in
+    index.html had no connection to the document that records their state, and
+    V2-L7 did not appear at all. A list with no link to its source drifts
+    silently; one that is read cannot.
+    """
+    out = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        m = LIMIT_HEADING.match(line)
+        if not m:
+            continue
+        ident, title = m.group(1), m.group(2)
+        status, sm = None, STATUS_MARKER.match(title)
+        if sm:
+            status = sm.group(1)
+            rest = sm.group(2) or ""
+            # The marker moves into a field of its own so the page can style it,
+            # but ONLY when what is left still reads as a title. V2-L7's heading
+            # is "NEW, created by the V2-L2 fix: ...", and lifting the marker out
+            # of that leaves a sentence starting mid-clause, so it keeps its
+            # whole heading. Nothing is ever reworded either way.
+            if rest[:1].isupper():
+                title = rest
+        n = int(ident.split("L")[-1])
+        out.append({
+            "id": ident,
+            "n": n,
+            "title": title,
+            "status": status,
+            "group": ("standing" if group_at is not None and n >= group_at
+                      else "per_part"),
+        })
+    return out
+
+
+def build_limitations() -> dict:
+    """V1's L1-L15 and V2's V2-L1 onwards, from the documents that own them."""
+    v1_src = ROOT / "docs/KNOWN_LIMITATIONS.md"
+    v2_src = ROOT / "docs/v2-known-limitations.md"
+
+    v1 = read_limitations(v1_src, group_at=9)
+    v2 = read_limitations(v2_src)
+
+    def counts(rows):
+        return {
+            "total": len(rows),
+            "resolved": sum(1 for r in rows if (r["status"] or "").startswith("RESOLVED")),
+            "new": sum(1 for r in rows if r["status"] == "NEW"),
+            "open": sum(1 for r in rows
+                        if not (r["status"] or "").startswith("RESOLVED")),
+        }
+
+    return {
+        "title": "Known limitations",
+        "note": ("Headings are read from the documents at build time, never "
+                 "retyped, so an entry that is resolved there cannot stay open "
+                 "here."),
+        "v1": {
+            "source": str(v1_src.relative_to(ROOT)).replace("\\", "/"),
+            "entries": v1,
+            "counts": counts(v1),
+            "group_labels": {
+                "per_part": "discovered as each Part ran",
+                "standing": "standing limitations of the project as a whole",
+            },
+        },
+        "v2": {
+            "source": str(v2_src.relative_to(ROOT)).replace("\\", "/"),
+            "entries": v2,
+            "counts": counts(v2),
+        },
+        "provenance": provenance(v1_src, v2_src),
+    }
+
+
+# --------------------------------------------------------------------------
 # 5. The evaluation dataset itself, all 48 rows
 # --------------------------------------------------------------------------
 
@@ -800,6 +891,7 @@ def main() -> int:
         "v2_coverage.json": build_v2_coverage,
         "v2_dataset.json": build_v2_dataset,
         "v1_figures.json": build_figures,
+        "limitations.json": build_limitations,
     }
     reverify = build_v2_reverify()
     if reverify is not None:
