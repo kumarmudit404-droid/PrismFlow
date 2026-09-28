@@ -732,3 +732,36 @@ body::after {
   .ds-controls { flex-direction: column; align-items: stretch; }
   .ds-src { max-width: none; }
 }
+
+/* ==================================================================
+ * Real failures -- phase (e), step 4
+ * ================================================================== */
+
+.fail-stats { margin-bottom: var(--sp-2); }
+.fail-stats .stat__value { font-size: var(--step-1); }
+
+.fail-table th, .fail-table td { vertical-align: top; }
+.fail-table thead th { white-space: normal; }
+.fail-row__btn {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  color: var(--angle-tech); background: none;
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  padding: 0.1rem 0.4rem; cursor: pointer; text-align: left;
+}
+.fail-row__btn:hover { border-color: var(--hairline); }
+.fail-row__btn[aria-expanded="true"] {
+  background: var(--surface-raised); border-color: var(--hairline);
+}
+/* Direction is carried by the sign and by the word in the header, not by hue
+ * alone; the colour is reinforcement for readers who can use it. */
+.fail-d--worse { color: var(--status-provider-error); }
+.fail-d--better { color: var(--angle-market); }
+
+.fail-detail > td { background: var(--surface-raised); }
+.fail-detail__body { padding: var(--sp-2) 0 var(--sp-3); max-width: var(--measure); }
+.fail-detail__body h4 { margin-top: var(--sp-3); }
+.fail-detail__body h4:first-child { margin-top: var(--sp-1); }
+.fail-detail__ex {
+  color: var(--text-secondary); font-size: var(--step--1);
+  line-height: 1.65; margin: 0;
+}

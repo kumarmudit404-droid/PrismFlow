@@ -1,0 +1,1119 @@
+{
+  "title": "Where PrismFlow lost to the baseline",
+  "criterion": "every non-clean condition in which PrismFlow's mean attack success rate is HIGHER than naive's, over the same seeds. Nothing is selected for size.",
+  "n_conditions_total": 13,
+  "n_included": 12,
+  "excluded": [
+    {
+      "condition": "clean",
+      "why": "PrismFlow was not fooled more than naive here (0.0000 against 0.0000)"
+    }
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "training": {
+    "epochs": 40,
+    "batch_size": 64,
+    "lr": 0.001,
+    "anneal_epochs": 10,
+    "per_view_loss_weight": 1.0
+  },
+  "attack_config": {
+    "steps": 30,
+    "target_strategy": "least_likely",
+    "fixed_target": 0
+  },
+  "rho_fixed": 0.3,
+  "example_availability": "No committed file records an individual fooled sample. results/chorus/perturbations/ holds the perturbation tensor and the compromised view indices; no file anywhere holds which sample was fooled, its prediction or its true label. Every example is shown as \"not recorded\" rather than reconstructed.",
+  "label": "5 seeds per cell, mean and standard deviation, from the committed Part 09 run. Higher success rate is worse.",
+  "conditions": [
+    {
+      "condition": "chorus_k2_beta5",
+      "attack": "chorus",
+      "k": 2,
+      "epsilon": 1.0,
+      "beta": 5.0,
+      "naive": {
+        "mean": 0.35333333333333333,
+        "std": 0.12016192778450623,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.396,
+        "std": 0.102669913368577,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.3686666666666667,
+        "std": 0.1135194550139608,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.042666666666666686,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 4,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.32666666666666666,
+          "prismflow": 0.37333333333333335,
+          "delta": 0.04666666666666669
+        },
+        {
+          "seed": 1,
+          "naive": 0.30333333333333334,
+          "prismflow": 0.3566666666666667,
+          "delta": 0.053333333333333344
+        },
+        {
+          "seed": 2,
+          "naive": 0.5333333333333333,
+          "prismflow": 0.5266666666666666,
+          "delta": -0.00666666666666671
+        },
+        {
+          "seed": 3,
+          "naive": 0.21,
+          "prismflow": 0.26,
+          "delta": 0.05000000000000002
+        },
+        {
+          "seed": 4,
+          "naive": 0.3933333333333333,
+          "prismflow": 0.4633333333333333,
+          "delta": 0.07
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.6980485969272763,
+        "std": 0.01949009007899837,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.5003040406797561,
+        "std": 0.05093874811082668,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.24415935007731118,
+        "std": 0.05301462408817273,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 2.870730306865123,
+        "std": 0.03722634947073378,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.7391461577842531,
+        "std": 0.024971940595001352,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.2685466527519112,
+        "std": 0.02995585386392901,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "chorus_k1",
+      "attack": "chorus",
+      "k": 1,
+      "epsilon": 1.0,
+      "beta": 1.0,
+      "naive": {
+        "mean": 0.222,
+        "std": 0.08581634136016546,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.25333333333333335,
+        "std": 0.09089065469623987,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.21533333333333335,
+        "std": 0.08261692051605142,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.03133333333333335,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 5,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.22666666666666666,
+          "prismflow": 0.25666666666666665,
+          "delta": 0.03
+        },
+        {
+          "seed": 1,
+          "naive": 0.21,
+          "prismflow": 0.25333333333333335,
+          "delta": 0.04333333333333336
+        },
+        {
+          "seed": 2,
+          "naive": 0.35333333333333333,
+          "prismflow": 0.37666666666666665,
+          "delta": 0.023333333333333317
+        },
+        {
+          "seed": 3,
+          "naive": 0.11333333333333333,
+          "prismflow": 0.12,
+          "delta": 0.006666666666666668
+        },
+        {
+          "seed": 4,
+          "naive": 0.20666666666666667,
+          "prismflow": 0.26,
+          "delta": 0.053333333333333344
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.6804971034000731,
+        "std": 0.013231223104671676,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.7790620332557732,
+        "std": 0.05786518800868246,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.18855259704589844,
+        "std": 0.05164239816616051,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 3.212746293684585,
+        "std": 0.08715116390153209,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": null,
+        "std": null,
+        "n_seeds": 0
+      },
+      "dependence_all_pairs": {
+        "mean": 0.21242838027935834,
+        "std": 0.02997365444675015,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "chorus_k2_eps1.0",
+      "attack": "chorus",
+      "k": 2,
+      "epsilon": 1.0,
+      "beta": 1.0,
+      "naive": {
+        "mean": 0.45466666666666666,
+        "std": 0.11625164276019691,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.48133333333333334,
+        "std": 0.1133480382617087,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.46399999999999997,
+        "std": 0.11317145301611081,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.026666666666666672,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 5,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.43333333333333335,
+          "prismflow": 0.47,
+          "delta": 0.036666666666666625
+        },
+        {
+          "seed": 1,
+          "naive": 0.4066666666666667,
+          "prismflow": 0.4266666666666667,
+          "delta": 0.020000000000000018
+        },
+        {
+          "seed": 2,
+          "naive": 0.61,
+          "prismflow": 0.63,
+          "delta": 0.020000000000000018
+        },
+        {
+          "seed": 3,
+          "naive": 0.30333333333333334,
+          "prismflow": 0.3333333333333333,
+          "delta": 0.02999999999999997
+        },
+        {
+          "seed": 4,
+          "naive": 0.52,
+          "prismflow": 0.5466666666666666,
+          "delta": 0.026666666666666616
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.7479667636598685,
+        "std": 0.02464265320227832,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.5552729031080113,
+        "std": 0.061132222872765894,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.19488853740692139,
+        "std": 0.04329803133708339,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 2.904847927600456,
+        "std": 0.06083054981692589,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.697018103561103,
+        "std": 0.03801312751784009,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.2751318768420173,
+        "std": 0.027187494070977977,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "pgd_k2_eps2.0",
+      "attack": "pgd",
+      "k": 2,
+      "epsilon": 2.0,
+      "beta": 0.0,
+      "naive": {
+        "mean": 0.464,
+        "std": 0.11084022534962455,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.4906666666666667,
+        "std": 0.11233382789208642,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.48,
+        "std": 0.1152051310585697,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.026666666666666672,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 4,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.54,
+          "prismflow": 0.5266666666666666,
+          "delta": -0.01333333333333342
+        },
+        {
+          "seed": 1,
+          "naive": 0.39666666666666667,
+          "prismflow": 0.43333333333333335,
+          "delta": 0.03666666666666668
+        },
+        {
+          "seed": 2,
+          "naive": 0.59,
+          "prismflow": 0.6366666666666667,
+          "delta": 0.046666666666666745
+        },
+        {
+          "seed": 3,
+          "naive": 0.31333333333333335,
+          "prismflow": 0.33666666666666667,
+          "delta": 0.023333333333333317
+        },
+        {
+          "seed": 4,
+          "naive": 0.48,
+          "prismflow": 0.52,
+          "delta": 0.040000000000000036
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.8126831106866595,
+        "std": 0.02495587983549939,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.6009474624156712,
+        "std": 0.0234372179972482,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.09903925021489461,
+        "std": 0.01979955173623562,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 3.3425711048937767,
+        "std": 0.07614783380441335,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.18216107559235492,
+        "std": 0.11599537828448286,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.1488937052359511,
+        "std": 0.021902602479998774,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "chorus_k3",
+      "attack": "chorus",
+      "k": 3,
+      "epsilon": 1.0,
+      "beta": 1.0,
+      "naive": {
+        "mean": 0.5593333333333333,
+        "std": 0.13367456335776412,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.5806666666666667,
+        "std": 0.10988377698479626,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.5686666666666667,
+        "std": 0.12075227166025124,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.021333333333333315,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 4,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.5466666666666666,
+          "prismflow": 0.5633333333333334,
+          "delta": 0.01666666666666672
+        },
+        {
+          "seed": 1,
+          "naive": 0.5666666666666667,
+          "prismflow": 0.6,
+          "delta": 0.033333333333333326
+        },
+        {
+          "seed": 2,
+          "naive": 0.7566666666666667,
+          "prismflow": 0.7433333333333333,
+          "delta": -0.01333333333333342
+        },
+        {
+          "seed": 3,
+          "naive": 0.38,
+          "prismflow": 0.43666666666666665,
+          "delta": 0.05666666666666664
+        },
+        {
+          "seed": 4,
+          "naive": 0.5466666666666666,
+          "prismflow": 0.56,
+          "delta": 0.01333333333333342
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.7759714819565664,
+        "std": 0.020208298342220602,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.4302333178830296,
+        "std": 0.02663833246890281,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.23235457611083984,
+        "std": 0.021579812344807783,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 2.888675770093515,
+        "std": 0.06059145951507713,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.5089928332452697,
+        "std": 0.030001022685564236,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.3229697020979408,
+        "std": 0.031619277708843235,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "chorus_k2_beta0",
+      "attack": "chorus",
+      "k": 2,
+      "epsilon": 1.0,
+      "beta": 0.0,
+      "naive": {
+        "mean": 0.37,
+        "std": 0.09896688559535681,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.38866666666666666,
+        "std": 0.1049497234129011,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.378,
+        "std": 0.10945826195911895,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.018666666666666665,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 4,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.3933333333333333,
+          "prismflow": 0.38,
+          "delta": -0.013333333333333308
+        },
+        {
+          "seed": 1,
+          "naive": 0.31333333333333335,
+          "prismflow": 0.3433333333333333,
+          "delta": 0.02999999999999997
+        },
+        {
+          "seed": 2,
+          "naive": 0.49666666666666665,
+          "prismflow": 0.5366666666666666,
+          "delta": 0.03999999999999998
+        },
+        {
+          "seed": 3,
+          "naive": 0.23666666666666666,
+          "prismflow": 0.25333333333333335,
+          "delta": 0.01666666666666669
+        },
+        {
+          "seed": 4,
+          "naive": 0.41,
+          "prismflow": 0.43,
+          "delta": 0.020000000000000018
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.7550489874578341,
+        "std": 0.014818749141539583,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.539990280654846,
+        "std": 0.0181343170562197,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.13726382350921632,
+        "std": 0.0317346493995724,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 3.3473069970228986,
+        "std": 0.11310584752548071,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.10496107635485284,
+        "std": 0.08058601287547729,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.1719082248236363,
+        "std": 0.0434382992803424,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "chorus_k2_eps0.5",
+      "attack": "chorus",
+      "k": 2,
+      "epsilon": 0.5,
+      "beta": 1.0,
+      "naive": {
+        "mean": 0.216,
+        "std": 0.07443863990637599,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.23466666666666666,
+        "std": 0.06543020029857093,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.21666666666666667,
+        "std": 0.07238016916869487,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.018666666666666665,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 4,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.18666666666666668,
+          "prismflow": 0.21666666666666667,
+          "delta": 0.03
+        },
+        {
+          "seed": 1,
+          "naive": 0.19,
+          "prismflow": 0.2,
+          "delta": 0.010000000000000009
+        },
+        {
+          "seed": 2,
+          "naive": 0.31333333333333335,
+          "prismflow": 0.3,
+          "delta": -0.013333333333333364
+        },
+        {
+          "seed": 3,
+          "naive": 0.12333333333333334,
+          "prismflow": 0.15333333333333332,
+          "delta": 0.029999999999999985
+        },
+        {
+          "seed": 4,
+          "naive": 0.26666666666666666,
+          "prismflow": 0.30333333333333334,
+          "delta": 0.03666666666666668
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.6001887732445197,
+        "std": 0.011973316895801158,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.3191322621600785,
+        "std": 0.03074925622111364,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.2918229236602783,
+        "std": 0.07453229503084699,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 3.1568559195180277,
+        "std": 0.0553234840646948,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.41129778581688925,
+        "std": 0.04413386875846698,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.2201405292744551,
+        "std": 0.03612369362109409,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "pgd_k2_eps1.0",
+      "attack": "pgd",
+      "k": 2,
+      "epsilon": 1.0,
+      "beta": 0.0,
+      "naive": {
+        "mean": 0.36933333333333335,
+        "std": 0.09790585046643309,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.38666666666666666,
+        "std": 0.1062753237795324,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.378,
+        "std": 0.10945826195911895,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.01733333333333331,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 4,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.3933333333333333,
+          "prismflow": 0.38,
+          "delta": -0.013333333333333308
+        },
+        {
+          "seed": 1,
+          "naive": 0.31333333333333335,
+          "prismflow": 0.33666666666666667,
+          "delta": 0.023333333333333317
+        },
+        {
+          "seed": 2,
+          "naive": 0.49333333333333335,
+          "prismflow": 0.54,
+          "delta": 0.04666666666666669
+        },
+        {
+          "seed": 3,
+          "naive": 0.23666666666666666,
+          "prismflow": 0.25333333333333335,
+          "delta": 0.01666666666666669
+        },
+        {
+          "seed": 4,
+          "naive": 0.41,
+          "prismflow": 0.42333333333333334,
+          "delta": 0.013333333333333364
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.7537071423578919,
+        "std": 0.015793025007960714,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.5380123773872297,
+        "std": 0.016140129302905187,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.13750674883524577,
+        "std": 0.030878917894702877,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 3.343510411439254,
+        "std": 0.11859974251586128,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.11110846898360692,
+        "std": 0.08079599405398036,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.17261253061799608,
+        "std": 0.03720119204284522,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "chorus_k2_eps2.0",
+      "attack": "chorus",
+      "k": 2,
+      "epsilon": 2.0,
+      "beta": 1.0,
+      "naive": {
+        "mean": 0.5966666666666667,
+        "std": 0.12830086169278487,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.6133333333333334,
+        "std": 0.12931443160847214,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.5893333333333333,
+        "std": 0.13402736039082966,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.01666666666666672,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 3,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.6566666666666666,
+          "prismflow": 0.6366666666666667,
+          "delta": -0.019999999999999907
+        },
+        {
+          "seed": 1,
+          "naive": 0.5333333333333333,
+          "prismflow": 0.53,
+          "delta": -0.0033333333333332993
+        },
+        {
+          "seed": 2,
+          "naive": 0.7433333333333333,
+          "prismflow": 0.7733333333333333,
+          "delta": 0.030000000000000027
+        },
+        {
+          "seed": 3,
+          "naive": 0.41,
+          "prismflow": 0.44333333333333336,
+          "delta": 0.03333333333333338
+        },
+        {
+          "seed": 4,
+          "naive": 0.64,
+          "prismflow": 0.6833333333333333,
+          "delta": 0.043333333333333335
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.8594298005256996,
+        "std": 0.01573280145049556,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.7300843218413989,
+        "std": 0.03202326189938031,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.13191812960306804,
+        "std": 0.01118138945664828,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 2.6950753730112456,
+        "std": 0.0647375979819768,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.8983673637288916,
+        "std": 0.01773886705211942,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.35041115289483726,
+        "std": 0.037798161948284864,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "pgd_k2_eps0.5",
+      "attack": "pgd",
+      "k": 2,
+      "epsilon": 0.5,
+      "beta": 0.0,
+      "naive": {
+        "mean": 0.18533333333333332,
+        "std": 0.0626985734376079,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.20066666666666666,
+        "std": 0.05663724726518563,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.19266666666666668,
+        "std": 0.061255385250786096,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.015333333333333338,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 5,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.17,
+          "prismflow": 0.18666666666666668,
+          "delta": 0.016666666666666663
+        },
+        {
+          "seed": 1,
+          "naive": 0.16333333333333333,
+          "prismflow": 0.17,
+          "delta": 0.006666666666666682
+        },
+        {
+          "seed": 2,
+          "naive": 0.25666666666666665,
+          "prismflow": 0.2633333333333333,
+          "delta": 0.006666666666666654
+        },
+        {
+          "seed": 3,
+          "naive": 0.1,
+          "prismflow": 0.13,
+          "delta": 0.03
+        },
+        {
+          "seed": 4,
+          "naive": 0.23666666666666666,
+          "prismflow": 0.25333333333333335,
+          "delta": 0.01666666666666669
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.6338601424236718,
+        "std": 0.012155928910020519,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.3858738395443727,
+        "std": 0.031036547096209222,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.21670505205790203,
+        "std": 0.06632045416612493,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 3.3039795160379577,
+        "std": 0.08873315429911176,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.10643434886038139,
+        "std": 0.06662583568404129,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.18961736863534762,
+        "std": 0.036456915088729766,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "pgd_k2_eps0.2",
+      "attack": "pgd",
+      "k": 2,
+      "epsilon": 0.2,
+      "beta": 0.0,
+      "naive": {
+        "mean": 0.03666666666666667,
+        "std": 0.019436506316151004,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.038,
+        "std": 0.02180723631172817,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.036000000000000004,
+        "std": 0.02203532517471788,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.0013333333333333322,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 2,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.02666666666666667,
+          "prismflow": 0.03666666666666667,
+          "delta": 0.009999999999999998
+        },
+        {
+          "seed": 1,
+          "naive": 0.03333333333333333,
+          "prismflow": 0.03,
+          "delta": -0.003333333333333334
+        },
+        {
+          "seed": 2,
+          "naive": 0.07,
+          "prismflow": 0.07,
+          "delta": 0.0
+        },
+        {
+          "seed": 3,
+          "naive": 0.02,
+          "prismflow": 0.01,
+          "delta": -0.01
+        },
+        {
+          "seed": 4,
+          "naive": 0.03333333333333333,
+          "prismflow": 0.043333333333333335,
+          "delta": 0.010000000000000002
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.4685571244315019,
+        "std": 0.037781055440671826,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.1520865890049937,
+        "std": 0.053547808305750025,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.26599026362101236,
+        "std": 0.08045054866700299,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 3.3353130347276605,
+        "std": 0.08818131574648938,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.13137435547294285,
+        "std": 0.09198800905965566,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.18857268157242893,
+        "std": 0.04149524097639018,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    },
+    {
+      "condition": "chorus_k2_eps0.2",
+      "attack": "chorus",
+      "k": 2,
+      "epsilon": 0.2,
+      "beta": 1.0,
+      "naive": {
+        "mean": 0.042,
+        "std": 0.021421692017412838,
+        "n_seeds": 5
+      },
+      "prismflow": {
+        "mean": 0.042666666666666665,
+        "std": 0.01876758434701233,
+        "n_seeds": 5
+      },
+      "prismflow_nodiscount": {
+        "mean": 0.03933333333333333,
+        "std": 0.01906130460732773,
+        "n_seeds": 5
+      },
+      "delta_mean": 0.0006666666666666626,
+      "n_seeds": 5,
+      "seeds_prismflow_worse": 3,
+      "per_seed": [
+        {
+          "seed": 0,
+          "naive": 0.03333333333333333,
+          "prismflow": 0.04,
+          "delta": 0.006666666666666668
+        },
+        {
+          "seed": 1,
+          "naive": 0.03,
+          "prismflow": 0.03333333333333333,
+          "delta": 0.003333333333333334
+        },
+        {
+          "seed": 2,
+          "naive": 0.08,
+          "prismflow": 0.07333333333333333,
+          "delta": -0.006666666666666668
+        },
+        {
+          "seed": 3,
+          "naive": 0.03,
+          "prismflow": 0.023333333333333334,
+          "delta": -0.0066666666666666645
+        },
+        {
+          "seed": 4,
+          "naive": 0.03666666666666667,
+          "prismflow": 0.043333333333333335,
+          "delta": 0.006666666666666668
+        }
+      ],
+      "target_prob_on_success": {
+        "mean": 0.464613421648453,
+        "std": 0.030112886529565504,
+        "n_seeds": 5
+      },
+      "target_belief_on_success": {
+        "mean": 0.13701161083954197,
+        "std": 0.03261490932884041,
+        "n_seeds": 5
+      },
+      "vacuity": {
+        "mean": 0.30843602180480956,
+        "std": 0.08351432126094623,
+        "n_seeds": 5
+      },
+      "eniv_measured": {
+        "mean": 3.286597701190166,
+        "std": 0.09098402091030977,
+        "n_seeds": 5
+      },
+      "dependence_compromised": {
+        "mean": 0.2814555022370374,
+        "std": 0.09503514414542705,
+        "n_seeds": 5
+      },
+      "dependence_all_pairs": {
+        "mean": 0.20392907524256165,
+        "std": 0.04919647292018869,
+        "n_seeds": 5
+      },
+      "example": null,
+      "example_note": "not recorded"
+    }
+  ],
+  "provenance": {
+    "generated_utc": "2026-09-28T11:44:05Z",
+    "sources": [
+      {
+        "path": "results/chorus/attack_metrics.json",
+        "sha256": "89a6e841ced086c527cf1866eefdc06b5dd24bae3ce8dc7611ae277d04d99b23",
+        "bytes": 274155
+      },
+      {
+        "path": "results/chorus/metadata.json",
+        "sha256": "6ab0211f6c2e014bac97e90ee4978bfb91543fc8d4490766b8a58f59774ea36b",
+        "bytes": 3461
+      }
+    ]
+  }
+}

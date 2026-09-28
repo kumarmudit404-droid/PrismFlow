@@ -190,6 +190,136 @@ def build_v1_attack() -> dict:
 
 
 # --------------------------------------------------------------------------
+# 2b. V1 -- the conditions where PrismFlow was fooled MORE than naive
+# --------------------------------------------------------------------------
+
+def build_v1_failures() -> dict:
+    """Every non-clean attack condition where PrismFlow lost to the baseline.
+
+    SELECTION IS MECHANICAL, NOT CHOSEN. A condition is included when
+    prismflow's mean success rate exceeds naive's, over the same seeds. Nothing
+    is picked for being dramatic and nothing is dropped for being small: the
+    near-zero cells are the ones that show the effect is not uniform, so
+    omitting them would flatter the result in the same way that showing only
+    eps 1.0 does.
+
+    THE PER-SEED SIGN IS CARRIED, NOT JUST THE MEAN. A mean difference over 5
+    seeds can be positive while two seeds went the other way, and a reader who
+    sees only the mean cannot tell a consistent effect from a coin flip. Each
+    condition therefore reports how many of its seeds individually went the
+    wrong way, and the per-seed differences themselves.
+
+    NO FOOLED EXAMPLE IS AVAILABLE. The committed run records aggregates,
+    per-seed rows and a perturbation tensor -- results/chorus/perturbations/
+    holds `delta` of shape (300, 4, 16) and the compromised view indices, and
+    nothing anywhere records which sample was fooled, what it was predicted as,
+    or what its true label was. Every example field is therefore emitted as
+    null and the page prints "not recorded". Reconstructing one would mean
+    re-running the attack, which is a new experiment and not a page build.
+    """
+    src = ROOT / "results/chorus/attack_metrics.json"
+    meta_src = ROOT / "results/chorus/metadata.json"
+    raw = json.loads(src.read_text(encoding="utf-8"))
+    meta = json.loads(meta_src.read_text(encoding="utf-8"))
+
+    summary = raw.get("summary", {})
+    per_seed = raw.get("per_seed", {})
+    cells = {c["name"]: c for c in
+             (((meta.get("config") or {}).get("cells")) or []) if "name" in c}
+
+    def stat(cond, system, field):
+        f = (summary.get("%s|%s" % (cond, system)) or {}).get(field) or {}
+        return {"mean": clean(f.get("mean")), "std": clean(f.get("std")),
+                "n_seeds": clean(f.get("n_seeds"))}
+
+    conditions = sorted({k.split("|")[0] for k in summary})
+    included, excluded = [], []
+
+    for cond in conditions:
+        naive = stat(cond, "naive", "success_rate")
+        pf = stat(cond, "prismflow", "success_rate")
+        nodisc = stat(cond, "prismflow_nodiscount", "success_rate")
+
+        if naive["mean"] is None or pf["mean"] is None:
+            excluded.append({"condition": cond,
+                             "why": "a success rate is missing for one system"})
+            continue
+        if pf["mean"] <= naive["mean"]:
+            excluded.append({
+                "condition": cond,
+                "why": ("PrismFlow was not fooled more than naive here "
+                        "(%.4f against %.4f)" % (pf["mean"], naive["mean"])),
+            })
+            continue
+
+        # Paired per seed, by seed number, so a missing seed drops the pair
+        # rather than shifting one series against the other.
+        n_by_seed = {r["seed"]: r.get("success_rate")
+                     for r in per_seed.get("%s|naive" % cond, [])}
+        p_by_seed = {r["seed"]: r.get("success_rate")
+                     for r in per_seed.get("%s|prismflow" % cond, [])}
+        seeds = sorted(s for s in set(n_by_seed) & set(p_by_seed)
+                       if n_by_seed[s] is not None and p_by_seed[s] is not None)
+        deltas = [{"seed": s, "naive": n_by_seed[s], "prismflow": p_by_seed[s],
+                   "delta": p_by_seed[s] - n_by_seed[s]} for s in seeds]
+        worse = sum(1 for d in deltas if d["delta"] > 0)
+
+        cell = cells.get(cond, {})
+        included.append({
+            "condition": cond,
+            "attack": cell.get("attack"),
+            "k": clean(cell.get("k")),
+            "epsilon": clean(cell.get("epsilon")),
+            "beta": clean(cell.get("beta")),
+            "naive": naive,
+            "prismflow": pf,
+            "prismflow_nodiscount": nodisc,
+            "delta_mean": pf["mean"] - naive["mean"],
+            "n_seeds": len(deltas),
+            "seeds_prismflow_worse": worse,
+            "per_seed": deltas,
+            # What the attack achieved where it succeeded, and what the
+            # pipeline believed while it did.
+            "target_prob_on_success": stat(cond, "prismflow", "target_prob_on_success"),
+            "target_belief_on_success": stat(cond, "prismflow", "target_belief_on_success"),
+            "vacuity": stat(cond, "prismflow", "vacuity"),
+            "eniv_measured": stat(cond, "prismflow", "eniv_measured"),
+            "dependence_compromised": stat(cond, "prismflow", "dependence_compromised"),
+            "dependence_all_pairs": stat(cond, "prismflow", "dependence_all_pairs"),
+            # No committed file records a fooled sample. See the docstring.
+            "example": None,
+            "example_note": "not recorded",
+        })
+
+    included.sort(key=lambda r: -r["delta_mean"])
+
+    cfg = meta.get("config") or {}
+    return {
+        "title": "Where PrismFlow lost to the baseline",
+        "criterion": ("every non-clean condition in which PrismFlow's mean "
+                      "attack success rate is HIGHER than naive's, over the "
+                      "same seeds. Nothing is selected for size."),
+        "n_conditions_total": len(conditions),
+        "n_included": len(included),
+        "excluded": excluded,
+        "seeds": (cfg.get("seeds") or None),
+        "training": (cfg.get("training") or None),
+        "attack_config": (cfg.get("attack") or None),
+        "rho_fixed": ((cfg.get("data") or {}).get("rho")),
+        "example_availability": (
+            "No committed file records an individual fooled sample. "
+            "results/chorus/perturbations/ holds the perturbation tensor and "
+            "the compromised view indices; no file anywhere holds which sample "
+            "was fooled, its prediction or its true label. Every example is "
+            "shown as \"not recorded\" rather than reconstructed."),
+        "label": ("5 seeds per cell, mean and standard deviation, from the "
+                  "committed Part 09 run. Higher success rate is worse."),
+        "conditions": included,
+        "provenance": provenance(src, meta_src),
+    }
+
+
+# --------------------------------------------------------------------------
 # 3. V2 -- per-row angle coverage over the 48 rows
 # --------------------------------------------------------------------------
 
@@ -666,6 +796,7 @@ def main() -> int:
     artifacts = {
         "v1_surface.json": build_v1_surface,
         "v1_attack.json": build_v1_attack,
+        "v1_failures.json": build_v1_failures,
         "v2_coverage.json": build_v2_coverage,
         "v2_dataset.json": build_v2_dataset,
         "v1_figures.json": build_figures,

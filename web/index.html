@@ -437,6 +437,17 @@
   </p>
   <div class="placeholder" id="v1-attack">loading committed data…</div>
 
+  <h3>V1 — where PrismFlow lost to the baseline</h3>
+  <p class="prose" style="color:var(--text-secondary)">
+    Every non-clean attack condition in the committed Part 09 run where
+    PrismFlow was fooled <em>more</em> often than the naive baseline it is meant
+    to improve on — all of them, not the worst one. Each row carries how many of
+    its five seeds individually went the wrong way, because a positive mean can
+    hide two seeds that went the other way. No individual fooled sample was
+    recorded anywhere in the run, so every example reads “not recorded”.
+  </p>
+  <div class="placeholder" id="v1-failures">loading committed data…</div>
+
   <h3>V2 — the evaluation dataset, all 48 rows</h3>
   <p class="prose" style="color:var(--text-secondary)">
     The benchmark itself, filterable, sortable and searchable, with every
@@ -518,6 +529,7 @@
 <script src="assets/js/main.js"></script>
 <script src="assets/js/charts.js"></script>
 <script src="assets/js/v1_scenarios.js"></script>
+<script src="assets/js/v1_failures.js"></script>
 <script src="assets/js/v2_dataset.js"></script>
 <script type="module" src="assets/js/motion.js"></script>
 </body>
