@@ -1,0 +1,104 @@
+/* PrismFlow Part 25 phase (f) -- VARIANT A: light, orange accent.
+ *
+ * CANDIDATE. Not applied to the site; loaded only by web/theme_preview.html
+ * and by the screenshot harness. tokens.css remains the live theme until a
+ * variant is chosen.
+ *
+ * The five angle colours were not picked by eye. web/check_palette.py holds
+ * the maths and a search over LCh candidates produced these, maximising the
+ * worst CIEDE2000 separation across normal vision and three simulated CVDs,
+ * subject to: >= 3:1 on the base, hue within 26 degrees of the family the
+ * angle is named for, chroma >= 30 so a category never reads as tinted grey,
+ * >= 18 CIEDE2000 from the UI accent so a data colour and a button cannot be
+ * confused, and a monotonic luminance staircase. 1,435 combinations were
+ * evaluated. A second pass then maximised the worst GREYSCALE step, because
+ * the first result was monotonic by only 1.07:1 and would have collapsed in
+ * print. Measured on the hex values
+ * below, which is what the browser gets: worst step 1.42:1, worst separation
+ * 10.48, against 1.27:1 and 8.27 for the palette the site ships today.
+ *
+ * THE STAIRCASE RUNS THE OTHER WAY HERE, and it has to: on a light base,
+ * contrast comes from being DARK, so regulatory -- the angle with no
+ * connector -- is now the highest-contrast angle rather than the lowest. Its
+ * "unbuilt" reading is carried entirely by --angle-unbuilt-filter, which is
+ * applied everywhere regulatory appears and is unchanged.
+ */
+
+:root {
+  /* ---- structure ---------------------------------------------------- */
+  --base:            #FFFCF8;   /* warm off-white, not pure #FFF */
+  --surface:         #FFF6EC;
+  --surface-raised:  #FFEFE0;
+  --hairline:        #F0DCC6;
+
+  /* ---- text --------------------------------------------------------- */
+  --text-primary:    #1A1208;   /* 17.51:1 on base */
+  --text-secondary:  #4A3823;   /*  9.18:1 */
+  --text-muted:      #786047;   /*  4.93:1 */
+
+  /* ---- the orange UI accent -----------------------------------------
+   * WHITE TEXT ON BRIGHT ORANGE FAILS. Measured: #FF7A2F carries white at
+   * 2.60:1 and #F2661A at 3.14:1, both well under 4.5:1. This deep orange
+   * carries white at 5.76:1 and is itself 5.63:1 on the base, so the same
+   * token works as a fill, as link text and as a focus ring. */
+  --accent:          #B83A0A;   /*  5.63:1 on base */
+  --accent-ink:      #FFFFFF;   /*  5.76:1 on accent */
+  --accent-strong:   #8F2B06;   /*  8.16:1 -- hover and active */
+  /* Decorative only: 2.54:1 on the base, so it never carries text. */
+  --accent-glow:     #FF7A2F;
+  --accent-wash:     #FFE6D5;
+
+  /* ---- the five angles, in spectral order (violet bends most) -------- */
+  --angle-regulatory: #0710A1;  /* 12.85:1  L*20 C 90 */
+  --angle-sentiment:  #8F0049;  /*  9.06:1  L*30 C 55 */
+  --angle-tech:       #00658C;  /*  6.31:1  L*40 C 30 */
+  --angle-market:     #0B8947;  /*  4.38:1  L*50 C 54 */
+  --angle-financial:  #B58B00;  /*  3.10:1  L*60 C 65 */
+
+  /* Regulatory is the UNBUILT angle. Rendered through this filter everywhere,
+   * so "no connector exists" is visible before you read a word. Unchanged. */
+  --angle-unbuilt-filter: saturate(0.35) opacity(0.55);
+
+  /* ---- beam --------------------------------------------------------- */
+  --beam-incident:   #3A2A18;   /* the single beam, dark on a light base */
+
+  /* ---- status ------------------------------------------------------
+   * NEVER the only encoder: every status carries a text label. */
+  --status-provider-error: #A81E09;
+  --status-genuine-zero:   #6E6152;
+  /* The dimmest, lowest-chroma DATA token in the system: absent data must
+   * never read as data. This is what V2-L6 looks like on screen. */
+  --status-not-measured:   #C6B7A6;
+
+  /* ---- surfaces that carry their own alpha ----------------------------
+   * The page background is the SCRIM, not --base. A light variant that left
+   * this at the dark literal renders dark text on a dark page, which is what
+   * the first screenshot of this variant showed. */
+  --scrim:           rgba(255, 252, 248, 0.88);
+  --nav-bg:          rgba(255, 252, 248, 0.94);
+  --dialog-backdrop: rgba(58, 42, 24, 0.55);
+
+  /* The spectrum wash, in this palette's own angle hues. */
+  --wash-beam:       rgba(255, 122, 47, 0.10);
+  --wash-regulatory: rgba(7, 16, 161, 0.07);
+  --wash-tech:       rgba(0, 101, 140, 0.07);
+  --wash-market:     rgba(11, 137, 71, 0.06);
+  --wash-sentiment:  rgba(143, 0, 73, 0.06);
+
+  --quote-bg:        rgba(181, 139, 0, 0.07);
+  --limits-border:   rgba(184, 58, 10, 0.35);
+  --limits-hover:    rgba(184, 58, 10, 0.09);
+
+  --track:           rgba(26, 18, 8, 0.08);
+  --link-underline:  rgba(0, 101, 140, 0.45);
+  --wrong-tint:      rgba(168, 30, 9, 0.09);
+  --alert-border:    rgba(168, 30, 9, 0.45);
+
+  /* ---- glass -------------------------------------------------------- */
+  --glass-bg:       rgba(255, 246, 236, 0.60);
+  --glass-bg-solid: rgba(255, 250, 244, 0.90);
+  --glass-border:   rgba(184, 58, 10, 0.18);
+  --glass-blur:     14px;
+  --glass-sheen:    rgba(255, 255, 255, 0.75);
+  --glass-shadow:   rgba(90, 40, 10, 0.16);
+}

@@ -28,14 +28,14 @@ body::before {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(60rem 40rem at 50% -10%, rgba(255, 248, 231, 0.10), transparent 60%),
-    radial-gradient(40rem 30rem at 8% 20%,  rgba(111, 79, 214, 0.10), transparent 65%),
-    radial-gradient(38rem 28rem at 92% 38%, rgba(63, 181, 240, 0.09), transparent 65%),
-    radial-gradient(34rem 26rem at 12% 72%, rgba(87, 224, 164, 0.07), transparent 65%),
-    radial-gradient(30rem 24rem at 88% 88%, rgba(239, 74, 133, 0.07), transparent 65%);
+    radial-gradient(60rem 40rem at 50% -10%, var(--wash-beam), transparent 60%),
+    radial-gradient(40rem 30rem at 8% 20%,  var(--wash-regulatory), transparent 65%),
+    radial-gradient(38rem 28rem at 92% 38%, var(--wash-tech), transparent 65%),
+    radial-gradient(34rem 26rem at 12% 72%, var(--wash-market), transparent 65%),
+    radial-gradient(30rem 24rem at 88% 88%, var(--wash-sentiment), transparent 65%);
 }
 
-a { color: var(--angle-tech); text-decoration-color: rgba(63, 181, 240, 0.4); }
+a { color: var(--angle-tech); text-decoration-color: var(--link-underline); }
 a:hover { text-decoration-color: currentColor; }
 
 :focus-visible {
@@ -64,7 +64,7 @@ a:hover { text-decoration-color: currentColor; }
    * bar, and at 0.72 the data rows scrolling behind it ghosted through as
    * coloured smears that read as a rendering bug. Still glass, still blurred,
    * but opaque enough that nothing shows through it. */
-  background: rgba(10, 10, 15, 0.92);
+  background: var(--nav-bg);
   border-bottom: 1px solid var(--hairline);
 }
 .site-nav__inner {
@@ -216,7 +216,7 @@ p { max-width: var(--measure); }
 blockquote.verbatim {
   margin: var(--sp-3) 0; padding: var(--sp-2) var(--sp-3);
   border-left: 2px solid var(--angle-financial);
-  background: rgba(255, 239, 188, 0.04);
+  background: var(--quote-bg);
   color: var(--text-primary); max-width: var(--measure);
 }
 blockquote.verbatim cite { display: block; margin-top: var(--sp-2); font-size: var(--step--1); color: var(--text-muted); font-style: normal; font-family: var(--font-mono); }
@@ -232,10 +232,10 @@ blockquote.verbatim cite { display: block; margin-top: var(--sp-2); font-size: v
   display: inline-block; margin-top: var(--sp-3);
   font-size: var(--step--1); font-family: var(--font-mono);
   color: var(--angle-financial); text-decoration: none;
-  border: 1px solid rgba(255, 239, 188, 0.3); border-radius: 999px;
+  border: 1px solid var(--limits-border); border-radius: 999px;
   padding: 0.25rem 0.75rem;
 }
-.limits-link:hover { background: rgba(255, 239, 188, 0.08); }
+.limits-link:hover { background: var(--limits-hover); }
 
 /* ---------- tables ---------------------------------------------------- */
 
@@ -292,7 +292,7 @@ td.num, th.num { text-align: right; font-family: var(--font-mono); }
 .bars__group:last-child { border-bottom: 0; }
 .bars__label { font-family: var(--font-mono); font-size: var(--step--1); color: var(--text-primary); margin-bottom: 0.3rem; }
 .bars__row { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: 3px; }
-.bars__fillwrap { flex: 1 1 auto; height: 10px; background: rgba(244,244,248,0.05); border-radius: 3px; overflow: hidden; min-width: 60px; }
+.bars__fillwrap { flex: 1 1 auto; height: 10px; background: var(--track); border-radius: 3px; overflow: hidden; min-width: 60px; }
 .bars__fill { display: block; height: 100%; border-radius: 3px; }
 .bars__val { flex: 0 0 auto; font-family: var(--font-mono); font-size: var(--step--1); color: var(--text-secondary); min-width: 11rem; text-align: right; }
 .bars__nm { font-size: var(--step--1); }
@@ -408,7 +408,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
   display: flex;
   flex-direction: column;
 }
-.rowdlg::backdrop { background: rgba(10, 10, 15, 0.72); }
+.rowdlg::backdrop { background: var(--dialog-backdrop); }
 
 .rowdlg__nav {
   display: flex; gap: var(--sp-2); align-items: center;
@@ -558,7 +558,12 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
 .heat__cell--nm { background: transparent; color: var(--status-not-measured); border: 1px dashed var(--status-not-measured); }
 
 /* ---- a wrong prediction ---- */
-.ex--wrong td, .ex--wrong th { background: rgba(232, 96, 63, 0.09); }
+.ex--wrong td, .ex--wrong th { background: var(--wrong-tint); }
+
+/* The one panel that is an alert. Was an inline style holding a literal
+ * rgba of --status-provider-error; it is a class now so colour stays in
+ * tokens.css. */
+.panel--alert { border-color: var(--alert-border); }
 
 /* ---- committed figures ---- */
 .figure { margin: 0; }
@@ -602,7 +607,7 @@ body::after {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: rgba(10, 10, 15, 0.84);
+  background: var(--scrim);
 }
 
 /* ---- the prism mark ---- */

@@ -1,0 +1,97 @@
+/* PrismFlow Part 25 phase (f) -- VARIANT B: dark ember, orange glow.
+ *
+ * CANDIDATE. Not applied to the site; loaded only by web/theme_preview.html
+ * and by the screenshot harness. tokens.css remains the live theme until a
+ * variant is chosen.
+ *
+ * Same search as variant A, run against a near-black warm base:
+ * 4,481 combinations evaluated under a 1.30:1 greyscale-step floor, then
+ * scored on the worst CIEDE2000 separation across normal vision and three
+ * simulated CVDs. Measured on the hex values below,
+ * which is what the browser gets: worst step 1.32:1, worst separation 11.01,
+ * against 1.27:1 and 8.27 for the palette the site ships today. So this is not merely
+ * a recolour -- it separates better than what the site ships.
+ *
+ * The staircase keeps its original direction: regulatory is still the
+ * lowest-contrast angle and financial the highest, so the unbuilt angle is
+ * quiet by construction as well as by --angle-unbuilt-filter.
+ */
+
+:root {
+  /* ---- structure ----------------------------------------------------
+   * Warm near-black rather than the old blue-black #0A0A0F: an orange theme
+   * on a blue-black base reads as two separate colour systems stacked. */
+  --base:            #0C0907;
+  --surface:         #16110D;
+  --surface-raised:  #201811;
+  --hairline:        #33261C;
+
+  /* ---- text --------------------------------------------------------- */
+  --text-primary:    #FBF4EC;   /* 18.06:1 on base */
+  --text-secondary:  #C4B3A2;   /*  9.60:1 */
+  --text-muted:      #8E7D6C;   /*  4.83:1 */
+
+  /* ---- the orange UI accent -----------------------------------------
+   * On a dark base the bright orange is the one that belongs, and it carries
+   * DARK ink, not white: measured, white on #FF7A2F is 2.60:1 and fails,
+   * while #1A1008 on it is 7.20:1. Anywhere orange is a fill, the label is
+   * dark. --accent-text is the orange used AS text on the base. */
+  --accent:          #FF7A2F;   /*  7.64:1 on base */
+  --accent-ink:      #1A1008;   /*  7.20:1 on accent */
+  --accent-strong:   #FF9A5A;   /*  9.47:1 -- hover and active */
+  --accent-text:     #FF9A5A;   /*  9.47:1 on base, for link text */
+  --accent-glow:     #FF7A2F;
+  --accent-wash:     #2A1A10;
+
+  /* ---- the five angles, in spectral order (violet bends most) -------- */
+  --angle-regulatory: #583DFC;  /*  3.31:1  L*42 C110 */
+  --angle-sentiment:  #E6097A;  /*  4.43:1  L*50 C 78 */
+  --angle-tech:       #1B95C9;  /*  5.85:1  L*58 C 38 */
+  --angle-market:     #10C166;  /*  8.39:1  L*69 C 70 */
+  /* Chroma 78, and that is deliberate. The pale cream the search first
+   * returned (#FEE2B0) sits 13.9 CIEDE2000 from --text-primary, close enough
+   * that a gold data point starts reading as body text; this gold is 28.0
+   * away. The chroma floor is raised for this angle only, because it is the
+   * pale end of the staircase where the collision can happen. */
+  --angle-financial:  #FFC72A;  /* 12.70:1  L*83 C 78 */
+
+  --angle-unbuilt-filter: saturate(0.35) opacity(0.55);
+
+  /* ---- beam --------------------------------------------------------- */
+  --beam-incident:   #FFF6EA;   /* 17.34:1 -- the single beam before the prism */
+
+  /* ---- status ------------------------------------------------------- */
+  --status-provider-error: #FF5C3D;
+  --status-genuine-zero:   #7A6A5C;
+  /* The dimmest, lowest-chroma DATA token in the system. */
+  --status-not-measured:   #4A3C30;
+
+  /* ---- surfaces that carry their own alpha ---------------------------- */
+  --scrim:           rgba(12, 9, 7, 0.84);
+  --nav-bg:          rgba(12, 9, 7, 0.92);
+  --dialog-backdrop: rgba(12, 9, 7, 0.72);
+
+  /* The spectrum wash, warmed to the ember base. */
+  --wash-beam:       rgba(255, 122, 47, 0.12);
+  --wash-regulatory: rgba(88, 61, 252, 0.10);
+  --wash-tech:       rgba(27, 149, 201, 0.09);
+  --wash-market:     rgba(16, 193, 102, 0.07);
+  --wash-sentiment:  rgba(230, 9, 122, 0.07);
+
+  --quote-bg:        rgba(255, 199, 42, 0.05);
+  --limits-border:   rgba(255, 122, 47, 0.35);
+  --limits-hover:    rgba(255, 122, 47, 0.10);
+
+  --track:           rgba(251, 244, 236, 0.06);
+  --link-underline:  rgba(27, 149, 201, 0.45);
+  --wrong-tint:      rgba(255, 92, 61, 0.10);
+  --alert-border:    rgba(255, 92, 61, 0.45);
+
+  /* ---- glass -------------------------------------------------------- */
+  --glass-bg:       rgba(32, 24, 17, 0.58);
+  --glass-bg-solid: rgba(22, 17, 13, 0.90);
+  --glass-border:   rgba(255, 122, 47, 0.22);
+  --glass-blur:     14px;
+  --glass-sheen:    rgba(255, 214, 184, 0.16);
+  --glass-shadow:   rgba(0, 0, 0, 0.55);
+}

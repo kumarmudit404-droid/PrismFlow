@@ -1,0 +1,167 @@
+/* Styles for web/theme_preview.html only. Not loaded by the site.
+ *
+ * Each variant block paints itself with its own candidate tokens, so both
+ * palettes are on screen at once. The values are GENERATED from the candidate
+ * files into theme-preview-vars.css by web/build_theme_preview.py and never
+ * retyped here: a hand-copied palette in a preview is a second source of truth
+ * that drifts from the one being chosen.
+ */
+
+/* The candidate files declare on :root, which would make the LAST one win for
+ * the whole document and render both blocks in the same palette. This file is
+ * generated from them by web/build_theme_preview.py with the selector
+ * re-scoped per variant -- values are carried across, never retyped. */
+@import url("theme-preview-vars.css");
+
+@layer preview {
+
+  /* Page chrome is neutral on purpose: this sheet must not tint either
+   * candidate with a third palette of its own. */
+  :root {
+    --ph-bg: #15151A;
+    --ph-fg: #E8E8EE;
+    --ph-mut: #9A9AA8;
+    --ph-line: #2E2E38;
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                 Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+                 "Liberation Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0; background: var(--ph-bg); color: var(--ph-fg);
+    font-family: var(--font-sans); font-size: 15px; line-height: 1.6;
+  }
+
+  .ph, .pf { max-width: 68rem; margin: 0 auto; padding: 2.5rem 1.5rem 1rem; }
+  .ph h1 { font-size: 1.9rem; margin: 0 0 0.6rem; letter-spacing: -0.02em; }
+  .ph p { color: var(--ph-mut); max-width: 46rem; }
+  .ph__rule {
+    border-left: 3px solid #FF7A2F; padding-left: 1rem;
+    background: rgba(255, 122, 47, 0.06);
+  }
+  .ph code, .pf code, .note code { font-family: var(--font-mono); font-size: 0.86em; }
+  .pf { border-top: 1px solid var(--ph-line); margin-top: 2rem; color: var(--ph-mut); }
+
+  /* ---- a variant block paints itself with its own tokens ---- */
+  .variant { padding: 2.5rem 0; }
+  .variant__inner { max-width: 68rem; margin: 0 auto; padding: 0 1.5rem; }
+  .variant--a { background: var(--base); color: var(--text-primary); }
+  .variant--b { background: var(--base); color: var(--text-primary); }
+
+  .variant h2 { font-size: 1.6rem; margin: 0 0 0.3rem; letter-spacing: -0.02em; }
+  .variant h3 {
+    font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-muted); margin: 2rem 0 0.7rem; font-family: var(--font-mono);
+  }
+  .variant__sub { color: var(--text-secondary); margin: 0 0 0.5rem; max-width: 46rem; }
+  .variant__sub strong { color: var(--accent); }
+  .variant--b .variant__sub strong { color: var(--accent-text); }
+  .note {
+    color: var(--text-muted); font-size: 0.88rem; max-width: 44rem;
+    border-left: 2px solid var(--hairline); padding-left: 0.8rem; margin: 0.8rem 0 0;
+  }
+  .note strong { color: var(--text-secondary); }
+
+  /* ---- swatches ---- */
+  .row { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .sw {
+    flex: 1 1 8.5rem; min-height: 5.2rem; border-radius: 10px;
+    padding: 0.6rem 0.7rem; display: flex; flex-direction: column;
+    justify-content: flex-end; border: 1px solid var(--hairline);
+  }
+  .sw b { font-size: 0.8rem; font-weight: 650; }
+  .sw i { font-family: var(--font-mono); font-size: 0.72rem; opacity: 0.85; font-style: normal; }
+
+  .sw--base    { background: var(--base); }
+  .sw--surface { background: var(--surface); }
+  .sw--raised  { background: var(--surface-raised); }
+  .sw--accent  { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .sw--accent-strong { background: var(--accent-strong); color: var(--accent-ink); border-color: transparent; }
+  .variant--a .sw--accent-strong { color: #FFFFFF; }
+  .sw--glow    { background: var(--accent-glow); color: #1A1008; border-color: transparent; }
+  .variant--b .sw--glow { background: var(--accent-text); }
+
+  .row--angles .sw { border-color: transparent; }
+  .sw--reg  { background: var(--angle-regulatory); }
+  .sw--sent { background: var(--angle-sentiment); }
+  .sw--tech { background: var(--angle-tech); }
+  .sw--mkt  { background: var(--angle-market); }
+  .sw--fin  { background: var(--angle-financial); }
+  /* Angle swatches carry their own readable ink: on variant A every angle is
+   * dark, on variant B every angle is light. Neither is assumed. */
+  .variant--a .row--angles .sw { color: #FFFFFF; }
+  .variant--a .sw--fin { color: #1A1208; }
+  .variant--b .row--angles .sw { color: #0C0907; }
+
+  /* The staircase, seen the way a photocopier sees it. */
+  .greyscale { filter: grayscale(1); margin-top: 0.5rem; }
+  .greyscale .sw { min-height: 3rem; }
+
+  /* ---- components ---- */
+  .demo {
+    margin-top: 0.8rem; border: 1px solid var(--hairline);
+    border-radius: 14px; overflow: hidden; background: var(--surface);
+  }
+  .dnav {
+    display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap;
+    padding: 0.7rem 1rem; background: var(--glass-bg-solid);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .dnav__brand { font-weight: 700; letter-spacing: -0.01em; }
+  .dnav__link {
+    font-size: 0.85rem; color: var(--text-secondary); text-decoration: none;
+    padding: 0.25rem 0.6rem; border-radius: 7px;
+  }
+  .dnav__link--on { background: var(--accent); color: var(--accent-ink); }
+  .dnav__link--limits { color: var(--accent); }
+  .variant--b .dnav__link--limits { color: var(--accent-text); }
+
+  .dbtns { display: flex; gap: 0.6rem; flex-wrap: wrap; padding: 1rem; }
+  .dbtn {
+    font: inherit; font-size: 0.88rem; padding: 0.5rem 1.05rem;
+    border-radius: 999px; cursor: pointer;
+    background: transparent; color: var(--text-primary);
+    border: 1px solid var(--hairline);
+  }
+  .dbtn--primary {
+    background: var(--accent); color: var(--accent-ink); border-color: transparent;
+    font-weight: 620;
+  }
+  .dbtn--focus { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .dpanel {
+    margin: 0 1rem 1rem; padding: 1rem; border-radius: 12px;
+    background: var(--surface-raised); border: 1px solid var(--hairline);
+  }
+  .dpanel__h {
+    margin: 0 0 0.3rem; font-family: var(--font-mono); font-size: 0.78rem;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .dpanel__b { margin: 0 0 0.8rem; color: var(--text-secondary); }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: var(--font-mono); font-size: 0.75rem;
+    border: 1px solid currentColor; border-radius: 999px;
+    padding: 0.12rem 0.6rem; margin: 0 0.35rem 0.35rem 0;
+  }
+  .pill::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 2px; background: currentColor; }
+  .pill--live    { color: var(--angle-market); }
+  .pill--zero    { color: var(--status-genuine-zero); }
+  .pill--err     { color: var(--status-provider-error); }
+  .pill--nm      { color: var(--status-not-measured); border-style: dashed; }
+  .pill--unbuilt { color: var(--angle-regulatory); border-style: dashed; filter: var(--angle-unbuilt-filter); }
+
+  /* ---- the prism mark, in each palette ---- */
+  .dprism { display: block; padding: 0 1rem 1rem; }
+  .p-inc  { stroke: var(--beam-incident); stroke-width: 2.5; }
+  .p-tri  { fill: none; stroke: var(--text-secondary); stroke-width: 1.5; }
+  .p-reg  { stroke: var(--angle-regulatory); stroke-width: 2.5; filter: var(--angle-unbuilt-filter); }
+  .p-sent { stroke: var(--angle-sentiment); stroke-width: 2.5; }
+  .p-tech { stroke: var(--angle-tech); stroke-width: 2.5; }
+  .p-mkt  { stroke: var(--angle-market); stroke-width: 2.5; }
+  .p-fin  { stroke: var(--angle-financial); stroke-width: 2.5; }
+}

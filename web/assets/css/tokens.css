@@ -61,6 +61,42 @@
   --glass-border: rgba(244, 244, 248, 0.10);
   --glass-blur:   14px;
 
+  /* ---- surfaces that carry their own alpha ---------------------------
+   * These were literals in app.css until phase (f), which made the header
+   * comment above false: the page background is the SCRIM, not --base, so a
+   * new palette applied to --base changed the text and left the page dark.
+   * They live here now, and every value below is the exact literal that was
+   * in app.css -- this move changes no pixel of the current theme. */
+
+  /* The page background proper. The animated canvas and the spectrum wash sit
+   * beneath it, so drifting light can never lift the background under body
+   * text far enough to break the verified contrast ratios. 0.84 is solved,
+   * not chosen; the derivation is on the body::after rule in app.css. */
+  --scrim:           rgba(10, 10, 15, 0.84);
+  /* The sticky nav, opaque enough that nothing shows through it. */
+  --nav-bg:          rgba(10, 10, 15, 0.92);
+  --dialog-backdrop: rgba(10, 10, 15, 0.72);
+
+  /* The spectrum wash: one warm beam at the top bleeding into the five angle
+   * hues. Each is its own angle colour at low alpha. */
+  --wash-beam:       rgba(255, 248, 231, 0.10);
+  --wash-regulatory: rgba(111, 79, 214, 0.10);
+  --wash-tech:       rgba(63, 181, 240, 0.09);
+  --wash-market:     rgba(87, 224, 164, 0.07);
+  --wash-sentiment:  rgba(239, 74, 133, 0.07);
+
+  /* Quotes and the limits link, tinted with --angle-financial. */
+  --quote-bg:        rgba(255, 239, 188, 0.04);
+  --limits-border:   rgba(255, 239, 188, 0.30);
+  --limits-hover:    rgba(255, 239, 188, 0.08);
+
+  --track:           rgba(244, 244, 248, 0.05);
+  --link-underline:  rgba(63, 181, 240, 0.40);
+  /* The tint behind a row whose prediction was wrong. */
+  --wrong-tint:      rgba(232, 96, 63, 0.09);
+  /* The one panel that is an alert. */
+  --alert-border:    rgba(232, 96, 63, 0.40);
+
   /* ---- type --------------------------------------------------------- */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
                Roboto, Helvetica, Arial, sans-serif;

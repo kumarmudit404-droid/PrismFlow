@@ -320,18 +320,39 @@ def main() -> int:
     if mode == "reveal":
         return reveal_matrix(sys.argv[2] if len(sys.argv) > 2 else "/")
     if mode == "shot":
-        # shot OUT [--path /] [--at SELECTOR]
+        # shot OUT [--path /] [--at SELECTOR] [--tokens /assets/css/x.css]
         out = Path(sys.argv[2])
         args = sys.argv[3:]
         path = "/"
         selector = None
+        tokens = None
         for i, a in enumerate(args):
             if a == "--path" and i + 1 < len(args):
                 path = args[i + 1]
             if a == "--at" and i + 1 < len(args):
                 selector = args[i + 1]
+            if a == "--tokens" and i + 1 < len(args):
+                tokens = args[i + 1]
         b = Browser()
         try:
+            if tokens:
+                # A candidate palette photographed on the REAL site, without
+                # editing a single file in web/.
+                #
+                # It has to go in BEFORE the page's own scripts run, not after.
+                # motion.js reads the angle tokens once at init to paint the
+                # ambient canvas; a sheet appended after load re-colours the CSS
+                # and leaves the canvas painted in the OLD palette, which looks
+                # like the theme half-failed. Measured: the first attempt did
+                # exactly that -- dark canvas over a light base.
+                b.ws.call("Page.addScriptToEvaluateOnNewDocument", {"source":
+                    "document.addEventListener('readystatechange', () => {}, {once:true});"
+                    "(function add() {"
+                    "  if (!document.head) { return requestAnimationFrame(add); }"
+                    "  const l = document.createElement('link');"
+                    "  l.rel = 'stylesheet'; l.href = " + json.dumps(tokens) + ";"
+                    "  document.head.appendChild(l);"
+                    "})();"})
             b.goto(BASE + path, settle=2.0)
             time.sleep(7.0)          # past the reveal deadline, so nothing is mid-fade
             if selector:

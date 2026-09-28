@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PrismFlow — theme variants</title>
+<!-- A CANDIDATE SHEET, not part of the site. It loads the two candidate token
+     files into scoped blocks so both can be seen at once, and prints the
+     measured numbers beside each swatch. It links nothing external: the
+     numbers are written here by hand FROM web/check_palette.py's output and
+     the file says so, because a preview that computed its own numbers could
+     disagree with the checker that gates the commit. -->
+<link rel="stylesheet" href="assets/css/theme-preview.css">
+</head>
+<body>
+
+<header class="ph">
+  <h1>Theme variants — phase (f) step 1</h1>
+  <p>
+    Two candidates. Neither is applied: <code>assets/css/tokens.css</code> is
+    still the live theme. Every number below comes from
+    <code>python web/check_palette.py assets/css/tokens-a-light.css
+    assets/css/tokens-b-ember.css</code>.
+  </p>
+  <p class="ph__rule">
+    The five angle colours are <strong>not five oranges</strong>. Orange is UI
+    chrome only — background, surface, nav, buttons, links, focus. The angles
+    stay categorical, and each variant was searched rather than picked: hue
+    held within its own family, chroma floored so a category never reads as
+    tinted grey, at least 16–18 CIEDE2000 away from the orange accent so a data
+    colour cannot be mistaken for a button, a monotonic luminance staircase so
+    they survive greyscale, and the worst CIEDE2000 separation maximised across
+    normal vision and simulated deuteranopia, protanopia and tritanopia.
+  </p>
+</header>
+
+<!-- ======================= VARIANT A ======================= -->
+<section class="variant variant--a">
+  <div class="variant__inner">
+    <h2>Variant A — Light</h2>
+    <p class="variant__sub">
+      Warm off-white base, deep-orange accent, dark text.
+      <strong>Worst greyscale step 1.42:1 · worst CVD separation 10.48</strong>
+      (today's palette: 1.27:1 and 8.27).
+    </p>
+
+    <h3>UI chrome — orange and white</h3>
+    <div class="row">
+      <div class="sw sw--base"><b>--base</b><i>#FFFCF8</i></div>
+      <div class="sw sw--surface"><b>--surface</b><i>#FFF6EC</i></div>
+      <div class="sw sw--raised"><b>--surface-raised</b><i>#FFEFE0</i></div>
+      <div class="sw sw--accent"><b>--accent</b><i>#B83A0A · 5.63:1</i></div>
+      <div class="sw sw--accent-strong"><b>--accent-strong</b><i>#8F2B06 · 8.16:1</i></div>
+      <div class="sw sw--glow"><b>--accent-glow</b><i>#FF7A2F · decorative</i></div>
+    </div>
+    <p class="note">
+      White on bright orange fails: measured 2.60:1 on <code>#FF7A2F</code> and
+      3.14:1 on <code>#F2661A</code>. This accent carries white at
+      <strong>5.76:1</strong>, so the same token works as fill, link and focus ring.
+    </p>
+
+    <h3>The five angles — categorical, not shades of one hue</h3>
+    <div class="row row--angles">
+      <div class="sw sw--reg"><b>regulatory</b><i>#0710A1 · 12.85:1</i></div>
+      <div class="sw sw--sent"><b>sentiment</b><i>#8F0049 · 9.06:1</i></div>
+      <div class="sw sw--tech"><b>tech</b><i>#00658C · 6.31:1</i></div>
+      <div class="sw sw--mkt"><b>market</b><i>#0B8947 · 4.38:1</i></div>
+      <div class="sw sw--fin"><b>financial</b><i>#B58B00 · 3.10:1</i></div>
+    </div>
+    <div class="row row--angles greyscale" aria-hidden="true">
+      <div class="sw sw--reg"><b>greyscale</b><i>the staircase</i></div>
+      <div class="sw sw--sent"><b></b><i></i></div>
+      <div class="sw sw--tech"><b></b><i></i></div>
+      <div class="sw sw--mkt"><b></b><i></i></div>
+      <div class="sw sw--fin"><b></b><i></i></div>
+    </div>
+    <p class="note">
+      On a light base contrast comes from being dark, so the staircase runs the
+      other way and regulatory is now the strongest angle rather than the
+      faintest. Its unbuilt reading is carried by
+      <code>--angle-unbuilt-filter</code>, unchanged — shown dimmed below.
+    </p>
+
+    <h3>Components</h3>
+    <div class="demo">
+      <nav class="dnav">
+        <span class="dnav__brand">PrismFlow</span>
+        <a class="dnav__link" href="#a">1 · Problem</a>
+        <a class="dnav__link dnav__link--on" href="#a">2 · V1</a>
+        <a class="dnav__link" href="#a">3 · V2</a>
+        <a class="dnav__link dnav__link--limits" href="#a">Known limitations</a>
+      </nav>
+      <div class="dbtns">
+        <button class="dbtn dbtn--primary">Open dataset</button>
+        <button class="dbtn">Known limitations →</button>
+        <button class="dbtn dbtn--focus">focus ring</button>
+      </div>
+      <div class="dpanel">
+        <p class="dpanel__h">Independence budget</p>
+        <p class="dpanel__b">Six views behave like three and a quarter.</p>
+        <span class="pill pill--live">produced claims</span>
+        <span class="pill pill--zero">genuine zero</span>
+        <span class="pill pill--err">provider error</span>
+        <span class="pill pill--nm">not measured</span>
+        <span class="pill pill--unbuilt">no connector</span>
+      </div>
+      <svg class="dprism" viewBox="0 0 520 150" width="100%" height="150" aria-hidden="true">
+        <line x1="0" y1="75" x2="185" y2="75" class="p-inc"/>
+        <path d="M205 22 L268 122 L142 122 Z" class="p-tri"/>
+        <line x1="228" y1="75" x2="520" y2="22" class="p-reg"/>
+        <line x1="228" y1="75" x2="520" y2="49" class="p-sent"/>
+        <line x1="228" y1="75" x2="520" y2="75" class="p-tech"/>
+        <line x1="228" y1="75" x2="520" y2="101" class="p-mkt"/>
+        <line x1="228" y1="75" x2="520" y2="128" class="p-fin"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= VARIANT B ======================= -->
+<section class="variant variant--b">
+  <div class="variant__inner">
+    <h2>Variant B — Dark ember</h2>
+    <p class="variant__sub">
+      Warm near-black base, white text, bright-orange glow accent.
+      <strong>Worst greyscale step 1.32:1 · worst CVD separation 11.01</strong>
+      (today's palette: 1.27:1 and 8.27).
+    </p>
+
+    <h3>UI chrome — orange and white</h3>
+    <div class="row">
+      <div class="sw sw--base"><b>--base</b><i>#0C0907</i></div>
+      <div class="sw sw--surface"><b>--surface</b><i>#16110D</i></div>
+      <div class="sw sw--raised"><b>--surface-raised</b><i>#201811</i></div>
+      <div class="sw sw--accent"><b>--accent</b><i>#FF7A2F · 7.64:1</i></div>
+      <div class="sw sw--accent-strong"><b>--accent-strong</b><i>#FF9A5A · 9.47:1</i></div>
+      <div class="sw sw--glow"><b>--accent-text</b><i>#FF9A5A · links</i></div>
+    </div>
+    <p class="note">
+      Here the bright orange is the one that belongs, and it carries
+      <strong>dark</strong> ink: <code>#1A1008</code> on it is
+      <strong>7.20:1</strong>, where white would be 2.60:1 and fail.
+    </p>
+
+    <h3>The five angles — categorical, not shades of one hue</h3>
+    <div class="row row--angles">
+      <div class="sw sw--reg"><b>regulatory</b><i>#583DFC · 3.31:1</i></div>
+      <div class="sw sw--sent"><b>sentiment</b><i>#E6097A · 4.43:1</i></div>
+      <div class="sw sw--tech"><b>tech</b><i>#1B95C9 · 5.85:1</i></div>
+      <div class="sw sw--mkt"><b>market</b><i>#10C166 · 8.39:1</i></div>
+      <div class="sw sw--fin"><b>financial</b><i>#FFC72A · 12.70:1</i></div>
+    </div>
+    <div class="row row--angles greyscale" aria-hidden="true">
+      <div class="sw sw--reg"><b>greyscale</b><i>the staircase</i></div>
+      <div class="sw sw--sent"><b></b><i></i></div>
+      <div class="sw sw--tech"><b></b><i></i></div>
+      <div class="sw sw--mkt"><b></b><i></i></div>
+      <div class="sw sw--fin"><b></b><i></i></div>
+    </div>
+    <p class="note">
+      Financial is a saturated gold, not the pale cream the first search
+      returned: <code>#FEE2B0</code> sat only 13.9 CIEDE2000 from body text, so
+      a gold data point started reading as prose. This one is 28.0 away.
+    </p>
+
+    <h3>Components</h3>
+    <div class="demo">
+      <nav class="dnav">
+        <span class="dnav__brand">PrismFlow</span>
+        <a class="dnav__link" href="#b">1 · Problem</a>
+        <a class="dnav__link dnav__link--on" href="#b">2 · V1</a>
+        <a class="dnav__link" href="#b">3 · V2</a>
+        <a class="dnav__link dnav__link--limits" href="#b">Known limitations</a>
+      </nav>
+      <div class="dbtns">
+        <button class="dbtn dbtn--primary">Open dataset</button>
+        <button class="dbtn">Known limitations →</button>
+        <button class="dbtn dbtn--focus">focus ring</button>
+      </div>
+      <div class="dpanel">
+        <p class="dpanel__h">Independence budget</p>
+        <p class="dpanel__b">Six views behave like three and a quarter.</p>
+        <span class="pill pill--live">produced claims</span>
+        <span class="pill pill--zero">genuine zero</span>
+        <span class="pill pill--err">provider error</span>
+        <span class="pill pill--nm">not measured</span>
+        <span class="pill pill--unbuilt">no connector</span>
+      </div>
+      <svg class="dprism" viewBox="0 0 520 150" width="100%" height="150" aria-hidden="true">
+        <line x1="0" y1="75" x2="185" y2="75" class="p-inc"/>
+        <path d="M205 22 L268 122 L142 122 Z" class="p-tri"/>
+        <line x1="228" y1="75" x2="520" y2="22" class="p-reg"/>
+        <line x1="228" y1="75" x2="520" y2="49" class="p-sent"/>
+        <line x1="228" y1="75" x2="520" y2="75" class="p-tech"/>
+        <line x1="228" y1="75" x2="520" y2="101" class="p-mkt"/>
+        <line x1="228" y1="75" x2="520" y2="128" class="p-fin"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<footer class="pf">
+  <p>
+    Candidate sheet only. Nothing here is applied to the site, and no number,
+    chart value, source line or limitation text is touched by either variant.
+  </p>
+</footer>
+
+</body>
+</html>
