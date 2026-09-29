@@ -255,7 +255,6 @@ const state = {
   heroVisible: true, running: false,
   samples: [], degraded: false, last: 0,
   heroStatus: "not attempted",
-  liquid: null, liquidVisible: false, liquidStatus: "not attempted",
 };
 
 /* WebGL 2, actually obtained -- not "is WebGL2RenderingContext defined". A
@@ -300,78 +299,6 @@ async function loadHero(stage) {
   }
 }
 
-/* Same lazy-load contract as the hero: three.js only loads if the stage is
- * near the viewport AND WebGL 2 is actually obtained AND motion is not
- * reduced. If it fails for any reason, the real <button> elements in
- * #liquid-stage are already the working control -- see chooseLiquid(). */
-async function loadLiquid(canvasHost) {
-  if (state.liquid || state.liquidStatus === "loading") { return; }
-  if (reduceMotion.matches) { state.liquidStatus = "skipped: reduced motion"; return; }
-  if (!webglOk()) { state.liquidStatus = "skipped: no WebGL 2"; return; }
-  state.liquidStatus = "loading";
-  const stage = canvasHost.closest("#liquid-stage") || canvasHost;
-  try {
-    const mod = await import("./liquid_glass.js");
-    const liquid = await mod.mount(canvasHost, {
-      token,
-      // The canvas's own raycaster hits call back through here so a click on
-      // the rendered pill and a click on the real button underneath run the
-      // exact same path -- chooseLiquid() is the one place selection state
-      // changes, never the module itself.
-      onPick: (i) => chooseLiquid(i, { fromCanvas: true }),
-    });
-    state.liquid = liquid;
-    state.liquidStatus = "live";
-    stage.setAttribute("data-liquid", "gl");
-  } catch (e) {
-    state.liquidStatus = "failed: " + (e && e.message ? e.message : e);
-    stage.setAttribute("data-liquid", "css");
-    if (window.console) { console.warn("[PrismFlow] liquid-glass buttons unavailable:", e); }
-  }
-}
-
-/* The one place the selected button changes. Always updates the real DOM
- * (works with no WebGL, no JS-loaded module, or reduced motion); also drives
- * the 3D module's animation when it happens to be live. */
-function chooseLiquid(i, opts) {
-  const buttons = document.querySelectorAll(".liquid-btn");
-  if (!buttons.length || i < 0 || i >= buttons.length) { return; }
-  buttons.forEach((b, idx) => {
-    const on = idx === i;
-    b.classList.toggle("is-on", on);
-    b.setAttribute("aria-pressed", String(on));
-  });
-  if (state.liquid && !(opts && opts.fromCanvas)) { state.liquid.select(i); }
-}
-
-function setupLiquid() {
-  const stage = document.getElementById("liquid-stage");
-  const canvasHost = document.getElementById("liquid-canvas-host");
-  const buttons = document.querySelectorAll(".liquid-btn");
-  if (!stage || !canvasHost || !buttons.length) { return; }
-
-  buttons.forEach((btn, i) => {
-    btn.addEventListener("click", () => chooseLiquid(i));
-  });
-
-  if (reduceMotion.matches) { return; }
-
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver((entries) => {
-      state.liquidVisible = entries[0].isIntersecting;
-    }, { threshold: 0.01 }).observe(stage);
-
-    const pre = new IntersectionObserver((entries) => {
-      if (!entries.some((e) => e.isIntersecting)) { return; }
-      pre.disconnect();
-      loadLiquid(canvasHost);
-    }, { rootMargin: "300px 0px 300px 0px", threshold: 0 });
-    pre.observe(stage);
-  } else {
-    loadLiquid(canvasHost);
-  }
-}
-
 function loop(t) {
   if (!state.running) { return; }
   if (state.last) { state.samples.push(t - state.last); }
@@ -382,9 +309,6 @@ function loop(t) {
   // The GL hero is the most expensive thing on the page, so it runs only
   // while it is actually on screen. stop() covers the hidden-tab case.
   if (state.hero && state.heroVisible) { state.hero.frame(t); }
-  // Same rule for the liquid-glass buttons: paused off screen, and stop()
-  // below already covers the hidden-tab case for every module in this loop.
-  if (state.liquid && state.liquidVisible) { state.liquid.frame(t); }
 
   // Self-degrade: if the median frame over a window misses the budget, drop
   // to fewer blobs and a lower DPR once, then stop measuring.
@@ -485,18 +409,15 @@ function boot() {
 
   if (reduceMotion.matches) {
     // Static everything. The prism keeps its phase-(a) pose, the canvas is
-    // never even sized, and no observer is attached. The liquid buttons still
-    // need their click wiring -- that part is a plain toggle, not motion.
+    // never even sized, and no observer is attached.
     if (canvas) { canvas.remove(); }
     root.setAttribute("data-motion", "static");
-    setupLiquid();
     return;
   }
 
   root.setAttribute("data-motion", "live");
   if (canvas) { state.ambient = new Ambient(canvas); }
   setupReveals();
-  setupLiquid();
 
   // Pause when the hero leaves the viewport: the prism is the only thing that
   // needs per-frame work tied to an element.
@@ -538,8 +459,6 @@ window.__prismMotion = {
   frameSamples: () => state.samples.slice(),
   heroStatus: () => state.heroStatus,
   heroInfo: () => (state.hero ? state.hero.info : null),
-  liquidStatus: () => state.liquidStatus,
-  liquidInfo: () => (state.liquid ? state.liquid.info : null),
 };
 
 reduceMotion.addEventListener("change", () => window.location.reload());

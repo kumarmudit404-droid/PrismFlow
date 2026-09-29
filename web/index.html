@@ -95,28 +95,6 @@
   <a class="limits-link" href="#limits" aria-label="Known limitations, from the introduction">Known limitations →</a>
 </header>
 
-<!-- ==================== LIQUID GLASS, decorative ==================== -->
-<!-- Not a chapter: no number, not in site-nav, and not part of the reveal
-     groups above. The three real buttons are the whole control -- always
-     present, always keyboard-operable, always doing the one honest thing
-     they do (toggle which is pressed). The canvas is decoration layered on
-     top of them when WebGL 2 is available and motion is not reduced; see
-     assets/js/liquid_glass.js and motion.js's chooseLiquid(). -->
-<section class="wrap liquid-section" aria-label="Liquid glass buttons, decorative">
-  <p class="liquid-caption">
-    The three words in the sentence above, pressed as glass. Decoration —
-    nothing here is computed or measured.
-  </p>
-  <div class="liquid-stage" id="liquid-stage">
-    <div class="liquid-stage__canvas" id="liquid-canvas-host" aria-hidden="true"></div>
-    <div class="liquid-stage__controls" role="group" aria-label="Liquid glass buttons">
-      <button type="button" class="liquid-btn is-on" data-liquid-idx="0" aria-pressed="true">Agreement</button>
-      <button type="button" class="liquid-btn" data-liquid-idx="1" aria-pressed="false">Independence</button>
-      <button type="button" class="liquid-btn" data-liquid-idx="2" aria-pressed="false">Evidence</button>
-    </div>
-  </div>
-</section>
-
 <!-- ============================ CH 1 ============================ -->
 <section class="chapter wrap" id="ch1" aria-labelledby="ch1-h">
   <p class="chapter__num">Chapter 1</p>
