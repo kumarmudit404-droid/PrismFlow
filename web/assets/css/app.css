@@ -75,6 +75,7 @@ a:hover { text-decoration-color: currentColor; }
   font-weight: 650; letter-spacing: -0.01em; margin-right: auto;
   display: flex; align-items: center; gap: var(--sp-2);
 }
+.site-nav__mark { display: block; width: 1.875rem; height: 1.8125rem; }
 .site-nav__list { display: flex; gap: var(--sp-1); list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
 .site-nav__link {
   display: block; padding: 0.3rem 0.6rem; border-radius: var(--radius-sm);
