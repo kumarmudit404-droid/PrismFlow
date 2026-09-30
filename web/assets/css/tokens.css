@@ -35,6 +35,17 @@
  */
 
 :root {
+  /* ---- global scale ---------------------------------------------------
+   * +18% on the root: every --step-* size, every --sp-* gap, --maxw and
+   * --measure are all rem, so this one line grows type AND the containers
+   * that hold it together, in lockstep. That is the point -- at a fixed
+   * viewport width the wrap and measure boxes get wider in step with the
+   * text, so the unused margin beside them shrinks instead of the text
+   * just getting bigger inside the same-size box. A percentage, not a px
+   * value, so it still scales from whatever base size the reader's own
+   * browser zoom/accessibility setting provides. */
+  font-size: 118%;
+
   /* ---- structure ----------------------------------------------------
    * Warm near-black rather than the old blue-black #0A0A0F: an orange theme
    * on a blue-black base reads as two separate colour systems stacked. */
@@ -117,6 +128,13 @@
                Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
                "Liberation Mono", monospace;
+  /* Titles only. No CDN, no vendored font file: a system stack that puts the
+   * heaviest system-installed display/grotesk faces first, so where one
+   * exists it is used, and everywhere else this silently falls back to the
+   * same family as --font-sans. What actually makes it read as a different
+   * voice from body text is font-weight 800-900 + letter-spacing +
+   * uppercase on top of it, applied where this token is used. */
+  --font-display: "Segoe UI Black", "Arial Black", "Helvetica Neue", var(--font-sans);
 
   --step--1: clamp(0.80rem, 0.77rem + 0.14vw, 0.88rem);
   --step-0:  clamp(1.00rem, 0.95rem + 0.22vw, 1.13rem);

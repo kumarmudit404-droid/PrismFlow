@@ -87,7 +87,7 @@ a:hover { text-decoration-color: currentColor; }
   transition: background-color 0.2s;
 }
 .site-nav__link:hover { color: var(--text-primary); background: rgba(244,244,248,0.06); }
-.site-nav__link[aria-current="true"] { color: var(--accent-ink); background: var(--accent); font-weight: 600; }
+.site-nav__link[aria-current="true"] { color: var(--accent-ink); background: var(--accent); font-weight: 600; text-align: center; }
 .site-nav__link--limits { color: var(--accent-text); }
 
 /* ---------- chapters -------------------------------------------------- */
@@ -127,10 +127,20 @@ a:hover { text-decoration-color: currentColor; }
 #sc-panel-domains, #sc-panel-coverage, #sc-panel-failures,
 #sc-panel-attack, #sc-panel-calibration, #sc-panel-eniv { grid-column: 1 / -1; }
 .chapter__num {
-  font-family: var(--font-mono); font-size: var(--step--1);
+  font-family: var(--font-mono); font-size: var(--step--1); text-align: center;
   color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase;
 }
-.chapter__title { font-size: var(--step-3); line-height: 1.1; letter-spacing: -0.02em; margin: var(--sp-2) 0 var(--sp-3); }
+/* Titles get their own voice: --font-display (a system stack, no CDN/vendored
+ * file -- see tokens.css), heavy weight, uppercase and open tracking instead
+ * of the tight negative tracking body headings use, so the two read as
+ * different type systems even though most browsers resolve --font-display
+ * back to the same installed family. Centered per chapter, sitting in the
+ * same reading column .chapter's grid already puts it in. */
+.chapter__title {
+  font-family: var(--font-display); font-size: var(--step-3); font-weight: 900;
+  line-height: 1.15; letter-spacing: 0.01em; text-transform: uppercase;
+  text-align: center; color: var(--text-primary); margin: var(--sp-2) 0 var(--sp-3);
+}
 .chapter__lede { font-size: var(--step-1); color: var(--text-secondary); max-width: var(--measure); margin-bottom: var(--sp-4); }
 
 h3 { font-size: var(--step-1); margin: var(--sp-5) 0 var(--sp-2); letter-spacing: -0.01em; }
@@ -140,7 +150,14 @@ p { max-width: var(--measure); }
 /* ---------- hero ------------------------------------------------------ */
 
 .hero { padding-block: var(--sp-6) var(--sp-5); text-align: left; }
-.hero__title { font-size: var(--step-4); line-height: 1.02; letter-spacing: -0.035em; margin: 0 0 var(--sp-3); }
+/* Same title voice as .chapter__title (--font-display, 900, uppercase) --
+ * alignment is untouched: .hero is deliberately text-align:left above, and
+ * centering wasn't part of this pass. */
+.hero__title {
+  font-family: var(--font-display); font-size: var(--step-4); font-weight: 900;
+  line-height: 1.05; letter-spacing: 0.005em; text-transform: uppercase;
+  color: var(--text-primary); margin: 0 0 var(--sp-3);
+}
 .hero__thesis {
   font-size: var(--step-1); color: var(--text-secondary);
   max-width: 46rem; border-left: 2px solid var(--beam-incident); padding-left: var(--sp-3);
@@ -563,7 +580,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
 /* The selected button carries colour AND aria-pressed AND a filled background,
  * so which one is active does not depend on hue alone. */
 .picker__btn.is-on {
-  color: var(--accent-ink); background: var(--accent);
+  color: var(--accent-ink); background: var(--accent); text-align: center;
   border-color: var(--accent); font-weight: 650;
 }
 
@@ -748,7 +765,7 @@ body::after {
 .ds-foot h4 { margin-top: 0; }
 .ds-download {
   display: inline-block; font-family: var(--font-mono); font-size: var(--step--1);
-  color: var(--accent-ink); background: var(--accent);
+  color: var(--accent-ink); background: var(--accent); text-align: center;
   border-radius: var(--radius-sm); padding: 0.4rem 0.9rem; text-decoration: none;
 }
 .ds-foot--gap { border-color: var(--status-not-measured); }
