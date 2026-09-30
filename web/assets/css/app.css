@@ -91,8 +91,40 @@ a:hover { text-decoration-color: currentColor; }
 
 /* ---------- chapters -------------------------------------------------- */
 
-.chapter { padding-block: var(--sp-6); border-top: 1px solid var(--hairline); scroll-margin-top: 4.5rem; }
+/* Reading column vs. full-bleed data. .chapter is also .wrap, so its own
+ * box is already width:min(100% - 2.5rem, var(--maxw)) and centered -- that
+ * part was never broken. What read as "flush-left, huge gap on the right"
+ * was every text child (title, lede, prose) rendering at its own narrower
+ * --measure cap but staying left-anchored inside the much wider --maxw box.
+ * A 3-column grid fixes that without moving a single full-width element:
+ * text defaults into the centered middle track; anything that already spans
+ * the full box (grids, tables, panels, JS-rendered placeholders, captions)
+ * is pinned to all three columns, which is the exact same width and
+ * position it occupied under plain block flow. Only text shifts. */
+.chapter {
+  padding-block: var(--sp-6); border-top: 1px solid var(--hairline); scroll-margin-top: 4.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) min(var(--measure), 100%) minmax(0, 1fr);
+  column-gap: 0;
+}
 .chapter:first-of-type { border-top: 0; }
+.chapter > * { grid-column: 2; }
+.chapter > .grid,
+.chapter > .table-wrap,
+.chapter > .panel,
+.chapter > .placeholder,
+.chapter > .src,
+/* Every JS-rendered mount point, by id rather than by class: each
+ * renderer's own `render()` clears the placeholder class (and sometimes
+ * sets "notmeasured" instead) once real content lands, so a class selector
+ * stops matching the instant data loads. The id never changes. */
+#limits-ch2, #limits-ch4, #v2-reverify,
+#v1-scenarios, #v1-figures, #v1-surface, #v1-attack, #v1-failures,
+#v2-dataset, #v2-coverage,
+#limits-v1-parts, #limits-v1-standing, #limits-v2,
+/* scores.html shares this stylesheet and the same mount-point pattern. */
+#sc-panel-domains, #sc-panel-coverage, #sc-panel-failures,
+#sc-panel-attack, #sc-panel-calibration, #sc-panel-eniv { grid-column: 1 / -1; }
 .chapter__num {
   font-family: var(--font-mono); font-size: var(--step--1);
   color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase;
