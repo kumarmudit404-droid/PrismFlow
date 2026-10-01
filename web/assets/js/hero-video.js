@@ -48,7 +48,9 @@
     reduced: reduceMotion.matches,
     mode: null,
     played: null,
-    playError: null
+    playError: null,
+    observer: null,
+    onScreen: null
   };
 
   /* Take the autoplay away and sit on the poster.
@@ -91,6 +93,70 @@
         document.documentElement.setAttribute("data-hero-video", "blocked");
       });
     }, { once: true });
+  }
+
+  /* ==================================================================
+   * Pause off-screen -- phase (g) step 8.4
+   * ==================================================================
+   * The hero is at the top of the page and a reader scrolls past it within
+   * seconds, after which the element is decoding 14.29 fps of 1072x368 that
+   * nobody can see. motion.js retired its own pair of observers when the
+   * prism became a fixed background (see its boot comment); this is the one
+   * that comes back with the video, and it observes the video alone.
+   *
+   * Only under `live`. Under reduced motion there is nothing to pause, and
+   * resuming on scroll would be precisely the autoplay the gate above exists
+   * to prevent -- so the observer is never attached in that branch rather
+   * than attached and guarded, which would leave one `play()` call reachable.
+   *
+   * threshold 0 with a 64px bottom margin: the state flips as the last of the
+   * element leaves the viewport, slightly late rather than slightly early, so
+   * a reader who scrolls a little and comes back finds it still running.
+   */
+  function observe() {
+    if (info.reduced) { return; }
+    if (typeof IntersectionObserver !== "function") {
+      info.observer = "unsupported: plays continuously";
+      return;
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        info.onScreen = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          /* Never resume what the engine refused to start, and never resume
+           * what the reader's own setting stopped. Resuming a blocked video
+           * on scroll would be a second, quieter autoplay attempt. */
+          if (info.played === false) { return; }
+          var p = video.play();
+          if (p && typeof p.catch === "function") {
+            p.catch(function () { /* still refused; poster stands */ });
+          }
+        } else {
+          video.pause();
+        }
+      });
+    }, { threshold: 0, rootMargin: "0px 0px 64px 0px" });
+
+    io.observe(video);
+    info.observer = "attached";
+  }
+
+  observe();
+
+  /* The tab being hidden is the same waste as the hero being off-screen, and
+   * is not something an IntersectionObserver reports -- an element in a
+   * backgrounded tab is still "intersecting". motion.js takes the same pair
+   * for its canvas. */
+  if (!info.reduced) {
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) {
+        video.pause();
+      } else if (info.onScreen !== false && info.played !== false) {
+        var p = video.play();
+        if (p && typeof p.catch === "function") { p.catch(function () {}); }
+      }
+    });
   }
 
   window.__prismHeroVideo = {
