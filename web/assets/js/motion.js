@@ -6,14 +6,16 @@
  * A "not measured" cell has no numeric state to animate towards, by
  * construction -- there is no code path that could turn one into a number.
  *
- * THE 3D HERO IS OPTIONAL AND LAZY. Phase (c) attempted one and dropped it
- * because it rendered as a grey slab; phase (f) fixed the cause -- see the top
- * of hero3d.js -- and it is back, but nothing about the page depends on it.
- * three.js is imported dynamically, only once the hero is near the viewport AND
- * WebGL 2 is actually available AND motion is not reduced. If the import fails,
- * the context is lost, or the module throws for any reason at all, the static
- * SVG mark stays exactly where it is and the page is unchanged. It is never on
- * the critical path.
+ * THE 3D PRISM IS OPTIONAL. Phase (c) attempted one and dropped it because it
+ * rendered as a grey slab; phase (f) fixed the cause -- see the top of
+ * hero3d.js -- and phase (g) promoted it from the hero slot to the site-wide
+ * fixed background in #prism-bg. Nothing about the page depends on it.
+ * three.js is imported dynamically, only once WebGL 2 is actually available AND
+ * motion is not reduced. The background is at the top of the page and visible
+ * immediately, so there is no viewport trigger left to wait for -- the import
+ * is still async and off the critical path. If it fails, the context is lost,
+ * or the module throws for any reason at all, the static SVG mark in #prism-bg
+ * stays exactly where it is and the page is unchanged.
  *
  * COLOUR. Every colour is read from tokens.css at runtime via
  * getComputedStyle. No hex literal appears in this file, so the palette cannot
@@ -47,94 +49,14 @@ function palette() {
 }
 
 /* ====================================================================
- * 1. The prism mark -- cursor reactive
- * ==================================================================== */
-
-class PrismMark {
-  constructor(svg) {
-    this.svg = svg;
-    this.beams = Array.from(svg.querySelectorAll("[data-beam]"));
-    this.trails = Array.from(svg.querySelectorAll("[data-trail]"));
-    this.apex = { x: 400, y: 120 };
-    this.target = 0;      // -1 .. 1, pointer position mapped to beam fan
-    this.current = 0;
-    this.spread = 1;
-    this.targetSpread = 1;
-    this.idle = true;
-    this.history = [];
-    this.running = false;
-    this.bind();
-  }
-
-  bind() {
-    const onMove = (clientX, clientY) => {
-      const r = this.svg.getBoundingClientRect();
-      if (!r.width || !r.height) { return; }
-      // -1..1 across the mark, clamped so a pointer far outside does not
-      // fling the beams past the frame
-      this.target = Math.max(-1, Math.min(1, ((clientY - r.top) / r.height - 0.5) * 2));
-      this.targetSpread = 0.55 + Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * 1.1;
-      this.idle = false;
-      this.lastInput = performance.now();
-    };
-
-    window.addEventListener("pointermove", (e) => onMove(e.clientX, e.clientY), { passive: true });
-    // Touch: dragging drives the same mapping, so a device with no cursor is
-    // not left with a dead mark.
-    window.addEventListener("touchmove", (e) => {
-      if (e.touches && e.touches[0]) { onMove(e.touches[0].clientX, e.touches[0].clientY); }
-    }, { passive: true });
-  }
-
-  /* Idle drift: with no pointer (or none for a while) the mark breathes
-   * slowly instead of freezing, which is what a touch device sees. */
-  idleValue(t) {
-    return Math.sin(t / 2600) * 0.45 + Math.sin(t / 4100) * 0.2;
-  }
-
-  frame(t) {
-    if (this.lastInput && t - this.lastInput > 2500) { this.idle = true; }
-    const want = this.idle ? this.idleValue(t) : this.target;
-    const wantSpread = this.idle ? 0.9 + Math.sin(t / 3300) * 0.18 : this.targetSpread;
-
-    // critically-damped-ish easing so the beams feel like glass, not elastic
-    this.current += (want - this.current) * 0.075;
-    this.spread += (wantSpread - this.spread) * 0.06;
-
-    this.history.push(this.current);
-    if (this.history.length > 14) { this.history.shift(); }
-
-    const n = this.beams.length;
-    this.beams.forEach((beam, i) => {
-      const rank = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;   // -1..1 across the fan
-      const y = this.apex.y + rank * 82 * this.spread + this.current * 46;
-      beam.setAttribute("y2", y.toFixed(2));
-    });
-
-    // Spectral trail: older pointer positions, faded. Same beam colours, so
-    // the trail can never introduce a hue that is not a token.
-    this.trails.forEach((trail, i) => {
-      const idx = this.history.length - 1 - (i + 1) * 3;
-      if (idx < 0) { return; }
-      const past = this.history[idx];
-      const rank = (i / Math.max(1, this.trails.length - 1)) * 2 - 1;
-      const y = this.apex.y + rank * 82 * this.spread + past * 46;
-      trail.setAttribute("y2", y.toFixed(2));
-      trail.setAttribute("opacity", (0.16 - i * 0.03).toFixed(3));
-    });
-  }
-
-  reset() {
-    // The static pose: exactly the phase-(a) fan, so reduced-motion users and
-    // no-JS users see the identical mark.
-    const n = this.beams.length;
-    this.beams.forEach((beam, i) => {
-      const rank = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
-      beam.setAttribute("y2", (this.apex.y + rank * 82).toFixed(2));
-    });
-    this.trails.forEach((t) => t.setAttribute("opacity", "0"));
-  }
-}
+ * 1. (was the cursor-reactive prism mark)
+ * ====================================================================
+ * Phase (g) removed it. It animated [data-beam] lines inside the hero SVG;
+ * the mark is now the fixed site-wide background and is deliberately STATIC
+ * there, so the class had no host left and is deleted rather than kept as a
+ * no-op. The motion the prism does have lives in hero3d.js, behind the pauses
+ * in section 3.
+ */
 
 /* ====================================================================
  * 2. Ambient background -- ONE canvas, never a stack of blurred layers
@@ -251,7 +173,7 @@ function hexA(hex, a) {
  * ==================================================================== */
 
 const state = {
-  prism: null, ambient: null, hero: null, raf: 0,
+  ambient: null, hero: null, raf: 0,
   heroVisible: true, running: false,
   samples: [], degraded: false, last: 0,
   heroStatus: "not attempted",
@@ -274,9 +196,9 @@ function webglOk() {
   }
 }
 
-/* The only place three.js is ever loaded. 2.1 MB stays unrequested unless all
- * three conditions hold, so a reader who never scrolls to the hero, or who has
- * reduced motion on, or whose machine has no WebGL, never pays for it. */
+/* The only place three.js is ever loaded. 2.1 MB stays unrequested unless both
+ * conditions hold, so a reader with reduced motion on, or whose machine has no
+ * WebGL, never pays for it. */
 async function loadHero(stage) {
   if (state.hero || state.heroStatus === "loading") { return; }
   if (reduceMotion.matches) { state.heroStatus = "skipped: reduced motion"; return; }
@@ -285,6 +207,7 @@ async function loadHero(stage) {
   try {
     const mod = await import("./hero3d.js");
     const hero = await mod.mount(stage, { palette, token });
+    // Mounted into #prism-bg, which is position:fixed and full-viewport.
     state.hero = hero;
     state.heroStatus = "live";
     root.setAttribute("data-hero", "gl");
@@ -305,9 +228,9 @@ function loop(t) {
   state.last = t;
 
   if (state.ambient) { state.ambient.frame(t); }
-  if (state.prism && state.heroVisible) { state.prism.frame(t); }
-  // The GL hero is the most expensive thing on the page, so it runs only
-  // while it is actually on screen. stop() covers the hidden-tab case.
+  // The GL prism is the most expensive thing on the page. It is now a fixed
+  // background, so "on screen" is always true and the pauses that matter are
+  // the hidden-tab one in boot() and, from step 5, idle.
   if (state.hero && state.heroVisible) { state.hero.frame(t); }
 
   // Self-degrade: if the median frame over a window misses the budget, drop
@@ -399,17 +322,12 @@ function setupReveals() {
  * ==================================================================== */
 
 function boot() {
-  const svg = document.getElementById("prism-mark");
+  const stage = document.getElementById("prism-bg");
   const canvas = document.getElementById("ambient");
 
-  if (svg) {
-    state.prism = new PrismMark(svg);
-    state.prism.reset();
-  }
-
   if (reduceMotion.matches) {
-    // Static everything. The prism keeps its phase-(a) pose, the canvas is
-    // never even sized, and no observer is attached.
+    // Static everything. The background keeps its static SVG prism, the
+    // ambient canvas is never even sized, and no observer is attached.
     if (canvas) { canvas.remove(); }
     root.setAttribute("data-motion", "static");
     return;
@@ -419,29 +337,12 @@ function boot() {
   if (canvas) { state.ambient = new Ambient(canvas); }
   setupReveals();
 
-  // Pause when the hero leaves the viewport: the prism is the only thing that
-  // needs per-frame work tied to an element.
-  const stage = document.querySelector(".hero__stage");
-  if (svg && "IntersectionObserver" in window) {
-    new IntersectionObserver((entries) => {
-      state.heroVisible = entries[0].isIntersecting;
-    }, { threshold: 0.01 }).observe(svg);
-
-    // A second observer with a margin, purely to start the import a little
-    // before the hero is needed. It disconnects after one hit: this is a
-    // load trigger, not a visibility signal.
-    if (stage) {
-      const pre = new IntersectionObserver((entries) => {
-        if (!entries.some((e) => e.isIntersecting)) { return; }
-        pre.disconnect();
-        loadHero(stage);
-      }, { rootMargin: "300px 0px 300px 0px", threshold: 0 });
-      pre.observe(stage);
-    }
-  } else if (stage) {
-    // No IntersectionObserver: load it once, rather than never.
-    loadHero(stage);
-  }
+  /* The background is fixed and on screen from the first paint, so the phase
+   * (f) pair of IntersectionObservers -- one to pause the hero offscreen, one
+   * to pre-load it just before it scrolled in -- have nothing left to observe.
+   * The import is started here instead. It is async and gated on WebGL 2 and
+   * reduced motion inside loadHero, so nothing about this blocks paint. */
+  if (stage) { loadHero(stage); }
 
   // Pause entirely when the tab is hidden -- rAF is throttled there anyway,
   // and anything still scheduled is pure waste.

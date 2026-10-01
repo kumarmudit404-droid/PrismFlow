@@ -21,6 +21,38 @@
      blurred layers costs; this is a single compositor layer. -->
 <canvas id="ambient" aria-hidden="true"></canvas>
 
+<!-- THE SITE-WIDE PRISM BACKGROUND -- phase (g) step 1.
+     Fixed to the viewport, the whole page scrolls OVER it. It is the product's
+     own mark: one incident beam refracting into five angle beams, and there is
+     no logo file in this repository to use instead.
+
+     The SVG below is ALWAYS present and is the only thing that renders until a
+     WebGL 2 context has actually been obtained; motion.js then mounts
+     assets/js/hero3d.js into this same box and sets [data-hero="gl"], which is
+     the only thing that fades the SVG out. No WebGL, reduced motion, a failed
+     import or a throw inside the module all leave this SVG exactly where it is,
+     static, at --prism-bg-opacity. There is no state in which this box is
+     empty, and nothing on the page depends on either renderer.
+
+     It is STATIC. Unlike the phase (f) hero mark it carries no [data-beam]
+     hooks, because a background that animates behind body text is a legibility
+     problem rather than a feature -- the motion lives in the WebGL path, which
+     is governed by the pauses in motion.js. -->
+<div id="prism-bg" aria-hidden="true">
+  <svg class="prism-bg__svg" viewBox="0 0 900 240" preserveAspectRatio="xMidYMid meet"
+       aria-hidden="true" focusable="false">
+    <line x1="0" y1="120" x2="330" y2="120" stroke="var(--beam-incident)" stroke-width="2.5"/>
+    <path d="M360 40 L470 190 L250 190 Z" fill="none" stroke="var(--text-secondary)" stroke-width="1.5"/>
+    <g class="beams">
+      <line class="beam beam--regulatory" x1="400" y1="120" x2="900" y2="38"  stroke="var(--angle-regulatory)"/>
+      <line class="beam" x1="400" y1="120" x2="900" y2="79"  stroke="var(--angle-sentiment)"/>
+      <line class="beam" x1="400" y1="120" x2="900" y2="120" stroke="var(--angle-tech)"/>
+      <line class="beam" x1="400" y1="120" x2="900" y2="161" stroke="var(--angle-market)"/>
+      <line class="beam" x1="400" y1="120" x2="900" y2="202" stroke="var(--angle-financial)"/>
+    </g>
+  </svg>
+</div>
+
 <nav class="site-nav" aria-label="Chapters">
   <div class="wrap site-nav__inner">
     <span class="site-nav__brand">
@@ -51,42 +83,9 @@
     agree.
   </p>
 
-  <div class="hero__prism" aria-hidden="true">
-    <!-- THE MARK. No logo file exists in this repository, so the product's own
-         prism IS the mark: one incident beam refracting into five angle beams.
-         The SVG below is the mark and is ALWAYS present.
-         Phase (c) layered a ray-traced glass prism over it and dropped it: it
-         rendered as an opaque grey slab because a transmissive material was
-         given nothing to refract and no environment to reflect. Phase (f)
-         fixed that cause -- a PMREM-filtered procedural environment and an
-         opaque backdrop behind the glass -- and the 3D prism is back, in
-         assets/js/hero3d.js, lazily loaded by motion.js.
-         It is layered OVER this SVG and the SVG is hidden only once the
-         renderer is actually live ([data-hero="gl"]). No WebGL, reduced
-         motion, a failed import or a throw inside the module all leave this
-         SVG visible and the page unchanged. There is no state in which the
-         hero is blank. motion.js moves y2 on the beams; nothing else draws
-         here. -->
-    <div class="hero__stage">
-      <svg id="prism-mark" class="hero__svg" viewBox="0 0 900 240" width="100%" height="240"
-           aria-hidden="true" focusable="false">
-        <line x1="0" y1="120" x2="330" y2="120" stroke="var(--beam-incident)" stroke-width="2.5"/>
-        <path d="M360 40 L470 190 L250 190 Z" fill="none" stroke="var(--text-secondary)" stroke-width="1.5"/>
-        <g class="beam-trails">
-          <line data-trail x1="400" y1="120" x2="900" y2="60"  stroke="var(--angle-sentiment)" stroke-width="6" opacity="0"/>
-          <line data-trail x1="400" y1="120" x2="900" y2="120" stroke="var(--angle-tech)"      stroke-width="6" opacity="0"/>
-          <line data-trail x1="400" y1="120" x2="900" y2="180" stroke="var(--angle-market)"    stroke-width="6" opacity="0"/>
-        </g>
-        <g class="beams">
-          <line data-beam class="beam beam--regulatory" x1="400" y1="120" x2="900" y2="38"  stroke="var(--angle-regulatory)"/>
-          <line data-beam class="beam" x1="400" y1="120" x2="900" y2="79"  stroke="var(--angle-sentiment)"/>
-          <line data-beam class="beam" x1="400" y1="120" x2="900" y2="120" stroke="var(--angle-tech)"/>
-          <line data-beam class="beam" x1="400" y1="120" x2="900" y2="161" stroke="var(--angle-market)"/>
-          <line data-beam class="beam" x1="400" y1="120" x2="900" y2="202" stroke="var(--angle-financial)"/>
-        </g>
-      </svg>
-    </div>
-  </div>
+  <!-- The prism that used to render here is now the site-wide fixed
+       background (see #prism-bg above). Phase (g) step 8 fills this slot with
+       the hero video. -->
 
   <p class="prose">
     A research project, reported as a research project: this tour states what

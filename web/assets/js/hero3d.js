@@ -1,4 +1,8 @@
-/* PrismFlow Part 25 phase (f) step 2 -- the photorealistic glass prism.
+/* PrismFlow Part 25 -- the photorealistic glass prism.
+ *
+ * Built in phase (f) step 2 as the hero mark. Phase (g) step 1 promoted it to
+ * the site-wide fixed background in #prism-bg: same scene, same mount(host, api)
+ * contract, a full-viewport host instead of a 240px-tall stage.
  *
  * WHY THE FIRST ATTEMPT FAILED, AND WHAT IS DIFFERENT HERE
  * --------------------------------------------------------
@@ -93,7 +97,7 @@ export async function mount(host, api) {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const canvas = renderer.domElement;
-  canvas.className = "hero__gl";
+  canvas.className = "prism-bg__gl";
   canvas.setAttribute("aria-hidden", "true");
 
   const scene = new THREE.Scene();

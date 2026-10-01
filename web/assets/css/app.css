@@ -26,7 +26,11 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: -1;
+  /* -2, not -1. Phase (g) put the prism background at -1, and the prism has to
+   * be ABOVE this wash and above the scrim below -- under a 0.84 scrim it is
+   * not a background, it is nothing. The ORDER of these layers is unchanged;
+   * every one of them moved down by one. */
+  z-index: -2;
   background:
     radial-gradient(60rem 40rem at 50% -10%, var(--wash-beam), transparent 60%),
     radial-gradient(40rem 30rem at 8% 20%,  var(--wash-regulatory), transparent 65%),
@@ -636,7 +640,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
 #ambient {
   position: fixed;
   inset: 0;
-  z-index: -2;            /* below body::before, which is -1 */
+  z-index: -3;            /* below body::before, which is -2 */
   pointer-events: none;
   display: block;
 }
@@ -655,27 +659,29 @@ body::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: -1;
+  /* -2 with body::before, and painted after it because ::after is generated
+   * last. So the scrim still covers the ambient canvas and the wash, which is
+   * the whole guarantee. What it no longer covers is #prism-bg at -1: the
+   * prism is governed by --prism-bg-opacity and measured directly against the
+   * text that sits over it, not by this scrim. */
+  z-index: -2;
   pointer-events: none;
   background: var(--scrim);
 }
 
-/* ---- the prism mark ---- */
-.hero__stage { position: relative; }
-.hero__svg { position: relative; display: block; }
-
+/* ---- the prism mark ----
+ * Phase (g): the mark is the site-wide background, not a hero element. These
+ * rules style the SVG wherever it lives; #prism-bg positions it. */
 .beam { stroke-width: 2.2; }
 /* The unbuilt angle keeps its filter while animating. A moving beam must not
  * imply that Regulatory retrieves anything -- it has no connector at all. */
 .beam--regulatory { filter: var(--angle-unbuilt-filter); }
-.beam-trails line { stroke-linecap: round; }
 
 /* Reduced motion: the canvas is removed by JS, the mark keeps its static
  * pose, and nothing here animates. These rules make that explicit rather than
  * relying on the script alone. */
 @media (prefers-reduced-motion: reduce) {
   #ambient { display: none !important; }
-  .beam-trails { display: none !important; }
 }
 
 /* Reveal targets start hidden ONLY while `data-reveal="armed"`.
@@ -859,36 +865,48 @@ body::after {
 .rv-caveats li { margin-bottom: 0.35rem; }
 
 /* ==================================================================
- * The GL prism hero -- phase (f) step 2
+ * The site-wide prism background -- phase (g) step 1
  * ==================================================================
- * The SVG mark is the page's prism. The WebGL canvas is layered over it and
- * the SVG is hidden ONLY once [data-hero="gl"] is set, which motion.js does
- * after mount() has returned a live renderer. Every other path -- no WebGL,
- * reduced motion, a failed import, a throw inside the module -- leaves the
- * attribute unset and the SVG exactly where it was. There is no state in which
- * the hero is blank.
+ * Fixed to the viewport at z-index -1: above the wash and the scrim (both -2),
+ * below every pixel of content. The page scrolls over it.
+ *
+ * The SVG mark is the page's prism and is always in the DOM. The WebGL canvas
+ * is appended into the same box by hero3d.js and the SVG fades out ONLY once
+ * [data-hero="gl"] is set, which motion.js does after mount() has returned a
+ * live renderer. Every other path -- no WebGL, reduced motion, a failed import,
+ * a throw inside the module -- leaves the attribute unset and the static SVG
+ * exactly where it was.
  */
-.hero__stage { position: relative; }
+#prism-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;    /* the cursor drives it, but never eats a click */
+  overflow: hidden;
+}
 
-.hero__gl {
+.prism-bg__svg,
+.prism-bg__gl {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
-  pointer-events: none;   /* the pointer drives it, but never eats a click */
 }
 
-:root[data-hero="gl"] .hero__svg { opacity: 0; }
-/* Not display:none. The SVG keeps its box, so the stage height and the page
- * layout are identical whichever mark is drawn, and nothing shifts when the
- * 3D arrives late. */
-.hero__svg { transition: opacity 420ms ease; }
+/* The static fallback's own opacity. Deliberately lower than the live
+ * renderer's: a flat SVG has no specular falloff, so at the same alpha it is a
+ * harder shape behind text than the glass is. */
+.prism-bg__svg { opacity: 0.15; transition: opacity 420ms ease; }
+:root[data-hero="gl"] .prism-bg__svg { opacity: 0; }
 
 /* Reduced motion never reaches the GL path at all, but if a reader turns it on
- * after load the canvas is left in place holding a still frame rather than
- * disappearing under them. */
+ * after load the canvas is dropped and the static SVG comes back rather than
+ * the background vanishing under them. */
 @media (prefers-reduced-motion: reduce) {
-  :root[data-hero="gl"] .hero__svg { opacity: 1; }
-  .hero__gl { display: none; }
+  :root[data-hero="gl"] .prism-bg__svg { opacity: 0.15; }
+  .prism-bg__gl { display: none; }
 }
