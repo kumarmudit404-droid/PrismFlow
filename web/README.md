@@ -159,6 +159,44 @@ them is therefore part of the measurement, and this note records it.
   harness in this repository has measured the site's actual frame rate on the
   real adapter. It stays **not measured** until a figure is supplied.
 
+### The hero: video removed, text centred, contrast re-measured (2026-10-01)
+
+For one phase the hero held a looping video of the prism. **It was removed for
+visual reasons**, along with its poster, its guard script and its three media
+files. The hero is text only: title, thesis, prose, limits link — the same
+words, unchanged.
+
+With the video gone the hero became three stacked text blocks, so **the text is
+centred**, the thesis' left border bar was replaced by a short centred rule in
+`--accent`, and the hero's bottom padding dropped one step on the spacing scale
+to close the space the video had occupied. Measured: the hero is 745px tall
+where it was 1302px, and the gap to the Chapter 1 label is 132px where it was
+156px.
+
+Removing the video also removed the reason the hero carried `.no-prism-bg`, so
+**the fixed background prism now shows behind the hero text**. That is a
+contrast question, and it was measured rather than assumed — the hero title had
+never been sampled before, because until now there was no prism beneath it:
+
+| region | committed `6ae9645` | now, 1440px | now, 390px |
+|---|---|---|---|
+| hero title | not sampled | 10.40 | **not measured** |
+| hero thesis | 4.94 | 4.89 | 4.88 |
+| hero prose | 9.23 | 9.23 | 9.11 |
+
+Worst anywhere on the page is unchanged at 4.64:1. Every sampled hero region
+holds the 4.5:1 floor, so `--prism-scrim-local` was **not** applied and
+`.no-prism-bg` was **not** restored; `--prism-bg-opacity` stayed at 0.40 and
+`PEAK_LUM` at 0.52.
+
+Two honest limits on that table. The hero title at 390px is **not measured**,
+not a pass — at phone width the title does not overlap the prism and the probe
+reports no changed pixel to sample. And these figures came from the headless
+harness on *Microsoft Basic Render Driver* (WARP), so per the note above they
+are **not like-for-like with the committed Intel UHD figures**. The thinnest
+margin is the thesis at 4.88–4.89 against a 4.5 floor; that is the number most
+worth re-checking on the real adapter.
+
 ## Motion, and the reveal guarantee
 
 The scroll reveals hide real content so it can fade in. Hiding content is only
