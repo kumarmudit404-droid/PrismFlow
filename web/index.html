@@ -114,8 +114,13 @@
            src="media/hero-loop.mp4"
            width="1072" height="368"
            autoplay muted playsinline loop preload="metadata"
+           poster="media/hero-loop-poster.jpg"
            aria-hidden="true"></video>
   </div>
+  <!-- Classic, no defer, HERE and not at the foot of the body: it has to take
+       the autoplay away before the engine can act on it. See the module head
+       for why a deferred script is a race rather than a guarantee. -->
+  <script src="assets/js/hero-video.js"></script>
 
   <p class="prose">
     A research project, reported as a research project: this tour states what
