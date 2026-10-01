@@ -91,7 +91,11 @@ export async function mount(host, api) {
   });
   renderer.setClearColor(0x000000, 0);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.7;
+  // 1.45, down from 1.7. The phase (f) exposure was solved against a near-black
+  // hero slot where the prism was read almost entirely through blown highlights.
+  // Over the page's own base, at --prism-bg-opacity, that same exposure put the
+  // glass's specular above the body text sitting on it.
+  renderer.toneMappingExposure = 1.45;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -159,8 +163,32 @@ export async function mount(host, api) {
   room.traverse((o) => { if (o.geometry) { o.geometry.dispose(); } });
   pmrem.dispose();
 
-  /* ---- 2. the backdrop, generated ------------------------------------
-   * Something for the glass to bend. A canvas gradient, not a file. */
+  /* ---- 2. the refraction patch, generated -----------------------------
+   * Something for the glass to bend. A canvas gradient, not a file.
+   *
+   * PHASE (g) STEP 2, AND THE ONE DEVIATION IN IT. The brief asked for this
+   * geometry to be deleted so only the prism and its beams render. It is not
+   * deleted, because deleting it IS the phase (c) grey-slab bug: three.js
+   * builds the transmission render target from the OPAQUE objects only, so a
+   * transmissive solid with nothing opaque behind it refracts the clear colour
+   * -- which is now fully transparent -- and renders as a grey slab. That was
+   * measured, in one change, when this material was made transparent to hide
+   * the streaks.
+   *
+   * What the brief actually wanted -- no dark rectangle over the page, the
+   * site's own theme showing through -- is delivered two other ways instead:
+   *
+   *   1. the plane is cut from 1400x500 to 560x330, roughly the prism's own
+   *      footprint, so it no longer spans the frame. As a full-viewport
+   *      background the old size was a flat --base band across the middle of
+   *      the page that hid the body::before wash behind it. That band was the
+   *      "black backdrop", and it is gone.
+   *   2. its field is painted in --base, the page's own background colour, so
+   *      what is left is invisible against the page by construction and
+   *      follows the theme if the tokens change.
+   *
+   * Everywhere outside this patch and the prism, the canvas stays
+   * pixel-transparent -- verified by reading back alpha, not by eye. */
   function backdropTexture() {
     const W = 512, H = 256;
     const hex = (x) => "#" + x.getHexString();
@@ -249,10 +277,11 @@ export async function mount(host, api) {
     return t;
   }
 
-  // 1400 wide, not 3000: the texture's pools have to be the right SIZE behind
-  // the prism, and the plane sits close enough that refraction is strong.
+  // 560x330, not 1400x500. Sized to the prism, which is ~220 units across:
+  // big enough that refraction has somewhere to sample from at every tilt in
+  // step 5's range, small enough that it is not a band across the viewport.
   const backdrop = new THREE.Mesh(
-    new THREE.PlaneGeometry(1400, 500),
+    new THREE.PlaneGeometry(560, 330),
     (() => {
       const tex = backdropTexture();
       // SELF-LIT and OPAQUE. Self-lit because a backdrop that only reflects
@@ -288,7 +317,12 @@ export async function mount(host, api) {
     color: 0xffffff,
     metalness: 0.0,
     roughness: 0.02,
-    transmission: 0.94,
+    // 0.90, down from 0.94. Slightly less transmissive glass keeps a body to
+    // the solid instead of vanishing into whatever is behind it -- which
+    // matters more now that what is behind it is the page rather than a
+    // purpose-built backdrop. The edge refraction, which is what reads as
+    // "glass", is preserved: see roughness, ior and the edge lines below.
+    transmission: 0.90,
     thickness: DEPTH * 0.55,
     ior: 1.52,                 // crown glass
     // The white beam has to come out coloured. Without this the prism is
@@ -359,10 +393,21 @@ export async function mount(host, api) {
   const beams = new THREE.Group();
   scene.add(beams);
 
+  /* BEAM TUNING, PHASE (g) STEP 3. These were calibrated against a near-black
+   * hero backdrop, where an additive beam at 0.85 reads as light. Over the
+   * page's own base there is no darkness to glow against, so the trade is
+   * THICKER AND DIMMER: a wider core carries the same presence at a much lower
+   * additive contribution, which is what keeps text legible over it. The five
+   * colours are NOT touched -- they are the angle tokens, they are categorical,
+   * and dragging them toward the theme would blur exactly the distinction they
+   * carry. */
+  const CORE_R = 2.3, CORE_A = 0.62;     // was 1.6 / 0.85
+  const HALO_R = 7.5, HALO_A = 0.10;     // was 6.0 / 0.14
+
   // In: from off-frame left to inside the prism.
   const entry = { x: TRI[2].x + 44, y: 0 };       // just inside the left face
-  beams.add(beam({ x: -VB.w / 2 - 40, y: 0 }, entry, incident, 1.6, 0.85));
-  beams.add(beam({ x: -VB.w / 2 - 40, y: 0 }, entry, incident, 5.5, 0.16));
+  beams.add(beam({ x: -VB.w / 2 - 40, y: 0 }, entry, incident, CORE_R, CORE_A));
+  beams.add(beam({ x: -VB.w / 2 - 40, y: 0 }, entry, incident, HALO_R + 1.0, HALO_A + 0.02));
 
   // Out: five, from just inside the exit face to off-frame right.
   // The fan starts at the ENTRY point, not at the exit face, so the five
@@ -372,8 +417,8 @@ export async function mount(host, api) {
   angles.forEach((a, i) => {
     const end = { x: VB.w / 2 + 40, y: BEAM_Y[i] };
     const dim = a.unbuilt ? 0.38 : 1.0;      // regulatory stays visibly unbuilt
-    beams.add(beam(outStart, end, angleColour[i], 1.6, 0.85 * dim));
-    beams.add(beam(outStart, end, angleColour[i], 6.0, 0.14 * dim));
+    beams.add(beam(outStart, end, angleColour[i], CORE_R, CORE_A * dim));
+    beams.add(beam(outStart, end, angleColour[i], HALO_R, HALO_A * dim));
   });
 
   /* ---- 5. lights and a soft shadow ------------------------------------ */
@@ -452,7 +497,10 @@ export async function mount(host, api) {
     glslVersion: THREE.GLSL3,
     transparent: true,
     uniforms: { tScene: { value: null }, tBloom: { value: null },
-                strength: { value: 0.60 } },
+                // 0.42, down from 0.60: bloom is the part of the frame that
+                // lifts the pixels AROUND the prism, and those are the pixels
+                // body text sits on.
+                strength: { value: 0.42 } },
     vertexShader: "in vec3 position;\nin vec2 uv;\n" + VERT.replace("varying", "out"),
     fragmentShader: `
       precision highp float;

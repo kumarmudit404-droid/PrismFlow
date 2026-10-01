@@ -115,6 +115,21 @@
   --wrong-tint:      rgba(255, 92, 61, 0.10);
   --alert-border:    rgba(255, 92, 61, 0.45);
 
+  /* ---- the prism background ------------------------------------------
+   * How strongly the site-wide prism in #prism-bg shows through. It is a
+   * token and not a number in app.css so the one value that trades "the
+   * prism is visible" against "the text on top of it is legible" can be
+   * retuned without touching code -- and so that what it is set to is
+   * inspectable in the same file as the colours it is measured against.
+   *
+   * THIS VALUE IS MEASURED, NOT CHOSEN. web/check_prism_contrast.py renders
+   * the real page on the real adapter, reads back the composited background
+   * pixels under each sampled text region with the text hidden, and reports
+   * the worst ratio against the text token that sits there. See that script's
+   * output in the phase (g) step 3 commit message for the measurement this
+   * value comes from. */
+  --prism-bg-opacity: 0.40;
+
   /* ---- glass -------------------------------------------------------- */
   --glass-bg:       rgba(32, 24, 17, 0.58);
   --glass-bg-solid: rgba(22, 17, 13, 0.90);
