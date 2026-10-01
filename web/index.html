@@ -75,7 +75,17 @@
 <main>
 
 <!-- ============================ HERO ============================ -->
-<header class="wrap hero">
+<!-- .no-prism-bg: the hero now carries its OWN prism, in video form, so the
+     site-wide fixed prism behind it would be a second copy of the same mark
+     showing through the first. The opt-out is the existing phase (g) step 4
+     mechanism -- an opaque --base layer over this container only; the global
+     renderer keeps running and every section below still shows it.
+
+     It is on the whole header rather than on .hero__video alone because the
+     title and thesis sit in the same box: suppressing the prism under the
+     video but not under the text two lines above it would put a visible edge
+     across the hero. -->
+<header class="wrap hero no-prism-bg">
   <h1 class="hero__title">Agreement is not<br>evidence.</h1>
   <p class="hero__thesis">
     Agreement between views should contribute evidence in proportion to the
