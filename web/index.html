@@ -103,18 +103,29 @@
 
        muted + playsinline are what make autoplay permissible at all; without
        muted every current engine blocks the autoplay and the slot would sit on
-       the poster frame. preload="metadata" fetches the header, not the 112 KB
+       the poster frame. preload="metadata" fetches the header, not the 104 KB
        of frames, so the hero's first paint is not behind the video.
+
+       SOURCE IS THE SEAMLESS CUT. hero-loop.mp4 ends in a different pose than
+       it starts, so its wrap was a hard cut -- measured at 5.07x the clip's
+       own median frame step, the largest transition in the file.
+       hero-loop-seamless.mp4 folds its last 10 frames back over its first 10,
+       which puts the wrap on a consecutive pair of the original footage. The
+       original file stays committed and untouched beside it.
+
+       ?v=2 on both URLs: the poster keeps its filename but its BYTES changed
+       with the clip, so a reader holding the old one cached would otherwise
+       see the previous video's first frame under the new video.
 
        width/height are the file's intrinsic 1072x368 and are present to
        reserve the aspect box before any byte of video arrives, which is what
        stops the prose below it jumping on load. -->
   <div class="hero__video">
     <video id="hero-video" class="hero__video-el"
-           src="media/hero-loop.mp4"
+           src="media/hero-loop-seamless.mp4?v=2"
            width="1072" height="368"
            autoplay muted playsinline loop preload="metadata"
-           poster="media/hero-loop-poster.jpg"
+           poster="media/hero-loop-poster.jpg?v=2"
            aria-hidden="true"></video>
   </div>
   <!-- Classic, no defer, HERE and not at the foot of the body: it has to take
