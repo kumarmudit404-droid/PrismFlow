@@ -85,7 +85,27 @@
 
   <!-- The prism that used to render here is now the site-wide fixed
        background (see #prism-bg above). Phase (g) step 8 fills this slot with
-       the hero video. -->
+       the hero video.
+
+       DECORATIVE, hence aria-hidden: it restates the thesis above it and adds
+       no information a screen reader would otherwise miss. It carries no
+       <track> for the same reason -- there is no audio stream in the file.
+
+       muted + playsinline are what make autoplay permissible at all; without
+       muted every current engine blocks the autoplay and the slot would sit on
+       the poster frame. preload="metadata" fetches the header, not the 112 KB
+       of frames, so the hero's first paint is not behind the video.
+
+       width/height are the file's intrinsic 1072x368 and are present to
+       reserve the aspect box before any byte of video arrives, which is what
+       stops the prose below it jumping on load. -->
+  <div class="hero__video">
+    <video id="hero-video" class="hero__video-el"
+           src="media/hero-loop.mp4"
+           width="1072" height="368"
+           autoplay muted playsinline loop preload="metadata"
+           aria-hidden="true"></video>
+  </div>
 
   <p class="prose">
     A research project, reported as a research project: this tour states what
