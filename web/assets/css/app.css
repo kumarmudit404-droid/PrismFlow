@@ -153,18 +153,55 @@ p { max-width: var(--measure); }
 
 /* ---------- hero ------------------------------------------------------ */
 
-.hero { padding-block: var(--sp-6) var(--sp-5); text-align: left; }
-/* Same title voice as .chapter__title (--font-display, 900, uppercase) --
- * alignment is untouched: .hero is deliberately text-align:left above, and
- * centering wasn't part of this pass. */
+/* padding-block bottom was --sp-5 when the hero held a 368px-tall video. With
+ * the video gone the hero measures 769px where it measured 1302px, and the
+ * trailing space stops reading as breathing room and starts reading as a hole
+ * the video used to fill. Measured: hero padding-bottom 61.36px plus #ch1
+ * padding-top 94.4px put 156px between the limits link and the Chapter 1
+ * label. Dropping to --sp-4 makes that 132px and leaves #ch1's own --sp-6 to
+ * do the section separation, which is what separates every other section.
+ * Top padding is unchanged -- it separates the title from the sticky nav, and
+ * that job did not change. No min-height anywhere: the hero is still sized by
+ * its content. */
+.hero { padding-block: var(--sp-6) var(--sp-4); text-align: center; }
+/* Same title voice as .chapter__title (--font-display, 900, uppercase).
+ * Centred since the hero video was removed: with the video gone the hero is
+ * three stacked text blocks, and a left rag down a short column reads as a
+ * column that lost its illustration. text-align lives on .hero rather than on
+ * each child so the limits link below the prose centres with them instead of
+ * being stranded left under centred text. */
 .hero__title {
   font-family: var(--font-display); font-size: var(--step-4); font-weight: 900;
   line-height: 1.05; letter-spacing: 0.005em; text-transform: uppercase;
   color: var(--text-primary); margin: 0 0 var(--sp-3);
+  /* balance, not pretty: the title is two lines held by an explicit <br>, and
+   * balance keeps the measure even if that <br> ever stops being honoured. */
+  text-wrap: balance;
 }
 .hero__thesis {
   font-size: var(--step-1); color: var(--text-secondary);
-  max-width: 46rem; border-left: 2px solid var(--beam-incident); padding-left: var(--sp-3);
+  max-width: 46rem; margin-inline: auto;
+  text-wrap: balance;
+}
+/* The thesis carried a left border bar, which is an asymmetric mark and reads
+ * as a hanging indent once the text is centred. It is replaced by a short
+ * centred rule above the thesis: same job -- marking the thesis as the one
+ * quoted line in the hero -- without implying a left edge. --accent is a
+ * tokens.css value; no literal colour is introduced. */
+.hero__thesis::before {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 2px;
+  margin: 0 auto var(--sp-3);
+  background: var(--accent);
+}
+/* 62ch keeps the hero prose at a readable measure once it is centred; the
+ * global `p { max-width: var(--measure) }` is a narrower 38rem and would make
+ * the centred block noticeably narrower than the thesis above it. */
+.hero .prose {
+  max-width: 62ch;
+  margin-inline: auto;
 }
 .hero__prism { margin: var(--sp-5) 0; }
 
