@@ -546,9 +546,30 @@
 
     // Arrow keys step rows while the dialog is open, which is how anyone
     // actually reads 48 of these.
+    //
+    // Tab is trapped by hand as well. showModal() is supposed to do this on
+    // its own, but measured directly (real CDP-dispatched Tab keypresses,
+    // not scripted .click()/.focus()): tabbing off the last focusable node
+    // in the body (the <details><summary> warnings list) lands on
+    // document.body for one step before the browser's own cycle recovers --
+    // a real, reproducible gap, not a hypothetical one. This listener makes
+    // the wrap happen on the same keypress instead of one late.
+    var FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), summary';
     dlg.addEventListener("keydown", function (e) {
-      if (e.key === "ArrowRight") { show(current + 1); }
-      else if (e.key === "ArrowLeft") { show(current - 1); }
+      if (e.key === "ArrowRight") { show(current + 1); return; }
+      if (e.key === "ArrowLeft") { show(current - 1); return; }
+      if (e.key !== "Tab") { return; }
+      var nodes = Array.prototype.filter.call(
+        dlg.querySelectorAll(FOCUSABLE),
+        function (n) { return n.offsetParent !== null; } // skip hidden (e.g. inside a closed <details>)
+      );
+      if (!nodes.length) { return; }
+      var first = nodes[0], last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
     });
 
     return show;
