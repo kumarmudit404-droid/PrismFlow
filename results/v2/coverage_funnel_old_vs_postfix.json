@@ -1,0 +1,225 @@
+{
+  "title": "Per-angle retrieval funnel, pre-fix vs post-fix",
+  "is_part24_evidence": false,
+  "standing": "DIAGNOSTIC. One pass per run, seeds: null, Groq openai/gpt-oss-120b through the OpenAIReasoner code path, offline LexicalAdjudicator. NOT A PART 24 FINDING under docs/CONTRACT.md section 5.",
+  "stage_order": [
+    "configured",
+    "retrieved",
+    "reasoner_ran",
+    "reasoner_errored",
+    "claims"
+  ],
+  "record_count_note": "records_retrieved is post-dedup/pre-budget (sum of provenance); records_in_context is post-budget (len(ranked_records)), i.e. what the reasoner saw. They are different quantities -- do not add or conflate them.",
+  "stage_labels": {
+    "configured": "connector configured",
+    "retrieved": "retrieved >=1 record",
+    "reasoner_ran": "reasoner ran",
+    "reasoner_errored": "reasoner errored (provider failure)",
+    "claims": "produced >=1 claim"
+  },
+  "angle_order": [
+    "tech",
+    "market",
+    "financial",
+    "regulatory",
+    "sentiment"
+  ],
+  "denominator": 48,
+  "runs": {
+    "prefix": {
+      "caption": "Pre-fix: committed 48-row run, before the Part 19 / V2-L2 GitHub fix",
+      "source": "results/v2/part24_pipeline_verification.json",
+      "sha256": "d834a2a0736979d4dd2dbddb8753927081c3ac618f93607ab6b9e105735db4d5",
+      "n_rows": 48,
+      "passes": 1,
+      "seeds": null,
+      "is_part24_evidence": false,
+      "rows_reaching_two_claim_angles": [],
+      "angles": {
+        "tech": {
+          "configured": 48,
+          "retrieved": 48,
+          "reasoner_ran": 48,
+          "reasoner_errored": 27,
+          "claims": 19,
+          "records_retrieved": 480,
+          "records_in_context": 480,
+          "records_dropped_by_budget": 0,
+          "rows_with_oversize_records": 0,
+          "connectors": {
+            "github": {
+              "records_retrieved": 0,
+              "rows_with_records": 0
+            },
+            "arxiv": {
+              "records_retrieved": 480,
+              "rows_with_records": 48
+            }
+          }
+        },
+        "market": {
+          "configured": 48,
+          "retrieved": 6,
+          "reasoner_ran": 6,
+          "reasoner_errored": 5,
+          "claims": 1,
+          "records_retrieved": 10,
+          "records_in_context": 10,
+          "records_dropped_by_budget": 0,
+          "rows_with_oversize_records": 0,
+          "connectors": {
+            "newsapi": {
+              "records_retrieved": 10,
+              "rows_with_records": 6
+            }
+          }
+        },
+        "financial": {
+          "configured": 48,
+          "retrieved": 0,
+          "reasoner_ran": 0,
+          "reasoner_errored": 0,
+          "claims": 0,
+          "records_retrieved": 0,
+          "records_in_context": 0,
+          "records_dropped_by_budget": 0,
+          "rows_with_oversize_records": 0,
+          "connectors": {
+            "yfinance": {
+              "records_retrieved": 0,
+              "rows_with_records": 0
+            }
+          }
+        },
+        "regulatory": {
+          "configured": 0,
+          "retrieved": 0,
+          "reasoner_ran": 0,
+          "reasoner_errored": 0,
+          "claims": 0,
+          "records_retrieved": 0,
+          "records_in_context": 0,
+          "records_dropped_by_budget": 0,
+          "rows_with_oversize_records": 0,
+          "connectors": {}
+        },
+        "sentiment": {
+          "configured": 48,
+          "retrieved": 1,
+          "reasoner_ran": 1,
+          "reasoner_errored": 0,
+          "claims": 0,
+          "records_retrieved": 3,
+          "records_in_context": 3,
+          "records_dropped_by_budget": 0,
+          "rows_with_oversize_records": 0,
+          "connectors": {
+            "stackexchange": {
+              "records_retrieved": 3,
+              "rows_with_records": 1
+            }
+          }
+        }
+      }
+    },
+    "postfix": {
+      "caption": "Post-fix: 48-row re-run on current connector code, 2026-10-01",
+      "source": "results/v2/part24_pipeline_verification_postfix.json",
+      "sha256": "9630bca4db850233068f2e49657def34d0e9e71f8bf9234150e59b93e4cb25f2",
+      "n_rows": 48,
+      "passes": 1,
+      "seeds": null,
+      "is_part24_evidence": false,
+      "rows_reaching_two_claim_angles": [
+        "032",
+        "044"
+      ],
+      "angles": {
+        "tech": {
+          "configured": 48,
+          "retrieved": 44,
+          "reasoner_ran": 44,
+          "reasoner_errored": 1,
+          "claims": 42,
+          "records_retrieved": 440,
+          "records_in_context": 387,
+          "records_dropped_by_budget": 53,
+          "rows_with_oversize_records": 19,
+          "connectors": {
+            "github": {
+              "records_retrieved": 407,
+              "rows_with_records": 44
+            },
+            "arxiv": {
+              "records_retrieved": 33,
+              "rows_with_records": 5
+            }
+          }
+        },
+        "market": {
+          "configured": 48,
+          "retrieved": 6,
+          "reasoner_ran": 6,
+          "reasoner_errored": 1,
+          "claims": 2,
+          "records_retrieved": 11,
+          "records_in_context": 11,
+          "records_dropped_by_budget": 0,
+          "rows_with_oversize_records": 0,
+          "connectors": {
+            "newsapi": {
+              "records_retrieved": 11,
+              "rows_with_records": 6
+            }
+          }
+        },
+        "financial": {
+          "configured": 48,
+          "retrieved": 0,
+          "reasoner_ran": 0,
+          "reasoner_errored": 0,
+          "claims": 0,
+          "records_retrieved": 0,
+          "records_in_context": 0,
+          "records_dropped_by_budget": 0,
+          "rows_with_oversize_records": 0,
+          "connectors": {
+            "yfinance": {
+              "records_retrieved": 0,
+              "rows_with_records": 0
+            }
+          }
+        },
+        "regulatory": {
+          "configured": 0,
+          "retrieved": 0,
+          "reasoner_ran": 0,
+          "reasoner_errored": 0,
+          "claims": 0,
+          "records_retrieved": 0,
+          "records_in_context": 0,
+          "records_dropped_by_budget": 0,
+          "rows_with_oversize_records": 0,
+          "connectors": {}
+        },
+        "sentiment": {
+          "configured": 48,
+          "retrieved": 1,
+          "reasoner_ran": 1,
+          "reasoner_errored": 0,
+          "claims": 0,
+          "records_retrieved": 3,
+          "records_in_context": 3,
+          "records_dropped_by_budget": 0,
+          "rows_with_oversize_records": 0,
+          "connectors": {
+            "stackexchange": {
+              "records_retrieved": 3,
+              "rows_with_records": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}
