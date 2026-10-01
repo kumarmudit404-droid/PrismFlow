@@ -1,17 +1,24 @@
 # PrismFlow — Part 25 platform
 
-One site holding both V1 and V2, as a narrative-first guided tour in five
-chapters, with Known Limitations as a first-class section linked from every one.
+One static site holding both V1 and V2, as a narrative-first guided tour in
+five chapters, with Known Limitations as a first-class section linked from every
+one, plus a separate Scores page that puts every committed number in one place.
 
     python web/build_data.py   # copy committed results into web/data/
     python web/serve.py        # http://127.0.0.1:825
+
+`web/EDITING.md` is the map of the codebase: what each file does, which files
+are generated, and the standing rules. Read it before editing anything here.
 
 ## What this is, and what it is not
 
 **Presentation only.** No experiment runs here, no metric is computed here, and
 no pipeline code is touched. `app.py` is the V1 Streamlit app, frozen under
-`v1-final`, and this directory does not import from it, modify it, or replace
-it. The two can run side by side.
+`v1-final`, and this directory does not import from it at request time, modify
+it, or replace it. The two can run side by side. The one place `app.py` is
+imported is `web/build_v1.py`, an offline build step that runs the app's own
+engine functions ahead of time so the site can show the app's real outputs
+without training anything in a browser.
 
 ## Rules this site is built to
 
@@ -22,56 +29,134 @@ it. The two can run side by side.
    that ECE and Brier *cannot* be computed yet, and a site that quietly filled
    those cells would be lying about the project's central result.
 2. **No API calls, ever, and no credential in the bundle.** The site is static.
-   `serve.py` sets a `connect-src 'self'` CSP so a stray external request fails
-   loudly rather than silently becoming an undeclared dependency.
+   `serve.py` sets `default-src 'self'; script-src 'self'; connect-src 'self'`
+   (plus `img-src 'self' data:` and inline styles) so a stray external request
+   fails loudly rather than silently becoming an undeclared dependency.
 3. **The document root is `web/`, not the repository root** — `.env` holds real
-   keys and must not be one URL away from a browser. Phase (b) copies the
-   specific committed JSON the charts need into `web/data/`.
+   keys and must not be one URL away from a browser. `build_data.py` copies the
+   specific committed JSON the charts need into `web/data/`, so "which files can
+   this site read" is answered by listing one folder.
+4. **No CDN and no runtime download.** anime.js and three.js are vendored under
+   `assets/vendor/`; see `assets/vendor/README.md` for versions and licences.
+   The display typeface is a system font stack, not a downloaded file.
 
-## Layout
+## The five chapters, and what else is on the site
 
-    web/
-      index.html            five chapters + the limitations hub
-      assets/css/tokens.css palette and type scale -- the only place colour lives
-      assets/css/app.css    layout and components
-      assets/js/main.js     nav state + reduced-motion-aware reveal
-      serve.py              loopback static server, web/ only
-      build_data.py         the copy step: committed results -> web/data/
-      assets/js/charts.js   the three data views
-      data/                 the ONLY files the site can read, each sha256-stamped
+`index.html` carries all six sections in document order; the sticky nav links
+each one.
 
-## The palette
+| section | id | what it holds |
+|---|---|---|
+| Chapter 1 | `#ch1` | the problem, and the scope callout quoted from `docs/CONTRACT.md` |
+| Chapter 2 | `#ch2` | V1 — what the synthetic experiments showed |
+| Chapter 3 | `#ch3` | V2's challenge — real evidence, and the connector reality |
+| Chapter 4 | `#ch4` | results, and what could not be measured |
+| Chapter 5 | `#ch5` | interactive exploration (seven views, listed below) |
+| Known limitations | `#limits` | the hub: V1's L1–L15 and V2's V2-L1 onwards, in full |
 
-The repository contains **no logo**, and none was invented. The palette is
-derived from the product's own thesis — one beam refracting into five angle
-colours — and then measured:
+Chapter 5's views, in page order: the V1 engine run per scenario; the committed
+V1 experiment figures; ENIV under duplication (k copies × ρ); attack success on
+its own axes; every condition where PrismFlow lost to the baseline; the V2
+evaluation dataset, all 48 rows; and per-row angle coverage over those rows.
+
+`scores.html` is a second page sharing the same stylesheet, nav and mount-point
+pattern. It holds KPI cards plus six filterable panels — V2 dataset composition
+by domain, V2 per-angle retrieval coverage, real failures (V1 conditions
+PrismFlow lost and V2 zero-claim rows), V1 attack success, V1 calibration under
+duplication, and V1 ENIV under duplication. Filters are domain / angle / system;
+a panel a filter does not apply to ignores it rather than guessing.
+
+### The limitations hub is the only full copy
+
+The entries are read from `docs/KNOWN_LIMITATIONS.md` and
+`docs/v2-known-limitations.md` at build time, never retyped, so an entry
+resolved in the document cannot stay open on the page. The chapters carry a
+short status line and a link; the hub prints the entries.
+
+### The dataset table
+
+Chapter 5's dataset table is all 48 rows of `data/v2/evaluation_queries.json` —
+the derived file the Part 24 harness actually loads — filterable, sortable and
+searchable, with every ground-truth source as a link a reader can open and
+check. The Part 24 workbook (`data/v2/part24_labeled_dataset.xlsx`) is offered
+separately as a download so the two can be compared; both carry a sha256. The
+table holds **no** prediction, score or calibration column, because none has
+been computed on these rows. That is V2-L6. Row 040 is absent, and the footer
+explains why in the words of the commit that left it out.
+
+## The theme
+
+Variant B, **"dark ember"**: a warm near-black base with an orange UI accent and
+five categorical angle colours in spectral order. It was chosen in phase (f)
+step 1 over a light variant, which is kept at `assets/css/tokens-a-light.css` so
+the choice stays inspectable; `theme_preview.html` still shows both side by
+side.
+
+**Colour lives in `assets/css/tokens.css` and nowhere else.** That was
+aspirational until phase (f), which found 13 colour literals in `app.css` and 2
+in `index.html` — one of them the page background itself. All are tokens now,
+and `python web/check_palette.py` gates the result.
+
+Orange is **UI chrome only**: base, surfaces, nav, buttons, links, focus rings.
+A data colour is never an orange, so a measured value can never be mistaken for
+a control.
+
+Measured by `python web/check_palette.py` on the applied palette:
 
 | | |
 |---|---|
-| angle colours vs base | all ≥ 3:1 |
-| body text vs base | all ≥ 4.5:1 |
-| worst greyscale pair | 1.39 (target ≥ 1.25) |
-| worst simulated-CVD distance | 8.3 (target ≥ 8), across deuteranopia, protanopia and tritanopia |
+| angle colours vs base | all ≥ 3:1 (worst 3.30, regulatory) — **gated** |
+| body text vs base | all ≥ 4.5:1 (worst 5.01, `--text-muted`) — **gated** |
+| `--accent-ink` on `--accent` | 7.20:1 — **gated** |
+| luminance staircase, spectral order | monotonic — **gated** |
+| worst adjacent luminance step | 1.32:1 (sentiment / tech) — reported |
+| worst simulated-CVD separation | 11.01 CIEDE2000 (tritanopia, tech / market), across deuteranopia, protanopia and tritanopia — reported |
+| `--status-not-measured` | the lowest-chroma, lowest-contrast token in the system — **gated** |
 
-The five angles form a monotonic **luminance staircase** in spectral order, so
-they remain distinguishable in greyscale, in print, and under colour-vision
+White on the bright orange accent fails at 2.60:1, which is why every orange
+fill carries dark ink. The five angles form a monotonic **luminance staircase**,
+so they remain distinguishable in greyscale, in print, and under colour-vision
 deficiency — not merely on a good monitor. Regulatory is both the darkest and
 rendered desaturated, because it is the angle with no connector: the fact is
 visible before you read a word.
 
-Status colours are **never the only encoder**. `provider error` sits at 1.03
-greyscale ratio to the Sentiment angle, so every status also carries a text
-label, and charts add a hatch.
+Status colours are **never the only encoder**. `provider error` sits close to
+the Sentiment angle in greyscale, so every status also carries a text label, and
+charts add a hatch.
 
-## Build phases
+## Motion, and the reveal guarantee
 
-- **(a) done** — tokens, chapter skeleton, real text pulled from the docs.
-- **(b) done** — three views wired to committed JSON only.
-- **(c)** — anime.js transitions and the single ray-traced hero.
-- **(d)** — accessibility and performance pass, plus a key-leak grep of the
-  build output for `sk-`, `gsk_` and the NewsAPI key pattern.
+The scroll reveals hide real content so it can fade in. Hiding content is only
+defensible if something guarantees it comes back, and that guarantee cannot live
+in `motion.js`, because the failure it exists to survive *is* `motion.js` dying.
+`assets/js/reveal-failsafe.js` is therefore a separate classic script, loaded
+first in `<head>`: it owns the `data-reveal="armed"` attribute that CSS hides
+against, and the 5s deadline that clears it. No un-hider loaded means no hiding,
+so a missing or broken failsafe costs the fade, never the content.
 
-## The join phase (b) could not make
+The glass prism hero is optional and lazy. `three.js` (2.1 MB) is imported
+dynamically only when the hero is near the viewport **and** a WebGL 2 context is
+actually obtained **and** motion is not reduced. Any failure leaves the static
+SVG mark exactly where it is. Phase (c) built this hero and dropped it because
+it rendered as an opaque grey slab; phase (f) fixed the cause — a transmissive
+material with no environment map and nothing opaque behind it to refract — and
+restored it. The whole explanation is at the top of `assets/js/hero3d.js`.
+
+## What was dropped, and why
+
+- **Liquid-glass buttons** (phase (f) step 3, a port of
+  `kunal-chaudhary-design/liquid-buttons`). Built mid-session without
+  authorisation and with none of the verification the hero got; verified on
+  request, then **removed entirely** by the user's decision. Commit `21f3c95`
+  reverted `motion.js`, `index.html`, `app.css` and `vendor/README.md` to their
+  exact pre-feature content (zero diff) and deleted the two untracked files.
+  Nothing on the site references `.liquid-btn`, `#liquid-stage` or
+  `liquid_glass.js`. The site has exactly one WebGL feature: the hero prism.
+- **The attack-success colour channel on the ENIV surface** — see below.
+- **A logo.** The repository contains none and none was invented; the product's
+  own prism *is* the mark.
+
+## The join the brief asked for does not exist
 
 The brief asked for the V1 surface "coloured by attack success". That colour
 channel is not rendered, because no committed file supports it:
@@ -97,3 +182,69 @@ In the committed pass, **no row reached two angles**, so no row has an ENIV.
 All 48 cells render `not measured`. That is the finding (V2-L6), not a gap in
 the wiring — and it is exactly the case the "never show a guessed value" rule
 exists for.
+
+## How to edit this
+
+**The five chapters** are hand-authored HTML in `web/index.html`, one
+`<section class="chapter wrap" id="chN">` each, in document order, with the
+limitations hub last. The Scores page is `web/scores.html`. Both are plain HTML:
+every dynamic view is an empty mount point (`<div class="placeholder"
+id="...">`) that a renderer in `assets/js/` fills. Change the copy in the HTML;
+change a number by changing the committed result file it comes from and
+re-running the build.
+
+**Colour lives in `assets/css/tokens.css` only.** Nothing else hardcodes a
+colour — not `app.css`, not `index.html`, not any `.js` file, which read tokens
+at runtime through `getComputedStyle`. After any change there:
+
+    python web/check_palette.py            # measures the applied palette
+    python web/check_palette.py web/assets/css/tokens-a-light.css   # or a candidate
+
+**After changing a committed result** under `results/` or `data/v2/`, re-run the
+copy step, which re-stamps every sha256 and re-runs the credential patterns over
+everything it emits:
+
+    python web/build_data.py
+
+Never hand-edit `web/data/*.json` — `build_data.py` overwrites it. If a V1
+scenario output needs to change, re-run `python web/build_v1.py`, which drives
+`app.py`'s own engine functions at a recorded seed.
+
+**Before committing any change here**, start the server and run both checks:
+
+    python web/serve.py                                   # in one terminal
+    .venv\Scripts\python.exe web/verify_page.py reveal    # 8 conditions, expect 0 hidden
+
+    # key-leak scan over everything the server can serve
+    grep -rn -E "sk-[A-Za-z0-9]{8,}|gsk_[A-Za-z0-9]{8,}|AIza[0-9A-Za-z_-]{20,}|\b[0-9a-f]{32}\b" \
+      --include=*.html --include=*.js --include=*.css --include=*.json --include=*.py web/
+
+The reveal matrix injects eight faults before the page's own scripts run —
+baseline, a throw right after `data-motion` is set, a failed anime.js import,
+`motion.js` missing, `requestAnimationFrame` never firing, no
+`IntersectionObserver`, `reveal-failsafe.js` missing, and
+`prefers-reduced-motion: reduce` — and passes only if no reveal target is left
+at computed opacity 0 after the deadline. The key-leak scan must return zero
+hits. `verify_page.py` also has `shot`, `eval`, `gpu` and `gpushot` for
+screenshots and real-adapter checks; run it with no arguments for usage.
+
+## Build phases, as built
+
+- **(a) done** — tokens, chapter skeleton, real text pulled from the docs.
+- **(b) done** — the data views wired to committed JSON only.
+- **(c) done** — anime.js reveals, the ambient canvas, the reveal failsafe. The
+  ray-traced hero was attempted here and dropped.
+- **(d) done** — accessibility and performance pass, and the headless harness
+  (`verify_page.py`) the later phases are verified with.
+- **(e) done** — the V1 engine's own outputs, the committed figures, the real
+  failures, the 48-row dataset table, and one copy of the limitations read from
+  the documents.
+- **(f) done** — the dark-ember theme with colour actually moved into
+  `tokens.css`, the glass prism hero fixed and restored, the Scores page, and
+  the liquid-glass buttons built, verified and then removed.
+
+## Credit
+
+The site was built with [Claude Code](https://claude.com/claude-code) as the
+development tool, across the phases listed above. The commit history records
+which phase and which model produced each change.
