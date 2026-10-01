@@ -96,6 +96,11 @@
 
   /* ---- surfaces that carry their own alpha ---------------------------- */
   --scrim:           rgba(12, 9, 7, 0.84);
+  /* The LOCAL scrim, behind the few --text-muted blocks that sit over the
+   * prism. 0.80, and that number is measured rather than picked: at 0.70 the
+   * worst of them held 4.29:1 and at 0.75 it held 4.42:1, both short of the
+   * 4.5:1 floor; 0.80 holds 4.53:1. See app.css for which blocks carry it. */
+  --prism-scrim-local: rgba(12, 9, 7, 0.80);
   --nav-bg:          rgba(12, 9, 7, 0.92);
   --dialog-backdrop: rgba(12, 9, 7, 0.72);
 

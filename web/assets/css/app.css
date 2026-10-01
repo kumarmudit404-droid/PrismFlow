@@ -1020,3 +1020,49 @@ pre::before,
  * around it is what actually carries the layer -- .table-wrap is on every
  * generated table and the static one is wrapped the same way. The `table`
  * entry above stays as the belt to that braces. */
+
+/* ==================================================================
+ * The LOCAL scrim -- phase (g), for --text-muted over the prism
+ * ==================================================================
+ * The beam peak cap in hero3d.js holds 4.5:1 for --text-primary (measured
+ * 8.99-9.23:1) and --text-secondary (4.82-4.94:1). It does NOT hold it for
+ * --text-muted, which has only 4.83:1 of headroom on --base before the prism
+ * contributes anything: measured 2.54:1 on desktop and 2.47:1 at 390px.
+ *
+ * The opacity is NOT lowered to fix that and prose is NOT opted out of the
+ * prism. Instead these specific blocks -- and only these -- carry a local
+ * scrim of the page's own base colour at --prism-scrim-local.
+ *
+ * THE FOUR BLOCKS, and why only these four: every other --text-muted rule in
+ * this file is inside a container that already opts out above (.placeholder
+ * mounts, .table-wrap, .panel, .verbatim, and the generated .stat__src,
+ * .notmeasured, .pm, .legend__note, .cov-table and .detail__* families), so
+ * no prism pixel reaches them. These four sit directly over it:
+ *
+ *   .chapter__num   the "Chapter N" label above every chapter title, and the
+ *                   one the measurement caught as #ch4 p
+ *   .src            the source-file citation lines under prose
+ *   .axis-note      the small monospace notes, e.g. #limits-note
+ *   .site-foot      the footer
+ */
+.chapter__num,
+.src,
+.axis-note,
+.site-foot {
+  position: relative;
+  isolation: isolate;
+}
+
+.chapter__num::before,
+.src::before,
+.axis-note::before,
+.site-foot::before {
+  content: "";
+  position: absolute;
+  /* Bled out slightly: a scrim exactly on the text box leaves the glyph
+   * edges sitting on unscrimmed pixels. */
+  inset: -0.2em -0.45em;
+  z-index: -1;
+  background: var(--prism-scrim-local);
+  pointer-events: none;
+}

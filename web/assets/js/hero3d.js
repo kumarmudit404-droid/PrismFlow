@@ -493,6 +493,45 @@ export async function mount(host, api) {
       }`,
   });
 
+  /* THE PEAK CAP -- phase (g), and the reason this file was re-tuned twice.
+   *
+   * Lowering --prism-bg-opacity cannot hold a contrast floor here, and that is
+   * arithmetic rather than opinion. Compositing is linear in sRGB VALUES, so a
+   * canvas pixel P over the page base B (--base, value 12) lands at
+   * a*P + (1-a)*B. The beams are additive and their cores reached 255, so at
+   * a = 0.40 the worst background under text was measured at luminance 0.151 --
+   * and --text-muted (#8E7D6C, L 0.215) needs that below 0.0089 to hold 4.5:1.
+   * Getting there by opacity alone needs a ~ 0.02, which is an invisible prism.
+   *
+   * So the peak is capped where it is produced instead. maxLum bounds the
+   * LUMINANCE of every pixel this canvas emits -- beams, bloom, glass specular
+   * and all -- by scaling the colour down rather than clipping a channel, so
+   * hue is preserved and the five angle colours stay exactly where tokens.css
+   * put them. The halo is below the cap already and is untouched: it is what
+   * carries the prism's presence once the core can no longer blow out.
+   *
+   * THE VALUE IS DERIVED, THEN MEASURED. For a text colour of luminance Lt to
+   * hold 4.5:1, the background must sit at or below (Lt + 0.05)/4.5 - 0.05.
+   * Inverting the composite at a = 0.40 over B = 12 gives the ceiling on P:
+   *
+   *   --text-primary   #FBF4EC  L 0.904  ->  P <= 1.00 (never the binding case)
+   *   --text-secondary #C4B3A2  L 0.466  ->  P <= 0.63
+   *   --text-muted     #8E7D6C  L 0.215  ->  P <= 0.16
+   *
+   * THE DERIVATION IS A STARTING POINT, NOT THE ANSWER. Measured, 0.63 gave
+   * --text-secondary 4.11:1, not the 4.5:1 the arithmetic predicted: the page
+   * under the prism is not bare --base (the body::before wash sits there too)
+   * and the composite shader's output is not exactly display-referred. So the
+   * cap was solved against the measurement instead -- 0.52 -- and the model
+   * above is kept only to show which text colour is the binding one.
+   *
+   * 0.52 holds the floor for primary and secondary body text, which is what
+   * sits over the prism in prose. --text-muted needs ~0.16, which would leave
+   * the prism effectively invisible everywhere in order to fix the handful of
+   * blocks that use it -- so those blocks get a local scrim in app.css
+   * instead, and each one is named there. */
+  const PEAK_LUM = 0.52;
+
   const compMat = new THREE.RawShaderMaterial({
     glslVersion: THREE.GLSL3,
     transparent: true,
@@ -500,19 +539,29 @@ export async function mount(host, api) {
                 // 0.42, down from 0.60: bloom is the part of the frame that
                 // lifts the pixels AROUND the prism, and those are the pixels
                 // body text sits on.
-                strength: { value: 0.42 } },
+                strength: { value: 0.42 },
+                maxLum: { value: PEAK_LUM } },
     vertexShader: "in vec3 position;\nin vec2 uv;\n" + VERT.replace("varying", "out"),
     fragmentShader: `
       precision highp float;
       in vec2 vUv; out vec4 fragColor;
       uniform sampler2D tScene; uniform sampler2D tBloom; uniform float strength;
+      uniform float maxLum;
       void main() {
         vec4 s = texture(tScene, vUv);
         vec3 b = texture(tBloom, vUv).rgb * strength;
+        vec3 c = s.rgb + b;
+        // THE PEAK CAP. Scale the whole colour, never clip a channel: clipping
+        // the brightest channel shifts the hue, and these hues are the five
+        // angle tokens. Pixels already under the cap are returned untouched,
+        // so the halo and the glass body are not dimmed -- only the cores and
+        // specular highlights that were blowing past the contrast floor.
+        float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+        if (l > maxLum) { c *= maxLum / l; }
         // The canvas is transparent over the page, so the glow has to carry
         // its own alpha or it would only show where the scene already is.
         float ba = clamp(dot(b, vec3(0.2126, 0.7152, 0.0722)), 0.0, 1.0);
-        fragColor = vec4(s.rgb + b, clamp(s.a + ba, 0.0, 1.0));
+        fragColor = vec4(c, clamp(s.a + ba, 0.0, 1.0));
       }`,
   });
 

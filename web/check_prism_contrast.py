@@ -60,7 +60,7 @@ REGIONS = [
     ("#ch1 .prose p", "mid-page prose, the most common case"),
     ("#ch3 .prose p", "mid-page prose, further down"),
     ("#ch4 p", "prose immediately before the results views"),
-    ("#limits p", "limitations hub prose"),
+    ("#limits .chapter__lede", "limitations hub opener"),
     (".site-nav__brand", "sticky nav, which the prism scrolls under"),
 ]
 
@@ -172,14 +172,33 @@ def main() -> int:
             print("%-34s %-9s %-10s %-6s %s" % ("region", "worst", "text", "px", "verdict"))
 
             for selector, why in REGIONS:
+                # SCROLL FIRST, READ THE RECT AFTERWARDS -- two separate
+                # evaluations with a wait between them.
+                #
+                # app.css:5 sets `html { scroll-behavior: smooth }`, so
+                # scrollIntoView ANIMATES. Reading getBoundingClientRect in the
+                # same evaluation returns the element's PRE-SCROLL position,
+                # which for anything below the fold is off-screen; the crop box
+                # was then clamped to nothing and the region reported "0 pixels
+                # changed". That is where every inconsistent reading in this
+                # script's earlier output came from -- not from the prism.
+                found = b.js(
+                    "(() => { const e = document.querySelector("
+                    + json.dumps(selector) + "); if (!e) return 'no';"
+                    " e.scrollIntoView({block: 'center'}); return 'yes'; })()")
+                if found != "yes":
+                    print("%-34s %s" % (selector[:34],
+                                        "selector not present -- not measured"))
+                    continue
+                time.sleep(1.2)          # the smooth scroll has to land
                 box = b.js(
                     "(() => { const e = document.querySelector("
                     + json.dumps(selector) + "); if (!e) return null;"
-                    " e.scrollIntoView({block: 'center'});"
                     " const r = e.getBoundingClientRect();"
                     " return JSON.stringify({x: Math.max(0, Math.floor(r.left)),"
                     " y: Math.max(0, Math.floor(r.top)), w: Math.ceil(r.width),"
-                    " h: Math.ceil(r.height)}); })()")
+                    " h: Math.ceil(Math.min(r.height, innerHeight - r.top))});"
+                    " })()")
                 if not box or selector not in colours:
                     print("%-34s %s" % (selector[:34],
                                         "selector not present -- not measured"))
@@ -213,11 +232,10 @@ def main() -> int:
                                         "off-screen -- not measured"))
                     continue
 
-                # Let the reveals this scroll just triggered finish. Without
-                # this the control below sees anime.js mid-fade, marks the
-                # whole block unstable and excludes the entire region -- which
-                # is why several regions reported "0 pixels changed".
-                time.sleep(1.8)
+                # Let the reveals this scroll just triggered finish, or the
+                # control below sees anime.js mid-fade and marks the whole
+                # block unstable.
+                time.sleep(1.4)
                 b.js("document.getElementById('prism-bg').style.display = 'none'")
                 time.sleep(0.35)
                 without = _shot_crop(b, r)
@@ -273,8 +291,9 @@ def main() -> int:
 
                 if brightest < 0:
                     print("%-34s %s" % (selector[:34],
-                                        "prism does not reach this region "
-                                        "(0 pixels changed) -- nothing to measure"))
+                                        "prism changes no pixel in this box "
+                                        "(%d excluded as unstable) -- nothing "
+                                        "to measure" % len(unstable)))
                     continue
 
                 cr = ratio(text_lum, brightest)
