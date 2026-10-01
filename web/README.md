@@ -124,6 +124,41 @@ Status colours are **never the only encoder**. `provider error` sits close to
 the Sentiment angle in greyscale, so every status also carries a text label, and
 charts add a hatch.
 
+### Which adapter the prism contrast figures were measured on (2026-10-01)
+
+The table above is `check_palette.py` on the flat palette. A second, separate
+measurement governs text sitting over the animated prism background:
+`check_prism_contrast.py`, whose figures are recorded in commit `6ae9645`
+(beam-peak cap `PEAK_LUM = 0.52`, `--prism-bg-opacity` held at 0.40, worst
+sampled region 4.63:1). Those figures are GPU-dependent, because the quantity
+measured is the luminance of a rendered WebGL frame. Which adapter produced
+them is therefore part of the measurement, and this note records it.
+
+- **The committed figures in `6ae9645` were measured on ANGLE / Intel UHD
+  Graphics, hardware accelerated.** That is the run the 4.63:1 worst case and
+  the whole before/after table come from.
+
+- **The developer's normal Edge reports the same adapter.** Per an
+  `edge://gpu` export taken 2026-10-01: WebGL hardware accelerated on Intel UHD
+  Graphics, driver `32.0.101.5972`, display at 60 Hz. Recorded here as reported
+  by that export; it was not produced by any harness in this repository.
+
+- **The headless harness does not currently reach that adapter.**
+  `verify_page.py`'s `Browser(gpu=True)` falls back to *Microsoft Basic Render
+  Driver* (WARP), a software rasteriser, and reports it in the unmasked
+  renderer string. A later contrast re-run was measured there. It is labelled
+  **"consistent with no regression" and is NOT a replacement** for the
+  committed table — a software rasteriser is not evidence about what the real
+  adapter draws, which is the distinction `verify_page.py`'s own docstring
+  already makes load-bearing. The committed `6ae9645` figures remain the only
+  like-for-like contrast record.
+
+- **Frame rate in the real browser: not measured.** The 60 Hz above is the
+  display refresh rate the `edge://gpu` export states, not an achieved frame
+  rate — the two are not the same number and should not be read as one. No
+  harness in this repository has measured the site's actual frame rate on the
+  real adapter. It stays **not measured** until a figure is supplied.
+
 ## Motion, and the reveal guarantee
 
 The scroll reveals hide real content so it can fade in. Hiding content is only
