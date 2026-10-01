@@ -931,3 +931,92 @@ body::after {
   :root[data-hero="gl"] .prism-bg__svg { opacity: 0.15; }
   .prism-bg__gl { display: none; }
 }
+
+/* ==================================================================
+ * .no-prism-bg -- the section-level opt-out, phase (g) step 4
+ * ==================================================================
+ * An opaque layer of the page's own base colour over just this container,
+ * suppressing the prism beneath it. The global canvas KEEPS RUNNING: every
+ * other section still shows it, and tearing the renderer down and back up as
+ * a reader scrolls past a table would be both slower and visible.
+ *
+ * HOW IT IS LAYERED. `isolation: isolate` makes the container its own stacking
+ * context, so the ::before at z-index -1 is the bottom-most layer INSIDE that
+ * context -- above #prism-bg at the root's -1, below the container's own
+ * content. No z-index is put on any child, which is what keeps sticky table
+ * headers and the dialog layer working exactly as they did.
+ *
+ * WHAT IT IS APPLIED TO, and why it is applied by ID as well as by class:
+ * every renderer in assets/js clears `host.className` before it fills a mount
+ * point, so a class written on a .placeholder div in the HTML does not survive
+ * the first render. The mount points are therefore matched by their IDs, which
+ * are stable, and the containers the renderers CREATE are matched by the
+ * classes they create them with.
+ *
+ * The Scores page is not in either list because it has no prism to suppress:
+ * scores.html loads reveal-failsafe.js and scores.js only, never motion.js, so
+ * #prism-bg is never mounted there at all. That is strictly stronger than an
+ * opaque layer over it, and it is why the page needs no rule here.
+ */
+.no-prism-bg,
+/* containers the renderers create */
+.table-wrap,
+.table-view,
+.panel,
+table,
+pre,
+.verbatim,
+.figure__img,
+.notmeasured,
+/* mount points, by ID: see the note above about className being cleared */
+#limits-ch2,
+#limits-ch4,
+#limits-v1-parts,
+#limits-v1-standing,
+#limits-v2,
+#v2-reverify,
+#v1-scenarios,
+#v1-figures,
+#v1-surface,
+#v1-attack,
+#v1-failures,
+#v2-dataset,
+#v2-coverage {
+  position: relative;
+  isolation: isolate;
+}
+
+.no-prism-bg::before,
+.table-wrap::before,
+.table-view::before,
+.panel::before,
+table::before,
+pre::before,
+.verbatim::before,
+.figure__img::before,
+.notmeasured::before,
+#limits-ch2::before,
+#limits-ch4::before,
+#limits-v1-parts::before,
+#limits-v1-standing::before,
+#limits-v2::before,
+#v2-reverify::before,
+#v1-scenarios::before,
+#v1-figures::before,
+#v1-surface::before,
+#v1-attack::before,
+#v1-failures::before,
+#v2-dataset::before,
+#v2-coverage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--base);
+  pointer-events: none;
+}
+
+/* `table` cannot carry a ::before in every engine's table model, so the wrap
+ * around it is what actually carries the layer -- .table-wrap is on every
+ * generated table and the static one is wrapped the same way. The `table`
+ * entry above stays as the belt to that braces. */
