@@ -75,16 +75,14 @@
 <main>
 
 <!-- ============================ HERO ============================ -->
-<!-- .no-prism-bg: the hero now carries its OWN prism, in video form, so the
-     site-wide fixed prism behind it would be a second copy of the same mark
-     showing through the first. The opt-out is the existing phase (g) step 4
-     mechanism -- an opaque --base layer over this container only; the global
-     renderer keeps running and every section below still shows it.
+<!-- .no-prism-bg: an opaque --base layer over this container only, the phase
+     (g) step 4 mechanism. The global renderer keeps running and every section
+     below still shows the prism.
 
-     It is on the whole header rather than on .hero__video alone because the
-     title and thesis sit in the same box: suppressing the prism under the
-     video but not under the text two lines above it would put a visible edge
-     across the hero. -->
+     It was added when the hero held a video of the prism, so the fixed
+     background would not draw the same mark a second time behind it. The video
+     is gone; whether this opt-out is still wanted is settled by the contrast
+     measurement, not by the markup. -->
 <header class="wrap hero no-prism-bg">
   <h1 class="hero__title">Agreement is not<br>evidence.</h1>
   <p class="hero__thesis">
@@ -94,44 +92,8 @@
   </p>
 
   <!-- The prism that used to render here is now the site-wide fixed
-       background (see #prism-bg above). Phase (g) step 8 fills this slot with
-       the hero video.
-
-       DECORATIVE, hence aria-hidden: it restates the thesis above it and adds
-       no information a screen reader would otherwise miss. It carries no
-       <track> for the same reason -- there is no audio stream in the file.
-
-       muted + playsinline are what make autoplay permissible at all; without
-       muted every current engine blocks the autoplay and the slot would sit on
-       the poster frame. preload="metadata" fetches the header, not the 104 KB
-       of frames, so the hero's first paint is not behind the video.
-
-       SOURCE IS THE SEAMLESS CUT. hero-loop.mp4 ends in a different pose than
-       it starts, so its wrap was a hard cut -- measured at 5.07x the clip's
-       own median frame step, the largest transition in the file.
-       hero-loop-seamless.mp4 folds its last 10 frames back over its first 10,
-       which puts the wrap on a consecutive pair of the original footage. The
-       original file stays committed and untouched beside it.
-
-       ?v=2 on both URLs: the poster keeps its filename but its BYTES changed
-       with the clip, so a reader holding the old one cached would otherwise
-       see the previous video's first frame under the new video.
-
-       width/height are the file's intrinsic 1072x368 and are present to
-       reserve the aspect box before any byte of video arrives, which is what
-       stops the prose below it jumping on load. -->
-  <div class="hero__video">
-    <video id="hero-video" class="hero__video-el"
-           src="media/hero-loop-seamless.mp4?v=2"
-           width="1072" height="368"
-           autoplay muted playsinline loop preload="metadata"
-           poster="media/hero-loop-poster.jpg?v=2"
-           aria-hidden="true"></video>
-  </div>
-  <!-- Classic, no defer, HERE and not at the foot of the body: it has to take
-       the autoplay away before the engine can act on it. See the module head
-       for why a deferred script is a race rather than a guarantee. -->
-  <script src="assets/js/hero-video.js"></script>
+       background (see #prism-bg above). The slot held a hero video for one
+       phase; it was removed for visual reasons and the hero is text only. -->
 
   <p class="prose">
     A research project, reported as a research project: this tour states what
