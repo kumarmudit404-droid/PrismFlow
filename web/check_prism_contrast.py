@@ -54,6 +54,11 @@ except ImportError:
 
 # Sampled regions: a selector, and why it is on the list.
 REGIONS = [
+    # The hero title was not sampled until the hero lost .no-prism-bg: with the
+    # opt-out in place there was no prism under it to measure. It is the
+    # largest text on the page and sits at the viewport centre, where the
+    # prism's vignette is brightest, so it is the region most worth sampling.
+    ("header.hero .hero__title", "hero title, largest text, at the vignette"),
     ("header.hero .hero__thesis", "hero prose, widest measure, top of page"),
     ("header.hero p.prose", "hero body prose"),
     ("#ch1 .chapter__lede", "chapter opener, large text"),

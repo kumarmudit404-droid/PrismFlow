@@ -75,15 +75,19 @@
 <main>
 
 <!-- ============================ HERO ============================ -->
-<!-- .no-prism-bg: an opaque --base layer over this container only, the phase
-     (g) step 4 mechanism. The global renderer keeps running and every section
-     below still shows the prism.
+<!-- No .no-prism-bg here, deliberately. The opt-out was added when the hero
+     held a video of the prism, so the fixed background would not draw the same
+     mark twice. With the video gone the hero is text, and the prism showing
+     behind it is the intended look -- the mark is the page's own, and the hero
+     is where it reads best.
 
-     It was added when the hero held a video of the prism, so the fixed
-     background would not draw the same mark a second time behind it. The video
-     is gone; whether this opt-out is still wanted is settled by the contrast
-     measurement, not by the markup. -->
-<header class="wrap hero no-prism-bg">
+     That is a contrast decision, not a taste one, and it was measured rather
+     than assumed: see the dated note in web/README.md for the hero figures at
+     1440px and 390px, and for which adapter produced them. If those figures
+     ever fall below 4.5:1, the fix is --prism-scrim-local on this container or
+     restoring .no-prism-bg -- NOT lowering --prism-bg-opacity or PEAK_LUM,
+     both of which are tuned against measurements recorded in 6ae9645. -->
+<header class="wrap hero">
   <h1 class="hero__title">Agreement is not<br>evidence.</h1>
   <p class="hero__thesis">
     Agreement between views should contribute evidence in proportion to the
