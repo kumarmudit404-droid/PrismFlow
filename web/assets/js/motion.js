@@ -26,9 +26,9 @@ import { animate, stagger } from "../vendor/anime/anime.esm.min.js";
 const root = document.documentElement;
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-/* Token reader. If a token is missing we return null rather than a guessed
- * fallback colour, and the caller skips that beam -- inventing a colour here
- * would be exactly the palette drift this indirection exists to prevent. */
+/* Token reader. A missing token returns null rather than a guessed fallback
+ * colour, and the caller skips that beam -- inventing a colour here would be
+ * exactly the palette drift this indirection exists to prevent. */
 function token(name) {
   const v = getComputedStyle(root).getPropertyValue(name).trim();
   return v || null;
