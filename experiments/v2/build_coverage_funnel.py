@@ -159,9 +159,21 @@ def main() -> int:
             "passes": run.get("passes"),
             "seeds": run.get("seeds"),
             "is_part24_evidence": run.get("is_part24_evidence"),
+            # Two different things, deliberately both reported. The first is
+            # the precondition (fusion needs >=2 angles with claims); the
+            # second is what actually happened. The harness writes
+            # ``fused: None`` only on the early-return path and writes
+            # ``eniv`` when fusion ran, so ``eniv`` presence -- not a truthy
+            # ``fused`` -- is the test for a row that fused.
             "rows_reaching_two_claim_angles": [
                 r["id"] for r in run["rows"]
                 if (r.get("angles_with_claims") or 0) >= 2
+            ],
+            "rows_fused": [
+                {"id": r["id"], "eniv": r.get("eniv"),
+                 "n_angles": r.get("n_angles"), "discount": r.get("discount"),
+                 "confidence": r.get("confidence")}
+                for r in run["rows"] if "eniv" in r
             ],
             "angles": funnel(run),
         }
@@ -171,6 +183,11 @@ def main() -> int:
     out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print("written to %s" % out)
     for key in payload["runs"]:
+        fused = payload["runs"][key]["rows_fused"]
+        print("  %-8s fused %d/%s%s" % (
+            key, len(fused), payload["denominator"],
+            "".join("  [%s eniv=%s conf=%s]" % (f["id"], f["eniv"], f["confidence"])
+                    for f in fused)))
         a = payload["runs"][key]["angles"]
         print("  %-8s " % key + "  ".join(
             "%s=%d/%d" % (n, a[n]["retrieved"], payload["denominator"])

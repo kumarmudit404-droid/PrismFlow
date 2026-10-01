@@ -35,6 +35,7 @@
       "seeds": null,
       "is_part24_evidence": false,
       "rows_reaching_two_claim_angles": [],
+      "rows_fused": [],
       "angles": {
         "tech": {
           "configured": 48,
@@ -133,6 +134,22 @@
       "rows_reaching_two_claim_angles": [
         "032",
         "044"
+      ],
+      "rows_fused": [
+        {
+          "id": "032",
+          "eniv": 1.7052,
+          "n_angles": 2,
+          "discount": 0.8526,
+          "confidence": 0.5841
+        },
+        {
+          "id": "044",
+          "eniv": 1.657,
+          "n_angles": 2,
+          "discount": 0.8285,
+          "confidence": 0.6478
+        }
       ],
       "angles": {
         "tech": {
