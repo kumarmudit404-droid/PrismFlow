@@ -1,4 +1,4 @@
-﻿# PrismFlow -- what the committed results actually show
+# PrismFlow -- what the committed results actually show
 
 Generated from committed files only. No number below was estimated, interpolated,
 or carried over from memory of a prior session -- every figure cites the file and
@@ -9,7 +9,10 @@ is marked **not measured**, not filled in with a plausible guess.
 
 - `data/v2/evaluation_queries.json` (48-row V2 dataset)
 - `results/v2/part24_pipeline_verification.json` (48-row single-pass pipeline run)
-- `results/v2/part24_pipeline_verification_pass1.json` (identical single-pass run, kept as a second file)
+- `results/v2/part24_pipeline_verification_pass1.json` (the FIRST single-pass run, kept
+  as a second file; retrieval is identical to the run above cell for cell, but its
+  claim counts are not -- it has 0 reasoner errors against the other run's 32, and
+  it is the pass in which row 032 reached two angles and produced an ENIV)
 - `results/chorus/attack_metrics.json` + `results/chorus/metadata.json` (Part 09 Chorus/PGD attack experiment, V1)
 - `results/calibration_duplicated/summary.md` (V1 calibration under view duplication)
 - `results/clone_eigen/summary.md`, `results/clone_eigen_perview/summary.md`, `results/clone_eigen_softcluster/summary.md` (V1 clone/eigen-ENIV experiments, three dependence-estimator variants)
