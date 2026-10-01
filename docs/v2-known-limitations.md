@@ -104,7 +104,16 @@ and not reasoner tokens.
 
 Identical in both passes, to the record.
 
-**What this shows.** The pipeline is fed by one angle on 42 of 48 rows. Since
+**Correction, 2026-10-01: 41 of 48, not 42.** The row count below was recounted
+directly from `results/v2/part24_pipeline_verification.json` during the
+2026-10-01 coverage analysis and cross-checked against this table: tech covers
+48/48, market 6/48 (rows 016, 025, 026, 032, 033, 044) and sentiment 1/48 (row
+009), and the market and sentiment row sets are disjoint, so 7 rows retrieved
+two angles and 41 retrieved exactly one. The per-angle table itself was correct;
+only the prose total was off by one.
+
+**What this shows.** The pipeline is fed by one angle on 41 of 48 rows, and by
+two angles on the remaining 7. Since
 `aggregate_dependence` excludes angles that produced no claims, a one-angle row
 yields a 1x1 dependence matrix and a degenerate ENIV, and fusion has nothing to
 adjudicate. The thesis under test -- that agreement should count in proportion to
