@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PrismFlow — Page not found</title>
+<meta name="description" content="That page does not exist on this site.">
+<link rel="icon" href="assets/img/nav-mark.png">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/app.css">
+<!-- No reveal-failsafe.js and no motion.js here. Nothing on this page is a
+     reveal target, so there is nothing to un-hide and no failsafe to own it;
+     loading either would be the only script on the page that could fail. -->
+</head>
+<body>
+<a class="skip-link" href="#nf">Skip to content</a>
+
+<nav class="site-nav" aria-label="Chapters">
+  <div class="wrap site-nav__inner">
+    <span class="site-nav__brand">
+      <img class="site-nav__mark" src="assets/img/nav-mark.png" width="30" height="29" alt="" aria-hidden="true">
+      PrismFlow
+    </span>
+    <ul class="site-nav__list">
+      <li><a class="site-nav__link" href="index.html#ch1">1 · Problem</a></li>
+      <li><a class="site-nav__link" href="index.html#ch2">2 · V1</a></li>
+      <li><a class="site-nav__link" href="index.html#ch3">3 · V2</a></li>
+      <li><a class="site-nav__link" href="index.html#ch4">4 · Results</a></li>
+      <li><a class="site-nav__link" href="index.html#ch5">5 · Explore</a></li>
+      <li><a class="site-nav__link" href="scores.html">Scores</a></li>
+      <li><a class="site-nav__link site-nav__link--limits" href="index.html#limits">Known limitations</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+
+<section class="chapter wrap" id="nf" aria-labelledby="nf-h">
+  <p class="chapter__num">404</p>
+  <h2 class="chapter__title" id="nf-h">Page not found</h2>
+  <p class="chapter__lede">
+    There is no page at that address. Nothing has moved — this site is two
+    pages and a limitations hub, and every link below goes somewhere real.
+  </p>
+
+  <div class="prose">
+    <p>
+      If you followed a link from somewhere else, it was probably pointing at a
+      file that is not part of the site. The site serves only what is under
+      <code>web/</code>: the pages, their stylesheets and scripts, and the
+      committed data under <code>web/data/</code>.
+    </p>
+  </div>
+
+  <p><a class="limits-link" href="index.html">← Back to the start</a></p>
+
+  <div class="prose">
+    <h3>Or go straight to</h3>
+    <ul>
+      <li><a href="index.html#ch1">Chapter 1 — the problem</a></li>
+      <li><a href="index.html#ch4">Chapter 4 — results, and what could not be measured</a></li>
+      <li><a href="index.html#ch5">Chapter 5 — interactive exploration</a></li>
+      <li><a href="scores.html">Scores — every committed number, in one place</a></li>
+      <li><a href="index.html#limits">Known limitations</a></li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p style="max-width:none;margin:0">
+      Static site. Reads committed files only — no live API calls, no credentials.
+      Every figure names its source file. Where a number does not exist in a
+      committed file, this site says <span class="pill pill--notmeasured">not measured</span>
+      rather than computing one.
+    </p>
+  </div>
+</footer>
+</body>
+</html>

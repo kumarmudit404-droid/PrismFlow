@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you refer to this work, please cite it as below."
+title: "PrismFlow: Dependence-Discounted Evidential Fusion under Collusive View Compromise"
+abstract: >-
+  A multi-view learning research project testing the hypothesis that agreement
+  between views should contribute evidence in proportion to the effective
+  independence of those views, not in proportion to how many views agree. The
+  detection half of the hypothesis is supported and the defence half is
+  refuted as tested; no calibration metric has been computed on real retrieved
+  evidence. See docs/PROJECT_STATUS.md for what is evidenced, what is not, and
+  what was never measured.
+type: software
+authors:
+  - family-names: Kumar
+    given-names: Mudit
+date-released: 2026-10-07
+keywords:
+  - multi-view learning
+  - evidential deep learning
+  - uncertainty calibration
+  - view dependence
+  - effective number of independent views
