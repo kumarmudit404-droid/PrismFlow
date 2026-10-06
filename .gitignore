@@ -106,3 +106,8 @@ scripts/.part24_cache/
 # The incoming 49-row workbook, now merged into the tracked dataset. Kept on
 # disk as the audit trail for row 040, the one row no source could confirm.
 data/v2/part24_labeled_dataset_completed.xlsx
+
+# The deploy build. web/build_dist.py writes it from the tracked sources on
+# demand, so committing it would be a second copy of the site that can drift
+# from the one being reviewed.
+web/dist/
