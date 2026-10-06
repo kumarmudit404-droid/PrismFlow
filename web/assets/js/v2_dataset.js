@@ -1,20 +1,16 @@
-/* PrismFlow Part 25 -- phase (e), step 3. The V2 evaluation dataset, all 48 rows.
+/* The V2 evaluation dataset table, all 48 rows.
  *
- * SOURCE. web/data/v2_dataset.json, copied by web/build_data.py from
- * data/v2/evaluation_queries.json -- the derived file the Part 24 harness
- * actually loads. Not the workbook: the workbook holds a blank 040 and an EX
- * example row, and this table has to show the rows an evaluation would run on.
- * The workbook is offered separately as a download so the two can be compared,
- * and both carry a sha256.
+ * Source is web/data/v2_dataset.json, copied from data/v2/evaluation_queries.json
+ * -- the file the Part 24 harness actually loads, not the workbook, which holds
+ * a blank row and an example row. The workbook is a separate download so the two
+ * can be compared; both carry a sha256.
  *
- * THIS TABLE HOLDS NO RESULT. There is no prediction column, no score and no
- * calibration metric, because none has been computed on these rows -- that is
- * V2-L6, and inventing a column here would be the exact failure the limitation
- * exists to record.
+ * This table holds no result: no prediction, score or calibration column,
+ * because none has been computed on these rows (V2-L6). Adding one would be the
+ * exact failure that limitation exists to record.
  *
- * Filtering, sorting and search are all over the loaded rows and nothing else.
- * No row is ever synthesised to fill a gap: 040 is absent from the table and
- * explained in the footer, in the words of the commit that left it out.
+ * Filter, sort and search operate on the loaded rows and nothing else. No row is
+ * synthesised to fill a gap -- 040 is absent and explained in the footer.
  */
 (function () {
   "use strict";

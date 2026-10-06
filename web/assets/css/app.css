@@ -1,4 +1,4 @@
-/* PrismFlow Part 25 -- layout and components. Colour lives in tokens.css. */
+/* PrismFlow -- layout and components. Colour lives in tokens.css. */
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -12,11 +12,10 @@ body {
   font-size: var(--step-0);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
-  /* `overflow-x: clip`, NOT `hidden`. `hidden` forces the computed overflow-y
-   * to `auto`, which turns <body> into a second scroll container: the document
-   * then scrolls on <html> while <body> claims the full 12409px height. That
-   * broke programmatic scrolling and clipped the sticky nav. `clip` gives the
-   * same horizontal guard without establishing a scroll container. */
+  /* `clip`, not `hidden`. `hidden` forces the computed overflow-y to `auto`,
+   * which turns <body> into a second scroll container -- that breaks
+   * programmatic scrolling and clips the sticky nav. `clip` gives the same
+   * horizontal guard without establishing a scroll container. */
   overflow-x: clip;
 }
 
@@ -26,10 +25,9 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  /* -2, not -1. Phase (g) put the prism background at -1, and the prism has to
-   * be ABOVE this wash and above the scrim below -- under a 0.84 scrim it is
-   * not a background, it is nothing. The ORDER of these layers is unchanged;
-   * every one of them moved down by one. */
+  /* -2, below the prism background at -1. The prism has to sit above this wash
+   * and above the scrim: under a 0.84 scrim it would not be a background, it
+   * would be nothing. */
   z-index: -2;
   background:
     radial-gradient(60rem 40rem at 50% -10%, var(--wash-beam), transparent 60%),
@@ -64,10 +62,9 @@ a:hover { text-decoration-color: currentColor; }
   position: sticky; top: 0; z-index: 50;
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  /* 0.92, not 0.72: the coverage table's sticky header parks just under this
-   * bar, and at 0.72 the data rows scrolling behind it ghosted through as
-   * coloured smears that read as a rendering bug. Still glass, still blurred,
-   * but opaque enough that nothing shows through it. */
+  /* Opaque enough that nothing shows through: the coverage table's sticky
+   * header parks just under this bar, and at a lower alpha the data rows
+   * scrolling behind it ghost through as coloured smears. */
   background: var(--nav-bg);
   border-bottom: 1px solid var(--hairline);
 }
@@ -84,10 +81,9 @@ a:hover { text-decoration-color: currentColor; }
 .site-nav__link {
   display: block; padding: 0.3rem 0.6rem; border-radius: var(--radius-sm);
   font-size: var(--step--1); color: var(--text-secondary); text-decoration: none;
-  /* Background only. Transitioning COLOUR as well made the label unreadable
-   * for ~200ms on every scroll: the text was animating dark while the
-   * background was still mid-grey, so the link briefly rendered as a blank
-   * pill. The colour swap is instant; only the fill eases. */
+  /* Background only. Transitioning colour as well leaves the text animating
+   * dark while the fill is still mid-grey, so the link renders as a blank pill
+   * for a moment on every scroll. The colour swap is instant. */
   transition: background-color 0.2s;
 }
 .site-nav__link:hover { color: var(--text-primary); background: rgba(244,244,248,0.06); }
@@ -96,16 +92,12 @@ a:hover { text-decoration-color: currentColor; }
 
 /* ---------- chapters -------------------------------------------------- */
 
-/* Reading column vs. full-bleed data. .chapter is also .wrap, so its own
- * box is already width:min(100% - 2.5rem, var(--maxw)) and centered -- that
- * part was never broken. What read as "flush-left, huge gap on the right"
- * was every text child (title, lede, prose) rendering at its own narrower
- * --measure cap but staying left-anchored inside the much wider --maxw box.
- * A 3-column grid fixes that without moving a single full-width element:
- * text defaults into the centered middle track; anything that already spans
- * the full box (grids, tables, panels, JS-rendered placeholders, captions)
- * is pinned to all three columns, which is the exact same width and
- * position it occupied under plain block flow. Only text shifts. */
+/* Reading column vs. full-bleed data. Text children cap at the narrower
+ * --measure, so inside the wider --maxw box they would stay left-anchored
+ * with a large gap on the right. A 3-column grid centres them: text defaults
+ * into the middle track, while anything full-width (grids, tables, panels,
+ * mount points, captions) is pinned across all three and keeps exactly the
+ * width and position it had under plain block flow. Only text moves. */
 .chapter {
   padding-block: var(--sp-6); border-top: 1px solid var(--hairline); scroll-margin-top: 4.5rem;
   display: grid;
@@ -119,10 +111,9 @@ a:hover { text-decoration-color: currentColor; }
 .chapter > .panel,
 .chapter > .placeholder,
 .chapter > .src,
-/* Every JS-rendered mount point, by id rather than by class: each
- * renderer's own `render()` clears the placeholder class (and sometimes
- * sets "notmeasured" instead) once real content lands, so a class selector
- * stops matching the instant data loads. The id never changes. */
+/* Mount points are matched by id, not class: each renderer clears the
+ * placeholder class once real content lands, so a class selector stops
+ * matching the instant data loads. The id never changes. */
 #limits-ch2, #limits-ch4, #v2-reverify,
 #v1-scenarios, #v1-figures, #v1-surface, #v1-attack, #v1-failures,
 #v2-dataset, #v2-coverage,
@@ -134,12 +125,10 @@ a:hover { text-decoration-color: currentColor; }
   font-family: var(--font-mono); font-size: var(--step--1); text-align: center;
   color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase;
 }
-/* Titles get their own voice: --font-display (a system stack, no CDN/vendored
- * file -- see tokens.css), heavy weight, uppercase and open tracking instead
- * of the tight negative tracking body headings use, so the two read as
- * different type systems even though most browsers resolve --font-display
- * back to the same installed family. Centered per chapter, sitting in the
- * same reading column .chapter's grid already puts it in. */
+/* Titles get their own voice: --font-display, heavy weight, uppercase and
+ * open tracking against the tight negative tracking body headings use, so the
+ * two read as different type systems even where the browser resolves both
+ * back to the same installed family. */
 .chapter__title {
   font-family: var(--font-display); font-size: var(--step-3); font-weight: 900;
   line-height: 1.15; letter-spacing: 0.01em; text-transform: uppercase;
@@ -153,23 +142,15 @@ p { max-width: var(--measure); }
 
 /* ---------- hero ------------------------------------------------------ */
 
-/* padding-block bottom was --sp-5 when the hero held a 368px-tall video. With
- * the video gone the hero measures 769px where it measured 1302px, and the
- * trailing space stops reading as breathing room and starts reading as a hole
- * the video used to fill. Measured: hero padding-bottom 61.36px plus #ch1
- * padding-top 94.4px put 156px between the limits link and the Chapter 1
- * label. Dropping to --sp-4 makes that 132px and leaves #ch1's own --sp-6 to
- * do the section separation, which is what separates every other section.
- * Top padding is unchanged -- it separates the title from the sticky nav, and
- * that job did not change. No min-height anywhere: the hero is still sized by
- * its content. */
+/* The bottom padding is one step shorter than the top. #ch1's own top padding
+ * does the section separation here, the same as it does everywhere else, and
+ * without this the gap reads as a hole rather than as breathing room. No
+ * min-height: the hero is sized by its content. */
 .hero { padding-block: var(--sp-6) var(--sp-4); text-align: center; }
-/* Same title voice as .chapter__title (--font-display, 900, uppercase).
- * Centred since the hero video was removed: with the video gone the hero is
- * three stacked text blocks, and a left rag down a short column reads as a
- * column that lost its illustration. text-align lives on .hero rather than on
- * each child so the limits link below the prose centres with them instead of
- * being stranded left under centred text. */
+/* Same title voice as .chapter__title. The hero is three stacked text blocks,
+ * so it is centred; text-align lives on .hero rather than on each child, which
+ * is what keeps the limits link below the prose centred with them instead of
+ * stranded left under centred text. */
 .hero__title {
   font-family: var(--font-display); font-size: var(--step-4); font-weight: 900;
   line-height: 1.05; letter-spacing: 0.005em; text-transform: uppercase;
@@ -183,11 +164,9 @@ p { max-width: var(--measure); }
   max-width: 46rem; margin-inline: auto;
   text-wrap: balance;
 }
-/* The thesis carried a left border bar, which is an asymmetric mark and reads
- * as a hanging indent once the text is centred. It is replaced by a short
- * centred rule above the thesis: same job -- marking the thesis as the one
- * quoted line in the hero -- without implying a left edge. --accent is a
- * tokens.css value; no literal colour is introduced. */
+/* A short centred rule above the thesis marks it as the one quoted line in
+ * the hero. A left border bar would do the same job, but it is an asymmetric
+ * mark and reads as a hanging indent against centred text. */
 .hero__thesis::before {
   content: "";
   display: block;
@@ -207,24 +186,16 @@ p { max-width: var(--measure); }
 
 /* ---------- glass panel ----------------------------------------------- */
 
-/* NO backdrop-filter here: blur is spent only on the sticky nav, which sits
+/* No backdrop-filter here: blur is spent only on the sticky nav, which sits
  * over moving content. A panel sits over a static gradient, so a more opaque
  * fill is visually equivalent.
  *
- * HONEST PROVENANCE OF THIS RULE. Phase (b) justified it as a performance fix,
- * citing rAF firing 0 frames and screenshot capture timing out. BOTH were
- * artifacts of a backgrounded tab: Chrome throttles rAF to nothing when the
- * window is not visible, which also stalled the capture. Phase (d) re-measured
- * in a genuinely foreground window (visibilityState "visible", 149 frames per
- * trial, scrolling over the 48-row table, blur toggled at runtime):
- *
- *     27 blur layers   median 16.7ms  (59.9 fps)
- *      1 blur layer    median 16.6ms  (60.2 fps)
- *
- * Both are vsync-bound; there is NO measurable difference on this machine. The
- * rule is kept on precautionary grounds only -- 27 live backdrop layers cannot
- * be cheaper than one, and the brief requires a weaker laptop GPU to cope --
- * and explicitly NOT on the evidence phase (b) claimed. */
+ * This is a precaution, not a measured win. Re-measured in a foreground
+ * window (149 frames per trial, scrolling over the 48-row table, blur toggled
+ * at runtime): 27 blur layers median 16.7ms, one blur layer median 16.6ms.
+ * Both are vsync-bound, so there is no difference on this machine. The rule
+ * is kept only because 27 live backdrop layers cannot be cheaper than one on
+ * a weaker GPU. */
 .panel {
   background: var(--glass-bg-solid);
   border: 1px solid var(--glass-border);
@@ -340,7 +311,7 @@ td.num, th.num { text-align: right; font-family: var(--font-mono); }
 
 .site-foot { border-top: 1px solid var(--hairline); padding-block: var(--sp-4); color: var(--text-muted); font-size: var(--step--1); }
 
-/* ---------- phase-a placeholders -------------------------------------- */
+/* ---------- placeholders ---------------------------------------------- */
 
 .placeholder {
   border: 1px dashed var(--hairline); border-radius: var(--radius);
@@ -349,7 +320,7 @@ td.num, th.num { text-align: right; font-family: var(--font-mono); }
 }
 
 /* ====================================================================
- * phase (b) -- chart components
+ * Chart components
  * ==================================================================== */
 
 /* "not measured" is one visual idea everywhere it appears: dim, italic-free,
@@ -421,13 +392,12 @@ td.num, th.num { text-align: right; font-family: var(--font-mono); }
 .table-view summary:hover { color: var(--text-primary); }
 
 /* ====================================================================
- * phase (d) -- accessibility
+ * Accessibility
  * ==================================================================== */
 
-/* This class was USED in phase (a) and never defined, so the coverage table's
- * <caption> rendered as visible body text instead of being announced only to
- * assistive tech. Defined now, and the pattern is the standard clip-rect one
- * that keeps the text in the accessibility tree. */
+/* The standard clip-rect pattern: keeps the text in the accessibility tree
+ * while taking it off screen. Without it the coverage table's <caption>
+ * renders as visible body text. */
 .visually-hidden {
   position: absolute !important;
   width: 1px; height: 1px;
@@ -595,7 +565,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
 }
 
 /* ====================================================================
- * phase (e) -- the scenario picker, heatmap and figure grid
+ * The scenario picker, heatmap and figure grid
  *
  * No new colour token. The picker reuses the pill and panel vocabulary the
  * rest of the page already established.
@@ -651,9 +621,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
 /* ---- a wrong prediction ---- */
 .ex--wrong td, .ex--wrong th { background: var(--wrong-tint); }
 
-/* The one panel that is an alert. Was an inline style holding a literal
- * rgba of --status-provider-error; it is a class now so colour stays in
- * tokens.css. */
+/* The one panel that is an alert. A class rather than an inline style, so its
+ * colour stays in tokens.css with everything else. */
 .panel--alert { border-color: var(--alert-border); }
 
 /* ---- committed figures ---- */
@@ -668,12 +637,12 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
 .figure__cap .src + .src::before { content: ""; }
 
 /* ====================================================================
- * phase (c) -- motion
+ * Motion
  * ==================================================================== */
 
-/* The single ambient layer. One canvas, one compositor layer, sitting under
- * everything. body::before stays as the static wash AND doubles as the scrim
- * that keeps text contrast where phase (a) measured it. */
+/* The single ambient layer: one canvas, one compositor layer, under
+ * everything. body::before is the static wash and also the scrim that holds
+ * text contrast. */
 #ambient {
   position: fixed;
   inset: 0;
@@ -682,33 +651,31 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
   display: block;
 }
 
-/* The scrim. The animated canvas sits BELOW this, so the drifting light is
- * always seen through a dim layer and can never lift the background under body
- * text far enough to break the verified contrast ratios.
+/* The scrim. The animated canvas sits below this, so drifting light is always
+ * seen through a dim layer and can never lift the background under body text
+ * far enough to break the verified contrast ratios.
  *
- * 0.84 is solved, not chosen. The bound assumes every ambient blob overlaps on
- * one pixel AND every body::before gradient is at full strength at once --
- * impossible in practice, but it makes the guarantee hold however the blobs
- * drift. At 0.55 the worst case was rgb(53,56,67) and --text-muted fell to
- * 2.94:1. At 0.84 it is rgb(21,22,29) and the weakest token, --text-muted,
- * holds 4.54:1 against its 4.5 threshold. */
+ * 0.84 is solved, not chosen, against a worst case that assumes every ambient
+ * blob and every body::before gradient land on one pixel at full strength at
+ * once. That cannot happen in practice, but it makes the guarantee hold
+ * however the blobs drift: at 0.55 the weakest token --text-muted fell to
+ * 2.94:1, and at 0.84 it holds 4.54:1 against its 4.5 threshold. */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
-  /* -2 with body::before, and painted after it because ::after is generated
-   * last. So the scrim still covers the ambient canvas and the wash, which is
-   * the whole guarantee. What it no longer covers is #prism-bg at -1: the
-   * prism is governed by --prism-bg-opacity and measured directly against the
-   * text that sits over it, not by this scrim. */
+  /* -2 with body::before, painted after it because ::after comes last, so the
+   * scrim still covers the ambient canvas and the wash. It does not cover
+   * #prism-bg at -1: the prism is governed by --prism-bg-opacity and measured
+   * directly against the text over it, not by this scrim. */
   z-index: -2;
   pointer-events: none;
   background: var(--scrim);
 }
 
 /* ---- the prism mark ----
- * Phase (g): the mark is the site-wide background, not a hero element. These
- * rules style the SVG wherever it lives; #prism-bg positions it. */
+ * The mark is the site-wide background, not a hero element. These rules style
+ * the SVG wherever it lives; #prism-bg positions it. */
 .beam { stroke-width: 2.2; }
 /* The unbuilt angle keeps its filter while animating. A moving beam must not
  * imply that Regulatory retrieves anything -- it has no connector at all. */
@@ -721,25 +688,22 @@ body::after {
   #ambient { display: none !important; }
 }
 
-/* Reveal targets start hidden ONLY while `data-reveal="armed"`.
+/* Reveal targets start hidden only while `data-reveal="armed"`, and that
+ * attribute can only be set by reveal-failsafe.js -- a separate file loaded
+ * first in <head>, which also holds the deadline that clears it. So the
+ * un-hider is proven present before anything is hidden, and the guarantee does
+ * not live inside the script it protects against.
  *
- * That attribute is NOT set by motion.js directly. It can only be set through
- * reveal-failsafe.js, a separate file loaded first in <head>, which also holds
- * the deadline that clears it. So the un-hider is proven present before
- * anything is hidden, and the guarantee does not live inside the script it
- * protects against.
- *
- * This used to key off `data-motion="live"`, which motion.js set optimistically
- * before the reveal machinery had done anything. A throw one line later left
- * all 67 targets invisible for good. `data-motion` still exists and still
- * drives the ambient canvas and the hero -- it just no longer decides whether
- * the reader can read the page. */
+ * Do not key this off `data-motion`: that is set optimistically, so a throw
+ * one line later would leave every target invisible for good. `data-motion`
+ * still drives the ambient canvas and the hero; it does not decide whether the
+ * reader can read the page. */
 :root[data-reveal="armed"] .chapter__lede,
 :root[data-reveal="armed"] .panel,
 :root[data-reveal="armed"] .limit { opacity: 0; }
 
 /* ==================================================================
- * V2 evaluation dataset table -- phase (e), step 3
+ * V2 evaluation dataset table
  * ================================================================== */
 
 .ds-stats { margin-bottom: var(--sp-2); }
@@ -832,7 +796,7 @@ body::after {
 }
 
 /* ==================================================================
- * Real failures -- phase (e), step 4
+ * Real failures
  * ================================================================== */
 
 .fail-stats { margin-bottom: var(--sp-2); }
@@ -865,7 +829,7 @@ body::after {
 }
 
 /* ==================================================================
- * Limitations hub + the V2-L2/L3 before-and-after -- phase (e), step 5
+ * Limitations hub, and the V2-L2/L3 before-and-after
  * ================================================================== */
 
 /* A resolved entry stays in the list and stays readable. It is marked, not
@@ -902,17 +866,16 @@ body::after {
 .rv-caveats li { margin-bottom: 0.35rem; }
 
 /* ==================================================================
- * The site-wide prism background -- phase (g) step 1
+ * The site-wide prism background
  * ==================================================================
  * Fixed to the viewport at z-index -1: above the wash and the scrim (both -2),
  * below every pixel of content. The page scrolls over it.
  *
- * The SVG mark is the page's prism and is always in the DOM. The WebGL canvas
- * is appended into the same box by hero3d.js and the SVG fades out ONLY once
- * [data-hero="gl"] is set, which motion.js does after mount() has returned a
- * live renderer. Every other path -- no WebGL, reduced motion, a failed import,
- * a throw inside the module -- leaves the attribute unset and the static SVG
- * exactly where it was.
+ * The SVG mark is always in the DOM. hero3d.js appends the WebGL canvas into
+ * the same box, and the SVG fades out only once [data-hero="gl"] is set, which
+ * motion.js does after mount() has returned a live renderer. Every other path
+ * -- no WebGL, reduced motion, a failed import, a throw inside the module --
+ * leaves the attribute unset and the static SVG exactly where it was.
  */
 #prism-bg {
   position: fixed;
@@ -927,16 +890,14 @@ body::after {
   /* The one knob. Measured, not chosen -- see tokens.css. */
   opacity: var(--prism-bg-opacity, 0.4);
 
-  /* THE VIGNETTE. A mask on this box, which is above both renderers and below
-   * every pixel of content, so it needs no extra layer and cannot be painted
-   * over text. The prism is at full strength through the middle and fades out
-   * toward the edges, for one specific reason: the five beams run from the
-   * centre to OFF-FRAME, so without this they cross the left and right
-   * margins at full strength -- which is exactly where the reading column's
-   * text sits at narrow widths. It is also what keeps the hard edge of the
-   * refraction patch from meeting a margin.
+  /* The vignette. A mask on this box rather than an extra layer, so it can
+   * never be painted over text. The prism runs at full strength through the
+   * middle and fades toward the edges because the five beams run from the
+   * centre to off-frame: without this they cross the left and right margins at
+   * full strength, which is exactly where the reading column sits at narrow
+   * widths. It also keeps the hard edge of the refraction patch off a margin.
    *
-   * The ellipse is centred slightly above the middle (45%) because the prism
+   * The ellipse is centred slightly above the middle because the prism
    * geometry sits there, not at 50%. */
   -webkit-mask-image: radial-gradient(ellipse 72% 58% at 50% 45%,
       rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 42%,
@@ -970,30 +931,26 @@ body::after {
 }
 
 /* ==================================================================
- * .no-prism-bg -- the section-level opt-out, phase (g) step 4
+ * .no-prism-bg -- the section-level opt-out
  * ==================================================================
- * An opaque layer of the page's own base colour over just this container,
- * suppressing the prism beneath it. The global canvas KEEPS RUNNING: every
+ * An opaque layer of the page's own base colour over one container,
+ * suppressing the prism beneath it. The global canvas keeps running -- every
  * other section still shows it, and tearing the renderer down and back up as
  * a reader scrolls past a table would be both slower and visible.
  *
- * HOW IT IS LAYERED. `isolation: isolate` makes the container its own stacking
- * context, so the ::before at z-index -1 is the bottom-most layer INSIDE that
- * context -- above #prism-bg at the root's -1, below the container's own
- * content. No z-index is put on any child, which is what keeps sticky table
- * headers and the dialog layer working exactly as they did.
+ * `isolation: isolate` makes the container its own stacking context, so the
+ * ::before at z-index -1 is the bottom-most layer inside it: above #prism-bg
+ * at the root's -1, below the container's own content. No child carries a
+ * z-index, which is what keeps sticky table headers and the dialog working.
  *
- * WHAT IT IS APPLIED TO, and why it is applied by ID as well as by class:
- * every renderer in assets/js clears `host.className` before it fills a mount
- * point, so a class written on a .placeholder div in the HTML does not survive
- * the first render. The mount points are therefore matched by their IDs, which
- * are stable, and the containers the renderers CREATE are matched by the
- * classes they create them with.
+ * Applied by id as well as by class because every renderer in assets/js clears
+ * `host.className` before filling a mount point, so a class written on a
+ * .placeholder div in the HTML does not survive the first render. Mount points
+ * are matched by their stable ids; containers the renderers create are matched
+ * by the classes they create them with.
  *
- * The Scores page is not in either list because it has no prism to suppress:
- * scores.html loads reveal-failsafe.js and scores.js only, never motion.js, so
- * #prism-bg is never mounted there at all. That is strictly stronger than an
- * opaque layer over it, and it is why the page needs no rule here.
+ * The Scores page needs no rule here: it loads reveal-failsafe.js and
+ * scores.js only, never motion.js, so #prism-bg is never mounted there.
  */
 .no-prism-bg,
 /* containers the renderers create */
@@ -1053,31 +1010,26 @@ pre::before,
   pointer-events: none;
 }
 
-/* `table` cannot carry a ::before in every engine's table model, so the wrap
- * around it is what actually carries the layer -- .table-wrap is on every
- * generated table and the static one is wrapped the same way. The `table`
- * entry above stays as the belt to that braces. */
+/* Not every engine's table model lets `table` carry a ::before, so the wrap
+ * around it carries the layer instead -- .table-wrap is on every generated
+ * table and the static one is wrapped the same way. The `table` entry above
+ * stays as the belt to this pair of braces. */
 
 /* ==================================================================
- * The LOCAL scrim -- phase (g), for --text-muted over the prism
+ * The local scrim, for --text-muted over the prism
  * ==================================================================
  * The beam peak cap in hero3d.js holds 4.5:1 for --text-primary (measured
- * 8.99-9.23:1) and --text-secondary (4.82-4.94:1). It does NOT hold it for
+ * 8.99-9.23:1) and --text-secondary (4.82-4.94:1). It does not hold for
  * --text-muted, which has only 4.83:1 of headroom on --base before the prism
  * contributes anything: measured 2.54:1 on desktop and 2.47:1 at 390px.
  *
- * The opacity is NOT lowered to fix that and prose is NOT opted out of the
- * prism. Instead these specific blocks -- and only these -- carry a local
- * scrim of the page's own base colour at --prism-scrim-local.
+ * Rather than lower the opacity or opt prose out of the prism, these four
+ * blocks -- and only these -- carry a local scrim of the page's own base
+ * colour. Every other --text-muted rule in this file sits inside a container
+ * that already opts out above, so no prism pixel reaches it. These four sit
+ * directly over it:
  *
- * THE FOUR BLOCKS, and why only these four: every other --text-muted rule in
- * this file is inside a container that already opts out above (.placeholder
- * mounts, .table-wrap, .panel, .verbatim, and the generated .stat__src,
- * .notmeasured, .pm, .legend__note, .cov-table and .detail__* families), so
- * no prism pixel reaches them. These four sit directly over it:
- *
- *   .chapter__num   the "Chapter N" label above every chapter title, and the
- *                   one the measurement caught as #ch4 p
+ *   .chapter__num   the "Chapter N" label above every chapter title
  *   .src            the source-file citation lines under prose
  *   .axis-note      the small monospace notes, e.g. #limits-note
  *   .site-foot      the footer

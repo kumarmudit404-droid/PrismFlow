@@ -1,16 +1,14 @@
-/* Styles for web/theme_preview.html only. Not loaded by the site.
- *
- * Each variant block paints itself with its own candidate tokens, so both
- * palettes are on screen at once. The values are GENERATED from the candidate
- * files into theme-preview-vars.css by web/build_theme_preview.py and never
- * retyped here: a hand-copied palette in a preview is a second source of truth
- * that drifts from the one being chosen.
+/* Styles for web/theme_preview.html only. Not loaded by the site. Each
+ * variant block paints itself with its own candidate tokens, so both palettes
+ * are on screen at once.
  */
 
-/* The candidate files declare on :root, which would make the LAST one win for
- * the whole document and render both blocks in the same palette. This file is
- * generated from them by web/build_theme_preview.py with the selector
- * re-scoped per variant -- values are carried across, never retyped. */
+/* The candidate files both declare on :root, so importing them directly would
+ * let the last one win for the whole document and render both blocks in the
+ * same palette. web/build_theme_preview.py generates this import with the
+ * selector re-scoped per variant. Values are carried across, never retyped --
+ * a hand-copied palette in a preview is a second source of truth that drifts
+ * from the one being chosen. */
 @import url("theme-preview-vars.css");
 
 @layer preview {

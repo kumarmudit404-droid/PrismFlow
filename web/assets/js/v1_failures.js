@@ -1,27 +1,17 @@
-/* PrismFlow Part 25 -- phase (e), step 4. Real failures, and only real ones.
+/* Conditions where PrismFlow did worse than the naive baseline.
  *
- * WHAT THIS SECTION IS. Every non-clean attack condition in the committed Part
- * 09 run where PrismFlow's mean success rate is HIGHER than the naive
- * baseline's -- that is, where the discounted pipeline was fooled more often
- * than the thing it is supposed to improve on. Selection is mechanical, done in
- * web/build_data.py by comparing the two means, so no cell is here for being
- * dramatic and none is missing for being small.
+ * Selection is mechanical -- web/build_data.py compares the two means -- so no
+ * cell is here for being dramatic and none is missing for being small. All
+ * epsilons are shown, including the near-zero ones, because showing a single
+ * epsilon would make a 12-cell result look like one finding.
  *
- * WHY NOT JUST eps 1.0. Showing one epsilon would make a 12-cell result look
- * like a single finding. The two near-zero cells (eps 0.2, both attacks) are
- * the ones that show the effect is not uniform, and they are exactly the cells
- * a flattering selection would drop.
+ * Every row carries the per-seed sign next to the mean: a positive mean over 5
+ * seeds can hide two seeds that went the other way, and the mean alone cannot
+ * distinguish a consistent effect from a coin flip.
  *
- * THE PER-SEED SIGN IS SHOWN NEXT TO EVERY MEAN. A positive mean over 5 seeds
- * can hide two seeds that went the other way, and a reader given only the mean
- * cannot tell a consistent effect from a coin flip. Every row therefore carries
- * "n of 5 seeds", and opening a row lists the per-seed differences themselves.
- *
- * NO FOOLED EXAMPLE IS INVENTED. The committed run records aggregates, per-seed
- * rows and a perturbation tensor. Nothing records which sample was fooled, what
- * it was predicted as, or what its true label was, so every example cell reads
- * "not recorded". Building one from the perturbation tensor would be a new
- * experiment wearing a page's clothes.
+ * No fooled example is invented. The committed run records aggregates, per-seed
+ * rows and a perturbation tensor, but not which sample was fooled or how it was
+ * labelled, so every example cell reads "not recorded".
  */
 (function () {
   "use strict";

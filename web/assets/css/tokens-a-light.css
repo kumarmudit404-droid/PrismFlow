@@ -1,27 +1,14 @@
-/* PrismFlow Part 25 phase (f) -- VARIANT A: light, orange accent.
+/* Variant A: light base, orange accent. A candidate, not applied to the site
+ * -- only theme_preview.html and the screenshot harness load it, so the
+ * choice between the two palettes stays inspectable. tokens.css is live.
  *
- * CANDIDATE. Not applied to the site; loaded only by web/theme_preview.html
- * and by the screenshot harness. tokens.css remains the live theme until a
- * variant is chosen.
+ * The angle colours were searched rather than picked by eye;
+ * web/check_palette.py holds the maths and measures the result.
  *
- * The five angle colours were not picked by eye. web/check_palette.py holds
- * the maths and a search over LCh candidates produced these, maximising the
- * worst CIEDE2000 separation across normal vision and three simulated CVDs,
- * subject to: >= 3:1 on the base, hue within 26 degrees of the family the
- * angle is named for, chroma >= 30 so a category never reads as tinted grey,
- * >= 18 CIEDE2000 from the UI accent so a data colour and a button cannot be
- * confused, and a monotonic luminance staircase. 1,435 combinations were
- * evaluated. A second pass then maximised the worst GREYSCALE step, because
- * the first result was monotonic by only 1.07:1 and would have collapsed in
- * print. Measured on the hex values
- * below, which is what the browser gets: worst step 1.42:1, worst separation
- * 10.48, against 1.27:1 and 8.27 for the palette the site ships today.
- *
- * THE STAIRCASE RUNS THE OTHER WAY HERE, and it has to: on a light base,
- * contrast comes from being DARK, so regulatory -- the angle with no
- * connector -- is now the highest-contrast angle rather than the lowest. Its
- * "unbuilt" reading is carried entirely by --angle-unbuilt-filter, which is
- * applied everywhere regulatory appears and is unchanged.
+ * The luminance staircase runs the other way here, and has to: on a light
+ * base contrast comes from being dark, so regulatory -- the angle with no
+ * connector -- is the highest-contrast angle rather than the lowest. Its
+ * "unbuilt" reading is carried entirely by --angle-unbuilt-filter.
  */
 
 :root {
@@ -37,10 +24,10 @@
   --text-muted:      #786047;   /*  4.93:1 */
 
   /* ---- the orange UI accent -----------------------------------------
-   * WHITE TEXT ON BRIGHT ORANGE FAILS. Measured: #FF7A2F carries white at
-   * 2.60:1 and #F2661A at 3.14:1, both well under 4.5:1. This deep orange
-   * carries white at 5.76:1 and is itself 5.63:1 on the base, so the same
-   * token works as a fill, as link text and as a focus ring. */
+   * White text on a bright orange fails: #FF7A2F carries white at 2.60:1 and
+   * #F2661A at 3.14:1, both under 4.5:1. This deeper orange carries white at
+   * 5.76:1 and is itself 5.63:1 on the base, so one token works as a fill, as
+   * link text and as a focus ring. */
   --accent:          #B83A0A;   /*  5.63:1 on base */
   --accent-ink:      #FFFFFF;   /*  5.76:1 on accent */
   --accent-strong:   #8F2B06;   /*  8.16:1 -- hover and active */
@@ -55,25 +42,24 @@
   --angle-market:     #0B8947;  /*  4.38:1  L*50 C 54 */
   --angle-financial:  #B58B00;  /*  3.10:1  L*60 C 65 */
 
-  /* Regulatory is the UNBUILT angle. Rendered through this filter everywhere,
-   * so "no connector exists" is visible before you read a word. Unchanged. */
+  /* Regulatory is the unbuilt angle. Rendered through this filter everywhere,
+   * so "no connector exists" is visible before you read a word. */
   --angle-unbuilt-filter: saturate(0.35) opacity(0.55);
 
   /* ---- beam --------------------------------------------------------- */
   --beam-incident:   #3A2A18;   /* the single beam, dark on a light base */
 
   /* ---- status ------------------------------------------------------
-   * NEVER the only encoder: every status carries a text label. */
+   * Never the only encoder: every status also carries a text label. */
   --status-provider-error: #A81E09;
   --status-genuine-zero:   #6E6152;
-  /* The dimmest, lowest-chroma DATA token in the system: absent data must
+  /* The dimmest, lowest-chroma data token in the system: absent data must
    * never read as data. This is what V2-L6 looks like on screen. */
   --status-not-measured:   #C6B7A6;
 
   /* ---- surfaces that carry their own alpha ----------------------------
-   * The page background is the SCRIM, not --base. A light variant that left
-   * this at the dark literal renders dark text on a dark page, which is what
-   * the first screenshot of this variant showed. */
+   * The page background is the scrim, not --base. A light variant that leaves
+   * this at the dark literal renders dark text on a dark page. */
   --scrim:           rgba(255, 252, 248, 0.88);
   --nav-bg:          rgba(255, 252, 248, 0.94);
   --dialog-backdrop: rgba(58, 42, 24, 0.55);

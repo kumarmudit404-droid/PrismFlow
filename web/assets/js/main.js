@@ -1,10 +1,7 @@
-/* PrismFlow Part 25 -- phase (a) behaviour only.
+/* Nav state, and keyboard access to the scrollable tables.
  *
- * Deliberately tiny: nav state, and keyboard access to the scrollable tables.
- * No reveal and no motion of any kind live here -- phase (c) moved all of that
- * to motion.js, under the reveal-failsafe contract. Nothing here fetches
- * anything, and no credential of any kind is referenced -- this site reads
- * committed files and nothing else.
+ * Deliberately tiny. All reveal and motion behaviour lives in motion.js under
+ * the reveal-failsafe contract; nothing here fetches anything.
  */
 (function () {
   "use strict";
@@ -37,13 +34,10 @@
   }
 
   /* ---- keyboard access to horizontally scrollable tables ---------------
-   * A wrapper with overflow-x:auto scrolls with a mouse or a trackpad but is
-   * unreachable by keyboard unless it is focusable. The 48-row coverage table
-   * overflows on a narrow window, so without this a keyboard-only user cannot
-   * see its right-hand columns at all (WCAG 2.1.1). tabindex is added ONLY to
+   * An overflow-x:auto wrapper scrolls with a mouse but is unreachable by
+   * keyboard unless it is focusable (WCAG 2.1.1). We add tabindex only to
    * wrappers that actually overflow, so a table that fits does not become a
-   * dead tab stop -- and it is re-evaluated on resize, because whether a table
-   * overflows is a function of the viewport. */
+   * dead tab stop, and re-check on resize since overflow depends on width. */
   function updateScrollRegions() {
     var wraps = document.querySelectorAll(".table-wrap");
     Array.prototype.forEach.call(wraps, function (w) {

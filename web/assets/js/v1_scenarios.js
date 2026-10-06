@@ -1,18 +1,15 @@
-/* PrismFlow Part 25 -- phase (e), step 2. The V1 app's controls, rebuilt.
+/* The V1 app's scenario picker, rebuilt over pre-computed outputs.
  *
- * The Streamlit app has a sidebar: pick a dataset, pick a scenario, press Run.
- * A static site cannot train a model on demand, so web/build_v1.py ran every
- * scenario through app.py's OWN engine functions at a recorded seed and wrote
- * the outputs to web/data/v1_scenarios.json. This file is the picker over those
- * pre-computed outputs.
+ * A static site cannot train on demand, so web/build_v1.py ran every scenario
+ * through the V1 engine's own functions at a recorded seed and wrote the
+ * results to web/data/v1_scenarios.json. This is the picker over those.
  *
- * NOTHING HERE IS INTERPOLATED BETWEEN SCENARIOS. Choosing a scenario shows
- * that scenario's committed record or nothing at all. There is no transition, no
- * smoothing, and no derived "what if" -- a slider that produced numbers the
- * engine never computed would be a lie with a nice interaction.
+ * Nothing is interpolated between scenarios. Choosing one shows its committed
+ * record or nothing at all -- a control that produced numbers the engine never
+ * computed would be a lie with a nice interaction.
  *
- * Every panel carries the illustrative-run label from the data file, because a
- * 12-epoch single-seed run is not a finding under docs/CONTRACT.md section 5.
+ * Every panel carries the illustrative-run label from the data file: a
+ * single-seed run is not a finding under docs/CONTRACT.md section 5.
  */
 (function () {
   "use strict";
@@ -46,11 +43,10 @@
     });
   }
 
-  /* ---- the dependence matrix, as a real heatmap ---------------------------
-   * app.py renders this with matplotlib. Here it is a table of cells: a table
-   * because the numbers are the content, and colour is only reinforcement. A
-   * null cell (too few tail samples to estimate) is dim and labelled, never a
-   * zero, because zero means "measured, and independent". */
+  /* ---- the dependence matrix, as a heatmap -------------------------------
+   * A table, because the numbers are the content and colour is only
+   * reinforcement. A null cell (too few tail samples to estimate) is dim and
+   * labelled, never a zero -- zero would mean "measured, and independent". */
   function heatmap(m, names) {
     if (!m || !m.length) { return '<p class="notmeasured">dependence matrix not measured</p>'; }
     var out = ['<div class="table-wrap"><table class="heat">' +

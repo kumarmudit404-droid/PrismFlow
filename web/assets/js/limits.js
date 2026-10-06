@@ -1,17 +1,11 @@
-/* PrismFlow Part 25 -- phase (e), step 5. The limitations hub, and the fix
- * that closed two of its entries.
+/* The limitations hub.
  *
- * WHY THIS FILE EXISTS. index.html used to carry the limitation lists as hand
- * written HTML, in three places: Chapter 2, Chapter 4 and the hub. When V2-L2
- * and V2-L3 were fixed and V2-L7 was opened, the document recorded it and the
- * page did not, because nothing connected the two. A list with no link to its
- * source drifts silently. These lists are now read from
- * docs/KNOWN_LIMITATIONS.md and docs/v2-known-limitations.md at build time, so
- * an entry that is resolved there cannot stay open here.
+ * The lists are read from docs/KNOWN_LIMITATIONS.md and
+ * docs/v2-known-limitations.md at build time rather than hand-written here, so
+ * an entry resolved in the documents cannot stay open on the page.
  *
- * ONE COPY, NOT THREE. The full list lives in the hub. The chapters carry a
- * short status line and a link to it. That is the "keep the Known Limitations
- * hub" rule: the hub is the only place the entries are printed in full.
+ * One copy, not three: the full list lives in the hub, and the chapters carry
+ * a short status line and a link to it.
  */
 (function () {
   "use strict";

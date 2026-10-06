@@ -1,44 +1,28 @@
-/* PrismFlow Part 25 -- the photorealistic glass prism.
+/* The photorealistic glass prism, used as the site-wide fixed background.
  *
- * Built in phase (f) step 2 as the hero mark. Phase (g) step 1 promoted it to
- * the site-wide fixed background in #prism-bg: same scene, same mount(host, api)
- * contract, a full-viewport host instead of a 240px-tall stage.
+ * An earlier attempt rendered as an opaque grey slab. The cause was not the
+ * material: a MeshPhysicalMaterial with transmission = 1 shows what is behind
+ * it, bent, and that scene had nothing behind the prism and no environment
+ * map. Glass with nothing to refract and nothing to reflect is correctly a
+ * grey slab. Three things fix that cause:
  *
- * WHY THE FIRST ATTEMPT FAILED, AND WHAT IS DIFFERENT HERE
- * --------------------------------------------------------
- * Phase (c) built this and dropped it: it rendered as an opaque grey slab on a
- * real GPU as well as in software. The cause was not the material and not the
- * driver. A MeshPhysicalMaterial with transmission = 1 shows you WHAT IS
- * BEHIND IT, bent. That scene had nothing behind the prism and no environment
- * map, so the answer to "what is behind it" was the clear colour, and the
- * answer to "what does it reflect" was nothing at all. Glass with nothing to
- * refract and nothing to reflect is, correctly, a grey slab.
+ *   1. An environment. buildRoom() assembles a small emissive room and
+ *      PMREMGenerator pre-filters it into a real radiance map. It is written
+ *      out here rather than imported because examples/jsm is not part of the
+ *      vendored module and nothing may be fetched at runtime.
+ *   2. A backdrop. A plane behind the prism carries a generated gradient and
+ *      the five beams start behind the glass, so transmission has something
+ *      to bend.
+ *   3. Dispersion. ior, thickness, dispersion and a little iridescence, so
+ *      the white incident beam breaks into colour.
  *
- * Three things fix the cause rather than the symptom:
+ * No asset files: no image, video, model or HDR is loaded. The environment,
+ * the gradient and the bloom kernel are generated in code, which is what keeps
+ * script-src 'self' honest.
  *
- *   1. AN ENVIRONMENT. buildRoom() assembles a small emissive room -- walls,
- *      a ceiling panel and several coloured light boxes -- and PMREMGenerator
- *      pre-filters it into a real radiance map. This is what three.js's
- *      RoomEnvironment example does; it is written out here rather than
- *      imported because examples/jsm is not part of the vendored module and
- *      nothing may be fetched at runtime. Every colour in it comes from
- *      tokens.css.
- *   2. A BACKDROP. A plane sits behind the prism carrying a gradient built in
- *      code, and the five outgoing beams start behind the glass. Transmission
- *      renders the non-transmissive scene to its own target, so all of that is
- *      what the prism bends.
- *   3. DISPERSION. The material has ior, thickness, dispersion and a little
- *      iridescence, so the white incident beam breaks into colour through the
- *      glass instead of passing through grey.
- *
- * NO ASSET FILES. No image, video, model or HDR is loaded. The environment,
- * the backdrop gradient and the bloom kernel are all generated in code, which
- * is also what keeps the CSP at script-src 'self' honest.
- *
- * COLOUR. Same rule as motion.js: every colour is read from tokens.css at
- * runtime. There is no hex literal in this file. A missing token throws, the
- * caller catches, and the static SVG stays -- substituting a guessed colour
- * would be exactly the palette drift the indirection prevents.
+ * Every colour is read from tokens.css at runtime; there is no hex literal in
+ * this file. A missing token throws, the caller catches, and the static SVG
+ * stays -- a guessed colour would be the palette drift we are avoiding.
  */
 
 import * as THREE from "../vendor/three/three.module.js";
@@ -91,10 +75,9 @@ export async function mount(host, api) {
   });
   renderer.setClearColor(0x000000, 0);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  // 1.45, down from 1.7. The phase (f) exposure was solved against a near-black
-  // hero slot where the prism was read almost entirely through blown highlights.
-  // Over the page's own base, at --prism-bg-opacity, that same exposure put the
-  // glass's specular above the body text sitting on it.
+  // Kept low on purpose. A brighter exposure suits a near-black hero slot where
+  // the prism reads through blown highlights, but over the page's own base at
+  // --prism-bg-opacity it puts the glass's specular above the body text.
   renderer.toneMappingExposure = 1.45;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true;
@@ -164,31 +147,17 @@ export async function mount(host, api) {
   pmrem.dispose();
 
   /* ---- 2. the refraction patch, generated -----------------------------
-   * Something for the glass to bend. A canvas gradient, not a file.
+   * Something for the glass to bend: a canvas gradient, not a file.
    *
-   * PHASE (g) STEP 2, AND THE ONE DEVIATION IN IT. The brief asked for this
-   * geometry to be deleted so only the prism and its beams render. It is not
-   * deleted, because deleting it IS the phase (c) grey-slab bug: three.js
-   * builds the transmission render target from the OPAQUE objects only, so a
-   * transmissive solid with nothing opaque behind it refracts the clear colour
-   * -- which is now fully transparent -- and renders as a grey slab. That was
-   * measured, in one change, when this material was made transparent to hide
-   * the streaks.
+   * Do not delete this geometry to "show only the prism". three.js builds the
+   * transmission render target from the opaque objects only, so a transmissive
+   * solid with nothing opaque behind it refracts the clear colour and renders
+   * as a grey slab -- the original bug.
    *
-   * What the brief actually wanted -- no dark rectangle over the page, the
-   * site's own theme showing through -- is delivered two other ways instead:
-   *
-   *   1. the plane is cut from 1400x500 to 560x330, roughly the prism's own
-   *      footprint, so it no longer spans the frame. As a full-viewport
-   *      background the old size was a flat --base band across the middle of
-   *      the page that hid the body::before wash behind it. That band was the
-   *      "black backdrop", and it is gone.
-   *   2. its field is painted in --base, the page's own background colour, so
-   *      what is left is invisible against the page by construction and
-   *      follows the theme if the tokens change.
-   *
-   * Everywhere outside this patch and the prism, the canvas stays
-   * pixel-transparent -- verified by reading back alpha, not by eye. */
+   * Instead the plane is cut to roughly the prism's own footprint so it no
+   * longer spans the frame, and its field is painted in --base so it is
+   * invisible against the page by construction.
+   */
   function backdropTexture() {
     const W = 512, H = 256;
     const hex = (x) => "#" + x.getHexString();
@@ -256,15 +225,13 @@ export async function mount(host, api) {
     g.fillStyle = mask;
     g.fillRect(0, 0, W, H);
 
-    /* THE PLANE MUST STAY OPAQUE. three.js renders the transmission target
-     * from the OPAQUE objects; a transparent backdrop is excluded from it, the
-     * glass then has nothing behind it, and the prism goes back to being a
-     * grey slab. That is not a guess -- making this material transparent to
-     * hide the streaks reproduced the phase (c) failure exactly, in one
-     * change. So the masked content is composited over an opaque field of
-     * --base instead, which is the colour of the page behind the canvas: the
-     * plane is invisible where it has no content, without ever being
-     * transparent. */
+    /* The plane must stay opaque. three.js renders the transmission target from
+     * the opaque objects; a transparent backdrop is excluded from it, the glass
+     * then has nothing behind it, and the prism goes back to being a grey slab.
+     * Making this material transparent to hide the streaks reproduced that
+     * failure exactly. The masked content is composited over an opaque field of
+     * --base instead, so the plane is invisible where it has no content without
+     * ever being transparent. */
     const c = document.createElement("canvas");
     c.width = W; c.height = H;
     const out = c.getContext("2d");
@@ -345,13 +312,10 @@ export async function mount(host, api) {
   const pivot = new THREE.Group();
   pivot.add(prism);
 
-  /* The edges, drawn. A real prism's silhouette and its internal edges are the
-   * brightest thing about it -- total internal reflection concentrates light
-   * along them -- but reproducing that from the environment alone needs a much
-   * larger light rig than a decorative mark can afford at 60fps. This is a
-   * thin additive line along the geometry's own edges, in the beam colour, at
-   * low opacity. It is a rendering choice and it is not subtle-washing
-   * anything: the geometry it traces is the geometry that is there.
+  /* The edges, drawn. A real prism's silhouette and internal edges are the
+   * brightest thing about it, but reproducing that from the environment alone
+   * needs a larger light rig than a decorative mark can afford at 60fps. This
+   * is a thin additive line along the geometry's own edges, in the beam colour.
    * 26 degrees keeps it to the silhouette and the facet breaks rather than
    * wireframing every bevel quad. */
   const edges = new THREE.LineSegments(
@@ -393,14 +357,11 @@ export async function mount(host, api) {
   const beams = new THREE.Group();
   scene.add(beams);
 
-  /* BEAM TUNING, PHASE (g) STEP 3. These were calibrated against a near-black
-   * hero backdrop, where an additive beam at 0.85 reads as light. Over the
-   * page's own base there is no darkness to glow against, so the trade is
-   * THICKER AND DIMMER: a wider core carries the same presence at a much lower
-   * additive contribution, which is what keeps text legible over it. The five
-   * colours are NOT touched -- they are the angle tokens, they are categorical,
-   * and dragging them toward the theme would blur exactly the distinction they
-   * carry. */
+  /* Thicker and dimmer than a beam over a dark backdrop would be. Over the
+   * page's own base there is no darkness to glow against, so a wider core
+   * carries the same presence at a much lower additive contribution, which is
+   * what keeps text legible over it. The five colours are not touched -- they
+   * are the categorical angle tokens. */
   const CORE_R = 2.3, CORE_A = 0.62;     // was 1.6 / 0.85
   const HALO_R = 7.5, HALO_A = 0.10;     // was 6.0 / 0.14
 
@@ -493,43 +454,26 @@ export async function mount(host, api) {
       }`,
   });
 
-  /* THE PEAK CAP -- phase (g), and the reason this file was re-tuned twice.
+  /* The peak cap.
    *
-   * Lowering --prism-bg-opacity cannot hold a contrast floor here, and that is
-   * arithmetic rather than opinion. Compositing is linear in sRGB VALUES, so a
-   * canvas pixel P over the page base B (--base, value 12) lands at
-   * a*P + (1-a)*B. The beams are additive and their cores reached 255, so at
-   * a = 0.40 the worst background under text was measured at luminance 0.151 --
-   * and --text-muted (#8E7D6C, L 0.215) needs that below 0.0089 to hold 4.5:1.
-   * Getting there by opacity alone needs a ~ 0.02, which is an invisible prism.
+   * Lowering --prism-bg-opacity cannot hold a contrast floor here. Compositing
+   * is linear in sRGB values, and the beams are additive with cores reaching
+   * 255, so holding the floor by opacity alone would need a value low enough to
+   * make the prism invisible.
    *
-   * So the peak is capped where it is produced instead. maxLum bounds the
-   * LUMINANCE of every pixel this canvas emits -- beams, bloom, glass specular
-   * and all -- by scaling the colour down rather than clipping a channel, so
-   * hue is preserved and the five angle colours stay exactly where tokens.css
-   * put them. The halo is below the cap already and is untouched: it is what
-   * carries the prism's presence once the core can no longer blow out.
+   * So the peak is capped where it is produced. maxLum bounds the luminance of
+   * every pixel this canvas emits -- beams, bloom and glass specular alike -- by
+   * scaling the colour rather than clipping a channel, so hue is preserved and
+   * the angle colours stay where tokens.css put them. The halo is already below
+   * the cap and is untouched; it carries the prism's presence once the core can
+   * no longer blow out.
    *
-   * THE VALUE IS DERIVED, THEN MEASURED. For a text colour of luminance Lt to
-   * hold 4.5:1, the background must sit at or below (Lt + 0.05)/4.5 - 0.05.
-   * Inverting the composite at a = 0.40 over B = 12 gives the ceiling on P:
-   *
-   *   --text-primary   #FBF4EC  L 0.904  ->  P <= 1.00 (never the binding case)
-   *   --text-secondary #C4B3A2  L 0.466  ->  P <= 0.63
-   *   --text-muted     #8E7D6C  L 0.215  ->  P <= 0.16
-   *
-   * THE DERIVATION IS A STARTING POINT, NOT THE ANSWER. Measured, 0.63 gave
-   * --text-secondary 4.11:1, not the 4.5:1 the arithmetic predicted: the page
-   * under the prism is not bare --base (the body::before wash sits there too)
-   * and the composite shader's output is not exactly display-referred. So the
-   * cap was solved against the measurement instead -- 0.52 -- and the model
-   * above is kept only to show which text colour is the binding one.
-   *
-   * 0.52 holds the floor for primary and secondary body text, which is what
-   * sits over the prism in prose. --text-muted needs ~0.16, which would leave
-   * the prism effectively invisible everywhere in order to fix the handful of
-   * blocks that use it -- so those blocks get a local scrim in app.css
-   * instead, and each one is named there. */
+   * The value is measured, not derived: the arithmetic predicted a higher cap
+   * than actually held, because the page under the prism is not bare --base and
+   * the shader's output is not exactly display-referred. It holds the floor for
+   * primary and secondary body text. --text-muted would need a cap low enough to
+   * make the prism invisible, so those few blocks get a local scrim in app.css
+   * instead, each named there. See web/README.md for the measured figures. */
   const PEAK_LUM = 0.52;
 
   const compMat = new THREE.RawShaderMaterial({

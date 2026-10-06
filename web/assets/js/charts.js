@@ -1,20 +1,15 @@
-/* PrismFlow Part 25 -- phase (b). Charts wired to committed data only.
+/* Charts wired to committed data only.
  *
- * Every value rendered here comes from a file in web/data/, which build_data.py
- * copied from a committed result file and stamped with a sha256. Nothing is
- * computed from a formula, interpolated, or carried across experiments. Where a
- * value is null the cell renders "not measured" in the dimmest token -- never
- * blank, never zero, never a guess.
+ * Every value comes from a file in web/data/ that build_data.py copied from a
+ * committed result and stamped with a sha256. Nothing is computed from a
+ * formula, interpolated or carried across experiments. A null renders as
+ * "not measured" in the dimmest token -- never blank, zero or a guess.
  *
- * A NOTE ON THE ANGLE COLOURS, because a validator disagrees with them.
- * The five angle hues fail an adjacent-pair CVD check as a categorical SET:
- * Market and Financial sit at protan deltaE 5.8. They are not used as a
- * discriminating scale anywhere on this page -- every angle is a labelled
- * COLUMN in a table, so identity comes from position and a text header, and
- * colour is redundant reinforcement. Fixing the pair by darkening Market would
- * collapse its greyscale separation from Tech (1.39 -> 1.10) and break the
- * luminance staircase that makes the set work in print. Position encoding was
- * the cheaper correct answer.
+ * On the angle colours: Market and Financial are close under a protan CVD
+ * check, which we accept deliberately. Colour is never the discriminator here
+ * -- every angle is a labelled column, so identity comes from position and a
+ * text header. Separating the pair would break the luminance staircase that
+ * makes the set work in greyscale and print.
  */
 (function () {
   "use strict";
@@ -330,24 +325,17 @@
   }
 
   /* ---- row detail ------------------------------------------------------
-   * The grid answers "which angles retrieved"; it has no room for the row
-   * itself. This opens the whole row: the pitch the pipeline was actually
-   * given, the label and the URL that label came from, and every per-angle
-   * field the committed run wrote.
+   * Opens the whole row: the pitch the pipeline was given, the label and its
+   * source URL, and every per-angle field the committed run wrote.
    *
-   * WHAT IS NOT HERE, AND WHY IT IS STATED RATHER THAN LEFT BLANK.
-   * There is no claim text. results/v2/part24_pipeline_verification.json
-   * records, per angle, a record count, a claim count, a token count and the
-   * mean of the reasoner's self-reported per-claim confidence -- it never
-   * wrote the claims. So the detail view prints that sentence instead of an
-   * empty panel, because an empty panel reads as a load failure and a dash
-   * reads as "no claims". Neither is true: the claims existed and were not
-   * retained.
+   * There is no claim text, and we say so rather than leaving a blank. The
+   * committed run recorded counts and confidences per angle but never the
+   * claims themselves -- an empty panel would read as a load failure and a
+   * dash would read as "no claims", and neither is true.
    *
-   * mean_claim_conf is labelled as what it is. It is the reasoner's own
-   * confidence in its own claims, averaged -- not a calibrated probability,
-   * and not the fused confidence, which does not exist on any row because no
-   * row fused.
+   * mean_claim_conf is labelled for what it is: the reasoner's own confidence
+   * in its own claims, averaged. Not a calibrated probability, and not a fused
+   * confidence.
    */
 
   function sourceLink(url) {

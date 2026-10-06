@@ -1,16 +1,15 @@
-/* PrismFlow -- the "Scores" page. Every number here is read from web/data/,
- * which build_data.py copied from a committed result file and stamped with a
- * sha256. This file computes nothing except client-side filtering and
- * counting over rows/cells that are already committed numbers -- it never
- * derives a metric a source file doesn't already report, and every null in a
- * source file renders as "not measured", never 0 or blank.
+/* The Scores page.
  *
- * Filters are domain / angle / system. Domain and angle apply to the two V2
- * panels (the only ones with those dimensions); system applies to the three
- * V1 panels (the only ones with more than one system). A panel a filter
- * doesn't apply to ignores that filter rather than guessing what it should do
- * with it -- documented once, in the filter-bar note in scores.html, not
- * repeated as a caveat under every panel.
+ * Every number is read from web/data/, copied by build_data.py from a
+ * committed result file and stamped with a sha256. This file computes nothing
+ * beyond client-side filtering and counting -- it never derives a metric a
+ * source file does not already report, and a null renders as "not measured",
+ * never 0 or blank.
+ *
+ * Domain and angle filters apply to the V2 panels, system to the V1 panels. A
+ * panel a filter does not apply to ignores it rather than guessing; that is
+ * documented once in the filter-bar note in scores.html rather than repeated
+ * under every panel.
  */
 (function () {
   "use strict";

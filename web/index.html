@@ -8,36 +8,35 @@
 <link rel="icon" href="assets/img/nav-mark.png">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/app.css">
-<!-- The reveal failsafe, FIRST and on its own. The scroll reveals hide real
-     content to fade it in; this file is the guarantee that it comes back, and
-     it is separate from motion.js on purpose -- the failure it survives is
-     motion.js dying. motion.js cannot hide anything unless this has loaded.
-     (A classic script, not inline: serve.py's CSP is script-src 'self'.) -->
+<!-- The reveal failsafe loads first and alone. The scroll reveals hide real
+     content to fade it in, and this file is the guarantee it comes back; it is
+     separate from motion.js because the failure it survives is motion.js
+     dying. Do not defer it and do not merge it into motion.js -- nothing can
+     be hidden until it has loaded. A classic script rather than inline,
+     because the CSP is script-src 'self'. -->
 <script src="assets/js/reveal-failsafe.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#ch1">Skip to content</a>
-<!-- ONE canvas for all ambient motion. Phase (b) learned what a stack of
-     blurred layers costs; this is a single compositor layer. -->
+<!-- One canvas for all ambient motion: a single compositor layer rather than a
+     stack of blurred ones. -->
 <canvas id="ambient" aria-hidden="true"></canvas>
 
-<!-- THE SITE-WIDE PRISM BACKGROUND -- phase (g) step 1.
-     Fixed to the viewport, the whole page scrolls OVER it. It is the product's
-     own mark: one incident beam refracting into five angle beams, and there is
-     no logo file in this repository to use instead.
+<!-- The site-wide prism background, fixed to the viewport with the whole page
+     scrolling over it. It is the product's own mark -- one incident beam
+     refracting into five angle beams -- and there is no logo file in this
+     repository to use instead.
 
-     The SVG below is ALWAYS present and is the only thing that renders until a
-     WebGL 2 context has actually been obtained; motion.js then mounts
-     assets/js/hero3d.js into this same box and sets [data-hero="gl"], which is
-     the only thing that fades the SVG out. No WebGL, reduced motion, a failed
-     import or a throw inside the module all leave this SVG exactly where it is,
-     static, at --prism-bg-opacity. There is no state in which this box is
-     empty, and nothing on the page depends on either renderer.
+     This SVG is always present and is the only thing that renders until a
+     WebGL 2 context has actually been obtained. motion.js then mounts
+     hero3d.js into the same box and sets [data-hero="gl"], which is the only
+     thing that fades the SVG out. No WebGL, reduced motion, a failed import or
+     a throw inside the module all leave the SVG exactly where it is, so there
+     is no state in which this box is empty.
 
-     It is STATIC. Unlike the phase (f) hero mark it carries no [data-beam]
-     hooks, because a background that animates behind body text is a legibility
-     problem rather than a feature -- the motion lives in the WebGL path, which
-     is governed by the pauses in motion.js. -->
+     It stays static on purpose: a background that animates behind body text is
+     a legibility problem, so the motion lives in the WebGL path, which
+     motion.js pauses when it is off-screen. -->
 <div id="prism-bg" aria-hidden="true">
   <svg class="prism-bg__svg" viewBox="0 0 900 240" preserveAspectRatio="xMidYMid meet"
        aria-hidden="true" focusable="false">
@@ -56,7 +55,8 @@
 <nav class="site-nav" aria-label="Chapters">
   <div class="wrap site-nav__inner">
     <span class="site-nav__brand">
-      <!-- Supplied image asset (PICtures/ChatGPT Image Sep 30, 2026, 07_39_01 PM.png), not code-generated -- unlike the hero prism, which stays SVG/WebGL. -->
+      <!-- A supplied raster asset, generated with an image model and committed as a
+           file -- unlike the prism mark, which stays SVG and WebGL. -->
       <img class="site-nav__mark" src="assets/img/nav-mark.png" width="30" height="29" alt="" aria-hidden="true">
       PrismFlow
     </span>
@@ -75,18 +75,15 @@
 <main>
 
 <!-- ============================ HERO ============================ -->
-<!-- No .no-prism-bg here, deliberately. The opt-out was added when the hero
-     held a video of the prism, so the fixed background would not draw the same
-     mark twice. With the video gone the hero is text, and the prism showing
-     behind it is the intended look -- the mark is the page's own, and the hero
-     is where it reads best.
+<!-- No .no-prism-bg here, deliberately: the hero is text, and the prism showing
+     behind it is the intended look.
 
-     That is a contrast decision, not a taste one, and it was measured rather
-     than assumed: see the dated note in web/README.md for the hero figures at
-     1440px and 390px, and for which adapter produced them. If those figures
-     ever fall below 4.5:1, the fix is --prism-scrim-local on this container or
-     restoring .no-prism-bg -- NOT lowering --prism-bg-opacity or PEAK_LUM,
-     both of which are tuned against measurements recorded in 6ae9645. -->
+     That is a contrast decision and it was measured, not assumed -- the hero
+     figures at 1440px and 390px, and the adapter that produced them, are in
+     web/README.md. If they ever fall below 4.5:1, the fix is
+     --prism-scrim-local on this container or restoring .no-prism-bg. Do NOT
+     lower --prism-bg-opacity or PEAK_LUM: both are tuned against their own
+     separate measurements. -->
 <header class="wrap hero">
   <h1 class="hero__title">Agreement is not<br>evidence.</h1>
   <p class="hero__thesis">
@@ -95,9 +92,8 @@
     agree.
   </p>
 
-  <!-- The prism that used to render here is now the site-wide fixed
-       background (see #prism-bg above). The slot held a hero video for one
-       phase; it was removed for visual reasons and the hero is text only. -->
+  <!-- The hero is text only; the prism is the site-wide fixed background
+       above, not an element here. -->
 
   <p class="prose">
     A research project, reported as a research project: this tour states what
