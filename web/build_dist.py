@@ -35,6 +35,11 @@ DIST = HERE / "dist"
 # the site, and it says so in its own first line.
 PAGES = ["index.html", "scores.html", "404.html"]
 
+# Served as configuration by the host rather than to the browser. `_headers` is
+# the Netlify / Cloudflare Pages format and has to sit at the root of the
+# published directory, which is why it is copied rather than left in web/.
+CONFIG = ["_headers"]
+
 # (directory relative to web/, allowed suffixes). A suffix of "" means every
 # file in that directory is allowed.
 TREES = [
@@ -65,7 +70,7 @@ def allowed(path: Path) -> bool:
     if path.name in DENY_NAMES or path.suffix.lower() in DENY_SUFFIXES:
         return False
     if len(rel.parts) == 1:
-        return rel.name in PAGES
+        return rel.name in PAGES or rel.name in CONFIG
     for tree, suffixes in TREES:
         tree_parts = Path(tree).parts
         if rel.parts[:len(tree_parts)] == tree_parts:
@@ -91,7 +96,10 @@ def build() -> list[Path]:
 # The leak scan
 # --------------------------------------------------------------------------
 
-SCAN_SUFFIXES = {".html", ".js", ".css", ".json", ".md", ".txt", ".svg"}
+# "" covers the extensionless files that do ship: the vendored LICENSE and the
+# _headers config. Anything binary that lands here fails to decode and is
+# skipped, so including them costs nothing.
+SCAN_SUFFIXES = {".html", ".js", ".css", ".json", ".md", ".txt", ".svg", ""}
 
 PATTERNS = [
     ("absolute path", re.compile(r"(?:[A-Za-z]:[\\/]{1,2}(?:Users|PERSONAL|Program)|/Users/|/home/)[^\s\"'<>)]*")),
@@ -181,9 +189,9 @@ def main() -> int:
         total = sum(p.stat().st_size for p in copied)
         print("build_dist -> %s" % DIST)
         print("  %d files, %.1f MB" % (len(copied), total / 1e6))
-        for page in PAGES:
-            mark = "ok" if (DIST / page).exists() else "MISSING"
-            print("  %-16s %s" % (page, mark))
+        for name in PAGES + CONFIG:
+            mark = "ok" if (DIST / name).exists() else "MISSING"
+            print("  %-16s %s" % (name, mark))
     if not DIST.exists():
         print("no dist/ to scan; run without --scan first")
         return 2

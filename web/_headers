@@ -1,0 +1,28 @@
+# Response headers for the deployed site. DRAFT -- nothing is deployed.
+#
+# This is the `_headers` format read by Netlify and Cloudflare Pages: a plain
+# file at the root of the published directory. web/build_dist.py copies it into
+# dist/, so the headers travel with the build they protect instead of sitting
+# in a repo-root config that can drift from a dist/ built separately.
+#
+# If the host turns out to be Vercel, this file is ignored and the same headers
+# have to be restated in a vercel.json "headers" block. Say the word and it can
+# be converted; the values below do not change, only the syntax around them.
+#
+# The CSP is the one web/serve.py already sends for local development, plus
+# frame-ancestors. Keep the two in step: a header that only exists in
+# production is a header nobody tests.
+#
+# frame-ancestors CANNOT be moved into a <meta http-equiv="Content-Security-
+# Policy"> tag. The HTML spec requires user agents to ignore frame-ancestors,
+# report-uri and sandbox when the policy arrives in a meta element, so a
+# meta-only policy silently leaves the site framable. Clickjacking protection
+# has to come from a real response header, which is why it is here and not in
+# index.html.
+
+/*
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Cross-Origin-Opener-Policy: same-origin
