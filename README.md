@@ -62,6 +62,32 @@ pip install -r requirements.txt
 pytest
 ```
 
+### Checking for secrets before a commit
+
+`tools/check_secrets.py` looks for two things: strings shaped like a provider
+key, and the **actual values** in your `.env`, which is what catches a key with
+no recognisable prefix. It never prints a value — a hit names the variable and
+where it turned up.
+
+```bash
+python tools/check_secrets.py          # staged changes
+python tools/check_secrets.py --all    # every tracked file
+```
+
+To run it on every commit, install it as a local hook. This is deliberately
+not installed for you, and it is not committed — a hook that appears in a
+working copy without the owner choosing it is a surprise, and `.git/hooks/` is
+not tracked anyway:
+
+```bash
+printf '#!/bin/sh\nexec python tools/check_secrets.py\n' > .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+A non-zero exit refuses the commit. If a finding is a false positive, add the
+exact `(path, text)` pair to `ACKNOWLEDGED` in the script rather than loosening
+a pattern, so the same string elsewhere is still reported.
+
 ## Layout
 
 ```

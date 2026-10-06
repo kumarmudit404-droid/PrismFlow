@@ -75,6 +75,8 @@ checkpoints/*
 .idea/
 .DS_Store
 Thumbs.db
+# VS Code's Code Runner scratch file. Written wherever the run was triggered.
+tempCodeRunnerFile.*
 
 # Test / tooling caches
 .pytest_cache/
@@ -94,11 +96,17 @@ credentials/
 # V2 cache
 cache/v2/
 
-# Generated documentation exports, not source. Named individually rather than
-# by *.pdf because PrismFlow_Master_Project_and_Claude_Prompts.pdf and
-# PrismFlow_Technical_Overview.pdf ARE tracked source.
-/PrismFlow_File_Catalog.pdf
-/PrismFlow_Interview_Guide.pdf
+# Generated documentation exports, not source. Ignore every root-level PDF and
+# name the two exceptions, rather than listing the exports one at a time: the
+# next export anyone produces is then ignored by default instead of waiting to
+# be added here after it has already been staged once.
+/*.pdf
+!/PrismFlow_Master_Project_and_Claude_Prompts.pdf
+!/PrismFlow_Technical_Overview.pdf
+
+# Scratch images kept on disk for reference. Never part of the site, which
+# serves only what is under web/assets/img/.
+/PICtures/
 
 # Part 24 extractor fetch cache (re-creatable from the live APIs)
 scripts/.part24_cache/
