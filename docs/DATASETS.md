@@ -136,8 +136,9 @@ eigenvalue form is the default for exactly this structure.
 
 The per-view breakdown is the practically useful part: removing `fou` costs
 0.74 effective views and removing `mor` costs 0.68, while removing `fac` costs
-0.24 and removing `pix` costs 0.21 -- although `fac` and `pix` are the two
-largest views, at 216 and 240 features, and are 0.85 dependent on each other.
+0.23 +/- 0.03 and removing `pix` costs 0.21 -- although `fac` and `pix` are
+the two largest views, at 216 and 240 features, and are 0.85 dependent on each
+other.
 View count and view width both overstate what those two views contribute.
 
 ### Why only one dataset

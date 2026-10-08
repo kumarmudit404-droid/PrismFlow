@@ -52,13 +52,14 @@ views, while dropping `fac` or `pix` — the two largest views — costs **0.23*
 and 0.21, because those two are 0.852 dependent on each other
 (`results/real/README.md`, the drop-one table).
 
-> **Discrepancy, unresolved.** The root `README.md` and the Chapter 1 text in
-> `web/index.html` both give the `fac` figure as **0.24**. The committed
-> drop-one table reports ENIV 3.05 ± 0.08 with `fac` removed against 3.28 ±
-> 0.07 for all six, i.e. **0.23**. This file follows the committed file. The
-> other two are not edited here — changing a figure on the site is outside
-> what this pass is allowed to do — and the difference is flagged for a
-> decision rather than quietly reconciled.
+> **Discrepancy, resolved 2026-10-08.** The `fac` drop-one figure had been
+> given as **0.24** in two places. Computed per seed from the committed source
+> (`results/real/handwritten/redundancy.json`, `per_seed[].eniv` minus
+> `per_seed[].eniv_leave_one_out.fac`) it is **0.2349 ± 0.0305** over 5 seeds,
+> i.e. **0.23 ± 0.03** at the drop-one table's rounding. Corrected to 0.23 in
+> `web/index.html` (commit `164be26`) and in `docs/DATASETS.md`. An earlier
+> version of this note also named the root `README.md`: that was wrong — the
+> README never carried the figure, so nothing was changed there.
 
 **What this is not.** Real views carry no ground-truth dependence, so ENIV is
 *applied* here and not *validated* here. The estimator's only validation is
