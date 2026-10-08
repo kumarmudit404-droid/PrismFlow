@@ -14,6 +14,7 @@ authors:
   - family-names: Kumar
     given-names: Mudit
 date-released: 2026-10-07
+license: Apache-2.0
 keywords:
   - multi-view learning
   - evidential deep learning

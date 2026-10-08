@@ -176,3 +176,7 @@ labour.]
 ## Author
 
 Mudit Kumar. See `CITATION.cff`.
+
+## Licence
+
+Apache-2.0. See `LICENSE`.
