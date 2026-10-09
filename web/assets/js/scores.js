@@ -221,9 +221,12 @@
         }).length;
         var dimmed = angleFilter && angleFilter !== a;
         var colour = dimmed ? "var(--status-not-measured)" : ANGLE_COLOUR[a];
+        // The run path is read from the payload: the grid was repointed at the
+        // post-fix run, and a citation hard-coded here would name the wrong file.
+        var runSrc = data.run_source || "results/v2/part24_pipeline_verification*.json";
         var line = bar(ANGLE_LABEL[a], count, null, 0, Math.max(1, n), colour,
           ANGLE_LABEL[a] + " — " + count + " of " + n + " rows — " +
-          "results/v2/part24_pipeline_verification.json (single pass, NOT A PART 24 FINDING)");
+          runSrc + " (single pass, NOT A PART 24 FINDING)");
         line.insertAdjacentHTML("afterbegin",
           '<span class="bars__label" style="min-width:7rem;flex:0 0 auto">' +
           esc(ANGLE_LABEL[a]) + "</span>");
@@ -316,7 +319,7 @@
     host.insertAdjacentHTML("beforeend",
       '<p class="axis-note">"provider_error" rows carry a reasoner_error on at ' +
       "least one angle (Groq rate limits and malformed-JSON responses, per-row " +
-      "in results/v2/part24_pipeline_verification.json); \"genuine\" rows " +
+      "in " + (coverage.run_source || "the committed run") + "); \"genuine\" rows " +
       "retrieved evidence and the reasoner ran, but produced no claims. Single " +
       "pass — not a Part 24 finding.</p>");
   }

@@ -45,6 +45,8 @@ What stays open, and still blocks the evaluation:
 | | |
 |---|---|
 | run | `results/v2/part24_pipeline_verification.json`, commit `1bb901e` |
+| postfix run | `results/v2/part24_pipeline_verification_postfix.json`, commit `5ea0a17` -- the source for V2-L1's current table |
+| funnel | `results/v2/coverage_funnel_old_vs_postfix.json`, commit `305020c` -- the two runs tabulated side by side, per angle and per connector |
 | harness | `experiments/v2/part24_pipeline_verification.py` at `17f4123` |
 | rows | 48 of the eventual 50 (`data/v2/evaluation_queries.json`; row 040 absent) |
 | settings | query derivation ON; 4 of 5 angles wired live |
@@ -92,33 +94,72 @@ and not reasoner tokens.
 
 ## V2-L1. Retrieval coverage: one angle of five contributes
 
-**Evidence:** the 48-row run, per angle.
+**Superseded figures, 2026-10-09.** This entry previously reported the pre-fix
+run's per-angle table -- tech 48/48 on 480 records, all of them arXiv, GitHub 0 --
+as the current state. That table is still a correct record of the pre-fix run,
+but it has been superseded as a description of the pipeline: the V2-L2 and
+V2-L3 connector fixes were re-run over all 48 rows on 2026-10-01 and the
+coverage is now different in both directions. The postfix figures are below; the
+pre-fix ones are kept beneath them, labelled, because the zeros they record were
+real.
+
+**Evidence:** the postfix 48-row run,
+`results/v2/part24_pipeline_verification_postfix.json`, commit `5ea0a17`,
+tabulated per angle in `results/v2/coverage_funnel_old_vs_postfix.json`
+(commit `305020c`).
 
 | angle | rows with >=1 record | records | source |
 |---|---|---|---|
-| tech | 48/48 | 480 | arXiv 480, GitHub 0 |
+| tech | 44/48 | 440 | GitHub 407 on 44 rows, arXiv 33 on 5 rows |
+| market | 6/48 | 11 | NewsAPI |
+| financial | 0/48 | 0 | yfinance |
+| sentiment | 1/48 | 3 | StackExchange |
+| regulatory | 0/48 | 0 | no connector exists |
+
+**The pre-fix run, for comparison** (`results/v2/part24_pipeline_verification.json`,
+commit `1bb901e`; identical in both of its passes, to the record):
+
+| angle | rows with >=1 record | records | source |
+|---|---|---|---|
+| tech | 48/48 | 480 | arXiv 480 on 48 rows, GitHub 0 |
 | market | 6/48 | 10 | NewsAPI |
 | financial | 0/48 | 0 | yfinance |
 | sentiment | 1/48 | 3 | StackExchange |
 | regulatory | 0/48 | 0 | no connector exists |
 
-Identical in both passes, to the record.
+**What changed, and what did not.** GitHub went from 0 records on 0 rows to
+**407 records on 44 of 48 rows**, and it now occupies the tech angle's primary
+slot on those 44. arXiv went the other way: **480 records on 48 rows -> 33
+records on 5 rows**, because the fallback chain stops once the primary slot
+returns. **arXiv's drop is the fallback chain working, not a regression in the
+arXiv fix** -- the tech angle swapped one source for the other on most rows
+rather than gaining both, which is the N=6 caveat in V2-L3 reproduced at N=48.
+The thin angles are unmoved: market, financial, sentiment and regulatory
+retrieve on 6, 0, 1 and 0 rows in both runs. Tech also lost 4 rows outright
+(48/48 -> 44/48): on those four, neither connector returns, where previously
+arXiv's query-independent default listing always returned ten.
 
-**Correction, 2026-10-01: 41 of 48, not 42.** The row count below was recounted
-directly from `results/v2/part24_pipeline_verification.json` during the
-2026-10-01 coverage analysis and cross-checked against this table: tech covers
-48/48, market 6/48 (rows 016, 025, 026, 032, 033, 044) and sentiment 1/48 (row
-009), and the market and sentiment row sets are disjoint, so 7 rows retrieved
-two angles and 41 retrieved exactly one. The per-angle table itself was correct;
-only the prose total was off by one.
+The 440 figure is records retrieved, pre-budget. 53 of them never reached a
+reasoner -- `records_in_context` is 387, on 19 rows carrying at least one
+oversize record. That is V2-L7, and the two quantities must not be added or
+conflated.
 
-**What this shows.** The pipeline is fed by one angle on 41 of 48 rows, and by
-two angles on the remaining 7. Since
+**Per-row coverage, postfix.** Counted directly from the postfix run: **3 rows
+retrieve nothing, 39 retrieve exactly one angle, and 6 retrieve two.** Claims
+are thinner than retrieval, as always: 6 rows produce claims on no angle, 40 on
+exactly one, and **2 on two** (rows 032 and 044). The pre-fix run's equivalent
+retrieval counts were 0 / 41 / 7, and 0 rows fused in its quota-limited second
+pass.
+
+**What this shows.** The headline is unchanged by the fix: the pipeline is fed
+by fewer than two claim-producing angles on 46 of 48 rows. Since
 `aggregate_dependence` excludes angles that produced no claims, a one-angle row
 yields a 1x1 dependence matrix and a degenerate ENIV, and fusion has nothing to
 adjudicate. The thesis under test -- that agreement should count in proportion to
 the effective independence of the views -- needs at least two views to be a
-statement about anything.
+statement about anything. What the fix bought is 2 rows where it is a statement
+about something, up from 0. That is a real improvement and it is not a
+resolution.
 
 **What would change it:** a connector whose queries match the dataset's
 language, for any of the four thin angles.

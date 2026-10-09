@@ -14,44 +14,45 @@
   },
   "n_rows": 48,
   "label": "PIPELINE-VERIFICATION RUN -- NOT PART 24 EVIDENCE\n  ONE PASS, N=48 of 48 committed rows (dataset target 50).\n  Reasoner is GROQ (openai/gpt-oss-120b) via the OpenAIReasoner\n  code path -- NOT Claude, NOT OpenAI (both unfunded).\n  Fusion adjudication is LEXICAL (offline LexicalAdjudicator), so\n  Part 23's Claude path is NOT exercised.\n  No seeds: nothing on this path varies as a function of a seed\n  (see module docstring), so no mean and no std are reported.\n  NOT A PART 24 FINDING under docs/CONTRACT.md section 5.",
+  "run_source": "results/v2/part24_pipeline_verification_postfix.json",
   "zero_claim_rows_provider_error": [
-    "006",
-    "024",
-    "026",
-    "027",
-    "028",
-    "029",
-    "030",
-    "031",
-    "032",
-    "033",
-    "034",
-    "035",
-    "036",
-    "037",
-    "038",
-    "039",
-    "041",
-    "042",
-    "043",
-    "044",
-    "045",
-    "046",
-    "047",
-    "048",
-    "049",
-    "050"
+    "004"
   ],
   "zero_claim_rows_genuine": [
-    "017",
-    "020"
+    "002",
+    "003",
+    "005",
+    "007",
+    "009"
   ],
+  "fused_rows": [
+    {
+      "id": "032",
+      "eniv": 1.7052,
+      "n_angles": 2,
+      "discount": 0.8526,
+      "confidence": 0.5841
+    },
+    {
+      "id": "044",
+      "eniv": 1.657,
+      "n_angles": 2,
+      "discount": 0.8285,
+      "confidence": 0.6478
+    }
+  ],
+  "fused_note": "2 of 48 rows reached two claim-producing angles, so ENIV exists on those rows and on no other row: row 032 at ENIV 1.7052, row 044 at ENIV 1.657. Below two angles the dependence matrix is 1x1 and ENIV is degenerate, so an empty ENIV cell means the row never fused -- it is not a zero. ONE PASS, no seeds: not a Part 24 finding under CONTRACT.md section 5, and 2 of 48 is not a distribution to calibrate against (V2-L6).",
+  "prefix": {
+    "rows": 48,
+    "fused_rows": [],
+    "note": "SUPERSEDED, kept as a record. The grid above is the post-fix re-run of 2026-10-01. The earlier run, before the GitHub and arXiv query fixes, fused 0 of 48 rows: GitHub returned 0 records on every row and arXiv answered unrelated queries with the same ten records (V2-L2, V2-L3)."
+  },
   "pass1": {
     "rows": 48,
     "fused_rows": [
       "032"
     ],
-    "note": "Retrieval is identical in both passes. The committed run above is the second pass, whose CLAIM counts are limited by an exhausted daily Groq quota; the first pass fused 1 row(s)."
+    "note": "Also pre-fix: the first of that run's two passes. Retrieval was identical across both, but CLAIM counts were not -- the second pass ran into an exhausted daily Groq quota. The first pass fused 1 row(s)."
   },
   "rows": [
     {
@@ -65,17 +66,17 @@
       "dataset_notes": "Launched Apr 6 2020 with strong initial pickup -- 1.7M downloads in week one -- but only 72,000 of 910,000 first-3-day downloaders converted to paid after the 90-day trial (Sensor Tower, via Wikipedia). Wind-down announced Oct 21 2020; formal dissolution Dec 1 2020.",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 5,
+          "records": 0,
+          "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
             "github": 0,
-            "arxiv": 10
+            "arxiv": 0
           },
-          "mean_claim_conf": 0.736,
-          "tokens": 860,
-          "note": null,
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
           "warnings": [
             "query derived for github: 274 chars -> 120 (limit 180, 12 terms)",
             "query derived for arxiv: 274 chars -> 120 (limit 220, 12 terms)"
@@ -145,10 +146,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 6.21,
-      "angles_with_claims": 1,
+      "seconds": 40.47,
+      "angles_with_claims": 0,
       "angles_with_reasoner_error": 0,
-      "zero_claim_cause": null,
+      "zero_claim_cause": "genuine",
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -165,19 +166,20 @@
       "dataset_notes": "Source: Swift Evolution SE-0190",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 5,
+          "records": 0,
+          "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
             "github": 0,
-            "arxiv": 10
+            "arxiv": 0
           },
-          "mean_claim_conf": 0.824,
-          "tokens": 1076,
-          "note": null,
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
           "warnings": [
-            "query derived for github: 210 chars -> 124 (limit 180, 12 terms)"
+            "query derived for github: 210 chars -> 124 (limit 180, 12 terms)",
+            "arxiv (secondary) failed: RateLimitError: throttled by source (source=arxiv, status=429)"
           ]
         },
         "market": {
@@ -243,10 +245,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 7.21,
-      "angles_with_claims": 1,
+      "seconds": 97.45,
+      "angles_with_claims": 0,
       "angles_with_reasoner_error": 0,
-      "zero_claim_cause": null,
+      "zero_claim_cause": "genuine",
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -263,20 +265,19 @@
       "dataset_notes": "Source: Swift Evolution SE-0039",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 5,
-          "reasoner_error": null,
+          "records": 9,
+          "claims": 0,
+          "reasoner_error": "BadRequestError 400: Error code: 400 - {'error': {'message': \"Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': '",
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.7,
-          "tokens": 896,
+          "mean_claim_conf": null,
+          "tokens": 192,
           "note": null,
           "warnings": [
             "query derived for github: 424 chars -> 111 (limit 180, 12 terms)",
-            "query derived for arxiv: 424 chars -> 111 (limit 220, 12 terms)"
+            "1 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 2664 tokens: 'Trybe_Exercises'); dropped before budgeting"
           ]
         },
         "market": {
@@ -343,10 +344,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 3.11,
-      "angles_with_claims": 1,
-      "angles_with_reasoner_error": 0,
-      "zero_claim_cause": null,
+      "seconds": 4.33,
+      "angles_with_claims": 0,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": "provider_error",
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -363,17 +364,17 @@
       "dataset_notes": "Source: Swift Evolution SE-0106",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 3,
+          "records": 0,
+          "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
             "github": 0,
-            "arxiv": 10
+            "arxiv": 0
           },
-          "mean_claim_conf": 0.8433,
-          "tokens": 1746,
-          "note": null,
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
           "warnings": [
             "query derived for github: 247 chars -> 101 (limit 180, 12 terms)",
             "query derived for arxiv: 247 chars -> 101 (limit 220, 12 terms)"
@@ -443,10 +444,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 26.31,
-      "angles_with_claims": 1,
+      "seconds": 99.75,
+      "angles_with_claims": 0,
       "angles_with_reasoner_error": 0,
-      "zero_claim_cause": null,
+      "zero_claim_cause": "genuine",
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -463,18 +464,19 @@
       "dataset_notes": "Source: Swift Evolution SE-0162",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
-          "reasoner_error": "BadRequestError 400: Error code: 400 - {'error': {'message': \"Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': '",
+          "records": 8,
+          "claims": 1,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1089,
+          "mean_claim_conf": 0.87,
+          "tokens": 1272,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "2 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 13170 tokens: 'FTC-Skystone-Dark-Angels-Romania-2020'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -539,10 +541,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 22.66,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 3.45,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -559,20 +561,19 @@
       "dataset_notes": "Source: Swift Evolution SE-0009",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 4,
+          "records": 8,
+          "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.7375,
-          "tokens": 976,
+          "mean_claim_conf": null,
+          "tokens": 236,
           "note": null,
           "warnings": [
             "query derived for github: 336 chars -> 103 (limit 180, 12 terms)",
-            "query derived for arxiv: 336 chars -> 103 (limit 220, 12 terms)"
+            "2 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 54362 tokens: 'china-dictatorship'); dropped before budgeting"
           ]
         },
         "market": {
@@ -639,10 +640,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 21.2,
-      "angles_with_claims": 1,
+      "seconds": 5.61,
+      "angles_with_claims": 0,
       "angles_with_reasoner_error": 0,
-      "zero_claim_cause": null,
+      "zero_claim_cause": "genuine",
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -659,18 +660,19 @@
       "dataset_notes": "Source: Swift Evolution SE-0105",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 3,
+          "records": 8,
+          "claims": 1,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.85,
-          "tokens": 943,
+          "mean_claim_conf": 0.71,
+          "tokens": 260,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "2 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 5154 tokens: 'Google-Musurment-controller-controller-D'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -734,7 +736,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 18.74,
+      "seconds": 5.19,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -754,18 +756,21 @@
       "dataset_notes": "Source: Swift Evolution SE-0024",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 3,
+          "records": 0,
+          "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
             "github": 0,
-            "arxiv": 10
+            "arxiv": 0
           },
-          "mean_claim_conf": 0.8833,
-          "tokens": 1073,
-          "note": null,
-          "warnings": []
+          "mean_claim_conf": null,
+          "tokens": 0,
+          "note": "no evidence retrieved; reasoner not called",
+          "warnings": [
+            "arxiv (secondary) failed: RateLimitError: throttled by source (source=arxiv, status=429)",
+            "no records retrieved from any of 2 configured source(s)"
+          ]
         },
         "market": {
           "records": 0,
@@ -829,10 +834,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 30.71,
-      "angles_with_claims": 1,
+      "seconds": 88.87,
+      "angles_with_claims": 0,
       "angles_with_reasoner_error": 0,
-      "zero_claim_cause": null,
+      "zero_claim_cause": "genuine",
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -854,11 +859,10 @@
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.92,
-          "tokens": 883,
+          "mean_claim_conf": 0.88,
+          "tokens": 1283,
           "note": null,
           "warnings": []
         },
@@ -924,7 +928,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 19.36,
+      "seconds": 3.19,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -944,20 +948,19 @@
       "dataset_notes": "Source: Python PEP 458 | abstract trimmed at a sentence boundary",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 4,
+          "records": 9,
+          "claims": 1,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.85,
-          "tokens": 877,
+          "mean_claim_conf": 0.72,
+          "tokens": 1891,
           "note": null,
           "warnings": [
             "query derived for github: 815 chars -> 85 (limit 180, 12 terms)",
-            "query derived for arxiv: 815 chars -> 85 (limit 220, 12 terms)"
+            "1 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 10485 tokens: 'hey-game-pepople-i-know-you-r-ment-to-li'); dropped before budgeting"
           ]
         },
         "market": {
@@ -1024,7 +1027,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 23.46,
+      "seconds": 5.53,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1044,20 +1047,19 @@
       "dataset_notes": "Source: Python PEP 654",
       "angles": {
         "tech": {
-          "records": 10,
+          "records": 5,
           "claims": 1,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.55,
-          "tokens": 928,
+          "mean_claim_conf": 0.92,
+          "tokens": 151,
           "note": null,
           "warnings": [
             "query derived for github: 310 chars -> 113 (limit 180, 12 terms)",
-            "query derived for arxiv: 310 chars -> 113 (limit 220, 12 terms)"
+            "5 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 54876 tokens: 'Liberty-House-Club-Whitepaper'); dropped before budgeting"
           ]
         },
         "market": {
@@ -1124,7 +1126,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 25.6,
+      "seconds": 6.03,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1144,20 +1146,19 @@
       "dataset_notes": "Source: Python PEP 747",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 4,
+          "records": 9,
+          "claims": 1,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.715,
-          "tokens": 1065,
+          "mean_claim_conf": 0.92,
+          "tokens": 305,
           "note": null,
           "warnings": [
             "query derived for github: 831 chars -> 103 (limit 180, 12 terms)",
-            "query derived for arxiv: 831 chars -> 103 (limit 220, 12 terms)"
+            "1 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 13170 tokens: 'FTC-Skystone-Dark-Angels-Romania-2020'); dropped before budgeting"
           ]
         },
         "market": {
@@ -1224,7 +1225,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 21.93,
+      "seconds": 5.63,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1245,19 +1246,17 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 1,
+          "claims": 3,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.85,
-          "tokens": 910,
+          "mean_claim_conf": 0.75,
+          "tokens": 673,
           "note": null,
           "warnings": [
-            "query derived for github: 263 chars -> 92 (limit 180, 12 terms)",
-            "query derived for arxiv: 263 chars -> 92 (limit 220, 12 terms)"
+            "query derived for github: 263 chars -> 92 (limit 180, 12 terms)"
           ]
         },
         "market": {
@@ -1324,7 +1323,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 15.99,
+      "seconds": 14.82,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1349,15 +1348,13 @@
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.75,
-          "tokens": 881,
+          "mean_claim_conf": 0.66,
+          "tokens": 673,
           "note": null,
           "warnings": [
-            "query derived for github: 561 chars -> 101 (limit 180, 12 terms)",
-            "query derived for arxiv: 561 chars -> 101 (limit 220, 12 terms)"
+            "query derived for github: 561 chars -> 101 (limit 180, 12 terms)"
           ]
         },
         "market": {
@@ -1424,7 +1421,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 22.31,
+      "seconds": 21.74,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1449,21 +1446,19 @@
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.7833,
-          "tokens": 902,
+          "mean_claim_conf": 0.7667,
+          "tokens": 128,
           "note": null,
           "warnings": [
-            "query derived for github: 688 chars -> 103 (limit 180, 12 terms)",
-            "query derived for arxiv: 688 chars -> 103 (limit 220, 12 terms)"
+            "query derived for github: 688 chars -> 103 (limit 180, 12 terms)"
           ]
         },
         "market": {
           "records": 1,
           "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
             "newsapi": 1
@@ -1524,9 +1519,9 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 25.68,
+      "seconds": 34.4,
       "angles_with_claims": 1,
-      "angles_with_reasoner_error": 1,
+      "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
@@ -1545,19 +1540,17 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
+          "claims": 2,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 873,
+          "mean_claim_conf": 0.905,
+          "tokens": 673,
           "note": null,
           "warnings": [
-            "query derived for github: 275 chars -> 105 (limit 180, 12 terms)",
-            "query derived for arxiv: 275 chars -> 105 (limit 220, 12 terms)"
+            "query derived for github: 275 chars -> 105 (limit 180, 12 terms)"
           ]
         },
         "market": {
@@ -1624,10 +1617,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 8.91,
-      "angles_with_claims": 0,
+      "seconds": 18.43,
+      "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
-      "zero_claim_cause": "genuine",
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -1645,19 +1638,17 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 2,
+          "claims": 3,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.84,
-          "tokens": 882,
+          "mean_claim_conf": 0.8933,
+          "tokens": 673,
           "note": null,
           "warnings": [
-            "query derived for github: 585 chars -> 92 (limit 180, 12 terms)",
-            "query derived for arxiv: 585 chars -> 92 (limit 220, 12 terms)"
+            "query derived for github: 585 chars -> 92 (limit 180, 12 terms)"
           ]
         },
         "market": {
@@ -1724,7 +1715,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 18.36,
+      "seconds": 19.83,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1744,18 +1735,19 @@
       "dataset_notes": "PEP 572; implemented in Python 3.8. Human pre-label: Yes (syntax ergonomics vs added language complexity).",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 4,
+          "records": 6,
+          "claims": 1,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.775,
-          "tokens": 1143,
+          "mean_claim_conf": 0.92,
+          "tokens": 191,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "4 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 66823 tokens: 'c-basic-programs'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -1819,7 +1811,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 18.76,
+      "seconds": 17.06,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -1839,18 +1831,19 @@
       "dataset_notes": "PEP 585; implemented in Python 3.9. Human pre-label: No.",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
+          "records": 7,
+          "claims": 1,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.92,
+          "tokens": 637,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "3 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 52558 tokens: 'c-basic-programs'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -1914,10 +1907,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 20.1,
-      "angles_with_claims": 0,
+      "seconds": 13.8,
+      "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
-      "zero_claim_cause": "genuine",
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -1935,15 +1928,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 3,
+          "claims": 1,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.9067,
-          "tokens": 1695,
+          "mean_claim_conf": 0.88,
+          "tokens": 382,
           "note": null,
           "warnings": []
         },
@@ -2009,7 +2001,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 17.86,
+      "seconds": 15.69,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -2029,18 +2021,19 @@
       "dataset_notes": "PEP 634; implemented in Python 3.10. Human pre-label: Yes (expressiveness vs language surface area).",
       "angles": {
         "tech": {
-          "records": 10,
+          "records": 9,
           "claims": 3,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": 0.7133,
-          "tokens": 934,
+          "mean_claim_conf": 0.7833,
+          "tokens": 354,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "1 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 4163 tokens: 'mhngroups'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -2104,7 +2097,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 20.68,
+      "seconds": 17.49,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -2124,18 +2117,20 @@
       "dataset_notes": "PEP 657; implemented in Python 3.11. Human pre-label: No.",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 1,
+          "records": 9,
+          "claims": 4,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 3,
+            "arxiv": 7
           },
-          "mean_claim_conf": 0.92,
-          "tokens": 934,
+          "mean_claim_conf": 0.7625,
+          "tokens": 734,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "1 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 7401 tokens: 'blast-ON'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -2199,7 +2194,7 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 25.39,
+      "seconds": 20.84,
       "angles_with_claims": 1,
       "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
@@ -2219,18 +2214,19 @@
       "dataset_notes": "PEP 673; implemented in Python 3.11. Human pre-label: No.",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "records": 4,
+          "claims": 1,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1057,
+          "mean_claim_conf": 0.9,
+          "tokens": 134,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "6 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 66823 tokens: 'Parkinson-Disease-Prediction'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -2294,10 +2290,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 4.87,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 13.34,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -2314,28 +2310,29 @@
       "dataset_notes": "PEP 688; resolution dated 2023-03-07, implemented for Python 3.12. Human pre-label: Yes (API power vs compatibility complexity).",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "records": 8,
+          "claims": 2,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1063,
+          "mean_claim_conf": 0.9,
+          "tokens": 276,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "2 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 66823 tokens: 'c-basic-programs'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 1,
-          "claims": 1,
+          "claims": 0,
           "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
             "newsapi": 1
           },
-          "mean_claim_conf": 0.85,
+          "mean_claim_conf": null,
           "tokens": 78,
           "note": null,
           "warnings": [
@@ -2389,9 +2386,9 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 5.79,
+      "seconds": 29.16,
       "angles_with_claims": 1,
-      "angles_with_reasoner_error": 1,
+      "angles_with_reasoner_error": 0,
       "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
@@ -2409,18 +2406,19 @@
       "dataset_notes": "PEP 695; implemented in Python 3.12. Human pre-label: Yes (typing ergonomics vs added syntax).",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "records": 9,
+          "claims": 1,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.9,
+          "tokens": 188,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "1 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 4773 tokens: 'c-basic-programs'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 2,
@@ -2484,10 +2482,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 6.91,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 2,
-      "zero_claim_cause": "provider_error",
+      "seconds": 24.04,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 1,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -2505,15 +2503,15 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 1,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 8,
+            "arxiv": 2
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.92,
+          "tokens": 711,
           "note": null,
           "warnings": []
         },
@@ -2579,10 +2577,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 5.27,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 9.43,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -2599,18 +2597,19 @@
       "dataset_notes": "PEP 684; implemented for Python 3.12. Human pre-label: Yes (parallelism gains vs runtime extension complexity).",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "records": 2,
+          "claims": 1,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 968,
+          "mean_claim_conf": 0.9,
+          "tokens": 50,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "8 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 32118 tokens: 'Comp_Sci_Sem_2'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -2674,10 +2673,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 1.67,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 10.89,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -2695,15 +2694,15 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 2,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 3,
+            "arxiv": 7
           },
-          "mean_claim_conf": null,
-          "tokens": 885,
+          "mean_claim_conf": 0.8,
+          "tokens": 704,
           "note": null,
           "warnings": []
         },
@@ -2769,10 +2768,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 6.03,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 16.19,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -2790,15 +2789,15 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 4,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 2,
+            "arxiv": 8
           },
-          "mean_claim_conf": null,
-          "tokens": 818,
+          "mean_claim_conf": 0.7075,
+          "tokens": 734,
           "note": null,
           "warnings": []
         },
@@ -2864,10 +2863,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 6.12,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 21.18,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -2885,15 +2884,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 3,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.8233,
+          "tokens": 347,
           "note": null,
           "warnings": []
         },
@@ -2959,10 +2957,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 8.95,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 30.55,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -2980,28 +2978,27 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 4,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.8125,
+          "tokens": 330,
           "note": null,
           "warnings": []
         },
         "market": {
-          "records": 3,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "records": 4,
+          "claims": 1,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "newsapi": 3
+            "newsapi": 4
           },
-          "mean_claim_conf": null,
-          "tokens": 261,
+          "mean_claim_conf": 0.7,
+          "tokens": 334,
           "note": null,
           "warnings": []
         },
@@ -3050,16 +3047,16 @@
           ]
         }
       },
-      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "run_note": null,
       "fused": null,
-      "seconds": 7.09,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 2,
-      "zero_claim_cause": "provider_error",
-      "eniv": null,
-      "confidence": null,
-      "discount": null,
-      "contradictions": null
+      "seconds": 98.79,
+      "angles_with_claims": 2,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": 1.7052,
+      "confidence": 0.5841,
+      "discount": 0.8526,
+      "contradictions": 0
     },
     {
       "id": "033",
@@ -3072,23 +3069,24 @@
       "dataset_notes": "Razorpay announced a seed + Series A totaling $11.5M on 2015-10-27. Human pre-label: No.",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "records": 3,
+          "claims": 1,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 856,
+          "mean_claim_conf": 0.82,
+          "tokens": 1128,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "token budget 2000 filled at 1128 tokens; dropped 7 lower-ranked record(s) under the prefix policy"
+          ]
         },
         "market": {
           "records": 1,
           "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
             "newsapi": 1
@@ -3147,10 +3145,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 1.87,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 2,
-      "zero_claim_cause": "provider_error",
+      "seconds": 5.03,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -3168,15 +3166,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 4,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.6725,
+          "tokens": 237,
           "note": null,
           "warnings": []
         },
@@ -3242,10 +3239,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 6.67,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 4.85,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -3263,15 +3260,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 5,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1112,
+          "mean_claim_conf": 0.746,
+          "tokens": 477,
           "note": null,
           "warnings": []
         },
@@ -3337,10 +3333,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 5.63,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 11.76,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -3357,18 +3353,19 @@
       "dataset_notes": "Contemporaneous report: Stayzilla suspended operations and planned a reboot; later history treats the shutdown as a failure. Human pre-label: Yes.",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "records": 8,
+          "claims": 4,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.735,
+          "tokens": 225,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "2 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 32118 tokens: 'Comp_Sci_Sem_2'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -3432,10 +3429,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 7.36,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 9.65,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -3452,18 +3449,19 @@
       "dataset_notes": "Contemporaneous coverage reported PepperTap shutting its main grocery business after failing to reach profitability. Human pre-label: Yes.",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "records": 9,
+          "claims": 3,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1089,
+          "mean_claim_conf": 0.71,
+          "tokens": 272,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "1 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 7219 tokens: '-L-'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -3527,10 +3525,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 9.49,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 18.02,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -3548,15 +3546,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 2,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.895,
+          "tokens": 258,
           "note": null,
           "warnings": []
         },
@@ -3622,10 +3619,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 2.28,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 13.87,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -3643,15 +3640,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 5,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.744,
+          "tokens": 439,
           "note": null,
           "warnings": []
         },
@@ -3717,10 +3713,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 7.33,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 21.93,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -3738,15 +3734,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 5,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1089,
+          "mean_claim_conf": 0.84,
+          "tokens": 461,
           "note": null,
           "warnings": []
         },
@@ -3812,10 +3807,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 6.76,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 19.14,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -3833,15 +3828,15 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 4,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 1,
+            "arxiv": 9
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.6975,
+          "tokens": 891,
           "note": null,
           "warnings": []
         },
@@ -3907,10 +3902,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 4.21,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 19.08,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -3928,15 +3923,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 3,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 870,
+          "mean_claim_conf": 0.7633,
+          "tokens": 369,
           "note": null,
           "warnings": []
         },
@@ -4002,10 +3996,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 4.38,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 27.52,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -4023,27 +4017,26 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 3,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.84,
+          "tokens": 1190,
           "note": null,
           "warnings": []
         },
         "market": {
           "records": 2,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 1,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
             "newsapi": 2
           },
-          "mean_claim_conf": null,
+          "mean_claim_conf": 0.9,
           "tokens": 200,
           "note": null,
           "warnings": [
@@ -4095,16 +4088,16 @@
           ]
         }
       },
-      "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
+      "run_note": null,
       "fused": null,
-      "seconds": 7.45,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 2,
-      "zero_claim_cause": "provider_error",
-      "eniv": null,
-      "confidence": null,
-      "discount": null,
-      "contradictions": null
+      "seconds": 46.0,
+      "angles_with_claims": 2,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
+      "eniv": 1.657,
+      "confidence": 0.6478,
+      "discount": 0.8285,
+      "contradictions": 0
     },
     {
       "id": "045",
@@ -4118,15 +4111,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 4,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.8125,
+          "tokens": 352,
           "note": null,
           "warnings": []
         },
@@ -4192,10 +4184,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 10.98,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 5.52,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -4213,15 +4205,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 2,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.56,
+          "tokens": 659,
           "note": null,
           "warnings": []
         },
@@ -4287,10 +4278,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 5.91,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 9.14,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -4307,18 +4298,19 @@
       "dataset_notes": "PayPal 2024 10-K: net income was $4.147B.",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "records": 9,
+          "claims": 2,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.875,
+          "tokens": 275,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "1 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 58467 tokens: '.config'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -4382,10 +4374,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 5.87,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 13.33,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -4403,15 +4395,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 4,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.725,
+          "tokens": 337,
           "note": null,
           "warnings": []
         },
@@ -4477,10 +4468,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 6.01,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 18.66,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -4498,15 +4489,14 @@
       "angles": {
         "tech": {
           "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "claims": 1,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.95,
+          "tokens": 496,
           "note": null,
           "warnings": []
         },
@@ -4572,10 +4562,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 5.99,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 13.96,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -4592,18 +4582,19 @@
       "dataset_notes": "Affirm FY2024 filing materials: total revenue about $2.3B, operating loss $615.8M and net loss $517.8M.",
       "angles": {
         "tech": {
-          "records": 10,
-          "claims": 0,
-          "reasoner_error": "RateLimitError 429: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m3bcznbxekmstxg3txr5w6ja` service tier `on_demand` on tokens per ",
+          "records": 8,
+          "claims": 1,
+          "reasoner_error": null,
           "retrieval_error": null,
           "provenance": {
-            "github": 0,
-            "arxiv": 10
+            "github": 10
           },
-          "mean_claim_conf": null,
-          "tokens": 1076,
+          "mean_claim_conf": 0.71,
+          "tokens": 239,
           "note": null,
-          "warnings": []
+          "warnings": [
+            "2 record(s) exceed the entire 2000-token budget on their own and can never be included (largest 54876 tokens: 'redesigned-pancake'); dropped before budgeting"
+          ]
         },
         "market": {
           "records": 0,
@@ -4667,10 +4658,10 @@
       },
       "run_note": "fewer than 2 angles produced claims; dependence and ENIV are not defined for this row",
       "fused": null,
-      "seconds": 6.04,
-      "angles_with_claims": 0,
-      "angles_with_reasoner_error": 1,
-      "zero_claim_cause": "provider_error",
+      "seconds": 19.12,
+      "angles_with_claims": 1,
+      "angles_with_reasoner_error": 0,
+      "zero_claim_cause": null,
       "eniv": null,
       "confidence": null,
       "discount": null,
@@ -4678,12 +4669,17 @@
     }
   ],
   "provenance": {
-    "generated_utc": "2026-09-28T07:15:36Z",
+    "generated_utc": "2026-10-09T03:19:11Z",
     "sources": [
       {
         "path": "data/v2/evaluation_queries.json",
         "sha256": "0731456e348a5163bf96f14c94ae952b124e350acd564dd23c26465ded17e17f",
         "bytes": 28241
+      },
+      {
+        "path": "results/v2/part24_pipeline_verification_postfix.json",
+        "sha256": "9630bca4db850233068f2e49657def34d0e9e71f8bf9234150e59b93e4cb25f2",
+        "bytes": 109775
       },
       {
         "path": "results/v2/part24_pipeline_verification.json",

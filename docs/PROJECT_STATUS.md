@@ -167,28 +167,43 @@ can be a finding.
 
 ### 3.2 Per-angle retrieval, the upstream cause
 
+**Corrected 2026-10-09.** This table previously reported the pre-fix run (tech
+48/48 on 480 records, all arXiv, GitHub 0) as the current state. The V2-L2 and
+V2-L3 connector fixes were re-run over all 48 rows on 2026-10-01, and the
+postfix figures are these:
+
 | angle | rows with ≥1 record | records | source connector |
 |---|---|---|---|
-| tech | 48/48 | 480 | arXiv 480, GitHub 0 |
-| market | 6/48 | 10 | NewsAPI |
+| tech | 44/48 | 440 | GitHub 407 on 44 rows, arXiv 33 on 5 rows |
+| market | 6/48 | 11 | NewsAPI |
 | financial | 0/48 | 0 | yfinance |
 | sentiment | 1/48 | 3 | StackExchange |
 | regulatory | 0/48 | 0 | **no connector exists** |
 
-Source: `docs/v2-known-limitations.md` V2-L1. Identical in both passes, to the
-record.
+Source: `results/v2/part24_pipeline_verification_postfix.json`, commit
+`5ea0a17`, tabulated in `results/v2/coverage_funnel_old_vs_postfix.json`
+(commit `305020c`); `docs/v2-known-limitations.md` V2-L1 carries the pre-fix
+table alongside it.
 
-41 of 48 rows retrieved exactly one angle and 7 retrieved two. The thesis under
-test needs at least two views to be a statement about anything, so on 41 rows
-there is nothing for dependence, ENIV, the discount or fusion to act on. Note
-the gap between the 7 rows that *retrieved* two angles and the 1 row that
-*fused*: retrieval is not claims.
+GitHub went from 0 records to **407 on 44 of 48 rows**; arXiv fell from 480
+records on 48 rows to **33 on 5**, because GitHub now holds the tech angle's
+primary slot and the fallback chain stops there. That drop is the fallback
+chain working, not a regression in the arXiv fix. The four thin angles did not
+move in row coverage — market 6, financial 0, sentiment 1, regulatory 0 in both
+runs. 440 is pre-budget: 387 records actually reached a reasoner (V2-L7).
+
+Postfix, **3 of 48 rows retrieve nothing, 39 retrieve exactly one angle and 6
+retrieve two**; by claims rather than retrieval it is 6, 40 and **2**. So on 46
+of 48 rows there is still nothing for dependence, ENIV, the discount or fusion
+to act on. Note the gap between the 6 rows that *retrieved* two angles and the
+2 that *fused*: retrieval is not claims.
 
 V2-L2 (GitHub returned 0 on every row) and V2-L3 (arXiv answered unrelated
 queries with the same ten records) were both the same fault — a connector
-handed a bag of words where it expects a query language — and are **resolved**,
-re-verified at N=6 where fusible rows went from 0 of 6 to 1 of 6
-(`results/v2/part24_reverify_n6.json`). Fixing them advanced coverage only.
+handed a bag of words where it expects a query language — and are **resolved**.
+At N=48 the fix raised fusible rows from 0 to 2 (rows 032 and 044, ENIV
+**1.7052** and **1.657**). Fixing them advanced coverage only, and 2 of 48 is
+not a distribution — see the calibration table above and V2-L6.
 
 ### 3.3 Other absences
 

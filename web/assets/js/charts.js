@@ -651,9 +651,21 @@
       });
     }
 
+    // The fused-row count comes from the run, not from prose written once and
+    // left behind. This page said "no row reached two angles" for as long as
+    // the grid was the pre-fix run; it is derived now so it cannot go stale
+    // again.
+    if (data.fused_note) {
+      host.insertAdjacentHTML("beforeend",
+        '<p class="pass-note">' + esc(data.fused_note) + "</p>");
+    }
+    if (data.prefix) {
+      host.insertAdjacentHTML("beforeend",
+        '<p class="pass-note">' + esc(data.prefix.note) + "</p>");
+    }
     if (data.pass1) {
       host.insertAdjacentHTML("beforeend",
-        '<p class="pass-note">' + data.pass1.note + "</p>");
+        '<p class="pass-note">' + esc(data.pass1.note) + "</p>");
     }
     host.insertAdjacentHTML("beforeend", '<p class="src">' + provenanceLine(data.provenance) + "</p>");
   }

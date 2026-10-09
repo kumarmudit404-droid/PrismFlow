@@ -1,7 +1,33 @@
 # Part 19 retrieval and Part 24's dataset expect different query shapes
 
-**Status: finding.** Recorded 2026-09-26, from a single live verification run
-over the 17 labeled rows in `data/v2/evaluation_queries.json`.
+**Status: fixed, default-off, and not a resolution of low coverage.** Recorded
+2026-09-26 as a finding, from a single live verification run over the 17 labeled
+rows in `data/v2/evaluation_queries.json`. Updated 2026-10-09.
+
+Query derivation -- the missing step this document named -- was implemented in
+commit `16e851e` ("part19: derive short keyword queries from long pitches, per
+connector") and is covered by the test suite. **It is off by default:**
+`BaseAngle.__init__` takes `derive_queries: bool = False`
+(`prismflow/v2/angles/base.py:108`), so a caller that does not pass
+`derive_queries=True` still hands the connectors the raw pitch. Every figure
+below was measured with derivation absent and remains the correct record of
+that state.
+
+What turning it on bought, measured over all 48 rows with the V2-L2 and V2-L3
+connector fixes also in place
+(`results/v2/part24_pipeline_verification_postfix.json`, commit `5ea0a17`):
+**rows reaching two claim-producing angles went from 0 of 48 to 2 of 48** --
+rows 032 and 044, ENIV 1.7052 and 1.657. One pass, no seeds, Groq through the
+`OpenAIReasoner` code path, offline `LexicalAdjudicator`; not a Part 24 finding
+under `docs/CONTRACT.md` section 5.
+
+So the *mismatch* is addressed and the *coverage* is not. 2 of 48 is a
+precondition cleared on two rows, not a fixed pipeline: 46 of 48 rows still
+reach fewer than two angles, and no calibration metric can be computed from
+two. The deciding this document asked for -- what `query_text` should return,
+and whether derivation should be the default -- is still open, and the
+remaining coverage blockers are `docs/v2-known-limitations.md` V2-L1 and V2-L4
+through V2-L6.
 
 This is a structural gap between two Parts that were never reconciled with each
 other. It is **not a bug in either one**: Part 19's retrieval behaves as

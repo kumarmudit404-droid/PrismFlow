@@ -388,8 +388,17 @@ ANGLES = ("tech", "market", "financial", "regulatory", "sentiment")
 
 
 def build_v2_coverage() -> dict:
+    # CORRECTED 2026-10-09. The grid used to be built from
+    # part24_pipeline_verification.json, the run that PREDATES the V2-L2 and
+    # V2-L3 connector fixes. That run fused no rows, so the page said "no row
+    # reached two angles" -- which stopped being true once the fixes were
+    # re-run over all 48 rows on 2026-10-01. The grid is now the postfix run;
+    # the pre-fix run stays in the file as a labelled comparison, because the
+    # zeros it recorded were real and it is still the source for V2-L2's
+    # original evidence.
     ds_src = ROOT / "data/v2/evaluation_queries.json"
-    run_src = ROOT / "results/v2/part24_pipeline_verification.json"
+    run_src = ROOT / "results/v2/part24_pipeline_verification_postfix.json"
+    prefix_src = ROOT / "results/v2/part24_pipeline_verification.json"
     pass1_src = ROOT / "results/v2/part24_pipeline_verification_pass1.json"
 
     dataset = {q["id"]: q for q in json.loads(ds_src.read_text(encoding="utf-8"))}
@@ -462,6 +471,32 @@ def build_v2_coverage() -> dict:
         })
 
     sources = [ds_src, run_src]
+
+    # Rows that reached >=2 claim-producing angles, read off the run rather than
+    # restated. ENIV exists on exactly these rows and nowhere else.
+    fused = [{"id": r["id"], "eniv": r.get("eniv"), "n_angles": r.get("n_angles"),
+              "discount": clean(r.get("discount")),
+              "confidence": clean(r.get("confidence"))}
+             for r in run["rows"] if (r.get("angles_with_claims") or 0) >= 2]
+
+    prefix_note = None
+    if prefix_src.exists():
+        sources.append(prefix_src)
+        pre = json.loads(prefix_src.read_text(encoding="utf-8"))
+        fused_pre = [r["id"] for r in pre["rows"]
+                     if (r.get("angles_with_claims") or 0) >= 2]
+        prefix_note = {
+            "rows": pre.get("n_rows"),
+            "fused_rows": fused_pre,
+            "note": ("SUPERSEDED, kept as a record. The grid above is the "
+                     "post-fix re-run of 2026-10-01. The earlier run, before "
+                     "the GitHub and arXiv query fixes, fused %d of %d rows: "
+                     "GitHub returned 0 records on every row and arXiv "
+                     "answered unrelated queries with the same ten records "
+                     "(V2-L2, V2-L3)."
+                     % (len(fused_pre), pre.get("n_rows") or 0)),
+        }
+
     pass1_note = None
     if pass1_src.exists():
         sources.append(pass1_src)
@@ -470,11 +505,26 @@ def build_v2_coverage() -> dict:
         pass1_note = {
             "rows": p1.get("n_rows"),
             "fused_rows": fused1,
-            "note": ("Retrieval is identical in both passes. The committed run "
-                     "above is the second pass, whose CLAIM counts are limited "
-                     "by an exhausted daily Groq quota; the first pass fused "
-                     "%d row(s)." % len(fused1)),
+            "note": ("Also pre-fix: the first of that run's two passes. "
+                     "Retrieval was identical across both, but CLAIM counts "
+                     "were not -- the second pass ran into an exhausted daily "
+                     "Groq quota. The first pass fused %d row(s)." % len(fused1)),
         }
+
+    # The one sentence that was wrong on the page, now derived from the run it
+    # describes instead of written by hand.
+    fused_note = (
+        "%d of %d rows reached two claim-producing angles, so ENIV exists on "
+        "%s and on no other row: %s. Below two angles the dependence matrix is "
+        "1x1 and ENIV is degenerate, so an empty ENIV cell means the row never "
+        "fused -- it is not a zero. ONE PASS, no seeds: not a Part 24 finding "
+        "under CONTRACT.md section 5, and 2 of 48 is not a distribution to "
+        "calibrate against (V2-L6)."
+        % (len(fused), run.get("n_rows") or 0,
+           "that row" if len(fused) == 1 else "those rows",
+           ", ".join("row %s at ENIV %s" % (f["id"], f["eniv"]) for f in fused)
+           or "none")
+    )
 
     return {
         "title": "Per-row angle coverage",
@@ -486,8 +536,12 @@ def build_v2_coverage() -> dict:
         },
         "n_rows": run.get("n_rows"),
         "label": run.get("label"),
+        "run_source": run_src.relative_to(ROOT).as_posix(),
         "zero_claim_rows_provider_error": run.get("zero_claim_rows_provider_error"),
         "zero_claim_rows_genuine": run.get("zero_claim_rows_genuine"),
+        "fused_rows": fused,
+        "fused_note": fused_note,
+        "prefix": prefix_note,
         "pass1": pass1_note,
         "rows": rows,
         "provenance": provenance(*sources),

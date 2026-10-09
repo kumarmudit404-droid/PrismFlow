@@ -182,7 +182,7 @@
     }
   },
   "provenance": {
-    "generated_utc": "2026-10-08T18:28:10Z",
+    "generated_utc": "2026-10-09T03:19:11Z",
     "sources": [
       {
         "path": "docs/KNOWN_LIMITATIONS.md",
@@ -191,8 +191,8 @@
       },
       {
         "path": "docs/v2-known-limitations.md",
-        "sha256": "7d9af0916aec5b4f2e1f17460a5ba5f01ea1ccdc938cb753724f39e1dc4af289",
-        "bytes": 21838
+        "sha256": "227eb1bf83df433d99c386a72bcdc8a7499de05997054fe2e5fe007733c70038",
+        "bytes": 24384
       }
     ]
   }

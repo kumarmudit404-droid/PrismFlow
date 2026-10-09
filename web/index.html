@@ -464,9 +464,15 @@
 
   <h3>V2 — per-row angle coverage</h3>
   <p class="prose" style="color:var(--text-secondary)">
-    Which angles retrieved, for each of the 48 rows. Open any row for its
-    pitch, its ground-truth link and its per-angle detail. The ENIV column is empty
-    by fact, not by omission: in the committed pass no row reached two angles.
+    Which angles retrieved, for each of the 48 rows, on the post-fix re-run of
+    2026-10-01. Open any row for its pitch, its ground-truth link and its
+    per-angle detail. The ENIV column carries a figure on exactly two rows —
+    032 at 1.7052 and 044 at 1.657, the only two that reached two
+    claim-producing angles. Everywhere else it is empty by fact, not by
+    omission: below two angles ENIV is degenerate, so an empty cell means the
+    row never fused and is not a zero. Two rows out of 48 is one pass with no
+    seeds, and it is not a distribution to calibrate against — that is still
+    V2-L6.
   </p>
   <div class="placeholder" id="v2-coverage">loading committed data…</div>
   <a class="limits-link" href="#limits" aria-label="Known limitations, from Chapter 5: Interactive exploration">Known limitations →</a>
