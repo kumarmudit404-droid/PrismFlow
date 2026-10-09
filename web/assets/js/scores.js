@@ -11,10 +11,13 @@
  * documented once in the filter-bar note in scores.html rather than repeated
  * under every panel.
  */
-(function () {
+(function (global) {
   "use strict";
 
   var NOT_MEASURED = '<span class="nm">not measured</span>';
+  // Cause-specific absence labels, from assets/js/absence.js. See that file
+  // for why a single blanket phrase is not used for every empty cell.
+  var ABSENT = global.PrismFlowAbsence;
   var ANGLE_ORDER = ["tech", "market", "financial", "regulatory", "sentiment"];
   var ANGLE_LABEL = {
     tech: "Tech", market: "Market", financial: "Financial",
@@ -249,11 +252,26 @@
       t.push("<tr><th scope=\"row\" class=\"mono\">" + esc(r.id) + "</th><td>" + esc(r.domain) + "</td>");
       visibleAngles.forEach(function (a) {
         var e = r.angles[a] || {};
-        var recs = typeof e.records === "number" ? e.records : "not measured";
-        var claims = typeof e.claims === "number" ? e.claims : "not measured";
-        t.push('<td class="num mono">' + esc(recs) + " / " + esc(claims) + "</td>");
+        // A retrieval exception leaves no count at all. That is not a zero and
+        // it is not the same as a connector answering zero, so it is labelled
+        // by its own cause rather than printed as a word in a number column.
+        var noCount = typeof e.records !== "number";
+        if (noCount) {
+          t.push('<td class="num">' +
+            ABSENT.labelCompact("run-wrote-none", { field: "record count" }) + "</td>");
+        } else {
+          var claims = typeof e.claims === "number" ? e.claims : "not measured";
+          t.push('<td class="num mono">' + esc(e.records) + " / " + esc(claims) + "</td>");
+        }
       });
-      t.push("<td>" + (r.zero_claim_cause ? esc(r.zero_claim_cause) : "—") + "</td></tr>");
+      // A dash here read as "no cause recorded". The truth is the opposite:
+      // these rows produced claims, so there is no zero to have a cause. That
+      // is not an absence waiting on data, and it must not be labelled as one.
+      t.push("<td>" + (r.zero_claim_cause
+        ? esc(r.zero_claim_cause)
+        : ABSENT.label("not-applicable",
+            { because: "this row produced claims on at least one angle" })) +
+        "</td></tr>");
     });
     t.push("</tbody></table></div>");
     host.appendChild(tableView("Table view — " + n + " rows shown", t.join("")));
@@ -570,4 +588,4 @@
     kpiHost.innerHTML = "could not load committed data — " + esc(e && e.message ? e.message : e) +
       "<br>run <code>python web/build_data.py</code>";
   });
-})();
+})(this);

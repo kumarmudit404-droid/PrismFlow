@@ -12,10 +12,16 @@
  * Filter, sort and search operate on the loaded rows and nothing else. No row is
  * synthesised to fill a gap -- 040 is absent and explained in the footer.
  */
-(function () {
+(function (global) {
   "use strict";
 
-  var NOT_RECORDED = '<span class="nm">not recorded</span>';
+  /* Every one of the 48 committed rows currently carries all seven of its
+   * fields, so nothing in this table renders absent today. The label is still
+   * routed through the shared registry rather than hard-coded, so that if a
+   * later row does arrive with a gap it gets a stated cause and not a blank --
+   * which is the failure this whole pass exists to remove. */
+  var ABSENT = global.PrismFlowAbsence;
+  var NOT_RECORDED = ABSENT.label("run-wrote-none", { field: "value" });
 
   function el(tag, cls, html) {
     var n = document.createElement(tag);
@@ -63,6 +69,7 @@
    * a value no row has. */
   function facet(rows, field) {
     var seen = {};
+    // Plain text: this becomes an <option> label, where markup cannot render.
     rows.forEach(function (r) { seen[r[field] || "not recorded"] = 1; });
     return Object.keys(seen).sort();
   }
@@ -349,4 +356,4 @@
       esc(e && e.message ? e.message : e) +
       "<br>run <code>python web/build_data.py</code>";
   });
-})();
+})(this);

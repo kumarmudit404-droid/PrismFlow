@@ -7,7 +7,7 @@
  * One copy, not three: the full list lives in the hub, and the chapters carry
  * a short status line and a link to it.
  */
-(function () {
+(function (global) {
   "use strict";
 
   function esc(v) {
@@ -112,16 +112,30 @@
    * V2-L2 / V2-L3: retrieval before and after the connector fix
    * ================================================================== */
 
+  var ABSENT = global.PrismFlowAbsence;
+
+  /* A half-null pair is the interesting case, and the dash it used to print
+   * was the least informative thing it could have said. arXiv has a count
+   * BEFORE the fix and none after, because GitHub now fills the tech primary
+   * slot and the fallback chain stops there -- a call that did not happen, not
+   * a call that returned zero. V2-L3's own caveat records exactly this, so the
+   * side with no value cites it instead of showing a dash. */
   function cell(before, after) {
     if (before === null && after === null) {
-      return '<td class="num"><span class="nm">not measured</span></td>';
+      return '<td class="num">' +
+        ABSENT.labelCompact("run-wrote-none", { field: "count" }) + "</td>";
     }
     var moved = before !== after;
+    var side = function (v) {
+      return (v === null || v === undefined)
+        ? ABSENT.labelCompact("fallback-not-reached")
+        : v;
+    };
     return '<td class="num">' +
-      '<span class="rv-before">' + (before === null ? "—" : before) + "</span>" +
+      '<span class="rv-before">' + side(before) + "</span>" +
       '<span class="rv-arrow" aria-hidden="true">→</span>' +
       '<span class="' + (moved ? "rv-after rv-after--moved" : "rv-after") + '">' +
-      (after === null ? "—" : after) + "</span></td>";
+      side(after) + "</span></td>";
   }
 
   function renderReverify(node, data) {
@@ -153,9 +167,15 @@
         cell(r.angles_with_claims_before, r.angles_with_claims_after) +
         '<td class="num">' +
           (r.eniv_after === null
-            ? '<span class="nm">not defined</span>'
+            ? ABSENT.labelCompact("eniv-below-threshold",
+                { angles: r.angles_with_claims_after })
             : Number(r.eniv_after).toFixed(4)) + "</td>" +
-        "<td>" + (r.note_after ? esc(r.note_after) : "") + "</td></tr>";
+        // An empty string here left a genuinely blank cell on the one row that
+        // fused -- the run wrote no note for it, which is a fact about the file
+        // and is now stated rather than rendered as nothing.
+        "<td>" + (r.note_after
+          ? esc(r.note_after)
+          : ABSENT.label("run-wrote-none", { field: "note" })) + "</td></tr>";
     }).join("");
 
     node.innerHTML = head +
@@ -210,4 +230,4 @@
       .then(function (data) { renderReverify(rv, data); })
       .catch(function (e) { fail(rv, e); });
   }
-})();
+})(this);

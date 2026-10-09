@@ -11,10 +11,17 @@
  * text header. Separating the pair would break the luminance staircase that
  * makes the set work in greyscale and print.
  */
-(function () {
+(function (global) {
   "use strict";
 
   var NOT_MEASURED = '<span class="nm">not measured</span>';
+
+  /* Cause-specific absence labels come from assets/js/absence.js, which is the
+   * single place any of them is worded. A bare "not measured" is kept only for
+   * cells whose absence has no documented cause behind it (a dataset field the
+   * workbook left empty, say) -- wherever the cause IS documented, the label
+   * names it and cites the entry. */
+  var ABSENT = global.PrismFlowAbsence;
   var ANGLE_LABEL = {
     tech: "Tech", market: "Market", financial: "Financial",
     regulatory: "Regulatory", sentiment: "Sentiment"
@@ -364,19 +371,39 @@
       cells.push('<td class="num">' + num(a.records, 0) + "</td>");
     }
     cells.push('<td class="num">' + num(a.claims, 0) + "</td>");
-    cells.push('<td class="num">' + num(a.mean_claim_conf, 3) + "</td>");
+    // No claims means no per-claim confidence to take a mean of. Stated as
+    // that, rather than as a bare absence.
+    cells.push('<td class="num">' + (
+      (a.mean_claim_conf === null || a.mean_claim_conf === undefined)
+        ? ABSENT.labelCompact("no-claims-to-average")
+        : num(a.mean_claim_conf, 3)) + "</td>");
     cells.push('<td class="num">' + num(a.tokens, 0) + "</td>");
 
     // Which connectors ran, and what each returned. An empty provenance map
-    // means no connector was called at all -- printed as such, not as 0.
+    // means no connector was called at all -- which for the regulatory angle
+    // is because none has been built, a different fact from a connector
+    // answering zero. Each gets its own cause.
     var keys = Object.keys(a.provenance || {});
     if (!keys.length) {
-      cells.push("<td>" + NOT_MEASURED + "</td>");
+      cells.push("<td>" + ABSENT.label("no-connector") + "</td>");
     } else {
       cells.push("<td>" + keys.sort().map(function (k) {
         return '<span class="detail__conn' + (a.provenance[k] > 0 ? " detail__conn--on" : "") +
           '">' + esc(k) + " " + num(a.provenance[k], 0) + "</span>";
       }).join(" ") + "</td>");
+    }
+    // A connector that was called and returned nothing. yfinance is singled
+    // out because its zero is NOT a coverage shortfall: it resolves tickers
+    // and the pitches are anonymised on purpose, which is V2-L4, not V2-L1.
+    var empty = keys.filter(function (k) { return !a.provenance[k]; });
+    if (empty.length && !a.retrieval_error) {
+      cells[cells.length - 1] = cells[cells.length - 1].replace(
+        "</td>",
+        '<div class="detail__why">' + empty.map(function (k) {
+          return k === "yfinance"
+            ? ABSENT.label("ticker-mismatch")
+            : ABSENT.label("connector-empty", { source: k });
+        }).join("") + "</div></td>");
     }
 
     // One state column, in the run's own words wherever it wrote any.
@@ -449,13 +476,22 @@
       "probability.</p>");
 
     out.push('<h5 class="detail__h">Fusion</h5>');
+    // ENIV, the discount, the fused confidence and the contradiction count all
+    // share one cause when they are absent: the row did not reach two
+    // claim-producing angles, so dependence is undefined and fusion never ran.
+    // One cause, named once, applied to the four cells it explains.
+    var fusedCell = function (value, digits) {
+      return (value === null || value === undefined)
+        ? ABSENT.label("eniv-below-threshold", { angles: row.angles_with_claims })
+        : num(value, digits);
+    };
     out.push('<dl class="detail__meta detail__meta--num">' +
       "<dt>angles with claims</dt><dd>" + num(row.angles_with_claims, 0) + "</dd>" +
       "<dt>angles with reasoner error</dt><dd>" + num(row.angles_with_reasoner_error, 0) + "</dd>" +
-      "<dt>ENIV</dt><dd>" + num(row.eniv, 3) + "</dd>" +
-      "<dt>discount</dt><dd>" + num(row.discount, 3) + "</dd>" +
-      "<dt>fused confidence</dt><dd>" + num(row.confidence, 3) + "</dd>" +
-      "<dt>contradictions</dt><dd>" + num(row.contradictions, 0) + "</dd>" +
+      "<dt>ENIV</dt><dd>" + fusedCell(row.eniv, 3) + "</dd>" +
+      "<dt>discount</dt><dd>" + fusedCell(row.discount, 3) + "</dd>" +
+      "<dt>fused confidence</dt><dd>" + fusedCell(row.confidence, 3) + "</dd>" +
+      "<dt>contradictions</dt><dd>" + fusedCell(row.contradictions, 0) + "</dd>" +
       "<dt>wall clock</dt><dd>" + num(row.seconds, 2) +
       (row.seconds === null || row.seconds === undefined ? "" : " s") + "</dd>" +
       "</dl>");
@@ -624,8 +660,14 @@
         status = '<span class="pill pill--live">produced claims</span>';
       }
       cells.push("<td>" + status + "</td>");
-      // A row that never fused has no ENIV. That is not zero.
-      cells.push('<td class="num">' + num(r.eniv, 3) + "</td>");
+      // A row that never fused has no ENIV. That is not zero, and it is not a
+      // generic absence either: dependence is undefined below two
+      // claim-producing angles, which is V2-L1. The cell says so and links it.
+      cells.push('<td class="num">' + (
+        (r.eniv === null || r.eniv === undefined)
+          ? ABSENT.labelCompact("eniv-below-threshold",
+              { angles: r.angles_with_claims })
+          : num(r.eniv, 3)) + "</td>");
       cells.push("</tr>");
       head.push(cells.join(""));
     });
@@ -686,4 +728,4 @@
   mount("v1-surface", "data/v1_surface.json", renderV1Surface);
   mount("v1-attack", "data/v1_attack.json", renderV1Attack);
   mount("v2-coverage", "data/v2_coverage.json", renderV2Coverage);
-})();
+})(this);

@@ -335,24 +335,28 @@
   <h3>The headline that is not a headline</h3>
   <div class="panel panel--alert">
     <p style="margin-top:0">
-      <strong>Calibration could not be computed.</strong> Only
-      <strong>1 of 48</strong> rows reached two angles, which is the minimum for
-      dependence, ENIV and fusion to be defined at all. The harness refused to
-      produce metrics rather than compute them on a handful of rows.
+      <strong>Calibration has never been computed.</strong> On the post-fix
+      re-run, <strong>2 of 48</strong> rows reached two claim-producing angles,
+      which is the minimum for dependence, ENIV and fusion to be defined at
+      all. Two is not a distribution, and the run was a single pass with no
+      seeds, so the 5-seed rule is not met either. This is closed as not
+      measured rather than left pending.
     </p>
     <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap">
-      <span class="pill pill--notmeasured">ECE — not measured</span>
-      <span class="pill pill--notmeasured">Brier — not measured</span>
+      <span class="pill pill--notmeasured" data-absent="calibration-closed" data-absent-label="ECE"></span>
+      <span class="pill pill--notmeasured" data-absent="calibration-closed" data-absent-label="Brier"></span>
     </div>
-    <p class="src">docs/v2-known-limitations.md V2-L6; results/v2/part24_pipeline_verification*.json</p>
+    <p class="src">docs/v2-known-limitations.md V2-L9 (closure), V2-L6 (the reasoning);
+      results/v2/part24_pipeline_verification_postfix.json</p>
   </div>
 
   <div class="prose">
     <blockquote class="verbatim">
-      With one fused row there is no distribution: an ECE over n=1 is the error
-      of a single point, and a Brier score over n=1 is a squared difference.
-      Reporting either would dress one cell as a curve.
-      <cite>docs/v2-known-limitations.md V2-L6</cite>
+      Calibration is a property of a distribution of confidences against
+      outcomes, and at n=2 there is no distribution: an ECE over two points is
+      the error of two points, and reporting it would dress two cells as a
+      curve.
+      <cite>docs/v2-known-limitations.md V2-L9</cite>
     </blockquote>
   </div>
 
@@ -362,14 +366,16 @@
       <caption class="visually-hidden">Per-angle retrieval over 48 rows</caption>
       <thead><tr><th scope="col">angle</th><th scope="col" class="num">rows with ≥1 record</th><th scope="col" class="num">records</th><th scope="col">source</th></tr></thead>
       <tbody>
-        <tr><th scope="row" style="color:var(--angle-tech);font-weight:600">Tech</th><td class="num">48 / 48</td><td class="num">480</td><td>arXiv 480, GitHub 0</td></tr>
-        <tr><th scope="row" style="color:var(--angle-market);font-weight:600">Market</th><td class="num">6 / 48</td><td class="num">10</td><td>NewsAPI</td></tr>
-        <tr><th scope="row" style="color:var(--angle-financial);font-weight:600">Financial</th><td class="num">0 / 48</td><td class="num">0</td><td>yfinance</td></tr>
+        <tr><th scope="row" style="color:var(--angle-tech);font-weight:600">Tech</th><td class="num">44 / 48</td><td class="num">440</td><td>GitHub 407 on 44 rows, arXiv 33 on 5</td></tr>
+        <tr><th scope="row" style="color:var(--angle-market);font-weight:600">Market</th><td class="num">6 / 48</td><td class="num">11</td><td>NewsAPI</td></tr>
+        <tr><th scope="row" style="color:var(--angle-financial);font-weight:600">Financial</th><td class="num">0 / 48</td><td class="num">0</td><td>yfinance — <span data-absent="ticker-mismatch"></span></td></tr>
         <tr><th scope="row" style="color:var(--angle-sentiment);font-weight:600">Sentiment</th><td class="num">1 / 48</td><td class="num">3</td><td>StackExchange</td></tr>
-        <tr><th scope="row" style="color:var(--angle-regulatory);font-weight:600">Regulatory</th><td class="num">0 / 48</td><td class="num">0</td><td>no connector exists</td></tr>
+        <tr><th scope="row" style="color:var(--angle-regulatory);font-weight:600">Regulatory</th><td class="num">0 / 48</td><td class="num">0</td><td><span data-absent="no-connector"></span></td></tr>
       </tbody>
     </table>
-    <p class="src">docs/v2-known-limitations.md V2-L1 — identical in both of the day's passes</p>
+    <p class="src">docs/v2-known-limitations.md V2-L1;
+      results/v2/part24_pipeline_verification_postfix.json — the post-fix re-run.
+      440 is pre-budget; 387 records reached a reasoner (V2-L7)</p>
   </div>
 
   <h3>The limitations this raised, and two that are now closed</h3>
@@ -393,10 +399,10 @@
     </p>
     <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap">
       <span class="pill pill--live">Groq · openai/gpt-oss-120b — code path exercised</span>
-      <span class="pill pill--notmeasured">gpt-4o — unverified</span>
-      <span class="pill pill--notmeasured">Claude — unverified</span>
+      <span class="pill pill--notmeasured" data-absent="reasoner-unfunded" data-absent-who="gpt-4o"></span>
+      <span class="pill pill--notmeasured" data-absent="reasoner-unfunded" data-absent-who="claude_reasoner.py"></span>
     </div>
-    <p class="src">docs/part20-groq-verification.md; docs/v2-known-limitations.md V2-L5</p>
+    <p class="src">docs/part20-groq-verification.md; docs/v2-known-limitations.md V2-L8 (closure), V2-L5</p>
   </div>
   <a class="limits-link" href="#limits" aria-label="Known limitations, from Chapter 4: Results">Known limitations →</a>
 </section>
@@ -512,6 +518,7 @@
   </div>
 </footer>
 
+<script src="assets/js/absence.js"></script>
 <script src="assets/js/main.js"></script>
 <script src="assets/js/charts.js"></script>
 <script src="assets/js/v1_scenarios.js"></script>
