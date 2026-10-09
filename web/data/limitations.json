@@ -1,6 +1,6 @@
 {
   "title": "Known limitations",
-  "note": "Headings are read from the documents at build time, never retyped, so an entry that is resolved there cannot stay open here.",
+  "note": "Headings are read from the documents at build time, never retyped, so an entry that is resolved there cannot stay open here. Resolved means fixed; closed means the entry reached a terminal state without a fix, and the two are counted separately.",
   "v1": {
     "source": "docs/KNOWN_LIMITATIONS.md",
     "entries": [
@@ -113,6 +113,7 @@
     "counts": {
       "total": 15,
       "resolved": 0,
+      "closed": 0,
       "new": 0,
       "open": 15
     },
@@ -172,17 +173,32 @@
         "title": "NEW, created by the V2-L2 fix: some GitHub records exceed the whole token budget",
         "status": "NEW",
         "group": "per_part"
+      },
+      {
+        "id": "V2-L8",
+        "n": 8,
+        "title": "CLOSED 2026-10-09, blocked on funding. Part 20's Claude and gpt-4o reasoners have never returned a live response",
+        "status": "CLOSED 2026-10-09",
+        "group": "per_part"
+      },
+      {
+        "id": "V2-L9",
+        "n": 9,
+        "title": "CLOSED 2026-10-09, not measured. No V2 calibration figure exists, and clearing the harness gate would not produce one",
+        "status": "CLOSED 2026-10-09",
+        "group": "per_part"
       }
     ],
     "counts": {
-      "total": 7,
+      "total": 9,
       "resolved": 2,
+      "closed": 2,
       "new": 1,
       "open": 5
     }
   },
   "provenance": {
-    "generated_utc": "2026-10-09T03:19:11Z",
+    "generated_utc": "2026-10-09T03:30:37Z",
     "sources": [
       {
         "path": "docs/KNOWN_LIMITATIONS.md",
@@ -191,8 +207,8 @@
       },
       {
         "path": "docs/v2-known-limitations.md",
-        "sha256": "227eb1bf83df433d99c386a72bcdc8a7499de05997054fe2e5fe007733c70038",
-        "bytes": 24384
+        "sha256": "8d9447797ac956dba2c1dce942148debedee6a776b168d233473a84cf10aed72",
+        "bytes": 31804
       }
     ]
   }

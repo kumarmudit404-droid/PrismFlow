@@ -672,8 +672,16 @@ def build_figures() -> dict:
 LIMIT_HEADING = re.compile(r"^##\s+((?:V2-)?L\d+)\.\s+(.*?)\s*$")
 # A title may open with a status marker the docs add when an entry changes:
 #   "RESOLVED 2026-09-28. GitHub returned 0 records because ..."
+#   "CLOSED 2026-10-09, blocked on funding. Part 20's Claude and gpt-4o ..."
 #   "NEW, created by the V2-L2 fix: some GitHub records exceed ..."
-STATUS_MARKER = re.compile(r"^(RESOLVED\s+[\d-]+|NEW)\b[.,:]?\s*(.*)$")
+#
+# RESOLVED and CLOSED are deliberately NOT the same marker and are never
+# merged. RESOLVED means the defect was fixed. CLOSED means the entry reached a
+# terminal state WITHOUT a fix -- blocked on funding, or not measured and
+# premature at current coverage -- and collapsing the two would read as
+# progress that did not happen. Both are nevertheless not-open, which is the
+# only thing the counts need from them.
+STATUS_MARKER = re.compile(r"^(RESOLVED\s+[\d-]+|CLOSED\s+[\d-]+|NEW)\b[.,:]?\s*(.*)$")
 
 
 def read_limitations(path: Path, group_at: int | None = None) -> list:
@@ -724,19 +732,26 @@ def build_limitations() -> dict:
     v2 = read_limitations(v2_src)
 
     def counts(rows):
+        def marked(r, word):
+            return (r["status"] or "").startswith(word)
         return {
             "total": len(rows),
-            "resolved": sum(1 for r in rows if (r["status"] or "").startswith("RESOLVED")),
+            "resolved": sum(1 for r in rows if marked(r, "RESOLVED")),
+            # Closed without a fix. Counted apart from "resolved" so the page
+            # cannot present a funding blocker as a repaired defect.
+            "closed": sum(1 for r in rows if marked(r, "CLOSED")),
             "new": sum(1 for r in rows if r["status"] == "NEW"),
             "open": sum(1 for r in rows
-                        if not (r["status"] or "").startswith("RESOLVED")),
+                        if not marked(r, "RESOLVED") and not marked(r, "CLOSED")),
         }
 
     return {
         "title": "Known limitations",
         "note": ("Headings are read from the documents at build time, never "
                  "retyped, so an entry that is resolved there cannot stay open "
-                 "here."),
+                 "here. Resolved means fixed; closed means the entry reached a "
+                 "terminal state without a fix, and the two are counted "
+                 "separately."),
         "v1": {
             "source": str(v1_src.relative_to(ROOT)).replace("\\", "/"),
             "entries": v1,

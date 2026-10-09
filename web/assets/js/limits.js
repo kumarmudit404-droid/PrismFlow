@@ -23,6 +23,14 @@
     });
   }
 
+  // RESOLVED and CLOSED are both terminal, and they are not the same claim:
+  // resolved means fixed, closed means the entry ended without a fix. They get
+  // different pills on purpose.
+  function isTerminal(status) {
+    return !!status &&
+      (status.indexOf("RESOLVED") === 0 || status.indexOf("CLOSED") === 0);
+  }
+
   function statusPill(status) {
     if (!status) { return ""; }
     if (status.indexOf("RESOLVED") === 0) {
@@ -37,7 +45,7 @@
     // dropped. The heading is never edited to make room for it.
     var inTitle = e.status &&
       String(e.title).toUpperCase().indexOf(e.status.toUpperCase()) === 0;
-    return '<div class="limit' + (e.status && e.status.indexOf("RESOLVED") === 0
+    return '<div class="limit' + (isTerminal(e.status)
       ? " limit--resolved" : "") + '">' +
       '<span class="limit__id">' + esc(e.id) + ".</span> " +
       '<span class="limit__title">' + esc(e.title) + "</span>" +
@@ -71,7 +79,9 @@
     if (note) {
       note.innerHTML = esc(data.note) + " V1: " + data.v1.counts.total +
         " entries, all open. V2: " + data.v2.counts.total + " entries, " +
-        data.v2.counts.resolved + " resolved, " + data.v2.counts.open + " open.";
+        data.v2.counts.resolved + " resolved, " +
+        (data.v2.counts.closed ? data.v2.counts.closed + " closed without a fix, " : "") +
+        data.v2.counts.open + " open.";
     }
   }
 
@@ -85,13 +95,13 @@
       '<p class="limits-summary__line"><strong>' + esc(heading) + "</strong> " +
       c.total + " entries" +
       (c.resolved ? ", " + c.resolved + " resolved" : "") +
+      (c.closed ? ", " + c.closed + " closed without a fix" : "") +
       (c.new ? ", " + c.new + " opened by a fix" : "") +
       ", " + c.open + " still open.</p>" +
       '<p class="limits-summary__ids">' +
       block.entries.map(function (e) {
         return '<a class="limits-summary__id' +
-          (e.status && e.status.indexOf("RESOLVED") === 0
-            ? " limits-summary__id--resolved" : "") +
+          (isTerminal(e.status) ? " limits-summary__id--resolved" : "") +
           '" href="#limits" title="' + esc(e.title) + '">' + esc(e.id) + "</a>";
       }).join("") + "</p>" +
       '<p class="src">' + esc(block.source) +

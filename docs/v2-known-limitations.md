@@ -40,12 +40,24 @@ What stays open, and still blocks the evaluation:
 * **V2-L7** -- new, and created by the V2-L2 fix: some GitHub records exceed the
   entire per-angle token budget and are dropped whole.
 
+**Two entries were closed on 2026-10-09**, neither by a measurement:
+
+* **V2-L8** closes Part 20's reasoner verification as **blocked on funding**.
+  No live response has ever been logged for `claude_reasoner.py` or the gpt-4o
+  path; both accounts authenticate and both are unfunded, re-confirmed live on
+  2026-10-09.
+* **V2-L9** closes the ECE / Brier question as **not measured and structurally
+  premature**. No calibration figure exists for the V2 dataset, and the
+  postfix run's n=2 would not satisfy the 5-SEED RULE even though it clears the
+  harness's own `len(scored) < 2` gate.
+
 ## Provenance of the numbers below
 
 | | |
 |---|---|
 | run | `results/v2/part24_pipeline_verification.json`, commit `1bb901e` |
-| postfix run | `results/v2/part24_pipeline_verification_postfix.json`, commit `5ea0a17` -- the source for V2-L1's current table |
+| postfix run | `results/v2/part24_pipeline_verification_postfix.json`, commit `5ea0a17` -- the source for V2-L1's current table and for V2-L9 |
+| credentials | `experiments/v2/test_api_keys_manual.py`, run live 2026-10-09 -- the source for V2-L8's two HTTP statuses. It writes no file under `results/`, by design |
 | funnel | `results/v2/coverage_funnel_old_vs_postfix.json`, commit `305020c` -- the two runs tabulated side by side, per angle and per connector |
 | harness | `experiments/v2/part24_pipeline_verification.py` at `17f4123` |
 | rows | 48 of the eventual 50 (`data/v2/evaluation_queries.json`; row 040 absent) |
@@ -380,10 +392,16 @@ where a number belongs -- which the API rejects as `json_validate_failed`. Three
 such failures in the first pass, one in the second.
 
 **What would change it:** a funded key. The Claude and OpenAI accounts are still
-unfunded (see `docs/part20-groq-verification.md`), so Part 23's Claude
-adjudicator and the gpt-4o path remain unverified.
+unfunded -- re-confirmed live on 2026-10-09, see **V2-L8** and
+`docs/part20-groq-verification.md` -- so Part 23's Claude adjudicator and the
+gpt-4o path remain unverified.
 
 ## V2-L6. Consequence: ECE and Brier cannot yet be computed
+
+**Closed as V2-L9 on 2026-10-09.** The reasoning below is unchanged and is why
+the closure reads as it does; V2-L9 carries the terminal statement, the postfix
+run's figures, and the reason that clearing the harness gate does not produce a
+result. The two passes tabulated here are both pre-fix.
 
 **Evidence:** rows reaching fusion, i.e. rows with >=2 angles producing claims:
 
@@ -433,6 +451,112 @@ V2-L2 and V2-L3 were fixed, so it is reported and not fixed.
 
 **What would change it:** per-record truncation instead of whole-record
 rejection, or a per-record cap set as a fraction of the angle budget.
+
+## V2-L8. CLOSED 2026-10-09, blocked on funding. Part 20's Claude and gpt-4o reasoners have never returned a live response
+
+**Status: closed as blocked-on-funding, not as a code defect.** This is the
+closure of Part 20's open verification flag
+(`docs/part20-groq-verification.md`). It is closed because the blocker is
+external and named, not because anything was measured.
+
+**Evidence, the absence.** **No live API response has ever been logged for
+`prismflow/v2/reasoners/claude_reasoner.py` or for the gpt-4o path, at any
+timestamp.** Not a reduced one, not a partial one, not one in a superseded
+file. Searching every committed file under `results/` and `logs/` for a Claude
+or gpt-4o model identifier returns exactly one file,
+`results/v2/fusion_e2e_test.json`, and that file records `"live_api_calls": 0`
+and names `claude-opus-5`, `claude-sonnet-5` and `claude-haiku-4-5` only inside
+a `model_pricing_usd_per_mtok` rate table. It carries its own reason: "No
+Anthropic credentials in this checkout, so no request was sent and the ClaimSet
+token counts are fixture values." So there is no response to inspect, no token
+count, no latency and no claim text from either reasoner -- and a 5-seed number
+is not the thing missing here. A single successful call is.
+
+**Evidence, the blocker, verified 2026-10-09** by this project's own
+credential script, `experiments/v2/test_api_keys_manual.py`, which separates a
+format failure from an auth failure from a billing failure:
+
+| key | format | one live minimal call |
+|---|---|---|
+| `NEWSAPI_KEY` | PASS | **HTTP 200**, `status=ok`, 1 article |
+| `ANTHROPIC_API_KEY` | PASS, `sk-ant-` prefix, length 108 | **HTTP 400** `invalid_request_error` -- "Your credit balance is too low to access the Anthropic API" |
+| `OPENAI_API_KEY` | PASS, `sk-` prefix, length 164 | **HTTP 429** `RateLimitError` |
+
+Both keys are well-formed and both **authenticate** -- a wrong Anthropic key
+answers 401 `authentication_error`, not 400, and OpenAI's `GET /v1/models`
+answered 200 with 126 models when this was last checked. The accounts are
+unfunded. These are the same two failures
+`docs/part20-groq-verification.md` recorded on 2026-09-25, re-confirmed
+unchanged fourteen days later.
+
+**What this shows.** The flag cannot be closed by work on this repository.
+What *is* verified is narrower and should never be widened: `OpenAIReasoner`'s
+**code path** -- request shape, `response_format={'type':'json_object'}`
+handling, usage field names, `finish_reason` mapping, `parsing.py`'s JSON
+extraction, citation grounding -- was exercised against a live
+OpenAI-compatible server via Groq (`openai/gpt-oss-120b`). Groq is
+OpenAI-compatible, not OpenAI. That says nothing about gpt-4o's own behaviour
+on that path, and nothing whatever about `claude_reasoner.py`, which has never
+been called. **Never record this as "Part 20 verified."**
+
+Under the NEVER FABRICATE rule a reasoner result must not be stubbed and a
+third provider's success must not be reported as the flag closing, so the
+honest terminal state of Part 20 is this entry rather than a number.
+
+**What would change it:** credit on either account, and then one live call per
+reasoner against its own provider and its own model. Nothing else. The cost is
+two completions.
+
+## V2-L9. CLOSED 2026-10-09, not measured. No V2 calibration figure exists, and clearing the harness gate would not produce one
+
+**Status: closed as not measured and structurally premature at current
+coverage. Not a bug to patch.** This is the terminal statement of V2-L6, which
+stays above as the reasoning that led here.
+
+**Evidence, the absence.** **No ECE and no Brier score has ever been computed
+or committed for the V2 dataset.** Searching every committed file under
+`results/v2/` for either term returns nothing, in any of the four
+pipeline-verification runs. The harness refused on both pre-fix passes --
+"Too few rows completed for metrics. Reporting no ECE, no Brier and no conflict
+figures rather than computing them on a handful of rows" -- and that refusal
+was and is the correct behaviour.
+
+**The gate, and why clearing it is not the answer.** The refusal is
+`if len(scored) < 2` at
+`experiments/v2/part24_pipeline_verification.py:390`. The postfix run scored
+**2** rows (032 and 044), so that gate is arithmetically cleared: `2 < 2` is
+false. Two separate things nevertheless keep the number from existing.
+
+First, **the harness never persists calibration figures at all.** Its single
+`write_text` is at line 371, *before* the gate; everything after
+`compute_calibration` is `print`. So even a cleared gate leaves nothing in
+`results/`, which is exactly why no figure is committed for the postfix run.
+This is an observation about a frozen Part 24 module and it is **reported, not
+fixed** -- the FROZEN MODULES rule.
+
+Second, and decisive regardless of the first: **the postfix run is one pass
+with `"seeds": null`.** `docs/CONTRACT.md` section 5 requires a minimum of five
+seeds with mean and standard deviation, and states that single-seed results are
+not evidence and must never be reported as a finding. An ECE from one unseeded
+pass is not a weak finding; it is not a finding. So clearing the gate alone
+cannot produce a valid result, and a number obtained that way would have to be
+labelled as not one.
+
+**What this shows.** Calibration is a property of a distribution of confidences
+against outcomes, and at n=2 there is no distribution: an ECE over two points
+is the error of two points, and reporting it would dress two cells as a curve.
+The ordering **coverage first, then seeds, then metrics** is unchanged and each
+step is still a precondition for the next. The postfix fix moved the first step
+from 0 rows to 2 of 48 -- real, and far short of where a calibration figure
+becomes meaningful. No committed file states how many fused rows would be
+enough, so no threshold is asserted here; 2 is not it. Nothing is broken; the
+measurement is premature.
+
+**What would change it:** V2-L1 and V2-L4 (coverage, to get a population of
+fused rows), then V2-L5 (a funded reasoner key, to afford five passes over it).
+Only then does the question this entry closes become answerable. Until then the
+correct value for every V2 calibration cell is **not measured**, and it must
+not be shown as 0, as blank, or as an estimate.
 
 ## How the two failure modes are told apart
 
