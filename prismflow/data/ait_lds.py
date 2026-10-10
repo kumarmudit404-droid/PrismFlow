@@ -82,7 +82,6 @@ tensors in gitignored `data/processed/`.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import re
@@ -91,7 +90,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Sequence
+from typing import Any, Sequence
 
 import numpy as np
 import torch
@@ -507,7 +506,9 @@ AUDIT_RE = re.compile(
 AUDIT_FIELD_RE = re.compile(r"(\b[a-z_]+)=((?:\"[^\"]*\")|(?:\S+))")
 
 # dnsmasq, after the syslog prefix: "query[A] foo.example.com from 10.0.0.5"
-DNS_QUERY_RE = re.compile(r"^query\[(?P<qtype>[A-Z0-9]+)\]\s+(?P<name>\S+)\s+from\s+(?P<client>\S+)")
+DNS_QUERY_RE = re.compile(
+    r"^query\[(?P<qtype>[A-Z0-9]+)\]\s+(?P<name>\S+)\s+from\s+(?P<client>\S+)"
+)
 DNS_REPLY_RE = re.compile(r"^(?:reply|cached)\s+(?P<name>\S+)\s+is\s+(?P<answer>\S+)")
 DNS_FORWARD_RE = re.compile(r"^forwarded\s+(?P<name>\S+)\s+to\s+(?P<server>\S+)")
 
