@@ -1547,6 +1547,66 @@ def build_samples(scan: ScanResult, sample_mode: str | None = None) -> AITSample
     )
 
 
+def rewindow(scan: ScanResult, window_seconds: int) -> ScanResult:
+    """Re-bin an existing scan to a LONGER window that is a multiple of its own.
+
+    Every feature in `FEATURES` is merge-closed: event and distinct-value
+    counts are sums and unions, byte and length totals are sums, the maximum is
+    a maximum, and every fraction is derived from the merged counts at
+    `vector()` time rather than averaged. So merging the cells of five
+    consecutive 60 s windows gives exactly the cells of one 300 s window
+    starting at the same origin -- not an approximation of them.
+
+    That makes a window-length sweep one parse instead of one parse per length,
+    which matters because scanning russellmitchell means reading 2.3 GB and
+    json-decoding several million Suricata events.
+    `tests/data/test_ait_lds.py::test_rewindow_equals_a_direct_scan` checks the
+    equality against a direct scan rather than taking the argument on trust.
+
+    Only exact multiples are allowed. A non-multiple would split events across
+    a boundary that the finer scan already committed to, which would silently
+    produce windows that are not the requested length.
+    """
+    factor, remainder = divmod(window_seconds, scan.window_seconds)
+    if remainder or factor < 1:
+        raise ValueError(
+            f"{window_seconds}s is not a positive multiple of this scan's "
+            f"{scan.window_seconds}s window; re-scan instead of re-binning"
+        )
+    if factor == 1:
+        return scan
+
+    cells: dict[tuple[int, str, str], Accumulator] = {}
+    for (index, host, source), cell in scan.cells.items():
+        key = (index // factor, host, source)
+        merged = cells.get(key)
+        if merged is None:
+            merged = cells[key] = Accumulator()
+        merged.merge(cell)
+
+    return ScanResult(
+        config=_with_window(scan.config, window_seconds),
+        cells=cells,
+        files=scan.files,
+        coverage=scan.coverage,
+        origin=scan.origin,
+        n_windows=math.ceil(scan.n_windows / factor),
+        hosts=scan.hosts,
+    )
+
+
+def _with_window(config: AITConfig, window_seconds: int) -> AITConfig:
+    return AITConfig(
+        scenario=config.scenario,
+        window_seconds=window_seconds,
+        sample_mode=config.sample_mode,
+        sources=config.sources,
+        time_range=config.time_range,
+        drop_empty_windows=config.drop_empty_windows,
+        raw_root=config.raw_root,
+    )
+
+
 def _with_mode(config: AITConfig, mode: str) -> AITConfig:
     """The same config with a different sample_mode, so one scan serves both."""
     return AITConfig(

@@ -44,6 +44,7 @@ from prismflow.data.ait_lds import (
     load_ait_config,
     load_labels,
     load_processed,
+    rewindow,
     scan_scenario,
     scenario_time_range,
     sensor_groups,
@@ -626,6 +627,46 @@ def test_network_mode_unions_distinct_values_across_hosts(tmp_path: Path):
 # ---------------------------------------------------------------------------
 # Determinism
 # ---------------------------------------------------------------------------
+
+
+def test_rewindow_equals_a_direct_scan(tmp_path: Path):
+    """Re-binning a 60 s scan to 300 s must equal scanning at 300 s.
+
+    `rewindow` exists so a window-length sweep costs one parse of the 2.3 GB
+    of logs instead of one per length. That is only sound because every
+    feature is merge-closed, and this is the check: the re-binned tensors have
+    to be byte-identical to the direct scan's, not merely close. If a feature
+    were ever added that averages instead of summing, this fails.
+    """
+    make_scenario(tmp_path, "alpha")
+    fine = scan_scenario(
+        AITConfig(scenario="alpha", window_seconds=60, raw_root=str(tmp_path))
+    )
+    direct = scan_scenario(
+        AITConfig(scenario="alpha", window_seconds=300, raw_root=str(tmp_path))
+    )
+    rebinned = rewindow(fine, 300)
+
+    for mode in ("network", "host"):
+        want = build_samples(direct, mode)
+        got = build_samples(rebinned, mode)
+        assert got.views.tobytes() == want.views.tobytes(), mode
+        assert got.view_mask.tobytes() == want.view_mask.tobytes(), mode
+        assert got.labels.tobytes() == want.labels.tobytes(), mode
+        assert got.label_known.tobytes() == want.label_known.tobytes(), mode
+        assert got.window_start.tobytes() == want.window_start.tobytes(), mode
+        assert got.attack_steps == want.attack_steps, mode
+
+
+def test_rewindow_rejects_non_multiples(tmp_path: Path):
+    make_scenario(tmp_path, "alpha")
+    scan = scan_scenario(
+        AITConfig(scenario="alpha", window_seconds=300, raw_root=str(tmp_path))
+    )
+    assert rewindow(scan, 300) is scan
+    for bad in (301, 450, 299, 0, -300):
+        with pytest.raises(ValueError, match="multiple"):
+            rewindow(scan, bad)
 
 
 def test_identical_config_is_byte_identical(tmp_path: Path):
