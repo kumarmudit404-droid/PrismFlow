@@ -196,12 +196,36 @@ def _get(url: str, start: int | None = None, end: int | None = None) -> bytes:
     expected = None if end is None else end - start + 1
     chunks: list[bytes] = []
     have = 0
-    last = None
+    last: BaseException | None = None
+    # Two attempts in a row that add nothing mean the remaining bytes are not
+    # coming -- the range ran past the end of the object, or the server is
+    # answering with an empty body. Retrying twelve times with a capped
+    # backoff would then take eleven minutes to report what is already known,
+    # so the loop stops and hands back the short result; the caller compares
+    # it against the central directory's size and raises something specific.
+    barren = 0
     for attempt in range(RETRIES):
         try:
             piece = _get_once(url, start + have, end)
         except RangeNotSupported:
             raise
+        except urllib.error.HTTPError as exc:
+            # 416 is terminal: the requested range does not exist.
+            if exc.code == 416:
+                break
+            last = exc
+            partial = getattr(exc, "partial", b"")
+            if partial:
+                chunks.append(partial)
+                have += len(partial)
+                barren = 0
+            else:
+                barren += 1
+            if barren >= 2:
+                break
+            if attempt < RETRIES - 1:
+                time.sleep(_backoff(attempt, exc))
+            continue
         except TRANSIENT as exc:
             last = exc
             # IncompleteRead carries the bytes that did arrive before the
@@ -211,6 +235,9 @@ def _get(url: str, start: int | None = None, end: int | None = None) -> bytes:
             if partial:
                 chunks.append(partial)
                 have += len(partial)
+                barren = 0
+            else:
+                barren += 1
             if attempt < RETRIES - 1:
                 time.sleep(_backoff(attempt, exc))
             continue
@@ -218,13 +245,28 @@ def _get(url: str, start: int | None = None, end: int | None = None) -> bytes:
         have += len(piece)
         if expected is None or have >= expected:
             return b"".join(chunks)[: expected if expected is not None else None]
+        if not piece:
+            barren += 1
+            if barren >= 2:
+                break
+        else:
+            barren = 0
         # Short but clean read: the server ended the response early. Ask for
         # the rest rather than treating it as a failure.
         last = RuntimeError(f"short read: {have} of {expected} bytes")
-    raise RuntimeError(
-        f"GET {url} bytes={start}-{end} failed after {RETRIES} attempts "
-        f"({have} of {expected} bytes): {last}"
-    )
+
+    blob = b"".join(chunks)
+    if expected is not None and have < expected:
+        if not blob:
+            raise RuntimeError(
+                f"GET {url} bytes={start}-{end} returned nothing after "
+                f"{RETRIES} attempts: {last}"
+            )
+        # A short blob is returned rather than raised: the only caller that
+        # passes a range deliberately over-requests (the local-header
+        # allowance), and it validates the member size itself.
+        return blob
+    return blob[:expected] if expected is not None else blob
 
 
 def _zip64_extra(extra: bytes, wanted: Sequence[str]) -> dict[str, int]:
