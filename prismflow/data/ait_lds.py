@@ -90,7 +90,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Iterable, Sequence
 
 import numpy as np
 import torch
@@ -1519,6 +1519,33 @@ class AITSamples:
     def n_views(self) -> int:
         return int(self.views.shape[1])
 
+    def attack_step_frequency(self) -> dict[str, int]:
+        """How many attack windows carry each attack-step name.
+
+        A window is labelled attack if ANY labelled line falls in it, so a
+        continuously-running attack tool marks nearly every window while a
+        short attack step marks one or two. The difference is invisible in the
+        attack-window count alone and decides whether a window-level task is
+        a real one, so the breakdown is reported rather than left to be
+        discovered after training.
+        """
+        counter: Counter[str] = Counter()
+        for steps in self.attack_steps:
+            counter.update(steps)
+        return dict(counter.most_common())
+
+    def attack_windows_beyond(self, steps: Iterable[str]) -> int:
+        """Attack windows carrying at least one step NOT in `steps`.
+
+        The caller names the step set explicitly, because which steps belong to
+        one campaign is a reading of the scenario and not something this module
+        should decide. `docs/part26-ait-loader.md` states the set it used.
+        """
+        excluded = set(steps)
+        return sum(
+            1 for names in self.attack_steps if names and not set(names) <= excluded
+        )
+
     def statistics(self) -> dict[str, Any]:
         """Dataset statistics only -- no model quantity is computed here."""
         total = len(self)
@@ -1549,6 +1576,7 @@ class AITSamples:
                 float(self.view_mask.sum(axis=1).mean()) if total else None
             ),
             "fully_masked_windows": int((~self.view_mask.any(axis=1)).sum()),
+            "attack_step_frequency": self.attack_step_frequency(),
         }
 
 

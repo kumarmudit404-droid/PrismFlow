@@ -38,6 +38,7 @@ from prismflow.data.ait_lds import (
     UNPARSED_SOURCES,
     AITConfig,
     AITMultiViewDataset,
+    AITSamples,
     Accumulator,
     SyslogClock,
     _parse_apache,
@@ -460,6 +461,36 @@ def test_five_hand_checked_label_records_are_read_verbatim(tmp_path: Path):
     }
     assert 2 not in labels[key], "a line with an empty labels list is not an attack"
     assert coverage.covers("apache", "web01")
+
+
+def test_attack_step_breakdown_distinguishes_continuous_from_brief_steps():
+    """A window-level attack count hides how the steps are distributed.
+
+    This is the statistic that makes russellmitchell's window-level task
+    legible: a tool running for the whole capture marks nearly every window
+    while a short step marks one. Built on a synthetic AITSamples so the
+    arithmetic is checkable by eye.
+    """
+    samples = AITSamples(
+        views=np.zeros((4, 1, 1), dtype=np.float32),
+        view_mask=np.ones((4, 1), dtype=bool),
+        labels=np.array([1, 1, 1, 0], dtype=np.int64),
+        label_known=np.ones(4, dtype=bool),
+        window_start=np.arange(4, dtype=np.float64),
+        host_id=None,
+        hosts=("h",),
+        sources=("apache",),
+        attack_steps=[["exfil"], ["exfil"], ["exfil", "foothold"], []],
+        config=AITConfig(scenario="x"),
+    )
+
+    assert samples.attack_step_frequency() == {"exfil": 3, "foothold": 1}
+    # Three attack windows, but only one carries anything beyond the
+    # continuous step.
+    assert samples.attack_windows_beyond(["exfil"]) == 1
+    assert samples.attack_windows_beyond(["exfil", "foothold"]) == 0
+    assert samples.attack_windows_beyond([]) == 3
+    assert samples.statistics()["attack_step_frequency"] == {"exfil": 3, "foothold": 1}
 
 
 def test_unlabelled_source_never_counts_as_benign(fixture_config: AITConfig):
