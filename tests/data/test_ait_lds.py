@@ -999,13 +999,26 @@ def test_real_scenario_time_range_is_read_from_dataset_yaml():
 def test_real_label_files_parse_and_cover_known_sources():
     labels, coverage = load_labels(REAL_SCENARIO_ROOT)
     assert labels, "no label files were read"
-    # Every label file must map to a gather path that exists on disk, or the
-    # line numbers point at nothing.
+
+    # Every USABLE label file must map to a gather path on disk, or its line
+    # numbers refer to a file nothing can read.
     for gather_relpath in labels:
         assert (REAL_SCENARIO_ROOT / gather_relpath).is_file(), gather_relpath
-    # Suricata is parsed as a view but is not labelled in this dataset.
-    assert "suricata" in coverage.unlabelled_sources
+
+    # AIT labels six source types; Part 26 parses five. The label files for the
+    # sources it does not parse are present and their logs were not fetched,
+    # which is expected and must be recorded rather than dropped.
+    unfetched = set(coverage.files_without_log.values())
+    assert unfetched, "every label file had a log, so this scenario changed"
+    assert not unfetched & set(PARSED_SOURCES), (
+        f"a PARSED source has a label file with no log on disk: {unfetched}"
+    )
+
+    # Suricata is parsed as a view but is not labelled anywhere in this
+    # dataset: rules/ carries no suricata rules and there is no label file.
+    assert coverage.unlabelled_sources == ("suricata",)
     assert "suricata" not in coverage.hosts_by_source
+    assert not (REAL_SCENARIO_ROOT / "rules" / "suricata.yaml").exists()
 
 
 @needs_real_data

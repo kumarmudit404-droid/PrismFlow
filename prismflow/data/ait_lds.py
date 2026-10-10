@@ -562,6 +562,13 @@ class LabelCoverage:
     hosts_by_source: dict[str, set[str]] = field(default_factory=dict)
     #: parsed source types with no label file anywhere in the scenario
     unlabelled_sources: tuple[str, ...] = ()
+    #: label files whose `gather/` counterpart is not on disk, with the source
+    #: type each belongs to. This is expected, not an error: AIT labels
+    #: `apache_error` too, and Part 26 does not fetch unparsed sources, so
+    #: their logs are absent. Recorded rather than dropped so the write-up can
+    #: say which labelled sources exist in the dataset but are not used here --
+    #: otherwise the label coverage looks narrower than it is.
+    files_without_log: dict[str, str] = field(default_factory=dict)
 
     def covers(self, source: str, host: str) -> bool:
         return host in self.hosts_by_source.get(source, set())
@@ -574,6 +581,9 @@ class LabelCoverage:
                 for source, hosts in sorted(self.hosts_by_source.items())
             },
             "unlabelled_parsed_sources": list(self.unlabelled_sources),
+            "label_files_whose_log_was_not_fetched": dict(
+                sorted(self.files_without_log.items())
+            ),
             "note": (
                 "A window is benign only with respect to sources listed in "
                 "labelled_hosts_by_source. Sources in "
@@ -646,9 +656,16 @@ def load_labels(
         if source is None or host is None:
             continue
         gather_relpath = "gather/" + relpath[len("labels/") :]
-        by_gather[gather_relpath] = read_label_file(path)
         coverage.files[relpath] = source
         coverage.hosts_by_source.setdefault(source, set()).add(host)
+        if not (root / gather_relpath).is_file():
+            # The labelling covers this source, but its log is not here --
+            # Part 26 fetches five source types and AIT labels six. Record it
+            # and do not add it to the usable map, where its line numbers
+            # would refer to a file nothing can read.
+            coverage.files_without_log[relpath] = source
+            continue
+        by_gather[gather_relpath] = read_label_file(path)
 
     coverage.unlabelled_sources = tuple(
         source for source in parsed_sources if source not in coverage.hosts_by_source
@@ -1210,6 +1227,15 @@ class FileStats:
     label_covered: bool = False
     labelled_lines: int = 0
     attack_lines_in_range: int = 0
+    # A labelled attack line that this loader does not place in a window is
+    # ground truth being dropped, and it has to be visible rather than
+    # inferred from a shortfall. russellmitchell makes this concrete: the
+    # dnsteal exfiltration starts 2022-01-20T12:48 (processing/config/
+    # attacker.yaml) while dataset.yaml declares the scenario from
+    # 2022-01-21T00:00, so attack activity exists before the window grid
+    # begins.
+    labelled_lines_unparsed: int = 0
+    labelled_lines_out_of_grid: int = 0
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -1224,6 +1250,9 @@ class FileStats:
             "last_timestamp": _iso(self.last_timestamp),
             "label_file_present": self.label_covered,
             "labelled_attack_lines": self.labelled_lines,
+            "labelled_attack_lines_in_grid": self.attack_lines_in_range,
+            "labelled_attack_lines_unparsed": self.labelled_lines_unparsed,
+            "labelled_attack_lines_outside_grid": self.labelled_lines_out_of_grid,
         }
 
 
@@ -1328,8 +1357,14 @@ def scan_scenario(
                 # cell only once the line is known to be an in-range event.
                 scratch = Accumulator()
                 stamp = parser(line, clock, scratch)
+                # Whether THIS line is a labelled attack line, looked up once
+                # so a labelled line that is unparsed or off-grid is counted as
+                # dropped ground truth rather than vanishing.
+                names = attack_lines.get(line_no) if attack_lines else None
                 if stamp is None:
                     record.unparsed += 1
+                    if names:
+                        record.labelled_lines_unparsed += 1
                     continue
                 record.events += 1
                 if record.first_timestamp is None or stamp < record.first_timestamp:
@@ -1340,6 +1375,8 @@ def scan_scenario(
                 index = int((stamp - origin) // config.window_seconds)
                 if index < 0 or index >= n_windows:
                     record.out_of_range += 1
+                    if names:
+                        record.labelled_lines_out_of_grid += 1
                     continue
 
                 key = (index, log.host, log.source)
@@ -1349,7 +1386,6 @@ def scan_scenario(
                 cell.merge(scratch)
                 if covered:
                     cell.covered_events += 1
-                    names = attack_lines.get(line_no) if attack_lines else None
                     if names:
                         cell.attack_lines += 1
                         cell.attack_steps.update(names)
@@ -2033,6 +2069,15 @@ def inventory(scan: ScanResult) -> list[dict[str, Any]]:
                 "last_timestamp": _iso(max(lasts)) if lasts else None,
                 "label_files": sum(1 for f in records if f.label_covered),
                 "labelled_attack_lines": sum(f.labelled_lines for f in records),
+                "labelled_attack_lines_in_grid": sum(
+                    f.attack_lines_in_range for f in records
+                ),
+                "labelled_attack_lines_unparsed": sum(
+                    f.labelled_lines_unparsed for f in records
+                ),
+                "labelled_attack_lines_outside_grid": sum(
+                    f.labelled_lines_out_of_grid for f in records
+                ),
             }
         )
     return rows
