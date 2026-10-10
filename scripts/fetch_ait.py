@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import http.client
 import json
 import struct
 import sys
@@ -72,7 +73,13 @@ REQUEST_TIMEOUT_S = 600
 # One member is one request, so a pause between members keeps a full fetch
 # inside the budget without needing to parse the rate-limit headers.
 PAUSE_BETWEEN_MEMBERS_S = 0.5
-RETRIES = 4
+# Generous, because an attempt here resumes rather than restarts: on this link
+# a 22 MB member routinely needs several reconnections to complete.
+RETRIES = 12
+# Backoff is capped. Uncapped `2 ** attempt` over 12 attempts would sleep for
+# 17 minutes on the tenth alone, which reads as a hung fetch rather than a
+# retrying one. Zenodo's own `Retry-After` is honoured when it sends one.
+BACKOFF_CAP_S = 60
 
 # Scenarios published under record 5789064. Sizes are verified against the
 # Zenodo API at fetch time; they are listed here only so `--list-scenarios`
@@ -119,34 +126,105 @@ class RangeNotSupported(RuntimeError):
     """The file endpoint answered a ranged GET with the whole file."""
 
 
-def _get(url: str, start: int | None = None, end: int | None = None) -> bytes:
-    """GET `url`, optionally bytes [start, end] inclusive, with retries.
+# Errors that mean "the transfer broke", as opposed to "the request was
+# wrong". Zenodo drops long transfers on this link often enough that a retry
+# that restarts from byte zero never finishes a 22 MB member, so these are
+# retried by re-requesting only the bytes still missing.
+TRANSIENT = (
+    urllib.error.URLError,
+    http.client.HTTPException,  # includes IncompleteRead
+    TimeoutError,
+    ConnectionError,
+    OSError,
+)
 
-    A ranged request that comes back as HTTP 200 means the server ignored the
-    range and is about to stream the entire archive; that is raised as
-    `RangeNotSupported` instead of being read.
+
+def _backoff(attempt: int, exc: BaseException) -> float:
+    """Seconds to wait before the next attempt, capped, honouring Retry-After."""
+    retry_after = None
+    headers = getattr(exc, "headers", None)
+    if headers is not None:
+        raw = headers.get("Retry-After")
+        if raw:
+            try:
+                retry_after = float(raw)
+            except ValueError:
+                retry_after = None
+    if retry_after is not None:
+        return min(max(retry_after, 1.0), float(BACKOFF_CAP_S))
+    return min(float(2 ** attempt), float(BACKOFF_CAP_S))
+
+
+def _get_once(url: str, start: int | None, end: int | None) -> bytes:
+    """One ranged GET. Raises `RangeNotSupported` if the range was ignored."""
+    request = urllib.request.Request(url)
+    if start is not None:
+        request.add_header("Range", f"bytes={start}-{'' if end is None else end}")
+    with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_S) as response:
+        if start is not None and response.status != 206:
+            raise RangeNotSupported(
+                f"{url} answered a ranged GET with HTTP {response.status}; "
+                "the whole archive would be downloaded. Aborting -- report "
+                "the archive size to the user before fetching it in full."
+            )
+        return response.read()
+
+
+def _get(url: str, start: int | None = None, end: int | None = None) -> bytes:
+    """GET `url`, optionally bytes [start, end] inclusive, resuming on breaks.
+
+    A dropped connection is the common failure here, and it usually happens
+    part-way through a multi-megabyte member. Restarting such a transfer from
+    the beginning can loop forever on a slow link, so when the range is known
+    this re-requests only the remaining bytes and appends them. Progress made
+    before a break is kept, and the attempt budget is spent on the remainder
+    rather than on re-downloading what already arrived.
     """
-    last: Exception | None = None
+    if start is None:
+        last: Exception | None = None
+        for attempt in range(RETRIES):
+            try:
+                return _get_once(url, None, None)
+            except RangeNotSupported:
+                raise
+            except TRANSIENT as exc:
+                last = exc
+                if attempt < RETRIES - 1:
+                    time.sleep(_backoff(attempt, exc))
+        raise RuntimeError(f"GET {url} failed after {RETRIES} attempts: {last}")
+
+    expected = None if end is None else end - start + 1
+    chunks: list[bytes] = []
+    have = 0
+    last = None
     for attempt in range(RETRIES):
-        request = urllib.request.Request(url)
-        if start is not None:
-            request.add_header("Range", f"bytes={start}-{'' if end is None else end}")
         try:
-            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_S) as response:
-                if start is not None and response.status != 206:
-                    raise RangeNotSupported(
-                        f"{url} answered a ranged GET with HTTP {response.status}; "
-                        "the whole archive would be downloaded. Aborting -- report "
-                        "the archive size to the user before fetching it in full."
-                    )
-                return response.read()
+            piece = _get_once(url, start + have, end)
         except RangeNotSupported:
             raise
-        except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+        except TRANSIENT as exc:
             last = exc
+            # IncompleteRead carries the bytes that did arrive before the
+            # connection dropped. Keeping them is what makes the retry a
+            # resume instead of a restart.
+            partial = getattr(exc, "partial", b"")
+            if partial:
+                chunks.append(partial)
+                have += len(partial)
             if attempt < RETRIES - 1:
-                time.sleep(2 ** attempt)
-    raise RuntimeError(f"GET {url} failed after {RETRIES} attempts: {last}")
+                time.sleep(_backoff(attempt, exc))
+            continue
+        chunks.append(piece)
+        have += len(piece)
+        if expected is None or have >= expected:
+            return b"".join(chunks)[: expected if expected is not None else None]
+        # Short but clean read: the server ended the response early. Ask for
+        # the rest rather than treating it as a failure.
+        last = RuntimeError(f"short read: {have} of {expected} bytes")
+    raise RuntimeError(
+        f"GET {url} bytes={start}-{end} failed after {RETRIES} attempts "
+        f"({have} of {expected} bytes): {last}"
+    )
 
 
 def _zip64_extra(extra: bytes, wanted: Sequence[str]) -> dict[str, int]:
@@ -253,33 +331,61 @@ def _locate_central_directory(tail: bytes, archive_size: int) -> tuple[int, int]
     return cd_offset, cd_size
 
 
-def read_remote_directory(url: str, archive_size: int) -> list[ZipMember]:
-    """Download just the central directory of a remote ZIP and parse it."""
+#: Cached central directory, so a restarted or repeated fetch does not re-pay
+#: for it. russellmitchell's is 2.3 MB, which is minutes on a slow link, and it
+#: cannot go stale without the archive size changing -- which is checked.
+DIRECTORY_CACHE = ".central_directory.bin"
+
+
+def read_remote_directory(
+    url: str, archive_size: int, cache_dir: Path | None = None
+) -> list[ZipMember]:
+    """Download just the central directory of a remote ZIP and parse it.
+
+    When `cache_dir` is given the raw blob is cached there and reused, keyed on
+    the archive size: a different size means a different archive, so the cache
+    is discarded rather than trusted. The blob is parsed, never executed.
+    """
+    cache = cache_dir / DIRECTORY_CACHE if cache_dir else None
+    stamp = cache.with_suffix(".size") if cache else None
+
+    if cache and cache.is_file() and stamp and stamp.is_file():
+        try:
+            if int(stamp.read_text().strip()) == archive_size:
+                members = parse_central_directory(cache.read_bytes())
+                if members:
+                    print(f"  central directory: reusing {cache} ({len(members)} entries)")
+                    return members
+        except (ValueError, OSError):
+            pass
+
     tail_start = max(0, archive_size - TAIL_BYTES)
     tail = _get(url, tail_start, archive_size - 1)
     cd_offset, cd_size = _locate_central_directory(tail, archive_size)
     blob = _get(url, cd_offset, cd_offset + cd_size - 1)
     if len(blob) < cd_size:
         raise RuntimeError(f"central directory truncated: {len(blob)} of {cd_size} bytes")
-    return parse_central_directory(blob)
+    members = parse_central_directory(blob)
+
+    if cache and stamp:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_bytes(blob)
+        stamp.write_text(f"{archive_size}\n")
+    return members
 
 
-def fetch_member(url: str, member: ZipMember) -> bytes:
-    """Range-fetch and inflate one member, verifying its CRC-32.
+def _member_payload(url: str, member: ZipMember) -> bytes:
+    """Range-fetch one member's compressed bytes, skipping its local header.
 
     The local file header's extra field can differ in length from the central
     directory's, so the header is read from the response rather than assumed:
     the fetch covers the member's data plus a generous header allowance.
     """
-    if member.method not in (0, 8):
-        raise RuntimeError(f"{member.name}: unsupported compression method {member.method}")
-
     # 30-byte fixed local header + name + extra. 64 KiB covers any real extra
     # field (the field length is a uint16).
     allowance = 30 + len(member.name.encode()) + 65535 + 16
     start = member.header_offset
-    end = start + member.compressed_size + allowance - 1
-    blob = _get(url, start, end)
+    blob = _get(url, start, start + member.compressed_size + allowance - 1)
 
     if blob[:4] != LOC_SIG:
         raise RuntimeError(f"{member.name}: no local file header at offset {start}")
@@ -290,22 +396,70 @@ def fetch_member(url: str, member: ZipMember) -> bytes:
         raise RuntimeError(
             f"{member.name}: got {len(payload)} of {member.compressed_size} compressed bytes"
         )
+    return payload
 
-    raw = payload if member.method == 0 else zlib.decompress(payload, -zlib.MAX_WBITS)
 
-    if len(raw) != member.uncompressed_size:
-        raise RuntimeError(
-            f"{member.name}: inflated to {len(raw)} bytes, central directory says "
-            f"{member.uncompressed_size}"
-        )
-    found = zlib.crc32(raw) & 0xFFFFFFFF
-    if found != member.crc32:
-        raise RuntimeError(
-            f"{member.name}: CRC-32 {found:08x} does not match the archive's "
-            f"{member.crc32:08x}. The range response was corrupt or the upstream "
-            "archive changed; nothing was written."
-        )
-    return raw
+def fetch_member_to_file(url: str, member: ZipMember, target: Path) -> str:
+    """Fetch, inflate and verify one member into `target`; return its SHA-256.
+
+    The inflate is streamed. Suricata's `eve.json` is 22 MB compressed and
+    405 MB inflated, so holding the decompressed member in memory would cost
+    half a gigabyte per file for no reason; instead the member is written in
+    chunks while its CRC-32 and SHA-256 are accumulated.
+
+    Nothing lands at `target` unless the CRC-32 matches the one in the
+    archive's own central directory. The write goes to a sibling `.part` file
+    that is renamed only after verification, so an interrupted fetch can never
+    leave a short file that a later run's hash check would be asked to trust.
+    """
+    if member.method not in (0, 8):
+        raise RuntimeError(f"{member.name}: unsupported compression method {member.method}")
+
+    payload = _member_payload(url, member)
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    partial = target.with_name(target.name + ".part")
+    digest = hashlib.sha256()
+    crc = 0
+    written = 0
+
+    def absorb(chunk: bytes, handle) -> None:
+        nonlocal crc, written
+        if not chunk:
+            return
+        handle.write(chunk)
+        digest.update(chunk)
+        crc = zlib.crc32(chunk, crc)
+        written += len(chunk)
+
+    try:
+        with partial.open("wb") as handle:
+            if member.method == 0:
+                absorb(payload, handle)
+            else:
+                engine = zlib.decompressobj(-zlib.MAX_WBITS)
+                step = 4 * 1024 * 1024
+                for offset in range(0, len(payload), step):
+                    absorb(engine.decompress(payload[offset : offset + step]), handle)
+                absorb(engine.flush(), handle)
+
+        if written != member.uncompressed_size:
+            raise RuntimeError(
+                f"{member.name}: inflated to {written} bytes, central directory "
+                f"says {member.uncompressed_size}"
+            )
+        found = crc & 0xFFFFFFFF
+        if found != member.crc32:
+            raise RuntimeError(
+                f"{member.name}: CRC-32 {found:08x} does not match the archive's "
+                f"{member.crc32:08x}. The range response was corrupt or the upstream "
+                "archive changed; nothing was written."
+            )
+        partial.replace(target)
+    except BaseException:
+        partial.unlink(missing_ok=True)
+        raise
+    return digest.hexdigest()
 
 
 # ---------------------------------------------------------------------------
@@ -400,6 +554,15 @@ def default_selector(parsed_sources: Iterable[str]) -> Callable[[str], bool]:
 # ---------------------------------------------------------------------------
 
 
+def _sha256_file(path: Path, chunk: int = 4 * 1024 * 1024) -> str:
+    """SHA-256 of a file, read in chunks (members reach 405 MB)."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(chunk), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def zenodo_archive(scenario: str, record: int = ZENODO_RECORD) -> tuple[str, int]:
     """Return (url, size_bytes) of `<scenario>.zip` on the Zenodo record."""
     payload = json.loads(_get(ZENODO_API.format(record=record)).decode())
@@ -427,7 +590,7 @@ def fetch_scenario(
     destination = Path(root) / scenario
     destination.mkdir(parents=True, exist_ok=True)
 
-    members = read_remote_directory(url, archive_size)
+    members = read_remote_directory(url, archive_size, cache_dir=destination)
     select = default_selector(parsed_sources)
     wanted = sorted((m for m in members if select(m.name)), key=lambda m: m.header_offset)
 
@@ -463,6 +626,33 @@ def fetch_scenario(
             "dry_run": True,
         }
 
+    def manifest_for(entries: list[dict]) -> dict:
+        return {
+            "zenodo_record": record,
+            "zenodo_url": f"https://zenodo.org/records/{record}",
+            "archive": f"{scenario}.zip",
+            "archive_size_bytes": archive_size,
+            "archive_entries": len(members),
+            "selected_entries": len(wanted),
+            "selected_compressed_bytes": total_compressed,
+            "selected_uncompressed_bytes": total_uncompressed,
+            "parsed_sources": sorted(parsed_sources),
+            "excluded": {
+                "log.pcap.*": (
+                    "raw packet capture; no Part 26 view parses it. The `network` "
+                    "sensor group is reserved for it in prismflow/data/ait_lds.py."
+                )
+            },
+            "fetch_method": (
+                "HTTP range requests against the archive's ZIP central directory"
+            ),
+            "integrity": (
+                "every entry verified against the archive's own CRC-32 before writing"
+            ),
+            "complete": len(entries) == len(wanted),
+            "entries": sorted(entries, key=lambda e: e["path"]),
+        }
+
     entries: list[dict] = []
     fetched = 0
     for index, member in enumerate(wanted, start=1):
@@ -473,50 +663,34 @@ def fetch_scenario(
             and target.exists()
             and target.stat().st_size == member.uncompressed_size
             and known.get("crc32") == f"{member.crc32:08x}"
-            and known.get("sha256") == hashlib.sha256(target.read_bytes()).hexdigest()
+            and known.get("sha256") == _sha256_file(target)
         ):
             entries.append(known)
             continue
 
-        raw = fetch_member(url, member)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(raw)
+        sha256 = fetch_member_to_file(url, member, target)
         fetched += 1
         entries.append(
             {
                 "path": member.name,
                 "crc32": f"{member.crc32:08x}",
-                "sha256": hashlib.sha256(raw).hexdigest(),
+                "sha256": sha256,
                 "size_bytes": member.uncompressed_size,
                 "compressed_bytes": member.compressed_size,
             }
         )
         print(
             f"  [{index}/{len(wanted)}] {member.name} "
-            f"({member.uncompressed_size / 1e6:.2f} MB)"
+            f"({member.uncompressed_size / 1e6:.2f} MB)",
+            flush=True,
         )
+        # Rewritten after every member, so a dropped connection leaves a
+        # manifest that the next run can resume from instead of re-fetching
+        # everything that already verified.
+        manifest_path.write_text(json.dumps(manifest_for(entries), indent=2) + "\n")
         time.sleep(PAUSE_BETWEEN_MEMBERS_S)
 
-    manifest = {
-        "zenodo_record": record,
-        "zenodo_url": f"https://zenodo.org/records/{record}",
-        "archive": f"{scenario}.zip",
-        "archive_size_bytes": archive_size,
-        "archive_entries": len(members),
-        "selected_entries": len(wanted),
-        "selected_compressed_bytes": total_compressed,
-        "selected_uncompressed_bytes": total_uncompressed,
-        "parsed_sources": sorted(parsed_sources),
-        "excluded": {
-            "log.pcap.*": (
-                "raw packet capture; no Part 26 view parses it. The `network` "
-                "sensor group is reserved for it in prismflow/data/ait_lds.py."
-            )
-        },
-        "fetch_method": "HTTP range requests against the archive's ZIP central directory",
-        "integrity": "every entry verified against the archive's own CRC-32 before writing",
-        "entries": sorted(entries, key=lambda e: e["path"]),
-    }
+    manifest = manifest_for(entries)
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
     print(f"{scenario}: {fetched} entries fetched, {len(entries)} verified -> {destination}")
     return manifest
