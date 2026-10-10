@@ -40,6 +40,7 @@ from prismflow.data.ait_lds import (
     build_samples,
     classify_log_path,
     discover_log_files,
+    found_not_used,
     host_of,
     load_ait_config,
     load_labels,
@@ -57,6 +58,8 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 from fetch_ait import (  # noqa: E402
+    ZipMember,
+    archive_census,
     parse_central_directory,
     safe_extract_path,
 )
@@ -775,6 +778,80 @@ def test_ordinary_entry_names_resolve_under_the_destination(tmp_path: Path):
         resolved = safe_extract_path(tmp_path, name)
         assert resolved.is_relative_to(tmp_path.resolve())
         assert resolved.name == name.rsplit("/", 1)[-1]
+
+
+def test_archive_census_counts_unfetched_sources(tmp_path: Path):
+    """The census must come from the archive, not from what was fetched.
+
+    Part 26 fetches five source types and leaves the rest alone, so a census
+    taken from disk would report every unparsed source as absent -- which is
+    exactly the opposite of what the "found, not used yet" list is for. The
+    archive here contains a pcap and a syslog that no Part 26 view parses, and
+    both must still appear.
+    """
+    members = [
+        ZipMember("gather/h1/logs/auth.log", 8, 1, 10, 100, 0),
+        ZipMember("gather/h2/logs/auth.log", 8, 2, 10, 200, 1000),
+        ZipMember("gather/h1/logs/suricata/log.pcap.1642684610", 8, 3, 10, 9999, 2000),
+        ZipMember("gather/h1/logs/syslog.1", 8, 4, 10, 50, 3000),
+        ZipMember("gather/h1/configs/dnsmasq.conf", 8, 5, 10, 7, 4000),
+        ZipMember("labels/h1/logs/auth.log", 8, 6, 10, 9, 5000),
+    ]
+    census = archive_census(members)
+
+    assert census["auth"]["n_files"] == 2
+    assert census["auth"]["n_hosts"] == 2
+    assert census["auth"]["uncompressed_bytes"] == 300
+    assert census["pcap"]["n_files"] == 1
+    assert census["syslog"]["n_files"] == 1
+    # configs/ is not a log, and labels/ is not a gather entry.
+    assert "__unclassified__" not in census
+    assert set(census) == {"auth", "pcap", "syslog"}
+
+
+def test_found_not_used_prefers_the_manifest_census(tmp_path: Path):
+    """With a manifest census, unfetched sources are listed and marked so."""
+    scenario = make_scenario(tmp_path, "alpha")
+    (scenario / "manifest.json").write_text(
+        json.dumps(
+            {
+                "archive_sources": {
+                    "pcap": {
+                        "n_files": 11,
+                        "n_hosts": 7,
+                        "hosts": ["a"],
+                        "uncompressed_bytes": 6_961_900_000,
+                    },
+                    "openvpn": {
+                        "n_files": 1,
+                        "n_hosts": 1,
+                        "hosts": ["vpn"],
+                        "uncompressed_bytes": 540_000,
+                    },
+                }
+            }
+        )
+    )
+    rows = {row["source"]: row for row in found_not_used(scenario)}
+
+    assert rows["pcap"]["n_files"] == 11
+    assert rows["pcap"]["fetched"] is False
+    assert rows["pcap"]["same_sensor_group"] == "network"
+    assert rows["pcap"]["census_source"] == "archive central directory"
+    assert rows["openvpn"]["n_files"] == 1
+    # A parsed source must never show up in the "not used" list.
+    assert not set(rows) & set(PARSED_SOURCES)
+
+
+def test_found_not_used_falls_back_to_disk_without_a_census(tmp_path: Path):
+    scenario = make_scenario(tmp_path, "alpha")
+    extra = scenario / "gather" / "fw01" / "logs" / "openvpn.log"
+    extra.write_text("Jan 21 00:00:01 fw01 openvpn[1]: x\n")
+    rows = {row["source"]: row for row in found_not_used(scenario)}
+
+    assert rows["openvpn"]["n_files"] == 1
+    assert rows["openvpn"]["fetched"] is True
+    assert "no manifest census" in rows["openvpn"]["census_source"]
 
 
 def test_central_directory_parses_a_real_zip(tmp_path: Path):

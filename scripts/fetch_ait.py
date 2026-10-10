@@ -596,6 +596,65 @@ def default_selector(parsed_sources: Iterable[str]) -> Callable[[str], bool]:
 # ---------------------------------------------------------------------------
 
 
+def archive_census(members: Sequence[ZipMember]) -> dict[str, dict]:
+    """Census every `gather/` log file in the ARCHIVE by source type.
+
+    This has to come from the central directory rather than from disk. Part 26
+    fetches five source types and leaves the other twenty-one unfetched, so an
+    inventory built by walking `data/raw/` would report the unfetched sources
+    as absent rather than as present-and-not-used -- the opposite of what the
+    brief's "found, not used yet" list is for.
+
+    Line counts and timestamps are deliberately absent for every entry here:
+    they cannot be known without the file's bytes, and a census is not the
+    place to guess at them. The loader fills those in for the sources it does
+    parse.
+    """
+    from prismflow.data.ait_lds import classify_log_path, host_of
+
+    census: dict[str, dict] = {}
+    unclassified: list[str] = []
+    for member in members:
+        name = member.name
+        if not name.startswith("gather/") or name.endswith("/"):
+            continue
+        if "/logs/" not in name:
+            continue
+        source = classify_log_path(name)
+        host = host_of(name)
+        if source is None:
+            unclassified.append(name)
+            continue
+        row = census.setdefault(
+            source, {"n_files": 0, "hosts": set(), "uncompressed_bytes": 0}
+        )
+        row["n_files"] += 1
+        row["uncompressed_bytes"] += member.uncompressed_size
+        if host:
+            row["hosts"].add(host)
+
+    out = {
+        source: {
+            "n_files": row["n_files"],
+            "n_hosts": len(row["hosts"]),
+            "hosts": sorted(row["hosts"]),
+            "uncompressed_bytes": row["uncompressed_bytes"],
+        }
+        for source, row in sorted(census.items())
+    }
+    # A log file the registry cannot name is a gap in the registry, not
+    # something to leave out of the inventory quietly.
+    if unclassified:
+        out["__unclassified__"] = {
+            "n_files": len(unclassified),
+            "n_hosts": 0,
+            "hosts": [],
+            "uncompressed_bytes": 0,
+            "examples": sorted(unclassified)[:20],
+        }
+    return out
+
+
 def _sha256_file(path: Path, chunk: int = 4 * 1024 * 1024) -> str:
     """SHA-256 of a file, read in chunks (members reach 405 MB)."""
     digest = hashlib.sha256()
@@ -668,6 +727,8 @@ def fetch_scenario(
             "dry_run": True,
         }
 
+    census = archive_census(members)
+
     def manifest_for(entries: list[dict]) -> dict:
         return {
             "zenodo_record": record,
@@ -692,6 +753,7 @@ def fetch_scenario(
                 "every entry verified against the archive's own CRC-32 before writing"
             ),
             "complete": len(entries) == len(wanted),
+            "archive_sources": census,
             "entries": sorted(entries, key=lambda e: e["path"]),
         }
 

@@ -1988,9 +1988,72 @@ def found_not_used(scenario_root: Path | str) -> list[dict[str, Any]]:
     Reported so the inventory is complete: a source absent from this list and
     from `inventory()` is a source the registry does not know about, which is
     a defect rather than a silent omission.
+
+    The census comes from the FETCH MANIFEST's `archive_sources`, which
+    `scripts/fetch_ait.py` builds from the archive's central directory. It has
+    to: Part 26 fetches five source types and leaves twenty-one unfetched, so
+    a census taken by walking `data/raw/` would report every unparsed source
+    as absent -- exactly the sources this list is for. Only when no manifest
+    census exists does it fall back to what is on disk, and `census_source`
+    says which happened so the reader is not left guessing.
+
+    `lines` and timestamps are absent for these rows and stay absent: they
+    cannot be known without the files, and this Part does not estimate them.
     """
-    rows: list[dict[str, Any]] = []
     root = Path(scenario_root)
+    rows: list[dict[str, Any]] = []
+
+    manifest_path = root / "manifest.json"
+    census: dict[str, Any] = {}
+    if manifest_path.is_file():
+        try:
+            census = json.loads(manifest_path.read_text()).get("archive_sources") or {}
+        except json.JSONDecodeError:
+            census = {}
+
+    if census:
+        for source in UNPARSED_SOURCES:
+            entry = census.get(source)
+            if not entry:
+                continue
+            spec = SOURCES_BY_NAME[source]
+            rows.append(
+                {
+                    "source": source,
+                    "sensor": spec.sensor,
+                    "description": spec.description,
+                    "same_sensor_group": spec.same_sensor_group,
+                    "n_files": entry.get("n_files"),
+                    "n_hosts": entry.get("n_hosts"),
+                    "archive_bytes": entry.get("uncompressed_bytes"),
+                    "hosts": entry.get("hosts", []),
+                    "fetched": False,
+                    "note": spec.note,
+                    "census_source": "archive central directory",
+                }
+            )
+        unclassified = census.get("__unclassified__")
+        if unclassified:
+            rows.append(
+                {
+                    "source": "__unclassified__",
+                    "sensor": "unknown",
+                    "description": (
+                        "log files under gather/*/logs/ that no SOURCES pattern "
+                        "matches. A non-zero count here is a registry gap."
+                    ),
+                    "same_sensor_group": None,
+                    "n_files": unclassified.get("n_files"),
+                    "n_hosts": 0,
+                    "archive_bytes": 0,
+                    "hosts": [],
+                    "fetched": False,
+                    "note": "; ".join(unclassified.get("examples", [])[:5]),
+                    "census_source": "archive central directory",
+                }
+            )
+        return rows
+
     present: dict[str, list[LogFile]] = {}
     for log in discover_log_files(root):
         present.setdefault(log.source, []).append(log)
@@ -2007,10 +2070,13 @@ def found_not_used(scenario_root: Path | str) -> list[dict[str, Any]]:
                 "same_sensor_group": spec.same_sensor_group,
                 "n_files": len(logs),
                 "n_hosts": len({log.host for log in logs}),
-                "bytes_on_disk": sum(
+                "archive_bytes": sum(
                     log.path.stat().st_size for log in logs if log.path.is_file()
                 ),
+                "hosts": sorted({log.host for log in logs}),
+                "fetched": True,
                 "note": spec.note,
+                "census_source": "files on disk (no manifest census)",
             }
         )
     return rows
