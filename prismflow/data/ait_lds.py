@@ -86,6 +86,7 @@ import hashlib
 import json
 import math
 import re
+import sys
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -793,7 +794,15 @@ class Accumulator:
         bucket = self.uniques.get(key)
         if bucket is None:
             bucket = self.uniques[key] = set()
-        bucket.add(value)
+        # Interned, because the same value recurs across thousands of cells and
+        # each occurrence would otherwise be a separate string object. One
+        # address, port, program name or event type is seen in most windows of
+        # a four-day capture, and russellmitchell's Suricata logs alone carry
+        # several million events; interning collapses those to one object per
+        # distinct value instead of one per (window, host, source) it appears
+        # in. The sets retain the values regardless, so nothing is kept alive
+        # that would otherwise be freed.
+        bucket.add(sys.intern(value))
 
     def merge(self, other: "Accumulator") -> None:
         self.n += other.n
