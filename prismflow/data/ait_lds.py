@@ -1954,3 +1954,51 @@ def found_not_used(scenario_root: Path | str) -> list[dict[str, Any]]:
             }
         )
     return rows
+
+
+# ---------------------------------------------------------------------------
+# configs/data/ait.yaml
+# ---------------------------------------------------------------------------
+
+DEFAULT_CONFIG_PATH = Path("configs/data/ait.yaml")
+
+
+def load_ait_config(
+    path: Path | str = DEFAULT_CONFIG_PATH, **overrides: Any
+) -> AITConfig:
+    """Build an `AITConfig` from `configs/data/ait.yaml`, with overrides.
+
+    The YAML holds more than the config object needs -- the Zenodo record, the
+    held-out scenario, Part 27's window sweep -- so only the keys `AITConfig`
+    declares are taken and the rest are left for the callers that want them
+    (`load_ait_settings`). An unknown override is an error rather than a
+    silently ignored typo.
+    """
+    settings = load_ait_settings(path)
+    taken = {
+        "scenario": settings.get("scenario", "russellmitchell"),
+        "window_seconds": int(settings.get("window_seconds", DEFAULT_WINDOW_SECONDS)),
+        "sample_mode": str(settings.get("sample_mode", "network")),
+        "sources": tuple(settings.get("sources", PARSED_SOURCES)),
+        "time_range": str(settings.get("time_range", "scenario")),
+        "drop_empty_windows": bool(settings.get("drop_empty_windows", True)),
+        "raw_root": str(settings.get("raw_root", DEFAULT_RAW_ROOT)),
+    }
+    unknown = sorted(set(overrides) - set(taken))
+    if unknown:
+        raise ValueError(f"unknown AITConfig override(s): {unknown}; known: {sorted(taken)}")
+    taken.update(overrides)
+    if "sources" in overrides:
+        taken["sources"] = tuple(overrides["sources"])
+    return AITConfig(**taken)
+
+
+def load_ait_settings(path: Path | str = DEFAULT_CONFIG_PATH) -> dict[str, Any]:
+    """The whole YAML as a plain mapping, for keys outside `AITConfig`."""
+    import yaml
+
+    text = Path(path).read_text(encoding="utf-8")
+    data = yaml.safe_load(text) or {}
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} root must be a mapping, got {type(data)!r}")
+    return data

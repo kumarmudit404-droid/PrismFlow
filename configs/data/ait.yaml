@@ -1,0 +1,71 @@
+# Part 26 - AIT Log Data Set v2.0 loader configuration.
+#
+# Every key here lands in the processed output's manifest.json, so a processed
+# directory always carries the configuration that produced it. Changing any key
+# changes `output_name` and therefore writes to a different directory; an
+# existing result is never silently overwritten by a different config.
+#
+# Fetch the raw subset first:
+#   python scripts/fetch_ait.py russellmitchell
+# then build:
+#   python -c "from prismflow.data.ait_lds import *; \
+#              c = AITConfig(**load_ait_config()); build_ait_dataset(c)"
+
+dataset: AIT Log Data Set v2.0
+zenodo_record: 5789064
+
+# First run: russellmitchell (smallest archive, official labels present).
+# Second run, later, with no code change: santos, the held-out test scenario
+# for Part 28. Views are keyed off log-source TYPE, never off host name, so
+# the same view list applies to both.
+scenario: russellmitchell
+held_out_scenario: santos
+
+# Window length in seconds.
+#
+# NOT FINAL. 300 is the Part 26 brief's default and is carried here so the
+# loader runs; Part 27 reports the window-length table and decides. Nothing in
+# Part 26 depends on this value being right -- it reports statistics at
+# whatever length it is given.
+window_seconds: 300
+
+# "network" (default) or "host".
+#
+#   network  one sample = one network-wide time window. Each view aggregates
+#            one source type across every host that produces it, taking the
+#            UNION of distinct-value sets rather than the sum of their sizes.
+#   host     one sample = (host, time window). A view is present only when
+#            that host runs that source.
+#
+# Part 26 reports the per-view missing fraction for BOTH modes and does not
+# choose between them.
+sample_mode: network
+
+# Views, in canonical order. This order fixes the V axis of every tensor the
+# loader writes, so it must not be reordered without reprocessing.
+sources:
+  - apache      # web server access log
+  - auth        # host PAM / sshd authentication
+  - dns         # dnsmasq resolver
+  - audit       # Linux kernel audit subsystem
+  - suricata    # network IDS, same_sensor_group: network
+
+# Window grid origin and extent.
+#   scenario  from the archive's own dataset.yaml start/end (the dataset's
+#             statement of its evaluated interval). Events outside it are
+#             counted and reported, not dropped silently.
+#   observed  from the first and last event actually parsed. Costs a second
+#             read of every file.
+time_range: scenario
+
+# Drop windows in which no view reported an event. Keeping them would add
+# samples whose view_mask is entirely False and whose features are all zero.
+# The count of dropped windows is reported either way.
+drop_empty_windows: true
+
+raw_root: data/raw/ait
+processed_root: data/processed
+
+# Window-length sweep for Part 27's table. Part 26 only reports; it does not
+# pick a length.
+window_sweep_seconds: [60, 300, 600, 1800, 3600]
