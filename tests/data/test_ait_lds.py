@@ -456,6 +456,48 @@ def test_label_coverage_is_per_file_not_per_source(tmp_path: Path):
     assert not samples.label_known[row]
 
 
+def test_incomplete_fetch_is_refused(tmp_path: Path):
+    """A half-fetched scenario must not produce statistics that look fine.
+
+    The failure mode this guards is specific: missing views would be missing
+    because the file had not arrived, not because the sensor was quiet, and
+    the resulting missing-view fractions would be entirely plausible.
+    """
+    scenario = make_scenario(tmp_path, "alpha")
+    config = AITConfig(scenario="alpha", window_seconds=WINDOW, raw_root=str(tmp_path))
+    (scenario / "manifest.json").write_text(
+        json.dumps({"complete": False, "selected_entries": 91, "entries": [{"path": "x"}]})
+    )
+
+    with pytest.raises(RuntimeError, match="incomplete fetch"):
+        scan_scenario(config)
+
+    # The escape hatch works, and the scan records that it was used.
+    scan = scan_scenario(config, allow_incomplete_fetch=True)
+    assert scan.fetch_complete is False
+
+
+def test_complete_fetch_is_recorded(tmp_path: Path):
+    scenario = make_scenario(tmp_path, "alpha")
+    config = AITConfig(scenario="alpha", window_seconds=WINDOW, raw_root=str(tmp_path))
+
+    # No manifest at all: allowed (a fixture), but not claimed as complete.
+    assert scan_scenario(config).fetch_complete is False
+
+    (scenario / "manifest.json").write_text(
+        json.dumps({"complete": True, "selected_entries": 1, "entries": [{"path": "x"}]})
+    )
+    scan = scan_scenario(config)
+    assert scan.fetch_complete is True
+    assert rewindow(scan, 600).fetch_complete is True
+
+    destination = write_processed(
+        build_samples(scan), scan, raw_manifest={"complete": True}, processed_root=tmp_path / "o"
+    )
+    _, manifest = load_processed(destination)
+    assert manifest["raw_fetch"]["complete"] is True
+
+
 def test_missing_labels_directory_is_an_error(tmp_path: Path):
     scenario = make_scenario(tmp_path, "alpha")
     for path in sorted((scenario / "labels").rglob("*"), reverse=True):

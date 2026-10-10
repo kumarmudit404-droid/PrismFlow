@@ -1248,6 +1248,9 @@ class ScanResult:
     origin: float
     n_windows: int
     hosts: tuple[str, ...]
+    #: True only when the raw fetch manifest says every selected entry
+    #: verified. False also covers "no manifest", i.e. a hand-built fixture.
+    fetch_complete: bool = False
 
     @property
     def window_seconds(self) -> int:
@@ -1257,14 +1260,29 @@ class ScanResult:
         return self.origin + index * self.window_seconds
 
 
-def scan_scenario(config: AITConfig, progress: bool = False) -> ScanResult:
+def scan_scenario(
+    config: AITConfig,
+    progress: bool = False,
+    allow_incomplete_fetch: bool = False,
+) -> ScanResult:
     """Parse every file of every configured source into per-window cells.
 
     Memory is bounded by the number of (window, host, source) cells and the
     distinct values each holds, not by the size of the logs: lines are consumed
     one at a time and never retained. Suricata's `eve.json` is 405 MB on one
     host, so this matters.
+
+    A PARTIAL fetch is refused. `scripts/fetch_ait.py` rewrites its manifest
+    after every member and records `complete`, and a scan over a half-fetched
+    scenario produces event counts, attack-window counts and missing-view
+    fractions that look entirely reasonable and are simply wrong -- the
+    missing views are missing because the file has not arrived yet, not
+    because the sensor was quiet. That is the kind of silent wrongness this
+    project's rules exist to prevent, so it raises unless the caller says
+    otherwise, and either way the answer is recorded in the processed
+    manifest.
     """
+    fetch_complete = _require_complete_fetch(config, allow_incomplete_fetch)
     root = config.scenario_root
     wanted = set(config.sources)
     files = [f for f in discover_log_files(root) if f.source in wanted]
@@ -1353,7 +1371,33 @@ def scan_scenario(config: AITConfig, progress: bool = False) -> ScanResult:
         origin=origin,
         n_windows=n_windows,
         hosts=hosts,
+        fetch_complete=fetch_complete,
     )
+
+
+def _require_complete_fetch(config: AITConfig, allow_incomplete: bool) -> bool:
+    """Return whether the raw fetch is known complete; raise if it is not.
+
+    Three states, and they are different. `True` means the fetch manifest says
+    every selected entry verified. `None` means there is no manifest at all,
+    which is the case for a hand-built fixture and is allowed. `False` means
+    the fetcher stopped part-way, and that is refused.
+    """
+    manifest = raw_manifest(config)
+    if not manifest:
+        return False
+    complete = manifest.get("complete")
+    if complete is False and not allow_incomplete:
+        fetched = len(manifest.get("entries", []))
+        selected = manifest.get("selected_entries")
+        raise RuntimeError(
+            f"{config.scenario_root / 'manifest.json'} reports an incomplete "
+            f"fetch: {fetched} of {selected} selected entries verified. Scanning "
+            "now would report missing views that are merely unfetched. Finish "
+            f"`python scripts/fetch_ait.py {config.scenario}` (it resumes), or "
+            "pass allow_incomplete_fetch=True and say so in the write-up."
+        )
+    return bool(complete)
 
 
 def _observed_range(files: Sequence[LogFile], config: AITConfig) -> tuple[float, float]:
@@ -1601,6 +1645,7 @@ def rewindow(scan: ScanResult, window_seconds: int) -> ScanResult:
         origin=scan.origin,
         n_windows=math.ceil(scan.n_windows / factor),
         hosts=scan.hosts,
+        fetch_complete=scan.fetch_complete,
     )
 
 
@@ -1788,6 +1833,7 @@ def _manifest(
             "zenodo_record": raw.get("zenodo_record"),
             "archive": raw.get("archive"),
             "archive_size_bytes": raw.get("archive_size_bytes"),
+            "complete": scan.fetch_complete,
             "entries": raw.get("entries", []),
         },
         "no_label_in_features": (
