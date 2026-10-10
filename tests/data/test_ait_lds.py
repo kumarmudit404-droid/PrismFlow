@@ -28,6 +28,7 @@ import pytest
 import torch
 
 from prismflow.data.ait_lds import (
+    APACHE_RE,
     FEATURE_DIM,
     FEATURES,
     LABEL_UNKNOWN,
@@ -37,6 +38,9 @@ from prismflow.data.ait_lds import (
     UNPARSED_SOURCES,
     AITConfig,
     AITMultiViewDataset,
+    Accumulator,
+    SyslogClock,
+    _parse_apache,
     build_samples,
     classify_log_path,
     discover_log_files,
@@ -286,6 +290,52 @@ def test_every_source_pattern_is_mutually_exclusive():
     for path in paths:
         matched = [s.name for s in SOURCES if s.regex.search(path)]
         assert len(matched) == 1, f"{path} matched {matched}"
+
+
+@pytest.mark.parametrize(
+    "line,expect_client,expect_vhost",
+    [
+        (
+            '10.143.2.25 - - [23/Jan/2022:06:28:29 +0000] "GET /a HTTP/1.1" 200 11910 '
+            '"https://x/y" "Mozilla/5.0"',
+            "10.143.2.25",
+            None,
+        ),
+        (
+            'cloud.dmz.example.com:443 172.19.130.68 - - [22/Jan/2022:06:25:18 +0000] '
+            '"GET /index.php HTTP/1.1" 200 3958 "-" "Mozilla/5.0"',
+            "172.19.130.68",
+            "cloud.dmz.example.com:443",
+        ),
+        # An IPv6 client ends in ":<digits>" and could be mistaken for a
+        # hostname:port vhost. The vhost group must not swallow it.
+        (
+            'fe80::1 - - [22/Jan/2022:06:25:18 +0000] "GET /x HTTP/1.1" 404 10 "-" "curl/7"',
+            "fe80::1",
+            None,
+        ),
+        # Common log format: no referer or user agent at all.
+        ('10.0.0.1 - - [22/Jan/2022:06:25:18 +0000] "GET /x HTTP/1.1" 200 5', "10.0.0.1", None),
+        # A 304 logs "-" for the response size.
+        ('10.0.0.1 - - [22/Jan/2022:06:25:18 +0000] "GET /x HTTP/1.1" 304 -', "10.0.0.1", None),
+    ],
+)
+def test_apache_parses_both_log_formats(line: str, expect_client: str, expect_vhost):
+    """Debian's combined-vhost format is not optional to handle.
+
+    On russellmitchell's `cloud_share` the only non-empty Apache log is
+    `other_vhosts_access.log.{1..4}` -- 27,500 requests -- so a pattern that
+    requires the client-first shape drops that host from the apache view
+    entirely while reporting the lines merely as "unparsed".
+    """
+    match = APACHE_RE.match(line)
+    assert match is not None, line
+    assert match["client"] == expect_client
+    assert match["vhost"] == expect_vhost
+
+    accumulator = Accumulator()
+    assert _parse_apache(line, SyslogClock(2022), accumulator) is not None
+    assert accumulator.raw("apache")["n_unique_client"] == 1
 
 
 def test_apache_view_is_access_log_only():

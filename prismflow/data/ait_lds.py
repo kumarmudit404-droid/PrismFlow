@@ -489,9 +489,24 @@ class SyslogClock:
         ).timestamp()
 
 
-# "192.168.10.4 - - [21/Jan/2022:00:00:01 +0000] "GET /x HTTP/1.1" 200 1234 "-" "UA""
+# Apache writes two shapes here, and the difference is one leading field:
+#
+#   per-vhost CustomLog    "192.168.10.4 - - [21/Jan/2022:00:00:01 +0000] "GET
+#                           /x HTTP/1.1" 200 1234 "-" "UA""
+#   other_vhosts_access    "cloud.dmz.example.com:443 172.19.130.68 - - [...]"
+#
+# The second is Debian's combined-vhost format, used for vhosts that declare no
+# CustomLog of their own. It is not optional to handle: on russellmitchell's
+# `cloud_share` the only non-empty Apache log is
+# `other_vhosts_access.log.{1..4}`, 27,500 requests, so requiring the
+# client-first shape silently drops that host from the apache view entirely.
+#
+# The vhost group is restricted to `hostname:port` with no colon inside the
+# host, so it cannot swallow an IPv6 client address; and being optional and
+# tried first, it still parses the client-first shape unchanged.
 APACHE_RE = re.compile(
-    r"^(?P<client>\S+)\s+\S+\s+(?P<user>\S+)\s+"
+    r"^(?:(?P<vhost>[A-Za-z0-9._\-]+:\d+)\s+)?"
+    r"(?P<client>\S+)\s+\S+\s+(?P<user>\S+)\s+"
     r"\[(?P<day>\d{2})/(?P<month>[A-Z][a-z]{2})/(?P<year>\d{4}):"
     r"(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})\s+(?P<offset>[+-]\d{4})\]\s+"
     r'"(?P<method>[A-Z!-~]*)\s*(?P<path>\S*)\s*(?P<protocol>[^"]*)"\s+'
