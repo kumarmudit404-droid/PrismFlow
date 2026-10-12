@@ -1,0 +1,111 @@
+experiment:
+  id: ait_clean
+  description: >
+    Part 28. Naive fusion and V1 PrismFlow on the AIT Log Data Set v2.0, at
+    300 s network windows, with train and test drawn from DIFFERENT scenarios
+    in both directions. No attack, no corruption, no clone: clean data only.
+
+# WHAT THE LABEL MEANS. A window is attack=1 if ANY officially labelled line
+# falls in it, and on both scenarios that label is dominated by one
+# continuously-running DNS exfiltration tool: 1,026 of 1,031 attack windows on
+# russellmitchell and 663 of 667 on santos carry only dnsteal-family steps
+# (docs/part26-ait-loader.md sections 0 and 12). So the task this config
+# defines is "was the exfiltration tool running in this window", NOT "detect
+# an APT" and not "detect a multi-step intrusion". The multi-step intrusion is
+# 5 windows on russellmitchell and 3 on santos.
+
+# WHAT A SEED VARIES HERE, and what it does not. Train and test are whole
+# scenarios, fixed by `directions` below, so a seed CANNOT redraw the data and
+# CANNOT re-partition it -- the Part 15 mechanism (docs/DATASETS.md, "what a
+# seed varies") does not apply. Here a seed selects exactly two things: the
+# model's parameter initialisation (via set_seed) and the minibatch order of
+# every training epoch (via iter_batches(shuffle=True, seed=seed+epoch)).
+# Every reported +/- is therefore INITIALISATION-AND-BATCH-ORDER variance on a
+# fixed pair of scenarios. It is not dataset variance and it is emphatically
+# not a spread over independent attacks: the test sets contain 3 (santos) and
+# 1 (russellmitchell) independent contiguous attack blocks.
+seeds: [0, 1, 2, 3, 4]
+
+data:
+  processed_root: data/processed
+  window_seconds: 300
+  sample_mode: network
+  # The user's choice at the Part 27 review gate: 300 s, network.
+  chose_at: part27 review gate
+
+# SPLIT. Train and test always come from DIFFERENT scenarios. Neighbouring
+# windows of one scenario leak into each other (docs/part27-ait-datacard.md
+# section 8), so a random split WITHIN a scenario is forbidden in both
+# directions. Neither direction is "the" result: two directions are two
+# measurements on two different test sets with different prevalences, so no
+# number is averaged, concatenated or otherwise combined across them.
+directions:
+  - name: A_rm_to_santos
+    label: "A: train russellmitchell -> test santos"
+    train: russellmitchell
+    test: santos
+  - name: B_santos_to_rm
+    label: "B: train santos -> test russellmitchell"
+    train: santos
+    test: russellmitchell
+
+# Only `label_known` rows are used anywhere, in train and in test.
+# labels == -1 means "no label-covered file contributed an event to this
+# window" and is NEVER read as benign.
+labels:
+  use_label_known_only: true
+
+systems:
+  - {name: naive, label: naive fusion, use_discount: false}
+  - {name: prismflow, label: V1 PrismFlow, use_discount: true}
+
+# Identical to experiments/real/config.yaml (Part 15), so the encoders and
+# heads are the same system this project has been reporting on.
+model:
+  hidden_dims: [64, 64]
+  feature_dim: 32
+  dropout: 0.0
+
+training:
+  epochs: 40
+  batch_size: 64
+  lr: 0.001
+  anneal_epochs: 10
+  per_view_loss_weight: 1.0
+
+# Feature scaling is fitted on the TRAINING scenario's label_known rows only,
+# refitted per direction, never shared between directions. The AIT loader
+# deliberately does not z-score (prismflow/data/ait_lds.py,
+# AITMultiViewDataset docstring: "Standardisation has to be fitted on training
+# indices only, and the split is Part 28's business"), so this is the step
+# that module left to here.
+scaling:
+  method: zscore
+  # Fitted per (view, native feature) over rows where that view is PRESENT, so
+  # an absent view's zero row never enters the mean. Padded columns beyond a
+  # view's native width are left untouched at 0.
+  present_rows_only: true
+  epsilon: 1.0e-8
+
+evaluation:
+  batch_size: 256
+  n_bins: 15
+  coverages: [1.0, 0.9, 0.8, 0.5]
+
+# Step 5 of the brief: if any view is missing in more than 50% of windows,
+# also run a second configuration without it. Measured on each direction's
+# TRAIN and TEST set.
+missingness:
+  threshold: 0.5
+
+# ENIV and the full [V, V] dependence matrix, measured on each direction's
+# TEST set. REPORTING_NULL_PERMUTATIONS (12), not the forward pass's 4: the
+# same reporting-grade call Part 15 makes in `dependence_of`.
+diagnostics:
+  eniv_methods: [eigen, design_effect]
+  headline_eniv_method: eigen
+  # Step 4 of the brief asks for the same_sensor_group="network" PAIR against
+  # the mean of unrelated pairs. `prismflow.data.ait_lds.sensor_groups()`
+  # returns {'network': [4]} -- one member, suricata, so NO pair exists.
+  # The runner reports that rather than substituting a different pair.
+  same_sensor_group: network
