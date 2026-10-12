@@ -1,0 +1,5171 @@
+{
+  "part": 28,
+  "experiment_id": "ait_clean",
+  "commit": "acd4466",
+  "config": {
+    "experiment": {
+      "id": "ait_clean",
+      "description": "Part 28. Naive fusion and V1 PrismFlow on the AIT Log Data Set v2.0, at 300 s network windows, with train and test drawn from DIFFERENT scenarios in both directions. No attack, no corruption, no clone: clean data only.\n"
+    },
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "data": {
+      "processed_root": "data/processed",
+      "window_seconds": 300,
+      "sample_mode": "network",
+      "chose_at": "part27 review gate"
+    },
+    "directions": [
+      {
+        "name": "A_rm_to_santos",
+        "label": "A: train russellmitchell -> test santos",
+        "train": "russellmitchell",
+        "test": "santos"
+      },
+      {
+        "name": "B_santos_to_rm",
+        "label": "B: train santos -> test russellmitchell",
+        "train": "santos",
+        "test": "russellmitchell"
+      }
+    ],
+    "labels": {
+      "use_label_known_only": true
+    },
+    "systems": [
+      {
+        "name": "naive",
+        "label": "naive fusion",
+        "use_discount": false
+      },
+      {
+        "name": "prismflow",
+        "label": "V1 PrismFlow",
+        "use_discount": true
+      }
+    ],
+    "model": {
+      "hidden_dims": [
+        64,
+        64
+      ],
+      "feature_dim": 32,
+      "dropout": 0.0
+    },
+    "training": {
+      "epochs": 40,
+      "batch_size": 64,
+      "lr": 0.001,
+      "anneal_epochs": 10,
+      "per_view_loss_weight": 1.0
+    },
+    "scaling": {
+      "method": "zscore",
+      "present_rows_only": true,
+      "epsilon": 1e-08
+    },
+    "evaluation": {
+      "batch_size": 256,
+      "n_bins": 15,
+      "coverages": [
+        1.0,
+        0.9,
+        0.8,
+        0.5
+      ]
+    },
+    "missingness": {
+      "threshold": 0.5
+    },
+    "diagnostics": {
+      "eniv_methods": [
+        "eigen",
+        "design_effect"
+      ],
+      "headline_eniv_method": "eigen",
+      "same_sensor_group": "network"
+    }
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "not_evidence": false,
+  "quick_smoke_run": false,
+  "sources": [
+    "apache",
+    "auth",
+    "dns",
+    "audit",
+    "suricata"
+  ],
+  "label_meaning": "A window is attack=1 if ANY officially labelled line falls in it, and on both scenarios that label is dominated by one continuously-running DNS exfiltration tool (1,026 of 1,031 attack windows on russellmitchell and 663 of 667 on santos carry only dnsteal-family steps, docs/part26-ait-loader.md sections 0 and 12), so the task is 'was the exfiltration tool running in this window', NOT 'detect an APT' and not 'detect a multi-step intrusion'.",
+  "pooling_policy": "Direction A and direction B are reported separately and are never pooled, averaged or concatenated. Two directions are two measurements on two different test sets with different prevalences.",
+  "seed_meaning": "A seed selects the model's parameter initialisation and the minibatch order of every epoch. Train and test are whole scenarios, so a seed cannot redraw or re-partition the data. Every +/- is initialisation-and-batch-order variance, not a spread over independent attacks.",
+  "directions": {
+    "A_rm_to_santos": {
+      "direction": "A_rm_to_santos",
+      "label": "A: train russellmitchell -> test santos",
+      "train_scenario": "russellmitchell",
+      "test_scenario": "santos",
+      "label_meaning": "A window is attack=1 if ANY officially labelled line falls in it, and on both scenarios that label is dominated by one continuously-running DNS exfiltration tool (1,026 of 1,031 attack windows on russellmitchell and 663 of 667 on santos carry only dnsteal-family steps, docs/part26-ait-loader.md sections 0 and 12), so the task is 'was the exfiltration tool running in this window', NOT 'detect an APT' and not 'detect a multi-step intrusion'.",
+      "n_train": 1145,
+      "n_train_attack": 1031,
+      "n_train_benign": 114,
+      "train_attack_prevalence": 0.9004366812227074,
+      "scaler": {
+        "fitted_on": "russellmitchell",
+        "fit_rows": 1145,
+        "present_rows_per_view": [
+          939,
+          601,
+          1145,
+          823,
+          1145
+        ],
+        "note": "fitted on the training scenario's label_known rows only, refitted per direction, never shared between directions"
+      },
+      "test_structure": {
+        "scenario": "santos",
+        "window_seconds": 300,
+        "sample_mode": "network",
+        "n_windows_on_grid": 1152,
+        "n_label_known": 1108,
+        "n_attack": 667,
+        "n_benign": 441,
+        "n_unlabelled": 44,
+        "attack_prevalence_labelled": 0.601985559566787,
+        "n_attack_blocks": 3,
+        "attack_blocks": [
+          {
+            "start_index": 0,
+            "length_windows": 664,
+            "start_time": "2022-01-14T00:00:00+00:00"
+          },
+          {
+            "start_index": 999,
+            "length_windows": 2,
+            "start_time": "2022-01-17T11:15:00+00:00"
+          },
+          {
+            "start_index": 1007,
+            "length_windows": 1,
+            "start_time": "2022-01-17T11:55:00+00:00"
+          }
+        ],
+        "n_benign_blocks": 37,
+        "benign_blocks": [
+          {
+            "start_index": 664,
+            "length_windows": 168,
+            "start_time": "2022-01-16T07:20:00+00:00"
+          },
+          {
+            "start_index": 833,
+            "length_windows": 7,
+            "start_time": "2022-01-16T21:25:00+00:00"
+          },
+          {
+            "start_index": 841,
+            "length_windows": 7,
+            "start_time": "2022-01-16T22:05:00+00:00"
+          },
+          {
+            "start_index": 849,
+            "length_windows": 1,
+            "start_time": "2022-01-16T22:45:00+00:00"
+          },
+          {
+            "start_index": 851,
+            "length_windows": 1,
+            "start_time": "2022-01-16T22:55:00+00:00"
+          },
+          {
+            "start_index": 853,
+            "length_windows": 1,
+            "start_time": "2022-01-16T23:05:00+00:00"
+          },
+          {
+            "start_index": 855,
+            "length_windows": 1,
+            "start_time": "2022-01-16T23:15:00+00:00"
+          },
+          {
+            "start_index": 857,
+            "length_windows": 3,
+            "start_time": "2022-01-16T23:25:00+00:00"
+          },
+          {
+            "start_index": 862,
+            "length_windows": 4,
+            "start_time": "2022-01-16T23:50:00+00:00"
+          },
+          {
+            "start_index": 867,
+            "length_windows": 1,
+            "start_time": "2022-01-17T00:15:00+00:00"
+          },
+          {
+            "start_index": 869,
+            "length_windows": 3,
+            "start_time": "2022-01-17T00:25:00+00:00"
+          },
+          {
+            "start_index": 875,
+            "length_windows": 1,
+            "start_time": "2022-01-17T00:55:00+00:00"
+          },
+          {
+            "start_index": 877,
+            "length_windows": 1,
+            "start_time": "2022-01-17T01:05:00+00:00"
+          },
+          {
+            "start_index": 879,
+            "length_windows": 5,
+            "start_time": "2022-01-17T01:15:00+00:00"
+          },
+          {
+            "start_index": 886,
+            "length_windows": 2,
+            "start_time": "2022-01-17T01:50:00+00:00"
+          },
+          {
+            "start_index": 889,
+            "length_windows": 3,
+            "start_time": "2022-01-17T02:05:00+00:00"
+          },
+          {
+            "start_index": 893,
+            "length_windows": 3,
+            "start_time": "2022-01-17T02:25:00+00:00"
+          },
+          {
+            "start_index": 898,
+            "length_windows": 6,
+            "start_time": "2022-01-17T02:50:00+00:00"
+          },
+          {
+            "start_index": 905,
+            "length_windows": 3,
+            "start_time": "2022-01-17T03:25:00+00:00"
+          },
+          {
+            "start_index": 911,
+            "length_windows": 1,
+            "start_time": "2022-01-17T03:55:00+00:00"
+          },
+          {
+            "start_index": 913,
+            "length_windows": 1,
+            "start_time": "2022-01-17T04:05:00+00:00"
+          },
+          {
+            "start_index": 915,
+            "length_windows": 1,
+            "start_time": "2022-01-17T04:15:00+00:00"
+          },
+          {
+            "start_index": 917,
+            "length_windows": 3,
+            "start_time": "2022-01-17T04:25:00+00:00"
+          },
+          {
+            "start_index": 923,
+            "length_windows": 76,
+            "start_time": "2022-01-17T04:55:00+00:00"
+          },
+          {
+            "start_index": 1001,
+            "length_windows": 6,
+            "start_time": "2022-01-17T11:25:00+00:00"
+          },
+          {
+            "start_index": 1008,
+            "length_windows": 98,
+            "start_time": "2022-01-17T12:00:00+00:00"
+          },
+          {
+            "start_index": 1107,
+            "length_windows": 18,
+            "start_time": "2022-01-17T20:15:00+00:00"
+          },
+          {
+            "start_index": 1126,
+            "length_windows": 2,
+            "start_time": "2022-01-17T21:50:00+00:00"
+          },
+          {
+            "start_index": 1129,
+            "length_windows": 3,
+            "start_time": "2022-01-17T22:05:00+00:00"
+          },
+          {
+            "start_index": 1133,
+            "length_windows": 1,
+            "start_time": "2022-01-17T22:25:00+00:00"
+          },
+          {
+            "start_index": 1135,
+            "length_windows": 1,
+            "start_time": "2022-01-17T22:35:00+00:00"
+          },
+          {
+            "start_index": 1137,
+            "length_windows": 1,
+            "start_time": "2022-01-17T22:45:00+00:00"
+          },
+          {
+            "start_index": 1139,
+            "length_windows": 1,
+            "start_time": "2022-01-17T22:55:00+00:00"
+          },
+          {
+            "start_index": 1141,
+            "length_windows": 1,
+            "start_time": "2022-01-17T23:05:00+00:00"
+          },
+          {
+            "start_index": 1143,
+            "length_windows": 3,
+            "start_time": "2022-01-17T23:15:00+00:00"
+          },
+          {
+            "start_index": 1147,
+            "length_windows": 2,
+            "start_time": "2022-01-17T23:35:00+00:00"
+          },
+          {
+            "start_index": 1151,
+            "length_windows": 1,
+            "start_time": "2022-01-17T23:55:00+00:00"
+          }
+        ],
+        "dnsteal_family_counted": [
+          "attacker",
+          "dnsteal",
+          "dnsteal-received",
+          "dnsteal-dropped"
+        ],
+        "exfiltration_tool_steps_counted": [
+          "attacker",
+          "dnsteal",
+          "dnsteal-received",
+          "dnsteal-dropped",
+          "exfiltration-service"
+        ],
+        "n_attack_windows_dnsteal_only": 663,
+        "n_attack_windows_beyond_dnsteal_family": 4,
+        "multi_step_intrusion_windows": [
+          {
+            "index": 999,
+            "start_time": "2022-01-17T11:15:00+00:00",
+            "steps": [
+              "foothold",
+              "network_scan",
+              "traceroute"
+            ]
+          },
+          {
+            "index": 1000,
+            "start_time": "2022-01-17T11:20:00+00:00",
+            "steps": [
+              "attacker_http",
+              "dirb",
+              "dns_scan",
+              "escalate",
+              "foothold",
+              "network_scan",
+              "service_scan",
+              "webshell_cmd",
+              "webshell_upload",
+              "wpscan"
+            ]
+          },
+          {
+            "index": 1007,
+            "start_time": "2022-01-17T11:55:00+00:00",
+            "steps": [
+              "attacker_change_user",
+              "escalate",
+              "escalated_command",
+              "escalated_sudo_command",
+              "escalated_sudo_session"
+            ]
+          }
+        ],
+        "n_multi_step_intrusion_windows": 3,
+        "multi_step_definition": "attack windows carrying at least one step outside ['attacker', 'dnsteal', 'dnsteal-received', 'dnsteal-dropped', 'exfiltration-service']. The looser count, outside ['attacker', 'dnsteal', 'dnsteal-received', 'dnsteal-dropped'] alone, is n_attack_windows_beyond_dnsteal_family = 4 and differs only by the window holding the exfiltration tool's own SERVICE_START/SERVICE_STOP record.",
+        "multi_step_caveat": "3 windows of 1152. Any claim about the multi-step intrusion is a handful-of-windows result; no metric in this Part is computed over them.",
+        "consequence": "The block count, not the attack-window count, is the positive class's effective sample size. Every +/- in this Part is a spread over seeds (model initialisation and batch order), NOT over independent attacks.",
+        "label_meaning": "A window is attack=1 if ANY officially labelled line falls in it, and on both scenarios that label is dominated by one continuously-running DNS exfiltration tool (1,026 of 1,031 attack windows on russellmitchell and 663 of 667 on santos carry only dnsteal-family steps, docs/part26-ait-loader.md sections 0 and 12), so the task is 'was the exfiltration tool running in this window', NOT 'detect an APT' and not 'detect a multi-step intrusion'."
+      },
+      "missingness": {
+        "threshold": 0.5,
+        "train": {
+          "apache": 0.17991266375545856,
+          "auth": 0.4751091703056769,
+          "dns": 0.0,
+          "audit": 0.2812227074235808,
+          "suricata": 0.0
+        },
+        "test": {
+          "apache": 0.2752707581227437,
+          "auth": 0.47111913357400725,
+          "dns": 0.006317689530685899,
+          "audit": 0.18953068592057765,
+          "suricata": 0.0
+        },
+        "views_over_threshold": [],
+        "second_configuration_run": false,
+        "note": "no view exceeds 50% missing on this direction's train or test set, so the brief's second configuration was not triggered"
+      },
+      "majority_class_baseline": {
+        "n_samples": 1108.0,
+        "accuracy": 0.601985559566787,
+        "macro_precision": 0.3009927797833935,
+        "macro_recall": 0.5,
+        "macro_f1": 0.3757746478873239,
+        "brier": 0.4791978912796986,
+        "brier_reliability": 8.001083360962333e-29,
+        "brier_resolution": 0.0,
+        "brier_uncertainty": 0.4791978912796987,
+        "brier_within_bin": 7.946404193524631e-29,
+        "prob_mean_confidence": 0.601985559566787,
+        "prob_ece": 3.6637359812630166e-15,
+        "prob_mce": 3.6637359812630166e-15,
+        "prob_aurc": 0.3980144404332094,
+        "prob_selective_risk@1.00": 0.39801444043320483,
+        "prob_selective_risk@0.90": 0.3980144404332053,
+        "prob_selective_risk@0.80": 0.39801444043320583,
+        "prob_selective_risk@0.50": 0.3980144404332087,
+        "balanced_accuracy": 0.5,
+        "roc_auc": 0.5,
+        "attack_recall": 1.0,
+        "benign_recall": 0.0,
+        "n_test": 1108.0,
+        "n_attack": 667.0,
+        "n_benign": 441.0,
+        "attack_prevalence": 0.601985559566787,
+        "majority_class": 1.0
+      },
+      "paired_prismflow_minus_naive": {
+        "comparison": "prismflow - naive, within seed",
+        "metrics": {
+          "accuracy": {
+            "mean": 0.0034296028880865803,
+            "std": 0.0011767513366791951,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.0036101083032490378,
+              0.004512635379061325,
+              0.0018050541516244634,
+              0.004512635379061325,
+              0.0027075812274367506
+            ],
+            "lower_is_better": false
+          },
+          "attack_prevalence": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "attack_recall": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "balanced_accuracy": {
+            "mean": 0.004308390022675667,
+            "std": 0.0014782771893883644,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.0045351473922902175,
+              0.005668934240362744,
+              0.0022675736961450532,
+              0.005668934240362744,
+              0.00340136054421758
+            ],
+            "lower_is_better": false
+          },
+          "benign_recall": {
+            "mean": 0.008616780045351468,
+            "std": 0.002956554378776712,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.009070294784580546,
+              0.0113378684807256,
+              0.0045351473922902175,
+              0.0113378684807256,
+              0.006802721088435382
+            ],
+            "lower_is_better": false
+          },
+          "brier": {
+            "mean": -0.01113581033227495,
+            "std": 0.004294734309203595,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              -0.017191530475109976,
+              -0.012535195583474573,
+              -0.005432797583389534,
+              -0.00952163228553235,
+              -0.01099789573386832
+            ],
+            "lower_is_better": true
+          },
+          "brier_reliability": {
+            "mean": -0.0005177014638627672,
+            "std": 0.0038006301780775294,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              0.005133856222869687,
+              -0.00224637267204552,
+              0.0014623624941032323,
+              -0.0026009355393574463,
+              -0.004337417824883789
+            ],
+            "lower_is_better": true
+          },
+          "brier_resolution": {
+            "mean": 0.01071363427062152,
+            "std": 0.006509965304344491,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.022033617046068432,
+              0.010525151440231528,
+              0.006875729571272582,
+              0.007148319639606104,
+              0.00698535365592895
+            ],
+            "lower_is_better": false
+          },
+          "brier_uncertainty": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "brier_within_bin": {
+            "mean": 9.552540220932818e-05,
+            "std": 0.00025153984182665185,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              -0.0002917696519112369,
+              0.00023632852880245327,
+              -1.9430506220155606e-05,
+              0.00022762289343115092,
+              0.00032487574694442924
+            ],
+            "lower_is_better": false
+          },
+          "macro_f1": {
+            "mean": 0.003728756418913082,
+            "std": 0.001271891836354744,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.003957405032015249,
+              0.004903236641509268,
+              0.0019642870644566157,
+              0.004873925461063799,
+              0.002944927895520477
+            ],
+            "lower_is_better": false
+          },
+          "macro_precision": {
+            "mean": 0.0025084612348526213,
+            "std": 0.0008759163452242557,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.0025827497760712026,
+              0.0033049475148909657,
+              0.001316483862003004,
+              0.003360659574233704,
+              0.0019774654470642306
+            ],
+            "lower_is_better": false
+          },
+          "macro_recall": {
+            "mean": 0.004308390022675667,
+            "std": 0.0014782771893883644,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.0045351473922902175,
+              0.005668934240362744,
+              0.0022675736961450532,
+              0.005668934240362744,
+              0.00340136054421758
+            ],
+            "lower_is_better": false
+          },
+          "n_attack": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "n_benign": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "n_samples": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "n_test": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "prob_aurc": {
+            "mean": -0.0010045928735061727,
+            "std": 0.001537938165837257,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              -0.0035506275217572405,
+              -0.0009255031520743005,
+              -0.00034495368265547756,
+              0.0005714314393974297,
+              -0.000773311450441275
+            ],
+            "lower_is_better": true
+          },
+          "prob_ece": {
+            "mean": -0.01200196548274279,
+            "std": 0.006571032508965332,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              -0.021140129396201086,
+              -0.009350337599158673,
+              -0.007343018420766935,
+              -0.0056659540006830135,
+              -0.016510387996904245
+            ],
+            "lower_is_better": true
+          },
+          "prob_mce": {
+            "mean": -0.08363695999319284,
+            "std": 0.24900780959525531,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              -0.24057878255844112,
+              -0.35575966040293383,
+              0.036954959233601925,
+              -0.1382283054684338,
+              0.27942698923024256
+            ],
+            "lower_is_better": true
+          },
+          "prob_mean_confidence": {
+            "mean": -0.0018914955294950131,
+            "std": 0.0022208726926120147,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 1,
+            "per_seed": [
+              -0.002813280328086143,
+              -0.0032341663157466893,
+              -0.0033369226791367668,
+              -0.002049732670887372,
+              0.0019766243463819055
+            ],
+            "lower_is_better": false
+          },
+          "prob_selective_risk@0.50": {
+            "mean": -0.0003610108303249097,
+            "std": 0.0008072447572201405,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              -0.0018050541516245484,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "prob_selective_risk@0.80": {
+            "mean": -0.004735062006764374,
+            "std": 0.0072364403769475585,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 1,
+            "per_seed": [
+              -0.016910935738444193,
+              -0.005636978579481398,
+              0.0011273957158962795,
+              -0.0011273957158962795,
+              -0.0011273957158962795
+            ],
+            "lower_is_better": false
+          },
+          "prob_selective_risk@0.90": {
+            "mean": -0.0066132264529058125,
+            "std": 0.005694698291937005,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              -0.015030060120240486,
+              -0.005010020040080158,
+              -0.004008016032064129,
+              0.0,
+              -0.00901803607214429
+            ],
+            "lower_is_better": false
+          },
+          "prob_selective_risk@1.00": {
+            "mean": -0.0034296028880866415,
+            "std": 0.0011767513366791789,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              -0.0036101083032491,
+              -0.004512635379061367,
+              -0.0018050541516245466,
+              -0.0045126353790613735,
+              -0.00270758122743682
+            ],
+            "lower_is_better": false
+          },
+          "roc_auc": {
+            "mean": -0.00025293475711125614,
+            "std": 0.0005223202807808506,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 1,
+            "per_seed": [
+              0.000525247580291488,
+              -0.00020737930354552958,
+              -0.0001461854106959981,
+              -0.0008584143302499125,
+              -0.0005779423213563284
+            ],
+            "lower_is_better": false
+          },
+          "vacuity_aurc": {
+            "mean": -0.001726044681294274,
+            "std": 0.001058960773576888,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              -0.001594702913112877,
+              -0.0033985106472190843,
+              -0.00044776762247151006,
+              -0.0016311044252831017,
+              -0.0015581377983847969
+            ],
+            "lower_is_better": true
+          },
+          "vacuity_ece": {
+            "mean": -0.0067313934491429455,
+            "std": 0.0011311627773695962,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              -0.005706372351422566,
+              -0.008055315712729008,
+              -0.005612389382902941,
+              -0.00774403266097666,
+              -0.006538857137683554
+            ],
+            "lower_is_better": true
+          },
+          "vacuity_mce": {
+            "mean": 0.07685067744482132,
+            "std": 0.016105449626402042,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.10402396321296692,
+              0.0680936177571615,
+              0.06217419675418312,
+              0.07478517293930054,
+              0.07517643656049455
+            ],
+            "lower_is_better": true
+          },
+          "vacuity_mean_confidence": {
+            "mean": -0.00432349325087098,
+            "std": 0.0006824719692512575,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              -0.003188086115496258,
+              -0.004468545425239445,
+              -0.0045417998026424655,
+              -0.004387651539881743,
+              -0.0050313833710949885
+            ],
+            "lower_is_better": false
+          },
+          "vacuity_selective_risk@0.50": {
+            "mean": -0.003249097472924188,
+            "std": 0.0034720909858612535,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              -0.0018050541516245484,
+              -0.009025270758122744,
+              0.0,
+              -0.0018050541516245492,
+              -0.0036101083032490976
+            ],
+            "lower_is_better": false
+          },
+          "vacuity_selective_risk@0.80": {
+            "mean": -0.006764374295377679,
+            "std": 0.0032868950929229412,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              -0.00789177001127396,
+              -0.009019165727170236,
+              -0.001127395715896283,
+              -0.009019165727170236,
+              -0.006764374295377677
+            ],
+            "lower_is_better": false
+          },
+          "vacuity_selective_risk@0.90": {
+            "mean": -0.005410821643286574,
+            "std": 0.002972424243324914,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              -0.004008016032064132,
+              -0.0060120240480961915,
+              -0.002004008016032066,
+              -0.01002004008016032,
+              -0.005010020040080158
+            ],
+            "lower_is_better": false
+          },
+          "vacuity_selective_risk@1.00": {
+            "mean": -0.0034296028880866415,
+            "std": 0.0011767513366791789,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              -0.0036101083032491,
+              -0.004512635379061367,
+              -0.0018050541516245466,
+              -0.0045126353790613735,
+              -0.00270758122743682
+            ],
+            "lower_is_better": false
+          }
+        },
+        "diagnostics": {
+          "efficiency_ratio_design_effect": {
+            "mean": 0.01641180633594529,
+            "std": 0.014171526752284957,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              0.019182100839735927,
+              0.029665601640476935,
+              0.025340870497557066,
+              -0.006763670756625262,
+              0.01463412945858178
+            ],
+            "lower_is_better": false
+          },
+          "efficiency_ratio_eigen": {
+            "mean": 0.009018193784446283,
+            "std": 0.006990927769051134,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.013254420949959989,
+              0.018442412476126324,
+              0.00864890557309217,
+              0.002737961492635943,
+              0.0020072684304169863
+            ],
+            "lower_is_better": false
+          },
+          "eniv_design_effect": {
+            "mean": 0.08205903167972632,
+            "std": 0.07085763376142477,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              0.09591050419867964,
+              0.14832800820238434,
+              0.12670435248778533,
+              -0.033818353783126476,
+              0.07317064729290879
+            ],
+            "lower_is_better": false
+          },
+          "eniv_eigen": {
+            "mean": 0.04509096892223132,
+            "std": 0.034954638845255695,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.06627210474980005,
+              0.09221206238063129,
+              0.04324452786546118,
+              0.013689807463179271,
+              0.01003634215208482
+            ],
+            "lower_is_better": false
+          },
+          "mean_dependence_design_effect": {
+            "mean": -0.01663808728027564,
+            "std": 0.014359680094702343,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              -0.020856065475026164,
+              -0.02737889769804691,
+              -0.026797803452045077,
+              0.007603541308875528,
+              -0.015761211085135562
+            ],
+            "lower_is_better": true
+          },
+          "mean_dependence_eigen": {
+            "mean": -0.01663808728027564,
+            "std": 0.014359680094702343,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              -0.020856065475026164,
+              -0.02737889769804691,
+              -0.026797803452045077,
+              0.007603541308875528,
+              -0.015761211085135562
+            ],
+            "lower_is_better": true
+          },
+          "null_permutations": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          }
+        },
+        "note": "Paired within seed: both systems see the same initialisation draw and the same batch order, so the difference removes that shared variance. n_seeds_favouring_prismflow is reported beside every mean, because a mean near zero with 5/5 seeds on one side is a different statement from a mean near zero with 2/5."
+      },
+      "sensor_group_check": {
+        "requested_group": "network",
+        "sensor_groups": {
+          "network": [
+            4
+          ]
+        },
+        "group_members": [
+          "suricata"
+        ],
+        "n_members": 1,
+        "computable": false,
+        "status": "NOT COMPUTABLE",
+        "reason": "the 'network' same-sensor group has 1 member(s) (['suricata']), so no within-group PAIR exists. There is no packet-capture view yet (docs/part27-ait-datacard.md section 9, limitation 9), so the paired difference step 4 asks for has no value to report. Substituting a different pair would answer a different question; the full pair table is reported instead.",
+        "same_sensor_pair_dependence": null,
+        "unrelated_pairs_mean": null
+      },
+      "systems": {
+        "naive": {
+          "system": "naive",
+          "label": "naive fusion",
+          "use_discount": false,
+          "experiment_id": "ait_clean/A_rm_to_santos/naive",
+          "protocol_output": "results/ait_clean/A_rm_to_santos/naive/metrics.json",
+          "per_seed": [
+            {
+              "seed": 0,
+              "n_samples": 1108.0,
+              "accuracy": 0.9485559566787004,
+              "macro_precision": 0.9599234997775321,
+              "macro_recall": 0.9357583113205302,
+              "macro_f1": 0.9450197309487308,
+              "brier": 0.09470995911443944,
+              "brier_reliability": 0.04292930508752992,
+              "brier_resolution": 0.4256956712705697,
+              "brier_uncertainty": 0.4791978912796987,
+              "brier_within_bin": -0.0017215659822194835,
+              "prob_mean_confidence": 0.9678268164181106,
+              "prob_ece": 0.039239406531898606,
+              "prob_mce": 0.5277348160743713,
+              "prob_aurc": 0.012948772542475052,
+              "prob_selective_risk@1.00": 0.05144404332129964,
+              "prob_selective_risk@0.90": 0.03807615230460922,
+              "prob_selective_risk@0.80": 0.020293122886133032,
+              "prob_selective_risk@0.50": 0.005415162454873646,
+              "vacuity_mean_confidence": 0.9964666169688159,
+              "vacuity_ece": 0.04846078727649864,
+              "vacuity_mce": 0.07619258761405945,
+              "vacuity_aurc": 0.021839626125842473,
+              "vacuity_selective_risk@1.00": 0.05144404332129964,
+              "vacuity_selective_risk@0.90": 0.056112224448897796,
+              "vacuity_selective_risk@0.80": 0.05298759864712514,
+              "vacuity_selective_risk@0.50": 0.009025270758122744,
+              "balanced_accuracy": 0.9357583113205302,
+              "roc_auc": 0.9953679622773647,
+              "attack_recall": 0.9985007496251874,
+              "benign_recall": 0.873015873015873,
+              "n_test": 1108.0,
+              "n_attack": 667.0,
+              "n_benign": 441.0,
+              "attack_prevalence": 0.601985559566787
+            },
+            {
+              "seed": 1,
+              "n_samples": 1108.0,
+              "accuracy": 0.9557761732851986,
+              "macro_precision": 0.9651175190888539,
+              "macro_recall": 0.9448286061051108,
+              "macro_f1": 0.9529179150749912,
+              "brier": 0.07977075639137948,
+              "brier_reliability": 0.04603835519984739,
+              "brier_resolution": 0.4441770174000933,
+              "brier_uncertainty": 0.4791978912796987,
+              "brier_within_bin": -0.0012884726880732357,
+              "prob_mean_confidence": 0.9663382099961546,
+              "prob_ece": 0.02356493327807001,
+              "prob_mce": 0.4976206421852112,
+              "prob_aurc": 0.009899843107618801,
+              "prob_selective_risk@1.00": 0.04422382671480144,
+              "prob_selective_risk@0.90": 0.026052104208416832,
+              "prob_selective_risk@0.80": 0.012401352874859075,
+              "prob_selective_risk@0.50": 0.0036101083032490976,
+              "vacuity_mean_confidence": 0.9951795572515859,
+              "vacuity_ece": 0.04023503186685515,
+              "vacuity_mce": 0.0767888228098551,
+              "vacuity_aurc": 0.020500848959403743,
+              "vacuity_selective_risk@1.00": 0.04422382671480144,
+              "vacuity_selective_risk@0.90": 0.04809619238476954,
+              "vacuity_selective_risk@0.80": 0.048478015783540024,
+              "vacuity_selective_risk@0.50": 0.01263537906137184,
+              "balanced_accuracy": 0.9448286061051108,
+              "roc_auc": 0.9963113681254611,
+              "attack_recall": 0.9985007496251874,
+              "benign_recall": 0.891156462585034,
+              "n_test": 1108.0,
+              "n_attack": 667.0,
+              "n_benign": 441.0,
+              "attack_prevalence": 0.601985559566787
+            },
+            {
+              "seed": 2,
+              "n_samples": 1108.0,
+              "accuracy": 0.9557761732851986,
+              "macro_precision": 0.9651175190888539,
+              "macro_recall": 0.9448286061051108,
+              "macro_f1": 0.9529179150749912,
+              "brier": 0.07982260788121245,
+              "brier_reliability": 0.04128005330522186,
+              "brier_resolution": 0.43925232275760423,
+              "brier_uncertainty": 0.4791978912796987,
+              "brier_within_bin": -0.001403013946103837,
+              "prob_mean_confidence": 0.9637897645093043,
+              "prob_ece": 0.03312060258448771,
+              "prob_mce": 0.47189193964004517,
+              "prob_aurc": 0.009237908111432207,
+              "prob_selective_risk@1.00": 0.04422382671480144,
+              "prob_selective_risk@0.90": 0.031062124248496994,
+              "prob_selective_risk@0.80": 0.013528748590755355,
+              "prob_selective_risk@0.50": 0.0036101083032490976,
+              "vacuity_mean_confidence": 0.9953646925597415,
+              "vacuity_ece": 0.040691328500582456,
+              "vacuity_mce": 0.08727947303227013,
+              "vacuity_aurc": 0.017433011794045904,
+              "vacuity_selective_risk@1.00": 0.04422382671480144,
+              "vacuity_selective_risk@0.90": 0.04809619238476954,
+              "vacuity_selective_risk@0.80": 0.04171364148816235,
+              "vacuity_selective_risk@0.50": 0.005415162454873646,
+              "balanced_accuracy": 0.9448286061051108,
+              "roc_auc": 0.9968213172325402,
+              "attack_recall": 0.9985007496251874,
+              "benign_recall": 0.891156462585034,
+              "n_test": 1108.0,
+              "n_attack": 667.0,
+              "n_benign": 441.0,
+              "attack_prevalence": 0.601985559566787
+            },
+            {
+              "seed": 3,
+              "n_samples": 1108.0,
+              "accuracy": 0.9611913357400722,
+              "macro_precision": 0.9690889830508476,
+              "macro_recall": 0.9516313271935462,
+              "macro_f1": 0.9587988325586424,
+              "brier": 0.06958681461072767,
+              "brier_reliability": 0.03286612495282544,
+              "brier_resolution": 0.44082726269588923,
+              "brier_uncertainty": 0.4791978912796987,
+              "brier_within_bin": -0.0016499389259072104,
+              "prob_mean_confidence": 0.9673713707106208,
+              "prob_ece": 0.0247853185295628,
+              "prob_mce": 0.29813089221715927,
+              "prob_aurc": 0.006814821072839654,
+              "prob_selective_risk@1.00": 0.0388086642599278,
+              "prob_selective_risk@0.90": 0.021042084168336674,
+              "prob_selective_risk@0.80": 0.007891770011273957,
+              "prob_selective_risk@0.50": 0.0036101083032490976,
+              "vacuity_mean_confidence": 0.9958521333734912,
+              "vacuity_ece": 0.0352278108093282,
+              "vacuity_mce": 0.07853132486343384,
+              "vacuity_aurc": 0.014044341903106263,
+              "vacuity_selective_risk@1.00": 0.0388086642599278,
+              "vacuity_selective_risk@0.90": 0.041082164328657314,
+              "vacuity_selective_risk@0.80": 0.036076662908680945,
+              "vacuity_selective_risk@0.50": 0.007220216606498195,
+              "balanced_accuracy": 0.9516313271935462,
+              "roc_auc": 0.9975913403842297,
+              "attack_recall": 0.9985007496251874,
+              "benign_recall": 0.9047619047619048,
+              "n_test": 1108.0,
+              "n_attack": 667.0,
+              "n_benign": 441.0,
+              "attack_prevalence": 0.601985559566787
+            },
+            {
+              "seed": 4,
+              "n_samples": 1108.0,
+              "accuracy": 0.9557761732851986,
+              "macro_precision": 0.9651175190888539,
+              "macro_recall": 0.9448286061051108,
+              "macro_f1": 0.9529179150749912,
+              "brier": 0.08541156714865727,
+              "brier_reliability": 0.04315146468736342,
+              "brier_resolution": 0.43568454495859293,
+              "brier_uncertainty": 0.4791978912796987,
+              "brier_within_bin": -0.0012532438598118806,
+              "prob_mean_confidence": 0.962425417687058,
+              "prob_ece": 0.036281544325153764,
+              "prob_mce": 0.24785787138071935,
+              "prob_aurc": 0.010795679744775667,
+              "prob_selective_risk@1.00": 0.04422382671480144,
+              "prob_selective_risk@0.90": 0.03507014028056112,
+              "prob_selective_risk@0.80": 0.018038331454340473,
+              "prob_selective_risk@0.50": 0.005415162454873646,
+              "vacuity_mean_confidence": 0.9952072915940509,
+              "vacuity_ece": 0.04005668002991044,
+              "vacuity_mce": 0.06931223869323733,
+              "vacuity_aurc": 0.016773897216148515,
+              "vacuity_selective_risk@1.00": 0.04422382671480144,
+              "vacuity_selective_risk@0.90": 0.04909819639278557,
+              "vacuity_selective_risk@0.80": 0.04509582863585118,
+              "vacuity_selective_risk@0.50": 0.007220216606498195,
+              "balanced_accuracy": 0.9448286061051108,
+              "roc_auc": 0.9962858706701071,
+              "attack_recall": 0.9985007496251874,
+              "benign_recall": 0.891156462585034,
+              "n_test": 1108.0,
+              "n_attack": 667.0,
+              "n_benign": 441.0,
+              "attack_prevalence": 0.601985559566787
+            }
+          ],
+          "summary": {
+            "accuracy": {
+              "mean": 0.9554151624548737,
+              "std": 0.004494548591331658,
+              "n_seeds": 5
+            },
+            "attack_prevalence": {
+              "mean": 0.601985559566787,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "attack_recall": {
+              "mean": 0.9985007496251874,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "balanced_accuracy": {
+              "mean": 0.9443750913658817,
+              "std": 0.0056462129696094225,
+              "n_seeds": 5
+            },
+            "benign_recall": {
+              "mean": 0.890249433106576,
+              "std": 0.011292425939218803,
+              "n_seeds": 5
+            },
+            "brier": {
+              "mean": 0.08186034102928326,
+              "std": 0.009177173625005535,
+              "n_seeds": 5
+            },
+            "brier_reliability": {
+              "mean": 0.04125306064655761,
+              "std": 0.004991347418889105,
+              "n_seeds": 5
+            },
+            "brier_resolution": {
+              "mean": 0.4371273638165499,
+              "std": 0.007082860273031749,
+              "n_seeds": 5
+            },
+            "brier_uncertainty": {
+              "mean": 0.4791978912796987,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "brier_within_bin": {
+              "mean": -0.0014632470804231295,
+              "std": 0.00021204832677589307,
+              "n_seeds": 5
+            },
+            "macro_f1": {
+              "mean": 0.9525144617464694,
+              "std": 0.004902872372404496,
+              "n_seeds": 5
+            },
+            "macro_precision": {
+              "mean": 0.9648730080189882,
+              "std": 0.003257738260333538,
+              "n_seeds": 5
+            },
+            "macro_recall": {
+              "mean": 0.9443750913658817,
+              "std": 0.0056462129696094225,
+              "n_seeds": 5
+            },
+            "n_attack": {
+              "mean": 667.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_benign": {
+              "mean": 441.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_samples": {
+              "mean": 1108.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_test": {
+              "mean": 1108.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "prob_aurc": {
+              "mean": 0.009939404915828277,
+              "std": 0.00223864843097966,
+              "n_seeds": 5
+            },
+            "prob_ece": {
+              "mean": 0.03139836104983458,
+              "std": 0.006953209889795737,
+              "n_seeds": 5
+            },
+            "prob_mce": {
+              "mean": 0.4086472322995013,
+              "std": 0.1266541484639217,
+              "n_seeds": 5
+            },
+            "prob_mean_confidence": {
+              "mean": 0.9655503158642497,
+              "std": 0.002344355048810176,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.50": {
+              "mean": 0.004332129963898917,
+              "std": 0.0009886688763631156,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.80": {
+              "mean": 0.014430665163472379,
+              "std": 0.004875253283075457,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.90": {
+              "mean": 0.030260521042084168,
+              "std": 0.006847434694697351,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@1.00": {
+              "mean": 0.044584837545126356,
+              "std": 0.004494548591331672,
+              "n_seeds": 5
+            },
+            "roc_auc": {
+              "mean": 0.9964755717379405,
+              "std": 0.0008145900284381554,
+              "n_seeds": 5
+            },
+            "seed": {
+              "mean": 2,
+              "std": 1.5811388300841898,
+              "n_seeds": 5
+            },
+            "vacuity_aurc": {
+              "mean": 0.01811834519970938,
+              "std": 0.0030983455671661276,
+              "n_seeds": 5
+            },
+            "vacuity_ece": {
+              "mean": 0.04093432769663498,
+              "std": 0.0047573694802426165,
+              "n_seeds": 5
+            },
+            "vacuity_mce": {
+              "mean": 0.07762088940257117,
+              "std": 0.006439782369843304,
+              "n_seeds": 5
+            },
+            "vacuity_mean_confidence": {
+              "mean": 0.9956140583495371,
+              "std": 0.0005477156221405628,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.50": {
+              "mean": 0.008303249097472924,
+              "std": 0.0027375001603074187,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.80": {
+              "mean": 0.04487034949267193,
+              "std": 0.006446889946108591,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.90": {
+              "mean": 0.04849699398797595,
+              "std": 0.005330435301911979,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@1.00": {
+              "mean": 0.044584837545126356,
+              "std": 0.004494548591331672,
+              "n_seeds": 5
+            }
+          },
+          "diagnostics_per_seed": [
+            {
+              "seed": 0,
+              "matrix": [
+                [
+                  1.0,
+                  0.11478790418024534,
+                  0.058984698583869725,
+                  0.06896186330040917,
+                  0.11553846858143858
+                ],
+                [
+                  0.11478790418024534,
+                  1.0,
+                  0.05545291480153477,
+                  0.7568486925977181,
+                  0.12870946173622977
+                ],
+                [
+                  0.058984698583869725,
+                  0.05545291480153477,
+                  1.0,
+                  0.2884692309334602,
+                  0.783237064130321
+                ],
+                [
+                  0.06896186330040917,
+                  0.7568486925977181,
+                  0.2884692309334602,
+                  1.0,
+                  0.4479376389801957
+                ],
+                [
+                  0.11553846858143858,
+                  0.12870946173622977,
+                  0.783237064130321,
+                  0.4479376389801957,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.3733599566834855,
+              "mean_dependence_eigen": 0.28189279378254223,
+              "efficiency_ratio_eigen": 0.6746719913366971,
+              "eniv_design_effect": 2.3500976411254917,
+              "mean_dependence_design_effect": 0.28189279378254223,
+              "efficiency_ratio_design_effect": 0.47001952822509835
+            },
+            {
+              "seed": 1,
+              "matrix": [
+                [
+                  1.0,
+                  0.14260580776782736,
+                  0.019908285607160583,
+                  0.03272870018839611,
+                  0.1569296265396559
+                ],
+                [
+                  0.14260580776782736,
+                  1.0,
+                  0.05065095847060549,
+                  0.5621689013960759,
+                  0.11480680511159905
+                ],
+                [
+                  0.019908285607160583,
+                  0.05065095847060549,
+                  1.0,
+                  0.1346161867116356,
+                  0.7679437424664062
+                ],
+                [
+                  0.03272870018839611,
+                  0.5621689013960759,
+                  0.1346161867116356,
+                  1.0,
+                  0.4599150862331268
+                ],
+                [
+                  0.1569296265396559,
+                  0.11480680511159905,
+                  0.7679437424664062,
+                  0.4599150862331268,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.573224128180267,
+              "mean_dependence_eigen": 0.2442274100492489,
+              "efficiency_ratio_eigen": 0.7146448256360534,
+              "eniv_design_effect": 2.529200069812882,
+              "mean_dependence_design_effect": 0.2442274100492489,
+              "efficiency_ratio_design_effect": 0.5058400139625764
+            },
+            {
+              "seed": 2,
+              "matrix": [
+                [
+                  1.0,
+                  0.21467003565501275,
+                  0.04055290291540908,
+                  0.11034840227656435,
+                  0.21086519112545124
+                ],
+                [
+                  0.21467003565501275,
+                  1.0,
+                  0.04815014809379883,
+                  0.6190848639498432,
+                  0.12877442003551015
+                ],
+                [
+                  0.04055290291540908,
+                  0.04815014809379883,
+                  1.0,
+                  0.1773767330494447,
+                  0.7775120555867768
+                ],
+                [
+                  0.11034840227656435,
+                  0.6190848639498432,
+                  0.1773767330494447,
+                  1.0,
+                  0.4501247082849106
+                ],
+                [
+                  0.21086519112545124,
+                  0.12877442003551015,
+                  0.7775120555867768,
+                  0.4501247082849106,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.4570872667308925,
+              "mean_dependence_eigen": 0.27774594609727216,
+              "efficiency_ratio_eigen": 0.6914174533461785,
+              "eniv_design_effect": 2.36856390701598,
+              "mean_dependence_design_effect": 0.27774594609727216,
+              "efficiency_ratio_design_effect": 0.473712781403196
+            },
+            {
+              "seed": 3,
+              "matrix": [
+                [
+                  1.0,
+                  0.131972661989916,
+                  0.07597201594383143,
+                  0.11928109459216799,
+                  0.22056383542269062
+                ],
+                [
+                  0.131972661989916,
+                  1.0,
+                  0.01692294812304854,
+                  0.6998910569269764,
+                  0.11148071608952673
+                ],
+                [
+                  0.07597201594383143,
+                  0.01692294812304854,
+                  1.0,
+                  0.1560091162804366,
+                  0.7814219018600754
+                ],
+                [
+                  0.11928109459216799,
+                  0.6998910569269764,
+                  0.1560091162804366,
+                  1.0,
+                  0.44995634078752844
+                ],
+                [
+                  0.22056383542269062,
+                  0.11148071608952673,
+                  0.7814219018600754,
+                  0.44995634078752844,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.3889876444288927,
+              "mean_dependence_eigen": 0.2763471688016198,
+              "efficiency_ratio_eigen": 0.6777975288857785,
+              "eniv_design_effect": 2.374858409224435,
+              "mean_dependence_design_effect": 0.2763471688016198,
+              "efficiency_ratio_design_effect": 0.474971681844887
+            },
+            {
+              "seed": 4,
+              "matrix": [
+                [
+                  1.0,
+                  0.050624251637633136,
+                  0.03336773209556731,
+                  0.19671065139423677,
+                  0.33451136159037875
+                ],
+                [
+                  0.050624251637633136,
+                  1.0,
+                  0.034276218705222315,
+                  0.5921177150096544,
+                  0.13853799136576692
+                ],
+                [
+                  0.03336773209556731,
+                  0.034276218705222315,
+                  1.0,
+                  0.1384344998753882,
+                  0.7821227875110636
+                ],
+                [
+                  0.19671065139423677,
+                  0.5921177150096544,
+                  0.1384344998753882,
+                  1.0,
+                  0.467673515159683
+                ],
+                [
+                  0.33451136159037875,
+                  0.13853799136576692,
+                  0.7821227875110636,
+                  0.467673515159683,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.4610540456818595,
+              "mean_dependence_eigen": 0.2768376724344594,
+              "efficiency_ratio_eigen": 0.6922108091363719,
+              "eniv_design_effect": 2.372647335988496,
+              "mean_dependence_design_effect": 0.2768376724344594,
+              "efficiency_ratio_design_effect": 0.4745294671976992
+            }
+          ],
+          "diagnostics_summary": {
+            "efficiency_ratio_design_effect": {
+              "mean": 0.4798146945266914,
+              "std": 0.014678932847261471,
+              "n_seeds": 5
+            },
+            "efficiency_ratio_eigen": {
+              "mean": 0.6901485216682158,
+              "std": 0.015795585926957432,
+              "n_seeds": 5
+            },
+            "eniv_design_effect": {
+              "mean": 2.399073472633457,
+              "std": 0.0733946642363074,
+              "n_seeds": 5
+            },
+            "eniv_eigen": {
+              "mean": 3.4507426083410793,
+              "std": 0.07897792963478717,
+              "n_seeds": 5
+            },
+            "mean_dependence_design_effect": {
+              "mean": 0.2714101982330285,
+              "std": 0.015352211880544413,
+              "n_seeds": 5
+            },
+            "mean_dependence_eigen": {
+              "mean": 0.2714101982330285,
+              "std": 0.015352211880544413,
+              "n_seeds": 5
+            }
+          },
+          "pair_table": [
+            {
+              "pair": "apache-auth",
+              "indices": [
+                0,
+                1
+              ],
+              "mean": 0.13093213224612693,
+              "std": 0.05886294602150159,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-dns",
+              "indices": [
+                0,
+                2
+              ],
+              "mean": 0.04575712702916763,
+              "std": 0.02200370320916034,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-audit",
+              "indices": [
+                0,
+                3
+              ],
+              "mean": 0.10560614235035487,
+              "std": 0.061569979858918045,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-suricata",
+              "indices": [
+                0,
+                4
+              ],
+              "mean": 0.20768169665192301,
+              "std": 0.08265590593645296,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-dns",
+              "indices": [
+                1,
+                2
+              ],
+              "mean": 0.041090637638841986,
+              "std": 0.015636695219119746,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-audit",
+              "indices": [
+                1,
+                3
+              ],
+              "mean": 0.6460222459760536,
+              "std": 0.08038509574298101,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-suricata",
+              "indices": [
+                1,
+                4
+              ],
+              "mean": 0.12446187886772653,
+              "std": 0.011141229183942196,
+              "n_seeds": 5
+            },
+            {
+              "pair": "dns-audit",
+              "indices": [
+                2,
+                3
+              ],
+              "mean": 0.17898115337007306,
+              "std": 0.06350238018641795,
+              "n_seeds": 5
+            },
+            {
+              "pair": "dns-suricata",
+              "indices": [
+                2,
+                4
+              ],
+              "mean": 0.7784475103109286,
+              "std": 0.006254972179132485,
+              "n_seeds": 5
+            },
+            {
+              "pair": "audit-suricata",
+              "indices": [
+                3,
+                4
+              ],
+              "mean": 0.4551214578890889,
+              "std": 0.008422977647787296,
+              "n_seeds": 5
+            }
+          ]
+        },
+        "prismflow": {
+          "system": "prismflow",
+          "label": "V1 PrismFlow",
+          "use_discount": true,
+          "experiment_id": "ait_clean/A_rm_to_santos/prismflow",
+          "protocol_output": "results/ait_clean/A_rm_to_santos/prismflow/metrics.json",
+          "per_seed": [
+            {
+              "seed": 0,
+              "n_samples": 1108.0,
+              "accuracy": 0.9521660649819494,
+              "macro_precision": 0.9625062495536033,
+              "macro_recall": 0.9402934587128204,
+              "macro_f1": 0.9489771359807461,
+              "brier": 0.07751842863932946,
+              "brier_reliability": 0.04806316131039961,
+              "brier_resolution": 0.4477292883166381,
+              "brier_uncertainty": 0.4791978912796987,
+              "brier_within_bin": -0.0020133356341307204,
+              "prob_mean_confidence": 0.9650135360900245,
+              "prob_ece": 0.01809927713569752,
+              "prob_mce": 0.2871560335159302,
+              "prob_aurc": 0.009398145020717811,
+              "prob_selective_risk@1.00": 0.04783393501805054,
+              "prob_selective_risk@0.90": 0.023046092184368736,
+              "prob_selective_risk@0.80": 0.0033821871476888386,
+              "prob_selective_risk@0.50": 0.0036101083032490976,
+              "vacuity_mean_confidence": 0.9932785308533196,
+              "vacuity_ece": 0.042754414925076076,
+              "vacuity_mce": 0.18021655082702637,
+              "vacuity_aurc": 0.020244923212729596,
+              "vacuity_selective_risk@1.00": 0.04783393501805054,
+              "vacuity_selective_risk@0.90": 0.052104208416833664,
+              "vacuity_selective_risk@0.80": 0.04509582863585118,
+              "vacuity_selective_risk@0.50": 0.007220216606498195,
+              "balanced_accuracy": 0.9402934587128204,
+              "roc_auc": 0.9958932098576562,
+              "attack_recall": 0.9985007496251874,
+              "benign_recall": 0.8820861678004536,
+              "n_test": 1108.0,
+              "n_attack": 667.0,
+              "n_benign": 441.0,
+              "attack_prevalence": 0.601985559566787
+            },
+            {
+              "seed": 1,
+              "n_samples": 1108.0,
+              "accuracy": 0.9602888086642599,
+              "macro_precision": 0.9684224666037449,
+              "macro_recall": 0.9504975403454735,
+              "macro_f1": 0.9578211517165005,
+              "brier": 0.06723556080790491,
+              "brier_reliability": 0.04379198252780187,
+              "brier_resolution": 0.4547021688403248,
+              "brier_uncertainty": 0.4791978912796987,
+              "brier_within_bin": -0.0010521441592707824,
+              "prob_mean_confidence": 0.9631040436804079,
+              "prob_ece": 0.014214595678911339,
+              "prob_mce": 0.14186098178227735,
+              "prob_aurc": 0.0089743399555445,
+              "prob_selective_risk@1.00": 0.039711191335740074,
+              "prob_selective_risk@0.90": 0.021042084168336674,
+              "prob_selective_risk@0.80": 0.006764374295377677,
+              "prob_selective_risk@0.50": 0.0036101083032490976,
+              "vacuity_mean_confidence": 0.9907110118263465,
+              "vacuity_ece": 0.03217971615412614,
+              "vacuity_mce": 0.1448824405670166,
+              "vacuity_aurc": 0.017102338312184658,
+              "vacuity_selective_risk@1.00": 0.039711191335740074,
+              "vacuity_selective_risk@0.90": 0.04208416833667335,
+              "vacuity_selective_risk@0.80": 0.03945885005636979,
+              "vacuity_selective_risk@0.50": 0.0036101083032490976,
+              "balanced_accuracy": 0.9504975403454735,
+              "roc_auc": 0.9961039888219155,
+              "attack_recall": 0.9985007496251874,
+              "benign_recall": 0.9024943310657596,
+              "n_test": 1108.0,
+              "n_attack": 667.0,
+              "n_benign": 441.0,
+              "attack_prevalence": 0.601985559566787
+            },
+            {
+              "seed": 2,
+              "n_samples": 1108.0,
+              "accuracy": 0.9575812274368231,
+              "macro_precision": 0.9664340029508569,
+              "macro_recall": 0.9470961798012558,
+              "macro_f1": 0.9548822021394479,
+              "brier": 0.07438981029782292,
+              "brier_reliability": 0.04274241579932509,
+              "brier_resolution": 0.4461280523288768,
+              "brier_uncertainty": 0.4791978912796987,
+              "brier_within_bin": -0.0014224444523239926,
+              "prob_mean_confidence": 0.9604528418301675,
+              "prob_ece": 0.025777584163720772,
+              "prob_mce": 0.5088468988736471,
+              "prob_aurc": 0.00889295442877673,
+              "prob_selective_risk@1.00": 0.042418772563176894,
+              "prob_selective_risk@0.90": 0.027054108216432865,
+              "prob_selective_risk@0.80": 0.014656144306651634,
+              "prob_selective_risk@0.50": 0.0036101083032490976,
+              "vacuity_mean_confidence": 0.990822892757099,
+              "vacuity_ece": 0.035078939117679515,
+              "vacuity_mce": 0.14945366978645325,
+              "vacuity_aurc": 0.016985244171574394,
+              "vacuity_selective_risk@1.00": 0.042418772563176894,
+              "vacuity_selective_risk@0.90": 0.04609218436873747,
+              "vacuity_selective_risk@0.80": 0.040586245772266064,
+              "vacuity_selective_risk@0.50": 0.005415162454873646,
+              "balanced_accuracy": 0.9470961798012558,
+              "roc_auc": 0.9966751318218442,
+              "attack_recall": 0.9985007496251874,
+              "benign_recall": 0.8956916099773242,
+              "n_test": 1108.0,
+              "n_attack": 667.0,
+              "n_benign": 441.0,
+              "attack_prevalence": 0.601985559566787
+            },
+            {
+              "seed": 3,
+              "n_samples": 1108.0,
+              "accuracy": 0.9657039711191335,
+              "macro_precision": 0.9724496426250813,
+              "macro_recall": 0.9573002614339089,
+              "macro_f1": 0.9636727580197062,
+              "brier": 0.060065182325195324,
+              "brier_reliability": 0.030265189413467994,
+              "brier_resolution": 0.44797558233549534,
+              "brier_uncertainty": 0.4791978912796987,
+              "brier_within_bin": -0.0014223160324760595,
+              "prob_mean_confidence": 0.9653216380397335,
+              "prob_ece": 0.019119364528879787,
+              "prob_mce": 0.15990258674872548,
+              "prob_aurc": 0.007386252512237084,
+              "prob_selective_risk@1.00": 0.03429602888086643,
+              "prob_selective_risk@0.90": 0.021042084168336674,
+              "prob_selective_risk@0.80": 0.006764374295377677,
+              "prob_selective_risk@0.50": 0.0036101083032490976,
+              "vacuity_mean_confidence": 0.9914644818336095,
+              "vacuity_ece": 0.02748377814835154,
+              "vacuity_mce": 0.15331649780273438,
+              "vacuity_aurc": 0.012413237477823162,
+              "vacuity_selective_risk@1.00": 0.03429602888086643,
+              "vacuity_selective_risk@0.90": 0.031062124248496994,
+              "vacuity_selective_risk@0.80": 0.02705749718151071,
+              "vacuity_selective_risk@0.50": 0.005415162454873646,
+              "balanced_accuracy": 0.9573002614339089,
+              "roc_auc": 0.9967329260539798,
+              "attack_recall": 0.9985007496251874,
+              "benign_recall": 0.9160997732426304,
+              "n_test": 1108.0,
+              "n_attack": 667.0,
+              "n_benign": 441.0,
+              "attack_prevalence": 0.601985559566787
+            },
+            {
+              "seed": 4,
+              "n_samples": 1108.0,
+              "accuracy": 0.9584837545126353,
+              "macro_precision": 0.9670949845359181,
+              "macro_recall": 0.9482299666493283,
+              "macro_f1": 0.9558628429705117,
+              "brier": 0.07441367141478895,
+              "brier_reliability": 0.03881404686247963,
+              "brier_resolution": 0.4426698986145219,
+              "brier_uncertainty": 0.4791978912796987,
+              "brier_within_bin": -0.0009283681128674513,
+              "prob_mean_confidence": 0.9644020420334399,
+              "prob_ece": 0.01977115632824952,
+              "prob_mce": 0.5272848606109619,
+              "prob_aurc": 0.010022368294334392,
+              "prob_selective_risk@1.00": 0.04151624548736462,
+              "prob_selective_risk@0.90": 0.026052104208416832,
+              "prob_selective_risk@0.80": 0.016910935738444193,
+              "prob_selective_risk@0.50": 0.005415162454873646,
+              "vacuity_mean_confidence": 0.9901759082229559,
+              "vacuity_ece": 0.033517822892226885,
+              "vacuity_mce": 0.14448867525373188,
+              "vacuity_aurc": 0.015215759417763718,
+              "vacuity_selective_risk@1.00": 0.04151624548736462,
+              "vacuity_selective_risk@0.90": 0.04408817635270541,
+              "vacuity_selective_risk@0.80": 0.038331454340473504,
+              "vacuity_selective_risk@0.50": 0.0036101083032490976,
+              "balanced_accuracy": 0.9482299666493283,
+              "roc_auc": 0.9957079283487508,
+              "attack_recall": 0.9985007496251874,
+              "benign_recall": 0.8979591836734694,
+              "n_test": 1108.0,
+              "n_attack": 667.0,
+              "n_benign": 441.0,
+              "attack_prevalence": 0.601985559566787
+            }
+          ],
+          "summary": {
+            "accuracy": {
+              "mean": 0.9588447653429603,
+              "std": 0.0048853316255322516,
+              "n_seeds": 5
+            },
+            "attack_prevalence": {
+              "mean": 0.601985559566787,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "attack_recall": {
+              "mean": 0.9985007496251874,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "balanced_accuracy": {
+              "mean": 0.9486834813885574,
+              "std": 0.00613712861801559,
+              "n_seeds": 5
+            },
+            "benign_recall": {
+              "mean": 0.8988662131519274,
+              "std": 0.01227425723603114,
+              "n_seeds": 5
+            },
+            "brier": {
+              "mean": 0.07072453069700832,
+              "std": 0.007053291813705725,
+              "n_seeds": 5
+            },
+            "brier_reliability": {
+              "mean": 0.04073535918269484,
+              "std": 0.006715351863217028,
+              "n_seeds": 5
+            },
+            "brier_resolution": {
+              "mean": 0.44784099808717137,
+              "std": 0.004381230107616838,
+              "n_seeds": 5
+            },
+            "brier_uncertainty": {
+              "mean": 0.4791978912796987,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "brier_within_bin": {
+              "mean": -0.0013677216782138012,
+              "std": 0.0004229105199220937,
+              "n_seeds": 5
+            },
+            "macro_f1": {
+              "mean": 0.9562432181653825,
+              "std": 0.005302851519803826,
+              "n_seeds": 5
+            },
+            "macro_precision": {
+              "mean": 0.9673814692538409,
+              "std": 0.0035887877416313986,
+              "n_seeds": 5
+            },
+            "macro_recall": {
+              "mean": 0.9486834813885574,
+              "std": 0.00613712861801559,
+              "n_seeds": 5
+            },
+            "n_attack": {
+              "mean": 667.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_benign": {
+              "mean": 441.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_samples": {
+              "mean": 1108.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_test": {
+              "mean": 1108.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "prob_aurc": {
+              "mean": 0.008934812042322103,
+              "std": 0.0009745264470644989,
+              "n_seeds": 5
+            },
+            "prob_ece": {
+              "mean": 0.019396395567091787,
+              "std": 0.004167443042088091,
+              "n_seeds": 5
+            },
+            "prob_mce": {
+              "mean": 0.3250102723063084,
+              "std": 0.18503247565327066,
+              "n_seeds": 5
+            },
+            "prob_mean_confidence": {
+              "mean": 0.9636588203347547,
+              "std": 0.0019835997138439206,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.50": {
+              "mean": 0.003971119133574007,
+              "std": 0.0008072447572201405,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.80": {
+              "mean": 0.009695603156708005,
+              "std": 0.005781682707985607,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.90": {
+              "mean": 0.023647294589178355,
+              "std": 0.0027984448985508893,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@1.00": {
+              "mean": 0.04115523465703971,
+              "std": 0.0048853316255322585,
+              "n_seeds": 5
+            },
+            "roc_auc": {
+              "mean": 0.9962226369808292,
+              "std": 0.0004617009612167216,
+              "n_seeds": 5
+            },
+            "seed": {
+              "mean": 2,
+              "std": 1.5811388300841898,
+              "n_seeds": 5
+            },
+            "vacuity_aurc": {
+              "mean": 0.016392300518415105,
+              "std": 0.002868607201747777,
+              "n_seeds": 5
+            },
+            "vacuity_ece": {
+              "mean": 0.03420293424749203,
+              "std": 0.005558890492237158,
+              "n_seeds": 5
+            },
+            "vacuity_mce": {
+              "mean": 0.1544715668473925,
+              "std": 0.014840208412582101,
+              "n_seeds": 5
+            },
+            "vacuity_mean_confidence": {
+              "mean": 0.9912905650986661,
+              "std": 0.001202010215998587,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.50": {
+              "mean": 0.005054151624548736,
+              "std": 0.0015102166543936382,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.80": {
+              "mean": 0.03810597519729425,
+              "std": 0.006688792322070496,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.90": {
+              "mean": 0.04308617234468938,
+              "std": 0.007696538825519647,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@1.00": {
+              "mean": 0.04115523465703971,
+              "std": 0.0048853316255322585,
+              "n_seeds": 5
+            }
+          },
+          "diagnostics_per_seed": [
+            {
+              "seed": 0,
+              "matrix": [
+                [
+                  1.0,
+                  0.14185772304854827,
+                  0.034649017600555804,
+                  0.10061722144532813,
+                  0.1366099264159804
+                ],
+                [
+                  0.14185772304854827,
+                  1.0,
+                  0.05362655051313816,
+                  0.6965882409020849,
+                  0.1037680267809913
+                ],
+                [
+                  0.034649017600555804,
+                  0.05362655051313816,
+                  1.0,
+                  0.18748205808506882,
+                  0.7821890457053288
+                ],
+                [
+                  0.10061722144532813,
+                  0.6965882409020849,
+                  0.18748205808506882,
+                  1.0,
+                  0.37297947257813635
+                ],
+                [
+                  0.1366099264159804,
+                  0.1037680267809913,
+                  0.7821890457053288,
+                  0.37297947257813635,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.4396320614332856,
+              "mean_dependence_eigen": 0.26103672830751606,
+              "efficiency_ratio_eigen": 0.6879264122866571,
+              "eniv_design_effect": 2.4460081453241713,
+              "mean_dependence_design_effect": 0.26103672830751606,
+              "efficiency_ratio_design_effect": 0.4892016290648343
+            },
+            {
+              "seed": 1,
+              "matrix": [
+                [
+                  1.0,
+                  0.06672196932755539,
+                  0.007662789740209951,
+                  0.040812349158394934,
+                  0.15467841010446093
+                ],
+                [
+                  0.06672196932755539,
+                  1.0,
+                  0.03620268694993977,
+                  0.4770770473694091,
+                  0.09335104572211533
+                ],
+                [
+                  0.007662789740209951,
+                  0.03620268694993977,
+                  1.0,
+                  0.0924380687223226,
+                  0.7777075850411025
+                ],
+                [
+                  0.040812349158394934,
+                  0.4770770473694091,
+                  0.0924380687223226,
+                  1.0,
+                  0.42183317137650944
+                ],
+                [
+                  0.15467841010446093,
+                  0.09335104572211533,
+                  0.7777075850411025,
+                  0.42183317137650944,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.6654361905608983,
+              "mean_dependence_eigen": 0.21684851235120198,
+              "efficiency_ratio_eigen": 0.7330872381121797,
+              "eniv_design_effect": 2.6775280780152664,
+              "mean_dependence_design_effect": 0.21684851235120198,
+              "efficiency_ratio_design_effect": 0.5355056156030533
+            },
+            {
+              "seed": 2,
+              "matrix": [
+                [
+                  1.0,
+                  0.19282275359453835,
+                  0.002809705229759637,
+                  0.07773797692885041,
+                  0.14700430780692147
+                ],
+                [
+                  0.19282275359453835,
+                  1.0,
+                  0.034545673976071264,
+                  0.6095006900021913,
+                  0.11112725622915429
+                ],
+                [
+                  0.002809705229759637,
+                  0.034545673976071264,
+                  1.0,
+                  0.13925455035761283,
+                  0.7729090633982818
+                ],
+                [
+                  0.07773797692885041,
+                  0.6095006900021913,
+                  0.13925455035761283,
+                  1.0,
+                  0.4217694489288901
+                ],
+                [
+                  0.14700430780692147,
+                  0.11112725622915429,
+                  0.7729090633982818,
+                  0.4217694489288901,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.5003317945963537,
+              "mean_dependence_eigen": 0.2509481426452271,
+              "efficiency_ratio_eigen": 0.7000663589192707,
+              "eniv_design_effect": 2.4952682595037654,
+              "mean_dependence_design_effect": 0.2509481426452271,
+              "efficiency_ratio_design_effect": 0.49905365190075307
+            },
+            {
+              "seed": 3,
+              "matrix": [
+                [
+                  1.0,
+                  0.0847429117276234,
+                  0.12311929163056268,
+                  0.20912674459681727,
+                  0.3417739931071314
+                ],
+                [
+                  0.0847429117276234,
+                  1.0,
+                  0.025086981193801622,
+                  0.6333560053711543,
+                  0.10248618430180927
+                ],
+                [
+                  0.12311929163056268,
+                  0.025086981193801622,
+                  1.0,
+                  0.1386278568407933,
+                  0.7733885029215631
+                ],
+                [
+                  0.20912674459681727,
+                  0.6333560053711543,
+                  0.1386278568407933,
+                  1.0,
+                  0.40779862941369666
+                ],
+                [
+                  0.3417739931071314,
+                  0.10248618430180927,
+                  0.7733885029215631,
+                  0.40779862941369666,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.402677451892072,
+              "mean_dependence_eigen": 0.28395071011049533,
+              "efficiency_ratio_eigen": 0.6805354903784144,
+              "eniv_design_effect": 2.3410400554413084,
+              "mean_dependence_design_effect": 0.28395071011049533,
+              "efficiency_ratio_design_effect": 0.4682080110882617
+            },
+            {
+              "seed": 4,
+              "matrix": [
+                [
+                  1.0,
+                  0.006187686093614224,
+                  0.05738988946301043,
+                  0.1427157007494111,
+                  0.3473098764088712
+                ],
+                [
+                  0.006187686093614224,
+                  1.0,
+                  0.03241726311018141,
+                  0.5813216831987836,
+                  0.1191077696371656
+                ],
+                [
+                  0.05738988946301043,
+                  0.03241726311018141,
+                  1.0,
+                  0.0927314551760198,
+                  0.7882462781669057
+                ],
+                [
+                  0.1427157007494111,
+                  0.5813216831987836,
+                  0.0927314551760198,
+                  1.0,
+                  0.4433370114892751
+                ],
+                [
+                  0.3473098764088712,
+                  0.1191077696371656,
+                  0.7882462781669057,
+                  0.4433370114892751,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.4710903878339443,
+              "mean_dependence_eigen": 0.26107646134932383,
+              "efficiency_ratio_eigen": 0.6942180775667889,
+              "eniv_design_effect": 2.4458179832814047,
+              "mean_dependence_design_effect": 0.26107646134932383,
+              "efficiency_ratio_design_effect": 0.48916359665628095
+            }
+          ],
+          "diagnostics_summary": {
+            "efficiency_ratio_design_effect": {
+              "mean": 0.49622650086263664,
+              "std": 0.02467342115832141,
+              "n_seeds": 5
+            },
+            "efficiency_ratio_eigen": {
+              "mean": 0.6991667154526622,
+              "std": 0.020306200997591443,
+              "n_seeds": 5
+            },
+            "eniv_design_effect": {
+              "mean": 2.4811325043131833,
+              "std": 0.12336710579160699,
+              "n_seeds": 5
+            },
+            "eniv_eigen": {
+              "mean": 3.4958335772633107,
+              "std": 0.1015310049879572,
+              "n_seeds": 5
+            },
+            "mean_dependence_design_effect": {
+              "mean": 0.2547721109527529,
+              "std": 0.024409029977864073,
+              "n_seeds": 5
+            },
+            "mean_dependence_eigen": {
+              "mean": 0.2547721109527529,
+              "std": 0.024409029977864073,
+              "n_seeds": 5
+            }
+          },
+          "pair_table": [
+            {
+              "pair": "apache-auth",
+              "indices": [
+                0,
+                1
+              ],
+              "mean": 0.09846660875837593,
+              "std": 0.07158444738321205,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-dns",
+              "indices": [
+                0,
+                2
+              ],
+              "mean": 0.0451261387328197,
+              "std": 0.04882951108265389,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-audit",
+              "indices": [
+                0,
+                3
+              ],
+              "mean": 0.11420199857576037,
+              "std": 0.06466055657192306,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-suricata",
+              "indices": [
+                0,
+                4
+              ],
+              "mean": 0.22547530276867309,
+              "std": 0.10889903682314,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-dns",
+              "indices": [
+                1,
+                2
+              ],
+              "mean": 0.03637583114862644,
+              "std": 0.010536545532104919,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-audit",
+              "indices": [
+                1,
+                3
+              ],
+              "mean": 0.5995687333687246,
+              "std": 0.0806073450946163,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-suricata",
+              "indices": [
+                1,
+                4
+              ],
+              "mean": 0.10596805653424715,
+              "std": 0.009687903913006942,
+              "n_seeds": 5
+            },
+            {
+              "pair": "dns-audit",
+              "indices": [
+                2,
+                3
+              ],
+              "mean": 0.13010679783636347,
+              "std": 0.039572906461993546,
+              "n_seeds": 5
+            },
+            {
+              "pair": "dns-suricata",
+              "indices": [
+                2,
+                4
+              ],
+              "mean": 0.7788880950466364,
+              "std": 0.0064393284477299115,
+              "n_seeds": 5
+            },
+            {
+              "pair": "audit-suricata",
+              "indices": [
+                3,
+                4
+              ],
+              "mean": 0.41354354675730154,
+              "std": 0.02599270124908599,
+              "n_seeds": 5
+            }
+          ]
+        }
+      },
+      "manifests": {
+        "russellmitchell": 26,
+        "santos": 26
+      }
+    },
+    "B_santos_to_rm": {
+      "direction": "B_santos_to_rm",
+      "label": "B: train santos -> test russellmitchell",
+      "train_scenario": "santos",
+      "test_scenario": "russellmitchell",
+      "label_meaning": "A window is attack=1 if ANY officially labelled line falls in it, and on both scenarios that label is dominated by one continuously-running DNS exfiltration tool (1,026 of 1,031 attack windows on russellmitchell and 663 of 667 on santos carry only dnsteal-family steps, docs/part26-ait-loader.md sections 0 and 12), so the task is 'was the exfiltration tool running in this window', NOT 'detect an APT' and not 'detect a multi-step intrusion'.",
+      "n_train": 1108,
+      "n_train_attack": 667,
+      "n_train_benign": 441,
+      "train_attack_prevalence": 0.601985559566787,
+      "scaler": {
+        "fitted_on": "santos",
+        "fit_rows": 1108,
+        "present_rows_per_view": [
+          803,
+          586,
+          1101,
+          898,
+          1108
+        ],
+        "note": "fitted on the training scenario's label_known rows only, refitted per direction, never shared between directions"
+      },
+      "test_structure": {
+        "scenario": "russellmitchell",
+        "window_seconds": 300,
+        "sample_mode": "network",
+        "n_windows_on_grid": 1152,
+        "n_label_known": 1145,
+        "n_attack": 1031,
+        "n_benign": 114,
+        "n_unlabelled": 7,
+        "attack_prevalence_labelled": 0.9004366812227074,
+        "n_attack_blocks": 1,
+        "attack_blocks": [
+          {
+            "start_index": 0,
+            "length_windows": 1031,
+            "start_time": "2022-01-21T00:00:00+00:00"
+          }
+        ],
+        "n_benign_blocks": 8,
+        "benign_blocks": [
+          {
+            "start_index": 1031,
+            "length_windows": 99,
+            "start_time": "2022-01-24T13:55:00+00:00"
+          },
+          {
+            "start_index": 1131,
+            "length_windows": 1,
+            "start_time": "2022-01-24T22:15:00+00:00"
+          },
+          {
+            "start_index": 1133,
+            "length_windows": 1,
+            "start_time": "2022-01-24T22:25:00+00:00"
+          },
+          {
+            "start_index": 1135,
+            "length_windows": 5,
+            "start_time": "2022-01-24T22:35:00+00:00"
+          },
+          {
+            "start_index": 1141,
+            "length_windows": 3,
+            "start_time": "2022-01-24T23:05:00+00:00"
+          },
+          {
+            "start_index": 1145,
+            "length_windows": 3,
+            "start_time": "2022-01-24T23:25:00+00:00"
+          },
+          {
+            "start_index": 1149,
+            "length_windows": 1,
+            "start_time": "2022-01-24T23:45:00+00:00"
+          },
+          {
+            "start_index": 1151,
+            "length_windows": 1,
+            "start_time": "2022-01-24T23:55:00+00:00"
+          }
+        ],
+        "dnsteal_family_counted": [
+          "attacker",
+          "dnsteal",
+          "dnsteal-received",
+          "dnsteal-dropped"
+        ],
+        "exfiltration_tool_steps_counted": [
+          "attacker",
+          "dnsteal",
+          "dnsteal-received",
+          "dnsteal-dropped",
+          "exfiltration-service"
+        ],
+        "n_attack_windows_dnsteal_only": 1026,
+        "n_attack_windows_beyond_dnsteal_family": 5,
+        "multi_step_intrusion_windows": [
+          {
+            "index": 900,
+            "start_time": "2022-01-24T03:00:00+00:00",
+            "steps": [
+              "attacker",
+              "dns_scan",
+              "dnsteal",
+              "dnsteal-received",
+              "foothold",
+              "network_scan",
+              "traceroute"
+            ]
+          },
+          {
+            "index": 907,
+            "start_time": "2022-01-24T03:35:00+00:00",
+            "steps": [
+              "attacker",
+              "dnsteal",
+              "dnsteal-received",
+              "foothold",
+              "network_scan"
+            ]
+          },
+          {
+            "index": 911,
+            "start_time": "2022-01-24T03:55:00+00:00",
+            "steps": [
+              "attacker",
+              "attacker_http",
+              "dirb",
+              "dnsteal",
+              "dnsteal-received",
+              "escalate",
+              "foothold",
+              "service_scan",
+              "webshell_cmd",
+              "webshell_upload",
+              "wpscan"
+            ]
+          },
+          {
+            "index": 919,
+            "start_time": "2022-01-24T04:35:00+00:00",
+            "steps": [
+              "attacker",
+              "attacker_change_user",
+              "dnsteal",
+              "dnsteal-received",
+              "escalate",
+              "escalated_command",
+              "escalated_sudo_command",
+              "escalated_sudo_session"
+            ]
+          }
+        ],
+        "n_multi_step_intrusion_windows": 4,
+        "multi_step_definition": "attack windows carrying at least one step outside ['attacker', 'dnsteal', 'dnsteal-received', 'dnsteal-dropped', 'exfiltration-service']. The looser count, outside ['attacker', 'dnsteal', 'dnsteal-received', 'dnsteal-dropped'] alone, is n_attack_windows_beyond_dnsteal_family = 5 and differs only by the window holding the exfiltration tool's own SERVICE_START/SERVICE_STOP record.",
+        "multi_step_caveat": "4 windows of 1152. Any claim about the multi-step intrusion is a handful-of-windows result; no metric in this Part is computed over them.",
+        "consequence": "The block count, not the attack-window count, is the positive class's effective sample size. Every +/- in this Part is a spread over seeds (model initialisation and batch order), NOT over independent attacks.",
+        "label_meaning": "A window is attack=1 if ANY officially labelled line falls in it, and on both scenarios that label is dominated by one continuously-running DNS exfiltration tool (1,026 of 1,031 attack windows on russellmitchell and 663 of 667 on santos carry only dnsteal-family steps, docs/part26-ait-loader.md sections 0 and 12), so the task is 'was the exfiltration tool running in this window', NOT 'detect an APT' and not 'detect a multi-step intrusion'."
+      },
+      "missingness": {
+        "threshold": 0.5,
+        "train": {
+          "apache": 0.2752707581227437,
+          "auth": 0.47111913357400725,
+          "dns": 0.006317689530685899,
+          "audit": 0.18953068592057765,
+          "suricata": 0.0
+        },
+        "test": {
+          "apache": 0.17991266375545856,
+          "auth": 0.4751091703056769,
+          "dns": 0.0,
+          "audit": 0.2812227074235808,
+          "suricata": 0.0
+        },
+        "views_over_threshold": [],
+        "second_configuration_run": false,
+        "note": "no view exceeds 50% missing on this direction's train or test set, so the brief's second configuration was not triggered"
+      },
+      "majority_class_baseline": {
+        "n_samples": 1145.0,
+        "accuracy": 0.9004366812227074,
+        "macro_precision": 0.4502183406113537,
+        "macro_recall": 0.5,
+        "macro_f1": 0.47380514705882354,
+        "brier": 0.1793009286626876,
+        "brier_reliability": 2.235051330111109e-28,
+        "brier_resolution": 0.0,
+        "brier_uncertainty": 0.17930092866268763,
+        "brier_within_bin": 2.2165320452793703e-28,
+        "prob_mean_confidence": 0.9004366812227074,
+        "prob_ece": 1.4654943925052066e-14,
+        "prob_mce": 1.4654943925052066e-14,
+        "prob_aurc": 0.09956331877729324,
+        "prob_selective_risk@1.00": 0.09956331877729553,
+        "prob_selective_risk@0.90": 0.09956331877729509,
+        "prob_selective_risk@0.80": 0.09956331877729453,
+        "prob_selective_risk@0.50": 0.09956331877729242,
+        "balanced_accuracy": 0.5,
+        "roc_auc": 0.5,
+        "attack_recall": 1.0,
+        "benign_recall": 0.0,
+        "n_test": 1145.0,
+        "n_attack": 1031.0,
+        "n_benign": 114.0,
+        "attack_prevalence": 0.9004366812227074,
+        "majority_class": 1.0
+      },
+      "paired_prismflow_minus_naive": {
+        "comparison": "prismflow - naive, within seed",
+        "metrics": {
+          "accuracy": {
+            "mean": 0.02655021834061133,
+            "std": 0.04404899404693568,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              -0.0026200873362445254,
+              0.02707423580786028,
+              0.009606986899563297,
+              0.10218340611353705,
+              -0.003493449781659441
+            ],
+            "lower_is_better": false
+          },
+          "attack_prevalence": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "attack_recall": {
+            "mean": 0.02948593598448106,
+            "std": 0.04891959086686842,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              -0.0029097963142580285,
+              0.030067895247332665,
+              0.01066925315227929,
+              0.113482056256062,
+              -0.0038797284190106307
+            ],
+            "lower_is_better": false
+          },
+          "balanced_accuracy": {
+            "mean": 0.014742967992240574,
+            "std": 0.02445979543343421,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              -0.0014548981571289588,
+              0.015033947623666388,
+              0.0053346265761395895,
+              0.05674102812803106,
+              -0.0019398642095052043
+            ],
+            "lower_is_better": false
+          },
+          "benign_recall": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "brier": {
+            "mean": -0.03525891582438558,
+            "std": 0.034767673345708315,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              0.007325789411976563,
+              -0.08655703003863591,
+              -0.036251969906709924,
+              -0.04348461637051032,
+              -0.01732675221804833
+            ],
+            "lower_is_better": true
+          },
+          "brier_reliability": {
+            "mean": -0.034905327872791964,
+            "std": 0.0342235037259043,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              0.007303065165096767,
+              -0.08498541930783035,
+              -0.03630369941218203,
+              -0.04350861392436628,
+              -0.01703197188467792
+            ],
+            "lower_is_better": true
+          },
+          "brier_resolution": {
+            "mean": 0.0003880224578914571,
+            "std": 0.0007339337107256893,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 2,
+            "per_seed": [
+              0.0,
+              0.0016635475150759138,
+              -8.733624454149158e-05,
+              0.0,
+              0.0003639010189228631
+            ],
+            "lower_is_better": false
+          },
+          "brier_uncertainty": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "brier_within_bin": {
+            "mean": 3.4434506297777685e-05,
+            "std": 4.914641189298335e-05,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              2.2724246879739316e-05,
+              9.193678427032613e-05,
+              -3.560673906945441e-05,
+              2.399755385589929e-05,
+              6.912068555237809e-05
+            ],
+            "lower_is_better": false
+          },
+          "macro_f1": {
+            "mean": 0.031748859291593545,
+            "std": 0.04276996576424293,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              -0.005906779179657096,
+              0.06466746643446841,
+              0.019322874550828595,
+              0.08783725326873582,
+              -0.007176518616408001
+            ],
+            "lower_is_better": false
+          },
+          "macro_precision": {
+            "mean": 0.028908165107742145,
+            "std": 0.04385944530426929,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              -0.008305002428363295,
+              0.09751655629139078,
+              0.024067250115154315,
+              0.04039663694514439,
+              -0.009134615384615463
+            ],
+            "lower_is_better": false
+          },
+          "macro_recall": {
+            "mean": 0.014742967992240574,
+            "std": 0.02445979543343421,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              -0.0014548981571289588,
+              0.015033947623666388,
+              0.0053346265761395895,
+              0.05674102812803106,
+              -0.0019398642095052043
+            ],
+            "lower_is_better": false
+          },
+          "n_attack": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "n_benign": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "n_samples": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "n_test": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          },
+          "prob_aurc": {
+            "mean": -0.011783430648866918,
+            "std": 0.02166818392513042,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              0.0036719440517959086,
+              -0.0037761548742453123,
+              -0.005113179455180694,
+              -0.05005082514413457,
+              -0.003648937822569918
+            ],
+            "lower_is_better": true
+          },
+          "prob_ece": {
+            "mean": -0.014445049158870927,
+            "std": 0.015412045929897304,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              -0.003240698914340562,
+              -0.036615094815799776,
+              -0.018836546464778448,
+              0.0031297413542801245,
+              -0.01666264695371597
+            ],
+            "lower_is_better": true
+          },
+          "prob_mce": {
+            "mean": 0.02610880716290904,
+            "std": 0.06519180298193634,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 2,
+            "per_seed": [
+              -0.00945051730396318,
+              0.12570038776506087,
+              -0.04243200421333315,
+              0.05191016381108715,
+              0.00481600575569352
+            ],
+            "lower_is_better": true
+          },
+          "prob_mean_confidence": {
+            "mean": 0.02363021470573794,
+            "std": 0.024873521762988727,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 4,
+            "per_seed": [
+              -0.002338169027103598,
+              0.06368933062366011,
+              0.028126391989695465,
+              0.015504322770381052,
+              0.013169197172056668
+            ],
+            "lower_is_better": false
+          },
+          "prob_selective_risk@0.50": {
+            "mean": -0.006980802792321118,
+            "std": 0.007607153479128576,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 1,
+            "per_seed": [
+              0.001745200698080279,
+              0.0,
+              -0.008726003490401396,
+              -0.015706806282722516,
+              -0.012216404886561956
+            ],
+            "lower_is_better": false
+          },
+          "prob_selective_risk@0.80": {
+            "mean": -0.02467248908296943,
+            "std": 0.050505869480358144,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 1,
+            "per_seed": [
+              0.0054585152838427945,
+              -0.0054585152838427945,
+              -0.006550218340611352,
+              -0.11462882096069868,
+              -0.002183406113537116
+            ],
+            "lower_is_better": false
+          },
+          "prob_selective_risk@0.90": {
+            "mean": -0.02618816682832202,
+            "std": 0.04936659041926491,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 1,
+            "per_seed": [
+              0.004849660523763336,
+              -0.015518913676042677,
+              -0.0058195926285160016,
+              -0.11348205625606209,
+              -0.0009699321047526681
+            ],
+            "lower_is_better": false
+          },
+          "prob_selective_risk@1.00": {
+            "mean": -0.026550218340611356,
+            "std": 0.044048994046935706,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 2,
+            "per_seed": [
+              0.0026200873362445427,
+              -0.027074235807860263,
+              -0.009606986899563325,
+              -0.10218340611353713,
+              0.0034934497816593926
+            ],
+            "lower_is_better": false
+          },
+          "roc_auc": {
+            "mean": 2.55245290724293e-05,
+            "std": 2.947318746179655e-05,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              0.0,
+              4.2540881787345164e-05,
+              1.701635271500468e-05,
+              0.0,
+              6.806541085979667e-05
+            ],
+            "lower_is_better": false
+          },
+          "vacuity_aurc": {
+            "mean": -0.031950960859934145,
+            "std": 0.07060766719293941,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              0.0020203212093056824,
+              -0.007253145167511603,
+              -0.00029274404500242643,
+              -0.15803428815837187,
+              0.0038050518619094833
+            ],
+            "lower_is_better": true
+          },
+          "vacuity_ece": {
+            "mean": -0.022787606976438293,
+            "std": 0.05185046269069775,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              0.010627844708455219,
+              0.010259460101481587,
+              -0.014569962545253314,
+              -0.1134619543125534,
+              -0.006793422834321546
+            ],
+            "lower_is_better": true
+          },
+          "vacuity_mce": {
+            "mean": 0.09558585060453047,
+            "std": 0.15201988816720144,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 1,
+            "per_seed": [
+              0.18110137856923614,
+              0.05656029057121004,
+              0.2928540415090063,
+              -0.11283953604897168,
+              0.060253078422171535
+            ],
+            "lower_is_better": true
+          },
+          "vacuity_mean_confidence": {
+            "mean": -0.011534551116576886,
+            "std": 0.0010078099282846873,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              -0.010979782077422895,
+              -0.012943096088009587,
+              -0.010952988826551824,
+              -0.012233815755385957,
+              -0.010563072835514165
+            ],
+            "lower_is_better": false
+          },
+          "vacuity_selective_risk@0.50": {
+            "mean": -0.05968586387434556,
+            "std": 0.13356430384434217,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              0.0017452006980802793,
+              -0.008726003490401396,
+              0.00174520069808028,
+              -0.2984293193717278,
+              0.005235602094240837
+            ],
+            "lower_is_better": false
+          },
+          "vacuity_selective_risk@0.80": {
+            "mean": -0.025109170305676852,
+            "std": 0.06084224800477193,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              0.006550218340611353,
+              -0.009825327510917031,
+              0.002183406113537118,
+              -0.13318777292576417,
+              0.008733624454148473
+            ],
+            "lower_is_better": false
+          },
+          "vacuity_selective_risk@0.90": {
+            "mean": -0.025024248302618825,
+            "std": 0.05351090017620697,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 3,
+            "per_seed": [
+              0.004849660523763337,
+              -0.01745877788554801,
+              0.0029097963142580008,
+              -0.11930164888457812,
+              0.0038797284190106723
+            ],
+            "lower_is_better": false
+          },
+          "vacuity_selective_risk@1.00": {
+            "mean": -0.026550218340611356,
+            "std": 0.044048994046935706,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 2,
+            "per_seed": [
+              0.0026200873362445427,
+              -0.027074235807860263,
+              -0.009606986899563325,
+              -0.10218340611353713,
+              0.0034934497816593926
+            ],
+            "lower_is_better": false
+          }
+        },
+        "diagnostics": {
+          "efficiency_ratio_design_effect": {
+            "mean": 0.018807110228446822,
+            "std": 0.0077531879234616005,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.026800075487715624,
+              0.02004190251790966,
+              0.009759127485153729,
+              0.025541932894982633,
+              0.011892512756472462
+            ],
+            "lower_is_better": false
+          },
+          "efficiency_ratio_eigen": {
+            "mean": 0.013851280495620188,
+            "std": 0.008344802576874177,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.024268643065705087,
+              0.0085274609841679,
+              0.007248303429510772,
+              0.021568034609065312,
+              0.0076439603896518715
+            ],
+            "lower_is_better": false
+          },
+          "eniv_design_effect": {
+            "mean": 0.09403555114223412,
+            "std": 0.03876593961730791,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.13400037743857807,
+              0.10020951258954813,
+              0.048795637425768756,
+              0.12770966447491316,
+              0.059462563782362476
+            ],
+            "lower_is_better": false
+          },
+          "eniv_eigen": {
+            "mean": 0.06925640247810091,
+            "std": 0.04172401288437075,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              0.12134321532852521,
+              0.042637304920839725,
+              0.03624151714755408,
+              0.10784017304532645,
+              0.038219801948259136
+            ],
+            "lower_is_better": false
+          },
+          "mean_dependence_design_effect": {
+            "mean": -0.028569038741907627,
+            "std": 0.012944633615874963,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              -0.043473669939495196,
+              -0.029232681455914844,
+              -0.01394181274807832,
+              -0.038898217999842555,
+              -0.017298811566207217
+            ],
+            "lower_is_better": true
+          },
+          "mean_dependence_eigen": {
+            "mean": -0.028569038741907627,
+            "std": 0.012944633615874963,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 5,
+            "per_seed": [
+              -0.043473669939495196,
+              -0.029232681455914844,
+              -0.01394181274807832,
+              -0.038898217999842555,
+              -0.017298811566207217
+            ],
+            "lower_is_better": true
+          },
+          "null_permutations": {
+            "mean": 0.0,
+            "std": 0.0,
+            "n_seeds": 5,
+            "n_seeds_favouring_prismflow": 0,
+            "per_seed": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lower_is_better": false
+          }
+        },
+        "note": "Paired within seed: both systems see the same initialisation draw and the same batch order, so the difference removes that shared variance. n_seeds_favouring_prismflow is reported beside every mean, because a mean near zero with 5/5 seeds on one side is a different statement from a mean near zero with 2/5."
+      },
+      "sensor_group_check": {
+        "requested_group": "network",
+        "sensor_groups": {
+          "network": [
+            4
+          ]
+        },
+        "group_members": [
+          "suricata"
+        ],
+        "n_members": 1,
+        "computable": false,
+        "status": "NOT COMPUTABLE",
+        "reason": "the 'network' same-sensor group has 1 member(s) (['suricata']), so no within-group PAIR exists. There is no packet-capture view yet (docs/part27-ait-datacard.md section 9, limitation 9), so the paired difference step 4 asks for has no value to report. Substituting a different pair would answer a different question; the full pair table is reported instead.",
+        "same_sensor_pair_dependence": null,
+        "unrelated_pairs_mean": null
+      },
+      "systems": {
+        "naive": {
+          "system": "naive",
+          "label": "naive fusion",
+          "use_discount": false,
+          "experiment_id": "ait_clean/B_santos_to_rm/naive",
+          "protocol_output": "results/ait_clean/B_santos_to_rm/naive/metrics.json",
+          "per_seed": [
+            {
+              "seed": 0,
+              "n_samples": 1145.0,
+              "accuracy": 0.9755458515283842,
+              "macro_precision": 0.9014084507042254,
+              "macro_recall": 0.9864209505334627,
+              "macro_f1": 0.9384295108161258,
+              "brier": 0.13140765123310075,
+              "brier_reliability": 0.13081615497310106,
+              "brier_resolution": 0.1793009286626876,
+              "brier_uncertainty": 0.17930092866268763,
+              "brier_within_bin": 0.0005914962599997196,
+              "prob_mean_confidence": 0.7839376538601505,
+              "prob_ece": 0.19660262587809668,
+              "prob_mce": 0.29383352461285617,
+              "prob_aurc": 0.004910465330695745,
+              "prob_selective_risk@1.00": 0.02445414847161572,
+              "prob_selective_risk@0.90": 0.005819592628516004,
+              "prob_selective_risk@0.80": 0.0054585152838427945,
+              "prob_selective_risk@0.50": 0.006980802792321117,
+              "vacuity_mean_confidence": 0.9800588383424751,
+              "vacuity_ece": 0.005243803996706553,
+              "vacuity_mce": 0.0836785674095154,
+              "vacuity_aurc": 0.0013019835390527406,
+              "vacuity_selective_risk@1.00": 0.02445414847161572,
+              "vacuity_selective_risk@0.90": 0.004849660523763337,
+              "vacuity_selective_risk@0.80": 0.0,
+              "vacuity_selective_risk@0.50": 0.0,
+              "balanced_accuracy": 0.9864209505334627,
+              "roc_auc": 1.0,
+              "attack_recall": 0.9728419010669254,
+              "benign_recall": 1.0,
+              "n_test": 1145.0,
+              "n_attack": 1031.0,
+              "n_benign": 114.0,
+              "attack_prevalence": 0.9004366812227074
+            },
+            {
+              "seed": 1,
+              "n_samples": 1145.0,
+              "accuracy": 0.9676855895196507,
+              "macro_precision": 0.8774834437086092,
+              "macro_recall": 0.9820562560620756,
+              "macro_f1": 0.9210528767761472,
+              "brier": 0.22138463393640398,
+              "brier_reliability": 0.21918950494752615,
+              "brier_resolution": 0.17763738114761168,
+              "brier_uncertainty": 0.17930092866268763,
+              "brier_within_bin": 0.0005315814738019269,
+              "prob_mean_confidence": 0.708292075588193,
+              "prob_ece": 0.25939351393145765,
+              "prob_mce": 0.3567969846454533,
+              "prob_aurc": 0.003902781551928753,
+              "prob_selective_risk@1.00": 0.032314410480349345,
+              "prob_selective_risk@0.90": 0.015518913676042677,
+              "prob_selective_risk@0.80": 0.0054585152838427945,
+              "prob_selective_risk@0.50": 0.0,
+              "vacuity_mean_confidence": 0.9825645254168448,
+              "vacuity_ece": 0.014878935897194136,
+              "vacuity_mce": 0.014878935897194134,
+              "vacuity_aurc": 0.008559829895282279,
+              "vacuity_selective_risk@1.00": 0.032314410480349345,
+              "vacuity_selective_risk@0.90": 0.019398642095053348,
+              "vacuity_selective_risk@0.80": 0.012008733624454149,
+              "vacuity_selective_risk@0.50": 0.010471204188481676,
+              "balanced_accuracy": 0.9820562560620756,
+              "roc_auc": 0.9999574591182127,
+              "attack_recall": 0.9641125121241513,
+              "benign_recall": 1.0,
+              "n_test": 1145.0,
+              "n_attack": 1031.0,
+              "n_benign": 114.0,
+              "attack_prevalence": 0.9004366812227074
+            },
+            {
+              "seed": 2,
+              "n_samples": 1145.0,
+              "accuracy": 0.9537117903930131,
+              "macro_precision": 0.8413173652694611,
+              "macro_recall": 0.9742967992240543,
+              "macro_f1": 0.8925033080674332,
+              "brier": 0.19644304765228418,
+              "brier_reliability": 0.17921204487298042,
+              "brier_resolution": 0.16204227623928724,
+              "brier_uncertainty": 0.17930092866268763,
+              "brier_within_bin": -2.7649644096564528e-05,
+              "prob_mean_confidence": 0.7499783526862032,
+              "prob_ece": 0.21710986461181306,
+              "prob_mce": 0.3295998215675354,
+              "prob_aurc": 0.03413430605048701,
+              "prob_selective_risk@1.00": 0.0462882096069869,
+              "prob_selective_risk@0.90": 0.029097963142580018,
+              "prob_selective_risk@0.80": 0.02947598253275109,
+              "prob_selective_risk@0.50": 0.04013961605584642,
+              "vacuity_mean_confidence": 0.9801751376760058,
+              "vacuity_ece": 0.026463347282992673,
+              "vacuity_mce": 0.15013043582439423,
+              "vacuity_aurc": 0.015105420803970655,
+              "vacuity_selective_risk@1.00": 0.0462882096069869,
+              "vacuity_selective_risk@0.90": 0.013579049466537343,
+              "vacuity_selective_risk@0.80": 0.013100436681222707,
+              "vacuity_selective_risk@0.50": 0.015706806282722512,
+              "balanced_accuracy": 0.9742967992240543,
+              "roc_auc": 0.9995490666530535,
+              "attack_recall": 0.9485935984481086,
+              "benign_recall": 1.0,
+              "n_test": 1145.0,
+              "n_attack": 1031.0,
+              "n_benign": 114.0,
+              "attack_prevalence": 0.9004366812227074
+            },
+            {
+              "seed": 3,
+              "n_samples": 1145.0,
+              "accuracy": 0.6899563318777293,
+              "macro_precision": 0.6215351812366737,
+              "macro_recall": 0.8278370514064015,
+              "macro_f1": 0.5915567117941359,
+              "brier": 0.34326986208297977,
+              "brier_reliability": 0.34265909369967656,
+              "brier_resolution": 0.1793009286626876,
+              "brier_uncertainty": 0.17930092866268763,
+              "brier_within_bin": 0.0006107683833032083,
+              "prob_mean_confidence": 0.6763174584338759,
+              "prob_ece": 0.10896408209113578,
+              "prob_mce": 0.22555287281672165,
+              "prob_aurc": 0.12292113327402283,
+              "prob_selective_risk@1.00": 0.31004366812227074,
+              "prob_selective_risk@0.90": 0.2880698351115422,
+              "prob_selective_risk@0.80": 0.24672489082969432,
+              "prob_selective_risk@0.50": 0.07853403141361257,
+              "vacuity_mean_confidence": 0.982732951901365,
+              "vacuity_ece": 0.2927766200236357,
+              "vacuity_mce": 0.2927766200236357,
+              "vacuity_aurc": 0.3253887909376632,
+              "vacuity_selective_risk@1.00": 0.31004366812227074,
+              "vacuity_selective_risk@0.90": 0.3326867119301649,
+              "vacuity_selective_risk@0.80": 0.3635371179039301,
+              "vacuity_selective_risk@0.50": 0.4869109947643979,
+              "balanced_accuracy": 0.8278370514064015,
+              "roc_auc": 1.0,
+              "attack_recall": 0.6556741028128031,
+              "benign_recall": 1.0,
+              "n_test": 1145.0,
+              "n_attack": 1031.0,
+              "n_benign": 114.0,
+              "attack_prevalence": 0.9004366812227074
+            },
+            {
+              "seed": 4,
+              "n_samples": 1145.0,
+              "accuracy": 0.9633187772925764,
+              "macro_precision": 0.8653846153846154,
+              "macro_recall": 0.9796314258001939,
+              "macro_f1": 0.9118261826182618,
+              "brier": 0.22591357627807415,
+              "brier_reliability": 0.2237398462054893,
+              "brier_resolution": 0.1777725443832116,
+              "brier_uncertainty": 0.17930092866268763,
+              "brier_within_bin": 0.0006453457931089083,
+              "prob_mean_confidence": 0.7124792199467987,
+              "prob_ece": 0.2508395573457776,
+              "prob_mce": 0.3666912403106689,
+              "prob_aurc": 0.015845741387656237,
+              "prob_selective_risk@1.00": 0.03668122270742358,
+              "prob_selective_risk@0.90": 0.026188166828322017,
+              "prob_selective_risk@0.80": 0.025109170305676855,
+              "prob_selective_risk@0.50": 0.020942408376963352,
+              "vacuity_mean_confidence": 0.9821280117118203,
+              "vacuity_ece": 0.01880923441924387,
+              "vacuity_mce": 0.01880923441924387,
+              "vacuity_aurc": 0.008453015713867737,
+              "vacuity_selective_risk@1.00": 0.03668122270742358,
+              "vacuity_selective_risk@0.90": 0.02424830261881668,
+              "vacuity_selective_risk@0.80": 0.009825327510917031,
+              "vacuity_selective_risk@0.50": 0.006980802792321117,
+              "balanced_accuracy": 0.9796314258001939,
+              "roc_auc": 0.9999149182364252,
+              "attack_recall": 0.9592628516003879,
+              "benign_recall": 1.0,
+              "n_test": 1145.0,
+              "n_attack": 1031.0,
+              "n_benign": 114.0,
+              "attack_prevalence": 0.9004366812227074
+            }
+          ],
+          "summary": {
+            "accuracy": {
+              "mean": 0.9100436681222708,
+              "std": 0.12328493913322117,
+              "n_seeds": 5
+            },
+            "attack_prevalence": {
+              "mean": 0.9004366812227074,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "attack_recall": {
+              "mean": 0.9000969932104753,
+              "std": 0.1369168334699692,
+              "n_seeds": 5
+            },
+            "balanced_accuracy": {
+              "mean": 0.9500484966052376,
+              "std": 0.06845841673498461,
+              "n_seeds": 5
+            },
+            "benign_recall": {
+              "mean": 1.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "brier": {
+              "mean": 0.22368375423656855,
+              "std": 0.0767594139683573,
+              "n_seeds": 5
+            },
+            "brier_reliability": {
+              "mean": 0.2191233289397547,
+              "std": 0.07853895427681598,
+              "n_seeds": 5
+            },
+            "brier_resolution": {
+              "mean": 0.17521081181909715,
+              "std": 0.007404713926636463,
+              "n_seeds": 5
+            },
+            "brier_uncertainty": {
+              "mean": 0.17930092866268763,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "brier_within_bin": {
+              "mean": 0.0004703084532234397,
+              "std": 0.00028141170753933194,
+              "n_seeds": 5
+            },
+            "macro_f1": {
+              "mean": 0.8510737180144208,
+              "std": 0.1460175217242389,
+              "n_seeds": 5
+            },
+            "macro_precision": {
+              "mean": 0.821425811260717,
+              "std": 0.11382442084226504,
+              "n_seeds": 5
+            },
+            "macro_recall": {
+              "mean": 0.9500484966052376,
+              "std": 0.06845841673498461,
+              "n_seeds": 5
+            },
+            "n_attack": {
+              "mean": 1031.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_benign": {
+              "mean": 114.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_samples": {
+              "mean": 1145.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_test": {
+              "mean": 1145.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "prob_aurc": {
+              "mean": 0.03634288551895812,
+              "std": 0.04990280831132764,
+              "n_seeds": 5
+            },
+            "prob_ece": {
+              "mean": 0.20658192877165615,
+              "std": 0.06018195145542662,
+              "n_seeds": 5
+            },
+            "prob_mce": {
+              "mean": 0.3144948887906471,
+              "std": 0.05718316971605046,
+              "n_seeds": 5
+            },
+            "prob_mean_confidence": {
+              "mean": 0.7262009521030443,
+              "std": 0.04152188651878347,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.50": {
+              "mean": 0.02931937172774869,
+              "std": 0.03149591700081252,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.80": {
+              "mean": 0.06244541484716157,
+              "std": 0.10360371293500112,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.90": {
+              "mean": 0.07293889427740059,
+              "std": 0.12061408944445849,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@1.00": {
+              "mean": 0.08995633187772925,
+              "std": 0.1232849391332212,
+              "n_seeds": 5
+            },
+            "roc_auc": {
+              "mean": 0.9998842888015382,
+              "std": 0.00019068567674142392,
+              "n_seeds": 5
+            },
+            "seed": {
+              "mean": 2,
+              "std": 1.5811388300841898,
+              "n_seeds": 5
+            },
+            "vacuity_aurc": {
+              "mean": 0.07176180817796732,
+              "std": 0.141865845752522,
+              "n_seeds": 5
+            },
+            "vacuity_ece": {
+              "mean": 0.07163438832395458,
+              "std": 0.12385848531931087,
+              "n_seeds": 5
+            },
+            "vacuity_mce": {
+              "mean": 0.11205475871479667,
+              "std": 0.11516642839463906,
+              "n_seeds": 5
+            },
+            "vacuity_mean_confidence": {
+              "mean": 0.9815318930097022,
+              "std": 0.0013110019779439186,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.50": {
+              "mean": 0.10401396160558464,
+              "std": 0.21412197298876198,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.80": {
+              "mean": 0.0796943231441048,
+              "std": 0.158757423898939,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.90": {
+              "mean": 0.07895247332686713,
+              "std": 0.14202568461319973,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@1.00": {
+              "mean": 0.08995633187772925,
+              "std": 0.1232849391332212,
+              "n_seeds": 5
+            }
+          },
+          "diagnostics_per_seed": [
+            {
+              "seed": 0,
+              "matrix": [
+                [
+                  1.0,
+                  0.3786556968331464,
+                  0.4710377647163022,
+                  0.3347990010032704,
+                  0.6340755212757206
+                ],
+                [
+                  0.3786556968331464,
+                  1.0,
+                  0.03500098820333145,
+                  0.8978218310969261,
+                  0.144393111096961
+                ],
+                [
+                  0.4710377647163022,
+                  0.03500098820333145,
+                  1.0,
+                  0.24140081521207193,
+                  0.679193220052963
+                ],
+                [
+                  0.3347990010032704,
+                  0.8978218310969261,
+                  0.24140081521207193,
+                  1.0,
+                  0.27287641276284713
+                ],
+                [
+                  0.6340755212757206,
+                  0.144393111096961,
+                  0.679193220052963,
+                  0.27287641276284713,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 2.85319773008477,
+              "mean_dependence_eigen": 0.40892543622535404,
+              "efficiency_ratio_eigen": 0.570639546016954,
+              "eniv_design_effect": 1.897027996309581,
+              "mean_dependence_design_effect": 0.40892543622535404,
+              "efficiency_ratio_design_effect": 0.3794055992619162
+            },
+            {
+              "seed": 1,
+              "matrix": [
+                [
+                  1.0,
+                  0.49893609396399385,
+                  0.3155098634056882,
+                  0.3225452555860206,
+                  0.6919677514409597
+                ],
+                [
+                  0.49893609396399385,
+                  1.0,
+                  -0.02705080132819163,
+                  0.8586135325753336,
+                  0.11492811664857745
+                ],
+                [
+                  0.3155098634056882,
+                  -0.02705080132819163,
+                  1.0,
+                  0.09809983379336903,
+                  0.5108312158107247
+                ],
+                [
+                  0.3225452555860206,
+                  0.8586135325753336,
+                  0.09809983379336903,
+                  1.0,
+                  0.3021317024490343
+                ],
+                [
+                  0.6919677514409597,
+                  0.11492811664857745,
+                  0.5108312158107247,
+                  0.3021317024490343,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 2.9988844882442254,
+              "mean_dependence_eigen": 0.36865125643455093,
+              "efficiency_ratio_eigen": 0.5997768976488451,
+              "eniv_design_effect": 2.020524466731187,
+              "mean_dependence_design_effect": 0.36865125643455093,
+              "efficiency_ratio_design_effect": 0.4041048933462374
+            },
+            {
+              "seed": 2,
+              "matrix": [
+                [
+                  1.0,
+                  0.3719224368341071,
+                  0.3372284304802329,
+                  0.2635387548514593,
+                  0.6226809358864027
+                ],
+                [
+                  0.3719224368341071,
+                  1.0,
+                  0.009907801014759328,
+                  0.9004662292643201,
+                  0.055619622548930325
+                ],
+                [
+                  0.3372284304802329,
+                  0.009907801014759328,
+                  1.0,
+                  0.11343648218118069,
+                  0.6271972604358662
+                ],
+                [
+                  0.2635387548514593,
+                  0.9004662292643201,
+                  0.11343648218118069,
+                  1.0,
+                  0.24430400862960852
+                ],
+                [
+                  0.6226809358864027,
+                  0.055619622548930325,
+                  0.6271972604358662,
+                  0.24430400862960852,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 2.9656639414995833,
+              "mean_dependence_eigen": 0.35463019621268677,
+              "efficiency_ratio_eigen": 0.5931327882999167,
+              "eniv_design_effect": 2.0673793797098017,
+              "mean_dependence_design_effect": 0.35463019621268677,
+              "efficiency_ratio_design_effect": 0.41347587594196034
+            },
+            {
+              "seed": 3,
+              "matrix": [
+                [
+                  1.0,
+                  0.4756121482759989,
+                  0.42359599737944115,
+                  0.3183414125900254,
+                  0.6990088260631556
+                ],
+                [
+                  0.4756121482759989,
+                  1.0,
+                  0.026092993203285855,
+                  0.8821538434180755,
+                  0.04950517992661301
+                ],
+                [
+                  0.42359599737944115,
+                  0.026092993203285855,
+                  1.0,
+                  0.15620920706593852,
+                  0.5304771228125518
+                ],
+                [
+                  0.3183414125900254,
+                  0.8821538434180755,
+                  0.15620920706593852,
+                  1.0,
+                  0.30688293549276746
+                ],
+                [
+                  0.6990088260631556,
+                  0.04950517992661301,
+                  0.5304771228125518,
+                  0.30688293549276746,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 2.954366071907309,
+              "mean_dependence_eigen": 0.38678796662278536,
+              "efficiency_ratio_eigen": 0.5908732143814618,
+              "eniv_design_effect": 1.9629767921485608,
+              "mean_dependence_design_effect": 0.38678796662278536,
+              "efficiency_ratio_design_effect": 0.39259535842971216
+            },
+            {
+              "seed": 4,
+              "matrix": [
+                [
+                  1.0,
+                  0.442417332513265,
+                  0.2557990726064303,
+                  0.33306375500562,
+                  0.6396423435093327
+                ],
+                [
+                  0.442417332513265,
+                  1.0,
+                  0.012282040425999062,
+                  0.8787218703203351,
+                  0.11056832314233964
+                ],
+                [
+                  0.2557990726064303,
+                  0.012282040425999062,
+                  1.0,
+                  0.08556117816065323,
+                  0.5714112018100511
+                ],
+                [
+                  0.33306375500562,
+                  0.8787218703203351,
+                  0.08556117816065323,
+                  1.0,
+                  0.2879806305339888
+                ],
+                [
+                  0.6396423435093327,
+                  0.11056832314233964,
+                  0.5714112018100511,
+                  0.2879806305339888,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.017577284334871,
+              "mean_dependence_eigen": 0.3617447748028015,
+              "efficiency_ratio_eigen": 0.6035154568669742,
+              "eniv_design_effect": 2.043335801932992,
+              "mean_dependence_design_effect": 0.3617447748028015,
+              "efficiency_ratio_design_effect": 0.4086671603865984
+            }
+          ],
+          "diagnostics_summary": {
+            "efficiency_ratio_design_effect": {
+              "mean": 0.3996497774732849,
+              "std": 0.013710523607873606,
+              "n_seeds": 5
+            },
+            "efficiency_ratio_eigen": {
+              "mean": 0.5915875806428303,
+              "std": 0.012757912101802873,
+              "n_seeds": 5
+            },
+            "eniv_design_effect": {
+              "mean": 1.9982488873664246,
+              "std": 0.06855261803936798,
+              "n_seeds": 5
+            },
+            "eniv_eigen": {
+              "mean": 2.9579379032141517,
+              "std": 0.06378956050901427,
+              "n_seeds": 5
+            },
+            "mean_dependence_design_effect": {
+              "mean": 0.3761479260596357,
+              "std": 0.02187600943505482,
+              "n_seeds": 5
+            },
+            "mean_dependence_eigen": {
+              "mean": 0.3761479260596357,
+              "std": 0.02187600943505482,
+              "n_seeds": 5
+            }
+          },
+          "pair_table": [
+            {
+              "pair": "apache-auth",
+              "indices": [
+                0,
+                1
+              ],
+              "mean": 0.43350874168410225,
+              "std": 0.056865032616843184,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-dns",
+              "indices": [
+                0,
+                2
+              ],
+              "mean": 0.36063422571761894,
+              "std": 0.08620843167409499,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-audit",
+              "indices": [
+                0,
+                3
+              ],
+              "mean": 0.31445763580727915,
+              "std": 0.029296691635900624,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-suricata",
+              "indices": [
+                0,
+                4
+              ],
+              "mean": 0.6574750756351143,
+              "std": 0.035323415566048205,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-dns",
+              "indices": [
+                1,
+                2
+              ],
+              "mean": 0.011246604303836814,
+              "std": 0.023739428268980598,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-audit",
+              "indices": [
+                1,
+                3
+              ],
+              "mean": 0.8835554613349981,
+              "std": 0.016859206114744025,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-suricata",
+              "indices": [
+                1,
+                4
+              ],
+              "mean": 0.09500287067268429,
+              "std": 0.04092607568212201,
+              "n_seeds": 5
+            },
+            {
+              "pair": "dns-audit",
+              "indices": [
+                2,
+                3
+              ],
+              "mean": 0.13894150328264268,
+              "std": 0.06317454268371502,
+              "n_seeds": 5
+            },
+            {
+              "pair": "dns-suricata",
+              "indices": [
+                2,
+                4
+              ],
+              "mean": 0.5838220041844313,
+              "std": 0.06947021167862304,
+              "n_seeds": 5
+            },
+            {
+              "pair": "audit-suricata",
+              "indices": [
+                3,
+                4
+              ],
+              "mean": 0.28283513797364923,
+              "std": 0.02530293558123826,
+              "n_seeds": 5
+            }
+          ]
+        },
+        "prismflow": {
+          "system": "prismflow",
+          "label": "V1 PrismFlow",
+          "use_discount": true,
+          "experiment_id": "ait_clean/B_santos_to_rm/prismflow",
+          "protocol_output": "results/ait_clean/B_santos_to_rm/prismflow/metrics.json",
+          "per_seed": [
+            {
+              "seed": 0,
+              "n_samples": 1145.0,
+              "accuracy": 0.9729257641921397,
+              "macro_precision": 0.8931034482758621,
+              "macro_recall": 0.9849660523763337,
+              "macro_f1": 0.9325227316364687,
+              "brier": 0.1387334406450773,
+              "brier_reliability": 0.13811922013819783,
+              "brier_resolution": 0.1793009286626876,
+              "brier_uncertainty": 0.17930092866268763,
+              "brier_within_bin": 0.0006142205068794589,
+              "prob_mean_confidence": 0.7815994848330469,
+              "prob_ece": 0.19336192696375612,
+              "prob_mce": 0.284383007308893,
+              "prob_aurc": 0.008582409382491654,
+              "prob_selective_risk@1.00": 0.027074235807860263,
+              "prob_selective_risk@0.90": 0.01066925315227934,
+              "prob_selective_risk@0.80": 0.010917030567685589,
+              "prob_selective_risk@0.50": 0.008726003490401396,
+              "vacuity_mean_confidence": 0.9690790562650522,
+              "vacuity_ece": 0.01587164870516177,
+              "vacuity_mce": 0.26477994597875154,
+              "vacuity_aurc": 0.003322304748358423,
+              "vacuity_selective_risk@1.00": 0.027074235807860263,
+              "vacuity_selective_risk@0.90": 0.009699321047526674,
+              "vacuity_selective_risk@0.80": 0.006550218340611353,
+              "vacuity_selective_risk@0.50": 0.0017452006980802793,
+              "balanced_accuracy": 0.9849660523763337,
+              "roc_auc": 1.0,
+              "attack_recall": 0.9699321047526673,
+              "benign_recall": 1.0,
+              "n_test": 1145.0,
+              "n_attack": 1031.0,
+              "n_benign": 114.0,
+              "attack_prevalence": 0.9004366812227074
+            },
+            {
+              "seed": 1,
+              "n_samples": 1145.0,
+              "accuracy": 0.994759825327511,
+              "macro_precision": 0.975,
+              "macro_recall": 0.997090203685742,
+              "macro_f1": 0.9857203432106156,
+              "brier": 0.13482760389776807,
+              "brier_reliability": 0.1342040856396958,
+              "brier_resolution": 0.1793009286626876,
+              "brier_uncertainty": 0.17930092866268763,
+              "brier_within_bin": 0.000623518258072253,
+              "prob_mean_confidence": 0.7719814062118531,
+              "prob_ece": 0.22277841911565788,
+              "prob_mce": 0.48249737241051416,
+              "prob_aurc": 0.0001266266776834407,
+              "prob_selective_risk@1.00": 0.005240174672489083,
+              "prob_selective_risk@0.90": 0.0,
+              "prob_selective_risk@0.80": 0.0,
+              "prob_selective_risk@0.50": 0.0,
+              "vacuity_mean_confidence": 0.9696214293288352,
+              "vacuity_ece": 0.025138395998675723,
+              "vacuity_mce": 0.07143922646840417,
+              "vacuity_aurc": 0.0013066847277706756,
+              "vacuity_selective_risk@1.00": 0.005240174672489083,
+              "vacuity_selective_risk@0.90": 0.0019398642095053346,
+              "vacuity_selective_risk@0.80": 0.002183406113537118,
+              "vacuity_selective_risk@0.50": 0.0017452006980802793,
+              "balanced_accuracy": 0.997090203685742,
+              "roc_auc": 1.0,
+              "attack_recall": 0.9941804073714839,
+              "benign_recall": 1.0,
+              "n_test": 1145.0,
+              "n_attack": 1031.0,
+              "n_benign": 114.0,
+              "attack_prevalence": 0.9004366812227074
+            },
+            {
+              "seed": 2,
+              "n_samples": 1145.0,
+              "accuracy": 0.9633187772925764,
+              "macro_precision": 0.8653846153846154,
+              "macro_recall": 0.9796314258001939,
+              "macro_f1": 0.9118261826182618,
+              "brier": 0.16019107774557426,
+              "brier_reliability": 0.1429083454607984,
+              "brier_resolution": 0.16195493999474575,
+              "brier_uncertainty": 0.17930092866268763,
+              "brier_within_bin": -6.325638316601894e-05,
+              "prob_mean_confidence": 0.7781047446758986,
+              "prob_ece": 0.1982733181470346,
+              "prob_mce": 0.28716781735420227,
+              "prob_aurc": 0.029021126595306312,
+              "prob_selective_risk@1.00": 0.03668122270742358,
+              "prob_selective_risk@0.90": 0.023278370514064017,
+              "prob_selective_risk@0.80": 0.02292576419213974,
+              "prob_selective_risk@0.50": 0.031413612565445025,
+              "vacuity_mean_confidence": 0.969222148849454,
+              "vacuity_ece": 0.011893384737739359,
+              "vacuity_mce": 0.4429844773334005,
+              "vacuity_aurc": 0.014812676758968229,
+              "vacuity_selective_risk@1.00": 0.03668122270742358,
+              "vacuity_selective_risk@0.90": 0.016488845780795344,
+              "vacuity_selective_risk@0.80": 0.015283842794759825,
+              "vacuity_selective_risk@0.50": 0.017452006980802792,
+              "balanced_accuracy": 0.9796314258001939,
+              "roc_auc": 0.9995660830057685,
+              "attack_recall": 0.9592628516003879,
+              "benign_recall": 1.0,
+              "n_test": 1145.0,
+              "n_attack": 1031.0,
+              "n_benign": 114.0,
+              "attack_prevalence": 0.9004366812227074
+            },
+            {
+              "seed": 3,
+              "n_samples": 1145.0,
+              "accuracy": 0.7921397379912664,
+              "macro_precision": 0.6619318181818181,
+              "macro_recall": 0.8845780795344326,
+              "macro_f1": 0.6793939650628718,
+              "brier": 0.29978524571246945,
+              "brier_reliability": 0.2991504797753103,
+              "brier_resolution": 0.1793009286626876,
+              "brier_uncertainty": 0.17930092866268763,
+              "brier_within_bin": 0.0006347659371591076,
+              "prob_mean_confidence": 0.691821781204257,
+              "prob_ece": 0.11209382344541591,
+              "prob_mce": 0.2774630366278088,
+              "prob_aurc": 0.07287030812988826,
+              "prob_selective_risk@1.00": 0.20786026200873362,
+              "prob_selective_risk@0.90": 0.17458777885548013,
+              "prob_selective_risk@0.80": 0.13209606986899564,
+              "prob_selective_risk@0.50": 0.06282722513089005,
+              "vacuity_mean_confidence": 0.970499136145979,
+              "vacuity_ece": 0.1793146657110823,
+              "vacuity_mce": 0.179937083974664,
+              "vacuity_aurc": 0.16735450277929134,
+              "vacuity_selective_risk@1.00": 0.20786026200873362,
+              "vacuity_selective_risk@0.90": 0.2133850630455868,
+              "vacuity_selective_risk@0.80": 0.23034934497816595,
+              "vacuity_selective_risk@0.50": 0.18848167539267016,
+              "balanced_accuracy": 0.8845780795344326,
+              "roc_auc": 1.0,
+              "attack_recall": 0.7691561590688651,
+              "benign_recall": 1.0,
+              "n_test": 1145.0,
+              "n_attack": 1031.0,
+              "n_benign": 114.0,
+              "attack_prevalence": 0.9004366812227074
+            },
+            {
+              "seed": 4,
+              "n_samples": 1145.0,
+              "accuracy": 0.959825327510917,
+              "macro_precision": 0.85625,
+              "macro_recall": 0.9776915615906887,
+              "macro_f1": 0.9046496640018538,
+              "brier": 0.20858682406002582,
+              "brier_reliability": 0.2067078743208114,
+              "brier_resolution": 0.17813644540213447,
+              "brier_uncertainty": 0.17930092866268763,
+              "brier_within_bin": 0.0007144664786612864,
+              "prob_mean_confidence": 0.7256484171188554,
+              "prob_ece": 0.23417691039206165,
+              "prob_mce": 0.37150724606636243,
+              "prob_aurc": 0.012196803565086319,
+              "prob_selective_risk@1.00": 0.04017467248908297,
+              "prob_selective_risk@0.90": 0.02521823472356935,
+              "prob_selective_risk@0.80": 0.02292576419213974,
+              "prob_selective_risk@0.50": 0.008726003490401396,
+              "vacuity_mean_confidence": 0.9715649388763061,
+              "vacuity_ece": 0.012015811584922324,
+              "vacuity_mce": 0.0790623128414154,
+              "vacuity_aurc": 0.01225806757577722,
+              "vacuity_selective_risk@1.00": 0.04017467248908297,
+              "vacuity_selective_risk@0.90": 0.028128031037827354,
+              "vacuity_selective_risk@0.80": 0.018558951965065504,
+              "vacuity_selective_risk@0.50": 0.012216404886561954,
+              "balanced_accuracy": 0.9776915615906887,
+              "roc_auc": 0.999982983647285,
+              "attack_recall": 0.9553831231813773,
+              "benign_recall": 1.0,
+              "n_test": 1145.0,
+              "n_attack": 1031.0,
+              "n_benign": 114.0,
+              "attack_prevalence": 0.9004366812227074
+            }
+          ],
+          "summary": {
+            "accuracy": {
+              "mean": 0.9365938864628821,
+              "std": 0.08189047935661457,
+              "n_seeds": 5
+            },
+            "attack_prevalence": {
+              "mean": 0.9004366812227074,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "attack_recall": {
+              "mean": 0.9295829291949563,
+              "std": 0.0909452947267931,
+              "n_seeds": 5
+            },
+            "balanced_accuracy": {
+              "mean": 0.9647914645974782,
+              "std": 0.045472647363396554,
+              "n_seeds": 5
+            },
+            "benign_recall": {
+              "mean": 1.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "brier": {
+              "mean": 0.188424838412183,
+              "std": 0.06882348759756868,
+              "n_seeds": 5
+            },
+            "brier_reliability": {
+              "mean": 0.18421800106696273,
+              "std": 0.07079591451277911,
+              "n_seeds": 5
+            },
+            "brier_resolution": {
+              "mean": 0.1755988342769886,
+              "std": 0.0076438182528327315,
+              "n_seeds": 5
+            },
+            "brier_uncertainty": {
+              "mean": 0.17930092866268763,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "brier_within_bin": {
+              "mean": 0.0005047429595212174,
+              "std": 0.0003200023778852723,
+              "n_seeds": 5
+            },
+            "macro_f1": {
+              "mean": 0.8828225773060143,
+              "std": 0.11806659845457594,
+              "n_seeds": 5
+            },
+            "macro_precision": {
+              "mean": 0.8503339763684591,
+              "std": 0.11524727703412967,
+              "n_seeds": 5
+            },
+            "macro_recall": {
+              "mean": 0.9647914645974782,
+              "std": 0.045472647363396554,
+              "n_seeds": 5
+            },
+            "n_attack": {
+              "mean": 1031.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_benign": {
+              "mean": 114.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_samples": {
+              "mean": 1145.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "n_test": {
+              "mean": 1145.0,
+              "std": 0.0,
+              "n_seeds": 5
+            },
+            "prob_aurc": {
+              "mean": 0.0245594548700912,
+              "std": 0.028978048936026162,
+              "n_seeds": 5
+            },
+            "prob_ece": {
+              "mean": 0.19213687961278522,
+              "std": 0.0478338676842517,
+              "n_seeds": 5
+            },
+            "prob_mce": {
+              "mean": 0.3406036959535561,
+              "std": 0.08816425954078803,
+              "n_seeds": 5
+            },
+            "prob_mean_confidence": {
+              "mean": 0.7498311668087821,
+              "std": 0.03952577811344206,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.50": {
+              "mean": 0.022338568935427572,
+              "std": 0.025452422455800615,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.80": {
+              "mean": 0.03777292576419214,
+              "std": 0.053585830577918867,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@0.90": {
+              "mean": 0.046750727449078565,
+              "std": 0.07218797475998062,
+              "n_seeds": 5
+            },
+            "prob_selective_risk@1.00": {
+              "mean": 0.0634061135371179,
+              "std": 0.08189047935661456,
+              "n_seeds": 5
+            },
+            "roc_auc": {
+              "mean": 0.9999098133306107,
+              "std": 0.00019229231489123128,
+              "n_seeds": 5
+            },
+            "seed": {
+              "mean": 2,
+              "std": 1.5811388300841898,
+              "n_seeds": 5
+            },
+            "vacuity_aurc": {
+              "mean": 0.03981084731803318,
+              "std": 0.07152872242477465,
+              "n_seeds": 5
+            },
+            "vacuity_ece": {
+              "mean": 0.04884678134751629,
+              "std": 0.07313239640129983,
+              "n_seeds": 5
+            },
+            "vacuity_mce": {
+              "mean": 0.20764060931932712,
+              "std": 0.15370614849274286,
+              "n_seeds": 5
+            },
+            "vacuity_mean_confidence": {
+              "mean": 0.9699973418931254,
+              "std": 0.001036175754824899,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.50": {
+              "mean": 0.044328097731239094,
+              "std": 0.08087080014356236,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.80": {
+              "mean": 0.05458515283842795,
+              "std": 0.0984743994029416,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@0.90": {
+              "mean": 0.0539282250242483,
+              "std": 0.0896560454275413,
+              "n_seeds": 5
+            },
+            "vacuity_selective_risk@1.00": {
+              "mean": 0.0634061135371179,
+              "std": 0.08189047935661456,
+              "n_seeds": 5
+            }
+          },
+          "diagnostics_per_seed": [
+            {
+              "seed": 0,
+              "matrix": [
+                [
+                  1.0,
+                  0.4035708558480976,
+                  0.2494673234155325,
+                  0.30704930510290435,
+                  0.6555522945483232
+                ],
+                [
+                  0.4035708558480976,
+                  1.0,
+                  -0.013952688814313788,
+                  0.879625031810703,
+                  0.16851239380755653
+                ],
+                [
+                  0.2494673234155325,
+                  -0.013952688814313788,
+                  1.0,
+                  0.09414584608759287,
+                  0.6390092381106635
+                ],
+                [
+                  0.30704930510290435,
+                  0.879625031810703,
+                  0.09414584608759287,
+                  1.0,
+                  0.2715380629415291
+                ],
+                [
+                  0.6555522945483232,
+                  0.16851239380755653,
+                  0.6390092381106635,
+                  0.2715380629415291,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 2.9745409454132954,
+              "mean_dependence_eigen": 0.36545176628585885,
+              "efficiency_ratio_eigen": 0.5949081890826591,
+              "eniv_design_effect": 2.031028373748159,
+              "mean_dependence_design_effect": 0.36545176628585885,
+              "efficiency_ratio_design_effect": 0.4062056747496318
+            },
+            {
+              "seed": 1,
+              "matrix": [
+                [
+                  1.0,
+                  0.43991710043501037,
+                  0.25751968737383074,
+                  0.30095568583914184,
+                  0.6664135711290442
+                ],
+                [
+                  0.43991710043501037,
+                  1.0,
+                  -0.059636933634083844,
+                  0.8563485531346693,
+                  0.050917422875195496
+                ],
+                [
+                  0.25751968737383074,
+                  -0.059636933634083844,
+                  1.0,
+                  0.06605705834365275,
+                  0.5207288814912123
+                ],
+                [
+                  0.30095568583914184,
+                  0.8563485531346693,
+                  0.06605705834365275,
+                  1.0,
+                  0.2949647227986875
+                ],
+                [
+                  0.6664135711290442,
+                  0.050917422875195496,
+                  0.5207288814912123,
+                  0.2949647227986875,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.041521793165065,
+              "mean_dependence_eigen": 0.3394185749786361,
+              "efficiency_ratio_eigen": 0.608304358633013,
+              "eniv_design_effect": 2.120733979320735,
+              "mean_dependence_design_effect": 0.3394185749786361,
+              "efficiency_ratio_design_effect": 0.42414679586414705
+            },
+            {
+              "seed": 2,
+              "matrix": [
+                [
+                  1.0,
+                  0.4481049550138714,
+                  0.21830044591983022,
+                  0.3045593152962305,
+                  0.6284511148736209
+                ],
+                [
+                  0.4481049550138714,
+                  1.0,
+                  -0.031048859924034077,
+                  0.8916316853754624,
+                  0.050647427624388675
+                ],
+                [
+                  0.21830044591983022,
+                  -0.031048859924034077,
+                  1.0,
+                  0.05740423788158199,
+                  0.5910505779543862
+                ],
+                [
+                  0.3045593152962305,
+                  0.8916316853754624,
+                  0.05740423788158199,
+                  1.0,
+                  0.247782934630746
+                ],
+                [
+                  0.6284511148736209,
+                  0.050647427624388675,
+                  0.5910505779543862,
+                  0.247782934630746,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.0019054586471374,
+              "mean_dependence_eigen": 0.34068838346460845,
+              "efficiency_ratio_eigen": 0.6003810917294274,
+              "eniv_design_effect": 2.1161750171355704,
+              "mean_dependence_design_effect": 0.34068838346460845,
+              "efficiency_ratio_design_effect": 0.42323500342711406
+            },
+            {
+              "seed": 3,
+              "matrix": [
+                [
+                  1.0,
+                  0.4334507850940041,
+                  0.30483250815358093,
+                  0.31406292892424365,
+                  0.6797802929768455
+                ],
+                [
+                  0.4334507850940041,
+                  1.0,
+                  -0.021164257264576852,
+                  0.869536112824236,
+                  0.017970953619656074
+                ],
+                [
+                  0.30483250815358093,
+                  -0.021164257264576852,
+                  1.0,
+                  0.10940462224449711,
+                  0.46244173390568877
+                ],
+                [
+                  0.31406292892424365,
+                  0.869536112824236,
+                  0.10940462224449711,
+                  1.0,
+                  0.30858180575125305
+                ],
+                [
+                  0.6797802929768455,
+                  0.017970953619656074,
+                  0.46244173390568877,
+                  0.30858180575125305,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.0622062449526353,
+              "mean_dependence_eigen": 0.3478897486229428,
+              "efficiency_ratio_eigen": 0.6124412489905271,
+              "eniv_design_effect": 2.090686456623474,
+              "mean_dependence_design_effect": 0.3478897486229428,
+              "efficiency_ratio_design_effect": 0.4181372913246948
+            },
+            {
+              "seed": 4,
+              "matrix": [
+                [
+                  1.0,
+                  0.35630838202250564,
+                  0.27570425239548996,
+                  0.323088833093211,
+                  0.6574216027389
+                ],
+                [
+                  0.35630838202250564,
+                  1.0,
+                  -0.014436572430253501,
+                  0.8555870323312039,
+                  0.06030099292878446
+                ],
+                [
+                  0.27570425239548996,
+                  -0.014436572430253501,
+                  1.0,
+                  0.09766161179505989,
+                  0.5446370213126981
+                ],
+                [
+                  0.323088833093211,
+                  0.8555870323312039,
+                  0.09766161179505989,
+                  1.0,
+                  0.2881864761783436
+                ],
+                [
+                  0.6574216027389,
+                  0.06030099292878446,
+                  0.5446370213126981,
+                  0.2881864761783436,
+                  1.0
+                ]
+              ],
+              "views": [
+                "apache",
+                "auth",
+                "dns",
+                "audit",
+                "suricata"
+              ],
+              "available": [
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "null_permutations": 12,
+              "method": "cca",
+              "conditioning": "pairwise_holdout",
+              "eniv_eigen": 3.05579708628313,
+              "mean_dependence_eigen": 0.34444596323659427,
+              "efficiency_ratio_eigen": 0.611159417256626,
+              "eniv_design_effect": 2.1027983657153544,
+              "mean_dependence_design_effect": 0.34444596323659427,
+              "efficiency_ratio_design_effect": 0.42055967314307086
+            }
+          ],
+          "diagnostics_summary": {
+            "efficiency_ratio_design_effect": {
+              "mean": 0.41845688770173173,
+              "std": 0.007242608508612246,
+              "n_seeds": 5
+            },
+            "efficiency_ratio_eigen": {
+              "mean": 0.6054388611384506,
+              "std": 0.007524050756821842,
+              "n_seeds": 5
+            },
+            "eniv_design_effect": {
+              "mean": 2.0922844385086585,
+              "std": 0.036213042543061215,
+              "n_seeds": 5
+            },
+            "eniv_eigen": {
+              "mean": 3.0271943056922526,
+              "std": 0.0376202537841091,
+              "n_seeds": 5
+            },
+            "mean_dependence_design_effect": {
+              "mean": 0.34757888731772807,
+              "std": 0.010528786628573027,
+              "n_seeds": 5
+            },
+            "mean_dependence_eigen": {
+              "mean": 0.34757888731772807,
+              "std": 0.010528786628573027,
+              "n_seeds": 5
+            }
+          },
+          "pair_table": [
+            {
+              "pair": "apache-auth",
+              "indices": [
+                0,
+                1
+              ],
+              "mean": 0.4162704156826978,
+              "std": 0.03749830992181796,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-dns",
+              "indices": [
+                0,
+                2
+              ],
+              "mean": 0.26116484345165286,
+              "std": 0.03203800503522882,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-audit",
+              "indices": [
+                0,
+                3
+              ],
+              "mean": 0.30994321365114624,
+              "std": 0.008773768984880274,
+              "n_seeds": 5
+            },
+            {
+              "pair": "apache-suricata",
+              "indices": [
+                0,
+                4
+              ],
+              "mean": 0.6575237752533468,
+              "std": 0.018864634960925226,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-dns",
+              "indices": [
+                1,
+                2
+              ],
+              "mean": -0.02804786241345241,
+              "std": 0.018961807405168778,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-audit",
+              "indices": [
+                1,
+                3
+              ],
+              "mean": 0.8705456830952549,
+              "std": 0.01543853157839462,
+              "n_seeds": 5
+            },
+            {
+              "pair": "auth-suricata",
+              "indices": [
+                1,
+                4
+              ],
+              "mean": 0.06966983817111624,
+              "std": 0.057541085131021165,
+              "n_seeds": 5
+            },
+            {
+              "pair": "dns-audit",
+              "indices": [
+                2,
+                3
+              ],
+              "mean": 0.08493467527047692,
+              "std": 0.02213531279253805,
+              "n_seeds": 5
+            },
+            {
+              "pair": "dns-suricata",
+              "indices": [
+                2,
+                4
+              ],
+              "mean": 0.5515734905549298,
+              "std": 0.06735618928019127,
+              "n_seeds": 5
+            },
+            {
+              "pair": "audit-suricata",
+              "indices": [
+                3,
+                4
+              ],
+              "mean": 0.2822108004601118,
+              "std": 0.023414666488542294,
+              "n_seeds": 5
+            }
+          ]
+        }
+      },
+      "manifests": {
+        "santos": 26,
+        "russellmitchell": 26
+      }
+    }
+  }
+}
