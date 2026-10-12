@@ -481,6 +481,55 @@ def _is_nan(value) -> bool:
     return isinstance(value, float) and math.isnan(value)
 
 
+def paired_difference(treatment: list[dict], control: list[dict], lower_is_better: set[str]) -> dict:
+    """prismflow - naive WITHIN each seed, with the per-seed signs kept.
+
+    Paired, not two independent means: both systems see the same seed, so the
+    same initialisation draw and the same batch order, and the difference
+    removes that shared variance. On this data the unpaired bars overlap
+    heavily in direction B, so an unpaired reading would say "no effect"
+    where a paired one may not.
+
+    `n_seeds_favouring` is reported beside every mean because a population in
+    which the effect cancels reads as "no effect" in the mean alone. A mean
+    near zero with 5/5 seeds on one side is a different statement from a mean
+    near zero with 2/5.
+    """
+    by_seed_control = {row["seed"]: row for row in control}
+    keys = sorted(set(treatment[0]) & set(control[0]) - {"seed"})
+    out = {}
+    for key in keys:
+        diffs, favouring = [], 0
+        for row in treatment:
+            other = by_seed_control.get(row["seed"])
+            if other is None or _is_nan(row.get(key)) or _is_nan(other.get(key)):
+                continue
+            delta = float(row[key]) - float(other[key])
+            diffs.append(delta)
+            better = delta < 0 if key in lower_is_better else delta > 0
+            favouring += int(better)
+        if not diffs:
+            continue
+        out[key] = {
+            "mean": statistics.mean(diffs),
+            "std": statistics.stdev(diffs) if len(diffs) > 1 else float("nan"),
+            "n_seeds": len(diffs),
+            "n_seeds_favouring_prismflow": favouring,
+            "per_seed": diffs,
+            "lower_is_better": key in lower_is_better,
+        }
+    return out
+
+
+#: Which metrics improve downward. Used only to read the SIGN of a paired
+#: difference; it changes no value.
+LOWER_IS_BETTER = {
+    "brier", "brier_reliability", "prob_ece", "prob_mce", "prob_aurc",
+    "vacuity_ece", "vacuity_mce", "vacuity_aurc", "mean_dependence_eigen",
+    "mean_dependence_design_effect",
+}
+
+
 # ---------------------------------------------------------------------------
 # Test-set structure: independent contiguous blocks
 # ---------------------------------------------------------------------------
@@ -850,6 +899,28 @@ def run_direction(
     test_labels = test_scaled.labels.numpy()[test_indices]
     baseline = majority_baseline(test_labels, cfg)
 
+    by_name = {s["system"]: s for s in systems}
+    paired = {
+        "comparison": "prismflow - naive, within seed",
+        "metrics": paired_difference(
+            by_name["prismflow"]["per_seed"], by_name["naive"]["per_seed"], LOWER_IS_BETTER
+        ),
+        "diagnostics": paired_difference(
+            [{k: v for k, v in d.items() if isinstance(v, (int, float))}
+             for d in by_name["prismflow"]["diagnostics_per_seed"]],
+            [{k: v for k, v in d.items() if isinstance(v, (int, float))}
+             for d in by_name["naive"]["diagnostics_per_seed"]],
+            LOWER_IS_BETTER,
+        ),
+        "note": (
+            "Paired within seed: both systems see the same initialisation draw and "
+            "the same batch order, so the difference removes that shared variance. "
+            "n_seeds_favouring_prismflow is reported beside every mean, because a "
+            "mean near zero with 5/5 seeds on one side is a different statement "
+            "from a mean near zero with 2/5."
+        ),
+    }
+
     return {
         "direction": direction["name"],
         "label": direction["label"],
@@ -886,6 +957,7 @@ def run_direction(
             ),
         },
         "majority_class_baseline": baseline,
+        "paired_prismflow_minus_naive": paired,
         "sensor_group_check": sensor_group_check(list(test_scaled.sources), cfg),
         "systems": {s["system"]: s for s in systems},
         "manifests": {
@@ -1045,6 +1117,36 @@ def write_report(results: dict, cfg: dict, path: Path, commit: str | None) -> No
     ]
     for record in results["directions"].values():
         lines += direction_table(record)
+
+    lines += [
+        "## Paired within-seed comparison, per direction",
+        "",
+        "prismflow - naive computed WITHIN each seed, so the shared "
+        "initialisation-and-batch-order variance cancels. The seed count on one "
+        "side of zero is given beside every mean: a mean near zero with 5/5 seeds "
+        "on one side is a different statement from a mean near zero with 2/5. "
+        "Not pooled across directions.",
+        "",
+    ]
+    for record in results["directions"].values():
+        lines += [
+            f"{record['label']} ({prevalence_caption(record)}):",
+            "",
+            "| metric | prismflow - naive | seeds favouring prismflow | better when |",
+            "|---|---|---|---|",
+        ]
+        paired = record["paired_prismflow_minus_naive"]
+        for key, name, places in METRIC_ROWS + ENIV_ROWS:
+            entry = paired["metrics"].get(key) or paired["diagnostics"].get(key)
+            if entry is None:
+                lines.append(f"| {name} | not measured | - | - |")
+                continue
+            lines.append(
+                f"| {name} | {fmt(entry, places)} "
+                f"| {entry['n_seeds_favouring_prismflow']}/{entry['n_seeds']} "
+                f"| {'lower' if entry['lower_is_better'] else 'higher'} |"
+            )
+        lines.append("")
 
     lines += [
         "## Test-set structure, per direction",
