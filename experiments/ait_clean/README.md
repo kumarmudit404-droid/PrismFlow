@@ -477,3 +477,100 @@ Requires both scenarios processed at 300 s / network, i.e.
 `data/processed/ait_santos_network_300s/` from `/part26`. If either is missing
 the runner stops and says so: it does **not** fall back to a random
 within-scenario split and does not run a single direction.
+
+---
+
+## 9. Addendum: non-fusion learned baselines
+
+Added after sections 1-8, because Part 28 as first run contained no non-fusion
+learned baseline: both systems there share the same encoders, evidence heads
+and training loop and differ only in `use_discount`, so every comparison was
+fusion against fusion or fusion against a constant.
+
+Code: `experiments/ait_clean/run_ait_baselines.py`,
+`tests/unit/test_ait_baselines.py` (23 tests). Results:
+`results/ait_clean/baselines.json`, `results/ait_clean/baselines.md`.
+`results/ait_clean/results.json` and `results/ait_clean/summary.md` were not
+modified; the naive and PrismFlow reference rows are read from the former and
+are byte-equal to it
+(`tests/unit/test_ait_baselines.py::test_reference_rows_are_quoted_from_results_json_not_recomputed`).
+
+**What was fitted.** `flat_all_views` is one logistic regression on all five
+views' native features concatenated (45 columns) plus the five `view_mask`
+indicators (50 total), with missing views zero-filled. `single_view_<name>` is
+one logistic regression per view on that view's native features and its own
+mask indicator. Solver `lbfgs`, `max_iter=5000`, `C=1.0`,
+`class_weight=None` - fixed and stated, not tuned. Same `label_known` windows,
+same scaler policy (fitted on the training scenario alone, refitted per
+direction), same `compute_metrics` + `part28_extras` pair as sections 2 and 3.
+
+**No `+/-` on these rows.** lbfgs logistic regression is a deterministic
+function of its inputs - no initialisation draw, no minibatch order - so a
+seed has nothing to select and five runs return five identical numbers.
+Reporting `+/- 0.0000` over five identical runs would fake the 5-SEED RULE
+rather than satisfy it. Every model is refitted and its coefficients and
+probabilities asserted bit-identical, so the determinism is checked rather
+than assumed. The naive and PrismFlow rows keep their `+/-` because those are
+5-seed means over initialisation and batch order; the two kinds of row are not
+the same kind of estimate, and a `+/-` on one row beside its absence on
+another is that difference, not an omission.
+
+### 9a. Does `flat_all_views` match naive and PrismFlow?
+
+**Direction A (test `santos`, n = 1,108, prevalence 0.602): no - it is above
+both, on 6 of 7 metrics, by more than one 5-seed std in every one of those
+six.** ROC AUC 0.9995 against 0.9965 +/- 0.0008 and 0.9962 +/- 0.0005;
+balanced accuracy 0.9804 against 0.9444 +/- 0.0056 and 0.9487 +/- 0.0061;
+macro-F1 0.9830 against 0.9525 +/- 0.0049 and 0.9562 +/- 0.0053; benign recall
+0.9637 against 0.8902 +/- 0.0113 and 0.8989 +/- 0.0123; Brier 0.0295 against
+0.0819 +/- 0.0092 and 0.0707 +/- 0.0071; ECE 0.0102 against 0.0314 +/- 0.0070
+and 0.0194 +/- 0.0042. The one metric where it is lower is attack recall,
+0.9970 against 0.9985 +/- 0.0000 for both - a difference of one window of 667.
+
+**Direction B (test `russellmitchell`, n = 1,145, prevalence 0.900): on
+discrimination, yes; on calibration, no - it is better.** ROC AUC 1.0000
+against 0.9999 +/- 0.0002, balanced accuracy 0.9588 against 0.9500 +/- 0.0685
+and 0.9648 +/- 0.0455, macro-F1 0.8427 against 0.8511 +/- 0.1460 and
+0.8828 +/- 0.1181, attack recall 0.9176 against 0.9001 +/- 0.1369 and
+0.9296 +/- 0.0909, benign recall 1.0000 for all three: every one of these sits
+inside both systems' one-std range, so they do not separate. Brier 0.1264 and
+ECE 0.0765 are below both means, and ECE is below both one-std ranges
+(naive 0.2066 +/- 0.0602, PrismFlow 0.1921 +/- 0.0478).
+
+So `flat_all_views` matches or exceeds both fusion systems on every metric
+reported here, in both directions, with the single exception of direction A's
+attack recall.
+
+### 9b. Which single views carry the signal?
+
+**`dns`, alone, in both directions. No other single view clears balanced
+accuracy 0.71 in either direction.**
+
+| test scenario (prevalence) | `apache` | `auth` | `dns` | `audit` | `suricata` | `flat_all_views` |
+|---|---|---|---|---|---|---|
+| `santos` (0.602), balanced accuracy | 0.5000 | 0.5000 | **0.9898** | 0.5000 | 0.7061 | 0.9804 |
+| `santos` (0.602), ROC AUC | 0.4258 | 0.5103 | **0.9993** | 0.5584 | 0.7369 | 0.9995 |
+| `russellmitchell` (0.900), balanced accuracy | 0.3733 | 0.4995 | **1.0000** | 0.5088 | 0.5115 | 0.9588 |
+| `russellmitchell` (0.900), ROC AUC | 0.3425 | 0.5008 | **1.0000** | 0.5674 | 0.5649 | 1.0000 |
+
+Three further facts from the same rows
+(`results/ait_clean/baselines.json`, `directions.<name>.baselines`):
+
+- **`single_view_dns` is at or above `flat_all_views` on balanced accuracy in
+  both directions**: 0.9898 against 0.9804 on `santos`, 1.0000 against 0.9588
+  on `russellmitchell`. On `russellmitchell` it is 1.0000 on ROC AUC, balanced
+  accuracy, macro-F1, attack recall and benign recall simultaneously, with
+  Brier 0.0085 and ECE 0.0376.
+- **`apache`, `auth` and `audit` collapse to the majority class on `santos`**:
+  balanced accuracy 0.5000, attack recall 0.9955-1.0000, benign recall
+  0.0000-0.0045. `apache`'s ROC AUC is below 0.5 in both directions (0.4258
+  and 0.3425).
+- **`suricata` inverts between the two directions**: on `santos` it scores
+  balanced accuracy 0.7061 with attack recall 0.9610 and benign recall 0.4512;
+  on `russellmitchell` it scores 0.5115 with attack recall 0.0757 and benign
+  recall 0.9474, Brier 1.4585 and ECE 0.7483.
+
+These are the numbers. Section 9 makes no claim beyond them: it does not
+attribute a cause, and it does not say what any of it implies for the
+project's thesis, which concerns dependence-discounted fusion under collusive
+view compromise and is not what this clean-data comparison tests.
