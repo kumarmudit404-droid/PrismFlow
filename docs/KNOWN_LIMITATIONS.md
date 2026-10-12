@@ -812,3 +812,149 @@ either naive or PrismFlow confidence on the same colluding-view inputs, scored
 on whether they correctly withhold trust. That is a different project, and it
 would need [[L14]] resolved first -- a human study on one synthetic generator
 would not be worth running.
+
+## L16. On real cross-scenario data, discrimination and calibration come apart, and the positive class is one or three episodes
+
+**Component:** the real-data evidence base for window-level detection
+(Part 28, `experiments/ait_clean/`).
+
+**Evidence:** `results/ait_clean/results.json`,
+`results/ait_clean/summary.md` (5 seeds, two directions, never pooled), and
+`results/ait_clean/baselines.json` for the non-oracle reference below.
+
+- **Accuracy does not clear the majority-class baseline in direction B.**
+  Training on `santos` (60.2% attack) and testing on `russellmitchell`
+  (90.0% attack), naive fusion scores accuracy 0.9100 +/- 0.1233 and
+  PrismFlow 0.9366 +/- 0.0819 against a baseline of 0.9004. Both bars
+  straddle it. Balanced accuracy (0.9500 +/- 0.0685 and 0.9648 +/- 0.0455)
+  and ROC AUC (0.9999 +/- 0.0002 for both) clear 0.50 decisively, so the
+  systems rank well and threshold badly.
+- **The majority-class baseline is better calibrated than either system in
+  direction B -- but it is an ORACLE reference, not a competitor.** It is
+  handed the test set's own class prevalence and emits it as a constant
+  forecast, so its Brier is exactly `2p(1-p)` by construction: 0.479198 at
+  p = 0.601986 and 0.179301 at p = 0.900437, reproduced to machine precision
+  in `results/ait_clean/results.json`
+  (`directions.<name>.majority_class_baseline.brier`). Its ECE is 0.0000 for
+  the same reason -- a constant forecast equal to the realised base rate is
+  calibrated by definition. A deployed system does not know the test
+  prevalence, so beating this baseline on Brier or ECE is not a bar a real
+  detector must clear, and failing to beat it is not by itself a defect. It
+  is reported because it bounds what a calibration number on this data can
+  mean, not because it is a rival.
+- **The non-oracle reference tells the same story and is a fair comparison.**
+  `flat_all_views`, a logistic regression that sees only the training
+  scenario, scores Brier **0.1264** and ECE **0.0765** in direction B
+  (`results/ait_clean/baselines.json`,
+  `directions.B_santos_to_rm.baselines.flat_all_views.brier` and
+  `.prob_ece`), against naive fusion's 0.2237 +/- 0.0768 / 0.2066 +/- 0.0602
+  and PrismFlow's 0.1884 +/- 0.0688 / 0.1921 +/- 0.0478. So both fusion
+  systems are worse calibrated under this prevalence shift than a flat model
+  with no oracle knowledge, and the ECE gap sits outside both systems'
+  one-std ranges. See [[L17]].
+- **Direction A does not show this**, and the two directions must not be
+  averaged. On `santos` (prevalence 0.602) both systems beat the
+  majority-class baseline on every metric, and PrismFlow beats naive fusion
+  in 5/5 seeds on balanced accuracy (+0.0043 +/- 0.0015), Brier
+  (-0.0111 +/- 0.0043) and ECE (-0.0120 +/- 0.0066).
+- **The positive class is 3 episodes (`santos`) and 1 episode
+  (`russellmitchell`).** Every +/- in Part 28 is a spread over 5
+  initialisations on a fixed pair of scenarios, not over independent attacks.
+- **The task is "was the DNS exfiltration tool running".** 1,026 of 1,031
+  and 663 of 667 attack windows carry only dnsteal-family steps, and the
+  multi-step intrusion is 4 and 3 windows respectively. No Part 28 metric is
+  computed over those windows.
+
+**What this means.** Part 28 is evidence that the pipeline runs on real
+multi-sensor log data, and that the dependence estimator reads an eigen ENIV
+of **2.9579 +/- 0.0638 to 3.4958 +/- 0.1015** across the two test scenarios
+and two systems (design-effect ENIV **1.9982 +/- 0.0686 to
+2.4811 +/- 0.1234**; `results/ait_clean/results.json`,
+`directions.<name>.systems.<system>.diagnostics_summary.eniv_eigen` and
+`.eniv_design_effect`). **ENIV is a dependence statistic, not a count of
+informative views**: it measures how much the five views' encoder features
+covary, and it is blind to whether a view carries any signal about the label
+at all. A view that is pure noise is maximally independent of the others and
+raises ENIV rather than lowering it ([[L3]]), and on this data four of the
+five views are close to useless on the label while ENIV still reads near 3
+([[L17]]). An ENIV of 3.0-3.5 must therefore never be read as "three to three
+and a half views are contributing". Part 28 is not evidence of intrusion
+detection, and in direction B it is not evidence that either system is usable
+as a detector at a fixed threshold.
+
+**What would change our understanding.** A threshold chosen on the training
+scenario and reported as such, rather than argmax at 0.5; a third and fourth
+scenario so the direction count exceeds the episode count; and a window
+length at which more than one attack episode exists.
+
+## L17. On AIT the label is solved by one view, so Part 28 is not evidence about fusion
+
+**Component:** every Part 28 comparison between a fusion system and anything
+else (`experiments/ait_clean/`), and the premise of Part 29 on this data.
+
+**Evidence:** `results/ait_clean/baselines.json` (deterministic logistic
+regression, one value per row, no seed spread -- see
+`experiments/ait_clean/README.md` section 9), with the fusion rows quoted from
+`results/ait_clean/results.json` (5 seeds).
+
+- **One view solves the label.** `single_view_dns` -- a logistic regression on
+  the nine `dns` features and that view's mask indicator, nothing else --
+  scores balanced accuracy **0.9898** and ROC AUC **0.9993** on `santos`
+  (prevalence 0.602, n = 1,108) and balanced accuracy **1.0000** and ROC AUC
+  **1.0000** on `russellmitchell` (prevalence 0.900, n = 1,145)
+  (`directions.<name>.baselines.single_view_dns.balanced_accuracy` and
+  `.roc_auc`). On `russellmitchell` it is 1.0000 on ROC AUC, balanced
+  accuracy, macro-F1, attack recall and benign recall simultaneously.
+- **No other single view clears balanced accuracy 0.71 in either direction.**
+  The best non-`dns` view is `suricata`, at 0.7061 on `santos` and 0.5115 on
+  `russellmitchell`. `apache`, `auth` and `audit` sit between 0.3733 and
+  0.5088 across both directions.
+- **`apache`'s ROC AUC is below 0.5 in both directions**: 0.4258 on `santos`
+  and 0.3425 on `russellmitchell`. Below chance on both test sets, fitted on
+  the other scenario each time.
+- **The flat model matches or beats both fusion systems.** In direction A,
+  `flat_all_views` (all five views' features concatenated plus the five mask
+  indicators) scores balanced accuracy **0.9804** and Brier **0.0295**,
+  against naive fusion's 0.9444 +/- 0.0056 / 0.0819 +/- 0.0092 and
+  PrismFlow's 0.9487 +/- 0.0061 / 0.0707 +/- 0.0071 -- above both by more
+  than one 5-seed std on each. In direction B it scores balanced accuracy
+  **0.9588**, inside both systems' one-std ranges (0.9500 +/- 0.0685 and
+  0.9648 +/- 0.0455), so no separation there, with Brier **0.1264** and ECE
+  **0.0765** against 0.2237 +/- 0.0768 / 0.2066 +/- 0.0602 and
+  0.1884 +/- 0.0688 / 0.1921 +/- 0.0478.
+- **The single-view `dns` model matches or exceeds both fusion systems on
+  balanced accuracy in both directions**: 0.9898 against 0.9444 +/- 0.0056
+  and 0.9487 +/- 0.0061 on `santos`; 1.0000 against 0.9500 +/- 0.0685 and
+  0.9648 +/- 0.0455 on `russellmitchell`. It also matches or exceeds
+  `flat_all_views` on balanced accuracy in both (0.9898 against 0.9804;
+  1.0000 against 0.9588).
+
+**What this means. Part 28 gives no evidence that multi-view fusion adds
+anything on this label.** A single-view logistic regression on `dns` equals or
+beats every fused system reported, and the data card predicted exactly this:
+the exfiltration is visible directly in `dns` as query names up to 250
+characters carrying the exfiltrated file name
+(`docs/part27-ait-datacard.md` section 9, limitation 2). This is a property of
+the label, not a result about the architecture -- a task one sensor can solve
+cannot discriminate between ways of combining five. It does not show that
+fusion is useless in general, and it does not bear on the project's thesis,
+which concerns redundancy among views that all carry signal
+([[L3]], [[L14]]). It does mean no Part 28 number should be cited as fusion
+performance.
+
+**It also conditions Part 29.** Part 29 attacks k colluding views on this
+data. Because one view carries the label, **the result will depend almost
+entirely on whether the compromised set includes `dns`**: compromising `dns`
+attacks the only view with signal, while compromising any subset of `apache`,
+`auth`, `audit` and `suricata` perturbs views that score 0.3733 to 0.7061
+balanced accuracy on their own. Those are two different experiments and must
+be reported as separate conditions with the compromised set named, not pooled
+into a single "k views compromised" row. A Part 29 attack-success number that
+does not say whether `dns` was in the compromised set is uninterpretable.
+
+**What would change our understanding.** A label whose signal is spread across
+views -- so that no single view solves it and fusion has something to do --
+or more attack episodes, so the comparison rests on more than the 3 and 1
+independent blocks these two scenarios provide. Either would make a
+fusion-against-flat comparison on real data informative; neither exists in
+the AIT scenarios loaded so far.
