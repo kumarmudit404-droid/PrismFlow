@@ -204,3 +204,42 @@ must not restore the original framing without new evidence.
   hand-worked example
 - `evaluate` writes all three files, matches `compute_metrics` seed by seed,
   refuses fewer than 5 seeds, and runs on the real `PrismFlow` output
+
+## Exceptions
+
+One standing exception to "experiment scripts must not compute their own
+metrics", recorded here rather than left as a silent divergence.
+
+**Balanced accuracy, ROC AUC and per-class recall are computed outside
+`compute_metrics`.** They live in `part28_extras` in
+`experiments/ait_clean/run_ait_clean.py`. The reason is that Part 28 needed
+all three -- its test sets are 60.2% and 90.0% attack, so macro-averaged and
+prevalence-bound metrics alone cannot describe a system there -- while Part
+28's standing rules freeze `prismflow/` to import-only. Adding them to
+`compute_metrics` would have required editing a frozen module, so the rule
+this document states and the rule the Part states could not both be followed.
+
+What keeps the exception narrow:
+
+- `part28_extras` is one function, and every Part 28 row goes through it: both
+  systems and the majority-class baseline, so the comparison stays like for
+  like (`tests/unit/test_ait_clean.py::test_baseline_and_systems_go_through_the_same_metric_code`).
+- Everything `compute_metrics` already provides still comes from it. Part 28
+  calls `evaluate()` as usual and asserts its own rows agree with
+  `evaluate()`'s output seed by seed on `accuracy`, `macro_f1`, `brier`,
+  `prob_ece`, `prob_aurc` and `n_samples`.
+- Balanced accuracy is pinned to the frozen code: for K = 2 with both classes
+  present it must equal `macro_precision_recall_f1`'s `macro_recall`, which
+  `test_balanced_accuracy_equals_macro_recall_when_both_classes_present`
+  checks.
+
+**Parts 29 and 30 must import `part28_extras` and must not reimplement it.**
+Three experiments each writing their own ROC AUC is exactly the divergence
+this document exists to prevent, and the exception is a single shared
+function or it is nothing.
+
+**`compute_metrics` may gain these metrics only in a later Part that is
+explicitly authorised to unfreeze `prismflow/`.** Not as a side effect of a
+Part whose scope is something else. When that happens, `part28_extras` is
+deleted and every experiment that used it is re-run, so no number in the
+project is left having been produced by code that no longer exists.
