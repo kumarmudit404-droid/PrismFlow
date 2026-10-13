@@ -1053,21 +1053,42 @@ def aggregate_by_dns_side(system_record: dict, cfg: dict) -> dict:
     out = {}
     for label, rows in groups.items():
         assert_no_pooling(rows, f"aggregate_by_dns_side[{label}]")
+        subsets = sorted({"+".join(r["compromised_views"]) for r in rows})
+        per_subset = {
+            views: summarise_rows(
+                [r for r in rows if "+".join(r["compromised_views"]) == views], ATTACK_KEYS
+            )
+            for views in subsets
+        }
+        # The group `summary` pools rows over SUBSETS AND SEEDS, so its std is
+        # not a 5-seed std -- it mixes subset-to-subset variation with
+        # seed-to-seed variation. `per_subset` holds the 5-seed quantity the
+        # contract's 5-SEED RULE is about. Both are kept, and `pooled_over`
+        # names what the group std actually spans so no table can present it
+        # as a seed spread.
         out[label] = {
             "dns_compromised": bool(rows[0]["dns_compromised"]),
             "k": rows[0]["k"],
             "kind": rows[0]["kind"],
             "epsilon": rows[0]["epsilon"],
             "beta": rows[0].get("beta"),
-            "n_subsets": len({tuple(r["compromised_views"]) for r in rows}),
+            "n_subsets": len(subsets),
+            "n_seeds_per_subset": len({r["seed"] for r in rows}),
             "n_rows": len(rows),
+            "pooled_over": "subsets and seeds",
             "summary": summarise_rows(rows, ATTACK_KEYS),
-            "per_subset": {
-                views: summarise_rows(
-                    [r for r in rows if "+".join(r["compromised_views"]) == views], ATTACK_KEYS
-                )
-                for views in sorted({"+".join(r["compromised_views"]) for r in rows})
+            "across_subset_spread": {
+                key: summarise_rows(
+                    [
+                        {key: per_subset[views][key]["mean"]}
+                        for views in subsets
+                        if per_subset[views][key]["n_seeds"] > 0
+                    ],
+                    (key,),
+                )[key]
+                for key in ATTACK_KEYS
             },
+            "per_subset": per_subset,
         }
     return out
 
@@ -1145,37 +1166,93 @@ def fmt_paired(entry) -> str:
 
 
 def population_rows(record: dict) -> list[str]:
-    """Test A. One row per population, with the window count IN every cell."""
+    """Test A. One row per population, with the window count IN every cell.
+
+    A population whose dependence matrix came back degenerate prints
+    `not measured` for the dependence-derived columns rather than the pinned
+    value, and the pinned value is stated once below the table as the
+    estimator's ceiling. Printing 5.0000 +/- 0.0000 in the cell would read as
+    "measured, and the views are perfectly independent", which is the one
+    thing it does not mean.
+    """
     lines = [
-        "| population | windows | ENIV (eigen) | ENIV (design effect) | mean dependence | detector mean score |",
+        "| population | windows | ENIV (eigen) | ENIV (design effect) "
+        "| mean dependence | detector mean score |",
         "|---|---|---|---|---|---|",
     ]
     order = ("benign", "dnsteal_only", "multi_step", "exfiltration_service_only")
+    degenerate_seen = []
     for population in order:
         block = record["natural_windows"].get(population)
         if block is None:
             continue
         n = block["n_windows"]
         summary = block["summary"]
+        degenerate = any(row.get("dependence_degenerate") for row in block["per_seed"])
 
-        def cell(key: str) -> str:
-            text = fmt(summary.get(key))
-            # The brief: the count goes in the cell itself, not in a caption.
-            return f"{text} (n={n})" if text != NOT_MEASURED else f"{NOT_MEASURED} (n={n})"
+        def cell(key: str, dependence_derived: bool = True) -> str:
+            # The brief: the window count goes in the cell itself, never only
+            # in a caption. The seed count rides along so a 5-seed mean and a
+            # 1-seed mean cannot be confused.
+            if degenerate and dependence_derived:
+                return f"{NOT_MEASURED} (n={n} windows, degenerate)"
+            entry = summary.get(key)
+            text = fmt(entry)
+            if text == NOT_MEASURED:
+                return f"{NOT_MEASURED} (n={n} windows)"
+            seeds = entry.get("n_seeds") if isinstance(entry, dict) else None
+            # fmt already carries "(n=<seeds>)"; relabel it so the two counts
+            # in one cell are not both bare "n=".
+            text = text.replace(f"(n={seeds})", f"({seeds} seeds)")
+            return f"{text}, n={n} windows"
 
-        degenerate = any(
-            row.get("dependence_degenerate") for row in block["per_seed"]
-        )
+        if degenerate:
+            degenerate_seen.append((population, n))
         name = f"`{population}`" + (" **DEGENERATE**" if degenerate else "")
         lines.append(
             f"| {name} | {n} | {cell('eniv_eigen')} | {cell('eniv_design_effect')} "
-            f"| {cell('mean_dependence_eigen')} | {cell('suspicion_mean_score')} |"
+            f"| {cell('mean_dependence_eigen')} "
+            f"| {cell('suspicion_mean_score', dependence_derived=False)} |"
         )
+
+    if degenerate_seen:
+        named = ", ".join(f"`{p}` (n={n})" for p, n in degenerate_seen)
+        lines += [
+            "",
+            f"**DEGENERATE: {named}.** At these sample sizes every off-diagonal "
+            f"dependence entry comes back exactly 0, so ENIV pins at the view "
+            f"count (5.0000) and the efficiency ratio at 1.0 in all 5 seeds, "
+            f"with std exactly 0. That is the estimator reporting that it had "
+            f"nothing to work with, NOT a measurement that the five views are "
+            f"independent on these windows. The raw pinned values are in "
+            f"`results.json`; they are not a finding and must not be quoted as "
+            f"one.",
+        ]
     return lines
 
 
+def fmt_pooled(entry, group: dict, places: int = 4) -> str:
+    """`mean +/- std (S subsets x N seeds)`.
+
+    The group std pools subset-to-subset with seed-to-seed variation, so it is
+    NOT the 5-seed std the contract's 5-SEED RULE speaks of. The cell says how
+    many subsets and how many seeds it spans, and the per-subset tables carry
+    the 5-seed figures.
+    """
+    text = fmt(entry, places)
+    if text == NOT_MEASURED:
+        return NOT_MEASURED
+    rows = entry.get("n_seeds") if isinstance(entry, dict) else None
+    span = f"{group['n_subsets']}x{group['n_seeds_per_subset']}"
+    return text.replace(f"(n={rows})", f"({span})")
+
+
 def dns_side_table(record: dict, kind: str, epsilon: float, beta: float | None) -> list[str]:
-    """Test B, one grid point, both dns sides kept apart in separate rows."""
+    """Test B, one grid point, both dns sides kept apart in separate rows.
+
+    Counts in each cell are `subsets x seeds`. No row combines the two dns
+    sides; `aggregate_by_dns_side` has already refused to build such a group.
+    """
     lines = [
         "| k | dns in compromised set | subsets | attack success | ENIV (eigen) "
         "| dependence among compromised | detector ROC AUC |",
@@ -1194,17 +1271,69 @@ def dns_side_table(record: dict, kind: str, epsilon: float, beta: float | None) 
             summary = group["summary"]
             lines.append(
                 f"| {k} | {side_text} | {group['n_subsets']} "
-                f"| {fmt(summary.get('attack_success'))} "
-                f"| {fmt(summary.get('eniv_eigen'))} "
-                f"| {fmt(summary.get('dependence_compromised'))} "
-                f"| {fmt(summary.get('detector_auc'))} |"
+                f"| {fmt_pooled(summary.get('attack_success'), group)} "
+                f"| {fmt_pooled(summary.get('eniv_eigen'), group)} "
+                f"| {fmt_pooled(summary.get('dependence_compromised'), group)} "
+                f"| {fmt_pooled(summary.get('detector_auc'), group)} |"
             )
+    lines += [
+        "",
+        "Counts are `subsets x seeds`. **These +/- values pool subset-to-subset "
+        "variation with seed-to-seed variation**, so a cell spanning more than "
+        "one subset is not a 5-seed spread; the per-subset tables below carry "
+        "the 5-seed figures.",
+    ]
+    return lines
+
+
+def per_subset_table(record: dict, kind: str, epsilon: float, beta: float | None) -> list[str]:
+    """Every individual subset at one grid point, 5 seeds each, dns side shown.
+
+    The brief asks for the per-subset values and not only the aggregate, and
+    this is the table the 5-SEED RULE applies to: each row is one compromised
+    set over 5 seeds.
+    """
+    lines = [
+        "| compromised views | k | dns | attack success (5 seeds) "
+        "| ENIV (eigen) | dependence among compromised | detector ROC AUC |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    rows: list[tuple] = []
+    for label, group in record["by_dns_side"].items():
+        if (
+            group["kind"] != kind
+            or group["epsilon"] != epsilon
+            or (kind == "chorus" and group["beta"] != beta)
+        ):
+            continue
+        for views, summary in group["per_subset"].items():
+            rows.append((group["k"], not group["dns_compromised"], views, group, summary))
+    for k, _, views, group, summary in sorted(rows, key=lambda r: (r[0], r[1], r[2])):
+        lines.append(
+            f"| `{views}` | {k} | {'**yes**' if group['dns_compromised'] else 'no'} "
+            f"| {fmt(summary.get('attack_success'))} "
+            f"| {fmt(summary.get('eniv_eigen'))} "
+            f"| {fmt(summary.get('dependence_compromised'))} "
+            f"| {fmt(summary.get('detector_auc'))} |"
+        )
     return lines
 
 
 def write_report(results: dict, cfg: dict, path: Path) -> None:
-    """results/ait_attack/summary.md. The README quotes this file."""
+    """results/ait_attack/summary.md. The README quotes this file.
+
+    `by_dns_side` is RECOMPUTED here from `cells[*].per_seed` rather than read
+    from the stored copy. The per-seed rows are the authoritative record; the
+    dns-side aggregate is derived from them, so recomputing keeps the report
+    correct against a results.json written by an earlier version of the
+    aggregation, and runs `assert_no_pooling` again over the stored data as a
+    second check that nothing in the file mixes the two dns sides.
+    """
     seeds = results["seeds"]
+    for direction in results["directions"].values():
+        for system in direction.get("systems", {}).values():
+            if "cells" in system:
+                system["by_dns_side"] = aggregate_by_dns_side(system, cfg)
     lines = [
         "# Part 29 - attack and detection on real AIT data",
         "",
@@ -1319,9 +1448,23 @@ def write_report(results: dict, cfg: dict, path: Path) -> None:
             title = f"{kind}, epsilon {epsilon}" + (
                 f", beta {beta}" if kind == "chorus" else ""
             )
+            primary = (
+                kind == "chorus"
+                and epsilon == cfg["attack"]["beta_sweep_epsilon"]
+                and beta == cfg["attack"]["beta_primary"]
+            )
             for system_name, system in systems.items():
                 lines += [f"### {title} - {system_name}", ""]
                 lines += dns_side_table(system, kind, epsilon, beta) + [""]
+                if primary:
+                    # The primary cell gets every subset listed individually,
+                    # 5 seeds each. Printed only here to keep the file
+                    # readable; results.json has per_subset for every cell.
+                    lines += [
+                        f"#### Every subset at the primary cell - {system_name}",
+                        "",
+                    ]
+                    lines += per_subset_table(system, kind, epsilon, beta) + [""]
 
         lines += [
             "### Paired prismflow - naive, per cell, within the dns split",
