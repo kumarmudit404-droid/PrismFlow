@@ -1102,6 +1102,339 @@ def paired_by_cell(naive: dict, prismflow: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Report. Every number in the README comes from here, not from a hand copy.
+# ---------------------------------------------------------------------------
+
+
+def fmt(entry, places: int = 4) -> str:
+    """`mean +/- std (n seeds)`, or `not measured` with nothing invented.
+
+    A key that was never computed, or whose every seed was NaN, prints
+    `not measured`. It never prints 0, and it never prints a mean without
+    saying how many seeds are behind it.
+    """
+    if entry is None:
+        return NOT_MEASURED
+    if isinstance(entry, dict):
+        if entry.get("status") == NOT_MEASURED or entry.get("n_seeds", 0) == 0:
+            return NOT_MEASURED
+        mean, std, n = entry.get("mean"), entry.get("std"), entry.get("n_seeds")
+        if mean is None or (isinstance(mean, float) and math.isnan(mean)):
+            return NOT_MEASURED
+        if std is None or (isinstance(std, float) and math.isnan(std)):
+            return f"{mean:.{places}f} (n={n})"
+        return f"{mean:.{places}f} +/- {std:.{places}f} (n={n})"
+    if isinstance(entry, float) and math.isnan(entry):
+        return NOT_MEASURED
+    return f"{entry:.{places}f}"
+
+
+def fmt_paired(entry) -> str:
+    """`+d.dddd +/- s (m/n seeds favour prismflow)`.
+
+    The seed count is never dropped: a mean near zero with 5/5 seeds on one
+    side is a different statement from a mean near zero with 2/5, and Part 28's
+    `paired_difference` keeps the per-seed signs for exactly that reason.
+    """
+    if not entry or entry.get("n_seeds", 0) == 0:
+        return NOT_MEASURED
+    mean, std = entry["mean"], entry.get("std")
+    favouring, n = entry.get("n_seeds_favouring_prismflow"), entry["n_seeds"]
+    std_text = "" if std is None or math.isnan(std) else f" +/- {std:.4f}"
+    return f"{mean:+.4f}{std_text} ({favouring}/{n})"
+
+
+def population_rows(record: dict) -> list[str]:
+    """Test A. One row per population, with the window count IN every cell."""
+    lines = [
+        "| population | windows | ENIV (eigen) | ENIV (design effect) | mean dependence | detector mean score |",
+        "|---|---|---|---|---|---|",
+    ]
+    order = ("benign", "dnsteal_only", "multi_step", "exfiltration_service_only")
+    for population in order:
+        block = record["natural_windows"].get(population)
+        if block is None:
+            continue
+        n = block["n_windows"]
+        summary = block["summary"]
+
+        def cell(key: str) -> str:
+            text = fmt(summary.get(key))
+            # The brief: the count goes in the cell itself, not in a caption.
+            return f"{text} (n={n})" if text != NOT_MEASURED else f"{NOT_MEASURED} (n={n})"
+
+        degenerate = any(
+            row.get("dependence_degenerate") for row in block["per_seed"]
+        )
+        name = f"`{population}`" + (" **DEGENERATE**" if degenerate else "")
+        lines.append(
+            f"| {name} | {n} | {cell('eniv_eigen')} | {cell('eniv_design_effect')} "
+            f"| {cell('mean_dependence_eigen')} | {cell('suspicion_mean_score')} |"
+        )
+    return lines
+
+
+def dns_side_table(record: dict, kind: str, epsilon: float, beta: float | None) -> list[str]:
+    """Test B, one grid point, both dns sides kept apart in separate rows."""
+    lines = [
+        "| k | dns in compromised set | subsets | attack success | ENIV (eigen) "
+        "| dependence among compromised | detector ROC AUC |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for k in (1, 2, 3):
+        for side, side_text in ((True, "**yes**"), (False, "no")):
+            label = (
+                f"{kind}_k{k}_eps{epsilon}"
+                + (f"_beta{beta}" if kind == "chorus" else "")
+                + f"__{'dns_compromised' if side else 'dns_not_compromised'}"
+            )
+            group = record["by_dns_side"].get(label)
+            if group is None:
+                continue
+            summary = group["summary"]
+            lines.append(
+                f"| {k} | {side_text} | {group['n_subsets']} "
+                f"| {fmt(summary.get('attack_success'))} "
+                f"| {fmt(summary.get('eniv_eigen'))} "
+                f"| {fmt(summary.get('dependence_compromised'))} "
+                f"| {fmt(summary.get('detector_auc'))} |"
+            )
+    return lines
+
+
+def write_report(results: dict, cfg: dict, path: Path) -> None:
+    """results/ait_attack/summary.md. The README quotes this file."""
+    seeds = results["seeds"]
+    lines = [
+        "# Part 29 - attack and detection on real AIT data",
+        "",
+        f"Produced by `experiments/ait_attack/run_ait_attack.py` with "
+        f"`experiments/ait_attack/config.yaml`, commit `{results.get('commit')}`.",
+        "",
+    ]
+    if results.get("not_evidence"):
+        lines += [
+            f"## NOT EVIDENCE",
+            "",
+            f"This run used {len(seeds)} seed(s), below the contract's 5-seed "
+            f"minimum. Every number here is a plumbing check and must never be "
+            f"reported as a finding.",
+            "",
+        ]
+
+    lines += [
+        "## What the label means",
+        "",
+        results["label_meaning"],
+        "",
+        "## What a seed varies, and what it does not",
+        "",
+        "Train and test are whole scenarios, so a seed cannot redraw or "
+        "re-partition the data. A seed selects the model's parameter "
+        "initialisation and the minibatch order of every training epoch. "
+        "**Every +/- below is initialisation-and-batch-order variance on a "
+        "fixed pair of scenarios.** It is not dataset variance and it is not a "
+        "spread over independent attacks: the test sets hold 3 (`santos`) and "
+        "1 (`russellmitchell`) independent contiguous attack blocks "
+        "(`docs/KNOWN_LIMITATIONS.md` L16).",
+        "",
+        "## The dns split, and why nothing is pooled across it",
+        "",
+        "`docs/KNOWN_LIMITATIONS.md` L17: one view solves this label. So every "
+        "test-B number below is reported separately for compromised sets that "
+        "contain `dns` and sets that do not. There is no row, mean or verdict "
+        "anywhere in this file that averages the two, and "
+        "`assert_no_pooling` raises rather than produce one.",
+        "",
+    ]
+
+    for name, direction in results["directions"].items():
+        lines += [
+            "---",
+            "",
+            f"# Direction {name}",
+            "",
+            f"{direction['label']}. Train n = {direction['n_train']:,}, "
+            f"test n = {direction['n_test']:,} (`label_known` rows only).",
+            "",
+        ]
+        systems = direction["systems"]
+        reference = systems.get("prismflow") or next(iter(systems.values()))
+
+        lines += ["## Feature scale, and why epsilon is not rescaled", ""]
+        scale = reference["feature_scale"]
+        lines += [
+            "| view | std | IQR | median abs | max abs | present rows |",
+            "|---|---|---|---|---|---|",
+        ]
+        for view, row in scale["per_view"].items():
+            if row.get("std") == NOT_MEASURED:
+                lines.append(f"| `{view}` | {NOT_MEASURED} | | | | |")
+                continue
+            lines.append(
+                f"| `{view}` | {row['std']:.4f} | {row['iqr']:.4f} "
+                f"| {row['median_abs']:.4f} | {row['max_abs']:.2f} | {row['n_present']:,} |"
+            )
+        lines += [
+            "",
+            f"Median per-view std **{scale['median_per_view_std']:.4f}** against "
+            f"Part 09's synthetic reference **{scale['synthetic_reference_std']}**, "
+            f"range {scale['min_per_view_std']:.4f} to {scale['max_per_view_std']:.4f}. "
+            f"Epsilon is **not rescaled**; `config.yaml` records why.",
+            "",
+        ]
+
+        lines += [
+            "## Test A: natural windows, no synthetic perturbation",
+            "",
+            "The two attack-window populations are reported separately and "
+            "never pooled. `multi_step` uses the STRICT definition (a step "
+            "outside `EXFILTRATION_TOOL_STEPS`).",
+            "",
+            reference["populations"]["partition_note"],
+            "",
+            f"**{HANDFUL_CAVEAT}**",
+            "",
+        ]
+        for system_name, system in systems.items():
+            lines += [f"### {system_name}", ""] + population_rows(system) + [""]
+
+        lines += ["## Test B: chorus attack, split by whether dns is compromised", ""]
+        sampling = reference["subset_sampling"]
+        lines += [
+            f"Subsets: **{sampling['enumerated']}**, {sampling['n_subsets']} in "
+            f"total ({sampling['n_with_dns']} containing `dns`, "
+            f"{sampling['n_without_dns']} not). Sampled: "
+            f"**{sampling['sampled']}**. {sampling['note']}",
+            "",
+        ]
+        for kind, epsilon, beta in sorted(
+            {
+                (c["kind"], c["epsilon"], c["beta"])
+                for c in reference["cells"].values()
+                if c.get("kind") in ("chorus", "pgd")
+            },
+            key=lambda t: (t[0], t[1], t[2] if t[2] is not None else -1.0),
+        ):
+            title = f"{kind}, epsilon {epsilon}" + (
+                f", beta {beta}" if kind == "chorus" else ""
+            )
+            for system_name, system in systems.items():
+                lines += [f"### {title} - {system_name}", ""]
+                lines += dns_side_table(system, kind, epsilon, beta) + [""]
+
+        lines += [
+            "### Paired prismflow - naive, per cell, within the dns split",
+            "",
+            "Negative attack success would mean the discount defends. The "
+            "seed count beside each mean is how many of the seeds favour "
+            "PrismFlow.",
+            "",
+            "| cell | k | dns compromised | attack success (pf - naive) |",
+            "|---|---|---|---|",
+        ]
+        for key, paired in sorted(direction.get("paired_prismflow_minus_naive", {}).items()):
+            if paired.get("kind") not in ("chorus", "pgd"):
+                continue
+            diff = paired.get("diff", {}).get("attack_success")
+            lines.append(
+                f"| `{key}` | {paired.get('k')} "
+                f"| {'yes' if paired.get('dns_compromised') else 'no'} "
+                f"| {fmt_paired(diff)} |"
+            )
+        lines.append("")
+
+        lines += [
+            "## Test C: honest duplication",
+            "",
+            "### Strict same-sensor pairs: NO EVIDENCE",
+            "",
+            results["sensor_group_check"]["reason"],
+            "",
+            f"### Additionally, a different quantity: \"{NATURAL_DEPENDENCE_LABEL}\"",
+            "",
+        ]
+        pairs = reference["pairs"]
+        lines += [
+            f"Pairs read from `{pairs['source']}`, not re-derived. Most "
+            f"dependent: {', '.join('`' + p + '`' for p in pairs['most_dependent'])}. "
+            f"Least dependent: {', '.join('`' + p + '`' for p in pairs['least_dependent'])}. "
+            f"Both systems agree on the ordering: **{pairs['systems_agree_on_ordering']}**.",
+            "",
+            pairs["caveat"],
+            "",
+            "| system | AUC most-dependent over least-dependent (clean data) |",
+            "|---|---|",
+        ]
+        for system_name, system in systems.items():
+            lines.append(
+                f"| {system_name} | "
+                f"{fmt(system['natural_dependence']['summary'].get('auc_most_over_least'))} |"
+            )
+        example = reference["natural_dependence"]["per_seed"][0]
+        lines += [
+            "",
+            example.get("construction", ""),
+            "",
+            "Per-pair mean unexplained agreement on clean data, PrismFlow, "
+            "seed-0 row shown with its committed Part 28 dependence beside it:",
+            "",
+            "| pair | committed dependence (Part 28) | mean excess | measurable samples |",
+            "|---|---|---|---|",
+        ]
+        for pair, row in example.get("per_pair", {}).items():
+            committed = row["committed_dependence"]
+            lines.append(
+                f"| `{pair}` | {committed['mean']:.4f} +/- {committed['std']:.4f} "
+                f"| {row['mean_excess']:.4f} | {row['n_measurable']:,} / {row['n_total']:,} |"
+            )
+        lines.append("")
+
+        lines += [
+            "## Test D: extra missingness, on top of the natural rate",
+            "",
+            "`auth` is already absent in 47.1-47.5% of windows and `apache` in "
+            "18.0-27.5% (`results/ait_clean/results.json`, "
+            "`directions.<name>.missingness`), so these rates are ADDITIONAL, "
+            "not total.",
+            "",
+            "| system | condition | detector ROC AUC | detection @5% | detection @1% | balanced accuracy |",
+            "|---|---|---|---|---|---|",
+        ]
+        for system_name, system in systems.items():
+            for rate in cfg["missingness"]["rates"]:
+                cell = system["cells"].get(f"missing_{int(round(rate * 100))}")
+                if cell is None:
+                    continue
+                summary = cell["summary"]
+                lines.append(
+                    f"| {system_name} | +{int(round(rate * 100))}% masked "
+                    f"| {fmt(summary.get('detector_auc'))} "
+                    f"| {fmt(summary.get('detect_at_5pct'))} "
+                    f"| {fmt(summary.get('detect_at_1pct'))} "
+                    f"| {fmt(summary.get('balanced_accuracy'))} |"
+                )
+        lines += [
+            "",
+            "Clean reference, same seeds:",
+            "",
+            "| system | detector ROC AUC | balanced accuracy | ENIV (eigen) |",
+            "|---|---|---|---|",
+        ]
+        for system_name, system in systems.items():
+            summary = system["clean"]["summary"]
+            lines.append(
+                f"| {system_name} | {fmt(summary.get('detector_auc'))} "
+                f"| {fmt(summary.get('balanced_accuracy'))} "
+                f"| {fmt(summary.get('eniv_eigen'))} |"
+            )
+        lines.append("")
+
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    LOGGER.info("wrote %s", path)
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -1136,9 +1469,20 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Part 29: attack and detection on real AIT data")
     parser.add_argument("--quick", action="store_true",
                         help="2 seeds, k=1 only, one epsilon. SMOKE TEST, NOT EVIDENCE.")
+    parser.add_argument("--report", action="store_true",
+                        help="rewrite summary.md from the existing results.json and exit")
     args = parser.parse_args()
 
     cfg = yaml.safe_load(CONFIG_PATH.read_text())
+
+    if args.report:
+        root = Path(cfg["output"]["results_root"])
+        results_path = root / "results.json"
+        if not results_path.is_file():
+            raise SystemExit(f"no {results_path} to report on; run the experiment first")
+        write_report(json.loads(results_path.read_text()), cfg, root / "summary.md")
+        return
+
     if args.quick:
         cfg["seeds"] = cfg["seeds"][:2]
         cfg["attack"]["k_grid"] = [1]
@@ -1209,6 +1553,7 @@ def main() -> None:
 
     results["runtime_seconds"] = time.time() - started
     (root / "results.json").write_text(json.dumps(json_safe(results), indent=2))
+    write_report(results, cfg, root / "summary.md")
     LOGGER.info("wrote %s in %.1fs", root / "results.json", results["runtime_seconds"])
 
 
