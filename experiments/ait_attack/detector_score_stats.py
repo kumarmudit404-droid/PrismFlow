@@ -45,9 +45,11 @@ import yaml
 from experiments.ait_attack.run_ait_attack import (CONFIG_PATH, cell_key, detector_auc,
                                                    enumerate_subsets, prepare_direction,
                                                    run_cell, train_ait)
+from experiments.ait_attack.results_io import load_results
 from prismflow.models.defended import DefendedPrismFlow
 
-COMMITTED = Path("results/ait_attack/results.json")
+#: Logical name, not a path: see `results_io.load_results`.
+COMMITTED = "results.json"
 OUT = Path("results/ait_attack/detector_scores_subset.json")
 EPSILON, BETA = 1.0, 1.0
 
@@ -112,7 +114,9 @@ def aggregate(rows: list[dict], committed_cell: dict | None) -> dict:
 
 def main() -> None:
     cfg = yaml.safe_load(CONFIG_PATH.read_text())
-    committed = json.loads(COMMITTED.read_text())
+    committed = load_results(COMMITTED)
+    if committed is None:
+        raise SystemExit(f"missing {COMMITTED} (neither .json nor .json.gz)")
     out = {
         "scope": ("BOUNDED SUBSET: the 25 enumerated view subsets at chorus "
                   f"epsilon {EPSILON} beta {BETA}, plus clean and both missingness "

@@ -20,8 +20,13 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-NEW = Path("results/ait_attack/results.json")
-OLD = Path("results/ait_attack/results.3of4units_20261014_0022.json")
+from experiments.ait_attack.results_io import load_results, resolve
+
+#: Logical names, not paths: `load_results` prefers the raw `.json` on disk and
+#: falls back to the committed `.json.gz`, verifying either against
+#: `results_manifest.json` before it is used.
+NEW = "results.json"
+OLD = "results.3of4units_20261014_0022.json"
 OUT = Path("results/ait_attack/determinism_check.json")
 
 SHARED = (
@@ -133,16 +138,21 @@ def exhaustive_diff(new: dict, old: dict) -> dict:
 
 
 def main() -> None:
-    if not OLD.is_file():
-        raise SystemExit(f"{OLD} is missing; it is the retained 3-unit checkpoint")
-    new = json.loads(NEW.read_text())
-    old = json.loads(OLD.read_text())
+    new_path, old_path = resolve(NEW), resolve(OLD)
+    if old_path is None:
+        raise SystemExit(f"{OLD} is missing (neither .json nor .json.gz); it is the "
+                         "retained 3-unit checkpoint")
+    if new_path is None:
+        raise SystemExit(f"{NEW} is missing (neither .json nor .json.gz); "
+                         "run the experiment")
+    new = load_results(NEW)
+    old = load_results(OLD)
 
     report = {
         "question": ("Do the three units shared by the died 2026-10-13 run and the "
                      "completed 2026-10-14 run agree, given the runner has no resume "
                      "and recomputed them from scratch?"),
-        "new_file": str(NEW), "old_file": str(OLD),
+        "new_file": str(new_path), "old_file": str(old_path),
         "new_commit": new.get("commit"), "old_commit": old.get("commit"),
         "new_seeds": new.get("seeds"), "old_seeds": old.get("seeds"),
         "shared_units": [f"{d}/{s}" for d, s in SHARED],

@@ -16,10 +16,13 @@ Run:  PYTHONPATH=. .venv/Scripts/python.exe experiments/ait_attack/make_readme.p
 """
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
 import numpy as np
+
+from experiments.ait_attack.results_io import load_results, resolve
 
 ROOT = Path("results/ait_attack")
 OUT = Path("experiments/ait_attack/README.md")
@@ -40,6 +43,7 @@ PART10_L5 = {
 
 
 def load(name: str):
+    """Load a sidecar measurement. Small, committed raw, not hash-pinned."""
     path = ROOT / name
     if not path.is_file():
         return None
@@ -100,7 +104,32 @@ def header(cols: list[str]) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def section_epsilon(results: dict) -> list[str]:
+#: The one attack cell the perturbed-cell fractions are read from. The padding
+#: audit attacks each view ALONE at k=1, seed 0, so the fraction below is "this
+#: view, compromised on its own". It is a structural measurement at one seed,
+#: not a 5-seed finding -- see audit_padding.py's own seed note.
+PERTURBED_CELL_ATTACK = "chorus_eps1.0"
+
+
+def perturbed_fractions(audit, dname: str) -> dict:
+    """Per-view `native_cells_perturbed / native_cells` for one direction."""
+    if not audit:
+        return {}
+    record = audit.get("directions", {}).get(dname, {})
+    out = {}
+    for view, entry in record.get("per_view", {}).items():
+        cell = entry.get("attacks", {}).get(PERTURBED_CELL_ATTACK)
+        if not cell:
+            continue
+        total = cell.get("native_cells")
+        moved = cell.get("native_cells_perturbed")
+        if not total or moved is None:
+            continue
+        out[view] = (moved, total, moved / total)
+    return out
+
+
+def section_epsilon(results: dict, audit) -> list[str]:
     """Item (c): epsilon 1.0 in per-view std units, both directions."""
     out = ["## 3. What epsilon 1.0 is worth, per view and per direction", "",
            "`attack.epsilon_rescaled` is **false** in `config.yaml`: Part 09's grid "
@@ -108,30 +137,122 @@ def section_epsilon(results: dict) -> list[str]:
            "per-view std is measured below. A fixed epsilon is therefore a "
            "DIFFERENT relative perturbation in each view. `epsilon 1.0 in std "
            "units` is `1.0 / std`, so a larger number means the same epsilon moves "
-           "that view further relative to its own spread.", ""]
+           "that view further relative to its own spread.", "",
+           "The last column is a DIFFERENT quantity and must not be read as attack "
+           "strength: it is the fraction of that view's NATIVE feature cells the "
+           "attack actually moves when that view is compromised alone "
+           f"(`{PERTURBED_CELL_ATTACK}`, k=1, seed 0, from `padding_audit.json`). "
+           "A cell is left untouched where the objective's gradient is exactly "
+           "zero, since the step is `epsilon * sign(gradient)`. The denominator is "
+           "every native cell in the test set, so windows in which the view is "
+           "absent are inside it. One seed, structural, NOT a 5-seed finding.", ""]
+
+    in_std: dict = {}
+    fractions: dict = {}
+    stds: dict = {}
     for dname, record in results["directions"].items():
         scale = record["systems"]["naive"]["feature_scale"]
+        frac = perturbed_fractions(audit, dname)
+        fractions[dname] = frac
         out += [f"### {dname} (test scenario `{record['test_scenario']}`, "
                 f"n = {record['n_test']} windows)", ""]
         out += header(["view", "std", "IQR", "median abs", "max abs",
-                       "windows present", "epsilon 1.0 in std units"])
+                       "windows present", "epsilon 1.0 in std units",
+                       "native cells perturbed"])
+        per_view_std = {}
         for view, entry in scale["per_view"].items():
             std = entry.get("std")
-            in_std = (1.0 / std) if isinstance(std, (int, float)) and std else None
+            per_view_std[view] = std
+            ratio = (1.0 / std) if isinstance(std, (int, float)) and std else None
+            if view == "dns":
+                in_std[dname] = ratio
             name = f"**`{view}`**" if view == "dns" else f"`{view}`"
+            if view in frac:
+                moved, total, share = frac[view]
+                moved_text = f"{moved} / {total} = {share:.4f}"
+            else:
+                moved_text = NOT_MEASURED
             out.append(line([name, fmt(std), fmt(entry.get("iqr")),
                              fmt(entry.get("median_abs")), fmt(entry.get("max_abs")),
-                             str(entry.get("n_present", NOT_MEASURED)), fmt(in_std)]))
+                             str(entry.get("n_present", NOT_MEASURED)), fmt(ratio),
+                             moved_text]))
+        stds[dname] = per_view_std
+        measured = {v: x for v, x in per_view_std.items()
+                    if isinstance(x, (int, float))}
         out += ["",
                 f"min / median / max per-view std: {fmt(scale['min_per_view_std'])} / "
                 f"{fmt(scale['median_per_view_std'])} / {fmt(scale['max_per_view_std'])}; "
                 f"Part 09's synthetic reference std was "
-                f"{fmt(scale['synthetic_reference_std'], 1)}.", ""]
+                f"{fmt(scale['synthetic_reference_std'], 1)}."]
+        if measured:
+            smallest = min(measured, key=measured.get)
+            tail = "."
+            if "dns" in measured:
+                rank = sorted(measured, key=measured.get).index("dns") + 1
+                tail = (f", which is rank {rank} of {len(measured)} by std "
+                        f"(1 = smallest).")
+            out.append(f"Smallest std in this direction: `{smallest}` "
+                       f"({fmt(measured[smallest])}). `dns` is "
+                       f"{fmt(measured.get('dns'))}{tail}")
+        out.append("")
+
+    # The claim this section used to make -- that `dns` has the smallest std in
+    # BOTH directions -- is false. It is now derived, not asserted.
+    smallest_per_direction = {}
+    for dname, per_view_std in stds.items():
+        measured = {v: x for v, x in per_view_std.items()
+                    if isinstance(x, (int, float))}
+        if measured:
+            smallest_per_direction[dname] = min(measured, key=measured.get)
+    dns_smallest = [d for d, v in smallest_per_direction.items() if v == "dns"]
+    dns_not = [d for d, v in smallest_per_direction.items() if v != "dns"]
+
     out += ["`dns` is named deliberately: it is the one view that solves this label "
-            "([[L17]]), and it has the SMALLEST std in both directions, so epsilon "
-            "1.0 is the largest relative perturbation of any view exactly where the "
-            "label lives. `audit` is the opposite extreme. Any reading of the "
-            "epsilon grid as a single attack strength across views is wrong.", ""]
+            "([[L17]]). **It does NOT have the smallest per-view std in both "
+            "directions.**"]
+    for dname in dns_not:
+        winner = smallest_per_direction[dname]
+        measured = {v: x for v, x in stds[dname].items()
+                    if isinstance(x, (int, float))}
+        out.append(f"- In **{dname}** the smallest std is `{winner}` "
+                   f"({fmt(measured[winner])}); `dns` is "
+                   f"{fmt(measured.get('dns'))}.")
+    for dname in dns_smallest:
+        measured = {v: x for v, x in stds[dname].items()
+                    if isinstance(x, (int, float))}
+        out.append(f"- In **{dname}** `dns` IS the smallest ({fmt(measured['dns'])}).")
+    out.append("")
+
+    names = list(in_std)
+    if len(names) == 2 and all(in_std[n] for n in names):
+        a, b = names
+        ratio = in_std[b] / in_std[a]
+        bigger, smaller = (b, a) if ratio >= 1 else (a, b)
+        out += [f"Epsilon 1.0 equals **{fmt(in_std[a], 3)} of the `dns` std in {a}** "
+                f"and **{fmt(in_std[b], 3)} of the `dns` std in {b}**, so the "
+                f"relative perturbation on `dns` is about "
+                f"{max(ratio, 1 / ratio):.1f} times larger in {bigger} than in "
+                f"{smaller}. **Cross-direction comparisons of attack success are "
+                f"confounded by this.** The same epsilon is not the same attack on "
+                f"the view that carries the label, so reading {bigger}'s higher "
+                f"attack success as a property of that scenario pair alone is "
+                f"unsupported.", ""]
+
+    dns_shares = {}
+    for dname, frac in fractions.items():
+        if frac.get("dns"):
+            dns_shares[dname] = frac["dns"][2]
+    if dns_shares:
+        worded = ", ".join(f"{d} {share:.4f}" for d, share in dns_shares.items())
+        out += [f"The two right-hand columns point opposite ways on `dns`, and both "
+                f"belong in any reading of this grid: a fixed epsilon is a large "
+                f"perturbation relative to the `dns` spread, yet the attack moves "
+                f"only a small share of `dns` cells at all ({worded}), the smallest "
+                f"share of any view in either direction. `audit` is at the opposite "
+                f"end on both counts.", ""]
+
+    out += ["Any reading of the epsilon grid as a single attack strength across "
+            "views, or across the two directions, is wrong.", ""]
     return out
 
 
@@ -728,29 +849,31 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
                        f"against {lo_n:.4f}..{hi_n:.4f} without it.")
     out += ["", "**Verdict: L17 is confirmed and it governs this whole Part.** "
             "Whether `dns` is in the compromised set changes the attack-success "
-            "range by more than k, epsilon or beta do. `dns` also has the smallest "
-            "per-view std in both directions (section 3), so a fixed epsilon is the "
-            "largest relative perturbation precisely on the view that carries the "
-            "label. **Consequence: no number in this Part is evidence about "
+            "range by more than k, epsilon or beta do. The epsilon grid is also "
+            "not comparable across the two directions on this view: epsilon 1.0 "
+            "is a far larger perturbation relative to the `dns` spread in "
+            "B_santos_to_rm than in A_rm_to_santos, and `dns` has the smallest "
+            "per-view std only in B, not in both directions (section 3). "
+            "**Consequence: no number in this Part is evidence about "
             "multi-view fusion.** It is evidence about perturbing the one view that "
             "solves a single-view task, plus four views that are close to useless "
             "on it.", ""]
     return out
 
 
-def section_evidence(results: dict) -> list[str]:
+def section_evidence(results: dict, manifest) -> list[str]:
     out = ["## 10. Retained run evidence", "",
            "Nothing from the failed and completed runs was deleted. These files are "
            "kept deliberately and are not findings:", ""]
     out += header(["file", "what it is", "status"])
     rows = [
-        ("`results/ait_attack/results.json`",
+        ("`results/ait_attack/results.json.gz`",
          "the completed run: 4 units, 5 seeds each, commit "
          f"`{results.get('commit')}`", "**the result**"),
         ("`results/ait_attack/summary.md`",
          "the runner's own report, regenerated at the end of the completed run",
          "**the result**"),
-        ("`results/ait_attack/results.3of4units_20261014_0022.json`",
+        ("`results/ait_attack/results.3of4units_20261014_0022.json.gz`",
          "the 2026-10-13 run's last checkpoint: 3 of 4 units, written 00:22 before "
          "that run died at 00:43", "run evidence, superseded"),
         ("`results/ait_attack/results.A_naive_checkpoint.json`",
@@ -768,6 +891,9 @@ def section_evidence(results: dict) -> list[str]:
         ("`results/ait_attack/detector_scores_subset.json`",
          "step 2: distinct scores and tie fractions, bounded subset, 5 seeds",
          "supporting measurement"),
+        ("`results/ait_attack/results_manifest.json`",
+         "the decompressed-json sha256 of each gzipped result file, and its raw "
+         "and gz sizes", "integrity record"),
         ("`logs/part29_20261014_080604.log`",
          "the completed run's log, one heartbeat line per attack cell",
          "run evidence"),
@@ -790,32 +916,77 @@ def section_evidence(results: dict) -> list[str]:
             "are retained on disk but NOT committed: `.gitignore` ignores "
             "`logs/*` except `.gitkeep`, the existing convention, unchanged for "
             "this Part. So a fresh clone has no per-cell heartbeat trail.", "",
-            "Two `results/` files are also held OUT of the commit despite the "
-            "convention tracking `results/*/*.json`, because each exceeds 10 MB "
-            "and the largest results file previously tracked anywhere in this "
-            "repository is 0.40 MB:", ""]
-    held = [("results.json", 25.69), ("results.3of4units_20261014_0022.json", 17.44)]
-    out += header(["file", "size", "status"])
-    for name, mb in held:
-        out.append(line([f"`results/ait_attack/{name}`", f"{mb:.2f} MB",
-                         "on disk, NOT committed - pending a repository decision"]))
+            "The two largest `results/` files exceed 10 MB as raw json, and the "
+            "largest results file tracked anywhere else in this repository is "
+            "0.40 MB. They are therefore committed as **gzip (`-9`)** rather "
+            "than raw json, which is the only departure from the convention "
+            "tracking `results/*/*.json`; `.gitignore` gains one line, "
+            "`!results/*/*.json.gz`, to allow it. Both are in the repository at "
+            "this commit:", ""]
+    entries = (manifest or {}).get("files", {})
+    out += header(["committed file", "raw json", "gzip -9", "sha256 of the "
+                   "DECOMPRESSED json"])
+    if entries:
+        for name, entry in entries.items():
+            raw_mb = entry.get("raw_bytes", 0) / 1_000_000
+            gz_mb = entry.get("gz_bytes", 0) / 1_000_000
+            out.append(line([f"`results/ait_attack/{entry.get('gz_name', name)}`",
+                             f"{raw_mb:.2f} MB", f"{gz_mb:.2f} MB",
+                             f"`{entry.get('sha256_decompressed_json', NOT_MEASURED)}`"]))
+    else:
+        out.append(line([NOT_MEASURED] * 4))
     out += ["",
-            "**Consequence, stated plainly: this README cites `results.json` "
-            "throughout and that file is not in the repository at this commit.** "
-            "Every number here is reproducible by re-running the experiment and "
-            "the four commands in section 2, and the committed sidecars "
-            "(`determinism_check.json`, `padding_audit.json`, "
-            "`detector_scores_subset.json`) carry the derived figures, but the "
-            "primary artefact itself is absent until that decision is made. The "
-            "smaller `results.A_naive_checkpoint.json` (4.45 MB) IS committed.",
+            "The digest above is of the json INSIDE the gzip, not of the gzip "
+            "stream. That is deliberate: a gzip stream's own sha256 is not a "
+            "stable identifier (`gzip -9 <file>` embeds the mtime and original "
+            "filename, and Python's `gzip` at the same level emits different "
+            "header bytes from GNU gzip's), whereas the decompressed json is "
+            "byte-identical by either route and is what every number in this "
+            "file is derived from. To verify a clone:", "",
+            "```sh",
+            "gzip -dc results/ait_attack/results.json.gz | sha256sum",
+            "gzip -dc results/ait_attack/results.3of4units_20261014_0022.json.gz \\",
+            "    | sha256sum",
+            "",
+            "# or, checking both against the manifest rather than by eye:",
+            "PYTHONPATH=. .venv/Scripts/python.exe \\",
+            "    -m experiments.ait_attack.results_io --verify",
+            "```", "",
+            "The three reader scripts (`make_readme.py`, `check_determinism.py`, "
+            "`detector_score_stats.py`) go through "
+            "`experiments/ait_attack/results_io.py`, which prefers a raw `.json` "
+            "when one is present on disk, falls back to the committed `.json.gz`, "
+            "and checks the bytes it parsed against "
+            "`results_manifest.json` before using them - a digest mismatch raises "
+            "rather than being reported. `run_ait_attack.py` is unchanged and "
+            "still writes raw json; the `.gz` and the manifest are produced after "
+            "a run by `results_io.py --write-manifest`. The uncompressed "
+            "`results.json` and `results.3of4units_20261014_0022.json` remain on "
+            "disk in the working copy and are listed in `.git/info/exclude` so "
+            "they cannot be committed by accident alongside the `.gz`. The "
+            "smaller `results.A_naive_checkpoint.json` (4.45 MB) is committed raw, "
+            "unchanged.",
             ""]
     return out
 
 
 def main() -> None:
-    results = load("results.json")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--results", default=None,
+                        help="explicit path to the run's results file, raw .json or "
+                             ".json.gz; default prefers the raw .json on disk and "
+                             "falls back to the committed .json.gz")
+    parser.add_argument("--out", default=None,
+                        help=f"write the README here instead of {OUT}")
+    args = parser.parse_args()
+    out_path = Path(args.out) if args.out else OUT
+
+    results = load_results("results.json", explicit=args.results)
     if results is None:
-        raise SystemExit("results/ait_attack/results.json is missing; run the experiment")
+        raise SystemExit("results/ait_attack/results.json[.gz] is missing; "
+                         "run the experiment")
+    source = Path(args.results) if args.results else resolve("results.json")
+    manifest = load("results_manifest.json")
     check = load("determinism_check.json")
     audit = load("padding_audit.json")
     subset = load("detector_scores_subset.json")
@@ -825,7 +996,7 @@ def main() -> None:
         "# Part 29 - chorus attack, suspicion detector and missingness on real AIT logs",
         "",
         f"Generated by `experiments/ait_attack/make_readme.py` from "
-        f"`results/ait_attack/results.json` and its sidecar measurements. "
+        f"`results/ait_attack/results.json.gz` and its sidecar measurements. "
         f"**No number in this file is typed by hand.** Commit "
         f"`{results.get('commit')}`; seeds {seeds}; "
         f"`not_evidence: {results.get('not_evidence')}`; runtime "
@@ -886,7 +1057,9 @@ def main() -> None:
             "`--quick` was NOT used. It cuts to 2 seeds, one k and one epsilon and "
             "is a plumbing check, not evidence. **There is no resume flag**: a "
             "relaunch recomputes all four units and overwrites `results.json`, so "
-            "copy that file aside before relaunching if a partial run matters.",
+            "copy that file aside before relaunching if a partial run matters. The "
+            "runner writes raw json; `results_io.py --write-manifest` then "
+            "re-measures the `.gz` pair and rewrites `results_manifest.json`.",
             ""]
     runtime = results.get("runtime_seconds")
     if isinstance(runtime, (int, float)):
@@ -898,20 +1071,22 @@ def main() -> None:
     else:
         doc_runtime = f"Wall clock: {NOT_MEASURED} (`runtime_seconds` absent)."
     doc += [doc_runtime, ""]
-    doc += section_epsilon(results)
+    doc += section_epsilon(results, audit)
     doc += section_padding(audit)
     doc += section_testb(results)
     doc += section_paired(results)
     doc += section_detector(results, subset)
     doc += section_not_like_for_like(results, subset)
     doc += section_verdicts(results, subset)
-    doc += section_evidence(results)
+    doc += section_evidence(results, manifest)
 
-    OUT.write_text("\n".join(doc) + "\n", encoding="utf-8")
-    print(f"wrote {OUT} ({OUT.stat().st_size} bytes, {len(doc)} lines)")
+    out_path.write_text("\n".join(doc) + "\n", encoding="utf-8")
+    print(f"wrote {out_path} ({out_path.stat().st_size} bytes, {len(doc)} lines) "
+          f"from {source}")
     missing = [n for n, v in (("determinism_check.json", check),
                               ("padding_audit.json", audit),
-                              ("detector_scores_subset.json", subset)) if v is None]
+                              ("detector_scores_subset.json", subset),
+                              ("results_manifest.json", manifest)) if v is None]
     if missing:
         print("WARNING: generated with these sidecars absent, their sections say "
               f"{NOT_MEASURED}: {', '.join(missing)}")
