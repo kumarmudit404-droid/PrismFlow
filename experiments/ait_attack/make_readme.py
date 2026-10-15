@@ -365,11 +365,32 @@ def section_determinism(check: dict | None) -> list[str]:
 
 def section_testb(results: dict) -> list[str]:
     out = ["## 5. Test B: attack success, never averaged across the dns split", "",
-           "Every row is one grid point and one side of the dns split. The 5-seed "
-           "column is the per-cell mean +/- population std over 5 seeds, ranged "
-           "across the subsets in that group; the pooled column is the runner's own "
-           "group figure, whose std pools subset-to-subset with seed-to-seed "
-           "variation and is therefore **not** a 5-seed std.", ""]
+           "**Definition.** `attack_success` is "
+           "`float((predictions == targets).mean())` "
+           "(`experiments/ait_attack/run_ait_attack.py:538`), i.e. the fraction "
+           "of **all** evaluated test windows - benign and attack windows "
+           "alike - whose argmax class equals the attacker's per-window target, "
+           "where that target is the LEAST-likely class on clean input "
+           "(`target_strategy: least_likely`, "
+           "`prismflow/attacks/chorus.py:choose_targets`), so it is never the "
+           "clean prediction and a clean cell scores 0 by construction. "
+           "The denominator is therefore every test window in the direction, "
+           "not the attack windows and not the windows the attack moved.", ""]
+    out += header(["direction", "denominator (test windows)", "attack windows",
+                   "benign windows", "attack prevalence"])
+    for dname, record in results["directions"].items():
+        any_cell = next(iter(record["systems"]["naive"]["cells"].values()))
+        first = (any_cell.get("per_seed") or [{}])[0]
+        out.append(line([dname, str(record["n_test"]),
+                         fmt(first.get("n_attack"), 0),
+                         fmt(first.get("n_benign"), 0),
+                         fmt(first.get("attack_prevalence"))]))
+    out += ["",
+            "Every row below is one grid point and one side of the dns split. The "
+            "5-seed column is the per-cell mean +/- population std over 5 seeds, "
+            "ranged across the subsets in that group; the pooled column is the "
+            "runner's own group figure, whose std pools subset-to-subset with "
+            "seed-to-seed variation and is therefore **not** a 5-seed std.", ""]
     for dname, record in results["directions"].items():
         out += [f"### {dname} (train `{record['train_scenario']}` -> test "
                 f"`{record['test_scenario']}`)", ""]
@@ -396,6 +417,172 @@ def section_testb(results: dict) -> list[str]:
                                      f"{min(means):.4f}..{max(means):.4f}" if means else NOT_MEASURED,
                                      pooled, span or NOT_MEASURED]))
             out.append("")
+    out += section_single_view(results)
+    out += section_pairs_that_add_nothing(results)
+    return out
+
+
+def section_single_view(results: dict) -> list[str]:
+    """5.1: k=1, every view compromised alone, per subset and never pooled.
+
+    The k=1 rows are the floor the k=2 rows have to be read against: a pair
+    that scores no higher than one of its members did alone has not been shown
+    to benefit from the second view.
+    """
+    out = ["### 5.1 One view at a time (chorus k=1 eps=1.0 beta=1.0)", "",
+           "Each row is a single view compromised ALONE, per subset, 5 seeds, "
+           "never pooled. These are the floor for the k=2 rows above: a pair "
+           "scoring no higher than one of its members did alone has not been "
+           "shown to gain anything from the second view.", ""]
+    for dname, record in results["directions"].items():
+        out += [f"**{dname}** (train `{record['train_scenario']}` -> test "
+                f"`{record['test_scenario']}`)", ""]
+        out += header(["compromised view", "dns in set", "suricata in set",
+                       "naive (5-seed mean +/- std)",
+                       "prismflow (5-seed mean +/- std)"])
+        cells = {s: by_subset(record["systems"][s]["cells"],
+                              "chorus", 1, 1.0, 1.0) for s in ("naive",
+                                                               "prismflow")}
+        for views in sorted(set(cells["naive"]) | set(cells["prismflow"])):
+            texts = []
+            for s in ("naive", "prismflow"):
+                c = cells[s].get(views)
+                stat = (c or {}).get("summary", {}).get("attack_success")
+                texts.append(f"{stat['mean']:.4f} +/- {stat['std']:.4f}"
+                             if stat else NOT_MEASURED)
+            out.append(line([f"`{'+'.join(views)}`", *flags(views), *texts]))
+        out.append("")
+    return out
+
+
+def section_pairs_that_add_nothing(results: dict) -> list[str]:
+    """5.2: the two read-before-quoting warnings, both derived.
+
+    (a) pairs whose 5-seed mean equals the `dns`-alone mean to 4 decimals, so
+        the second view contributed nothing the printed precision can see;
+    (b) cells where one seed carries the mean, found by removing the single
+        largest-deviation seed and reporting what is left.
+    """
+    out = ["### 5.2 Two things to check before quoting a cell", ""]
+    places = 4
+
+    rows = []
+    for dname, record in results["directions"].items():
+        for system in ("naive", "prismflow"):
+            cells = record["systems"][system]["cells"]
+            alone = by_subset(cells, "chorus", 1, 1.0, 1.0).get(("dns",))
+            base = (alone or {}).get("summary", {}).get("attack_success")
+            if not base:
+                continue
+            for label, grid in (("chorus beta=0.0", ("chorus", 2, 1.0, 0.0)),
+                                ("pgd", ("pgd", 2, 1.0, None))):
+                for views, cell in sorted(by_subset(cells, *grid).items()):
+                    if "dns" not in views:
+                        continue
+                    stat = cell.get("summary", {}).get("attack_success")
+                    if not stat:
+                        continue
+                    delta = stat["mean"] - base["mean"]
+                    # How many decimals the two means agree to, as printed.
+                    agree = max((dp for dp in range(places, 0, -1)
+                                 if f"{stat['mean']:.{dp}f}"
+                                 == f"{base['mean']:.{dp}f}"), default=0)
+                    if agree >= 3:
+                        rows.append([dname, system, label,
+                                     f"`{'+'.join(views)}`",
+                                     f"{stat['mean']:.{places}f}",
+                                     f"{base['mean']:.{places}f}",
+                                     f"{delta:+.{places}f}",
+                                     f"{agree} dp" if agree < places
+                                     else f"{places} dp (equal as printed)"])
+    out += ["**(a) Some `dns` pairs reproduce `dns` alone.** Where a k=2 mean "
+            "prints the same as the k=1 `[dns]` mean, the second view in the "
+            "pair changed nothing visible at this precision and the cell is a "
+            "`dns`-alone result wearing a pair's label. Every `dns` pair at "
+            "`chorus beta=0.0` and at `pgd` whose 5-seed mean agrees with "
+            "`dns` alone to at least 3 decimals:", ""]
+    if rows:
+        out += header(["direction", "system", "grid point", "compromised pair",
+                       f"pair mean ({places} dp)",
+                       f"`dns` alone, k=1 ({places} dp)", "difference",
+                       "agree to"])
+        for row in rows:
+            out += [line(row)]
+    else:
+        out += ["No `dns` pair agrees with `dns` alone to 3 decimals at these "
+                "grid points."]
+    # The same pairs at beta=1.0, so "they only match at beta=0" is measured.
+    spread = []
+    for dname, record in results["directions"].items():
+        for system in ("naive", "prismflow"):
+            cells = record["systems"][system]["cells"]
+            alone = by_subset(cells, "chorus", 1, 1.0, 1.0).get(("dns",))
+            base = (alone or {}).get("summary", {}).get("attack_success")
+            if not base:
+                continue
+            for views, cell in by_subset(cells, "chorus", 2, 1.0, 1.0).items():
+                if "dns" not in views:
+                    continue
+                stat = cell.get("summary", {}).get("attack_success")
+                if stat:
+                    spread.append(abs(stat["mean"] - base["mean"]))
+    out += ["", "The agreement is confined to `beta=0.0` and `pgd`, which are "
+            "the two configurations with the coordination term off. At "
+            "`chorus beta=1.0` the same pairs differ from `dns` alone by "
+            + (f"{min(spread):.4f}..{max(spread):.4f} across all "
+               f"{len(spread)} direction/system/pair combinations"
+               if spread else NOT_MEASURED)
+            + " - section 11 measures how far `beta` moves each of them.", ""]
+
+    out += ["**(b) Some cells' means are carried by a single seed.** "
+            "Found by dropping each cell's LARGEST seed and reprinting the "
+            "remainder, and keeping the cells where that at least halves the "
+            "mean. A cell whose mean survives the drop is a population; one "
+            "whose mean collapses is one seed with four quiet ones beside "
+            "it:", ""]
+    found = []
+    for dname, record in results["directions"].items():
+        for system in ("naive", "prismflow"):
+            cells = record["systems"][system]["cells"]
+            for views, cell in by_subset(cells, "chorus", 1, 1.0, 1.0).items():
+                seeds = per_seed_map(cell, "attack_success")
+                stat = cell.get("summary", {}).get("attack_success")
+                if len(seeds) < 3 or not stat or stat["mean"] <= 0:
+                    continue
+                mean = stat["mean"]
+                # The criterion is INFLATION, not merely spread: the seed has
+                # to be the largest, and dropping it has to at least halve the
+                # mean. A cell whose outlier is its SMALLEST seed is a cell
+                # whose mean is held DOWN by one seed, which is a different
+                # defect and is not what this table claims.
+                top = max(seeds, key=lambda s: seeds[s])
+                rest = [v for s, v in seeds.items() if s != top]
+                rmean = float(np.mean(rest))
+                if rmean < 0.5 * mean:
+                    found.append((dname, system, views, seeds, stat, top,
+                                  rmean, float(np.std(rest))))
+    if found:
+        out += header(["direction", "system", "compromised view",
+                       "per-seed attack success", "5-seed mean +/- std",
+                       "seed carrying it", "mean +/- std without that seed"])
+        for dname, system, views, seeds, stat, worst, rmean, rstd in found:
+            out += [line([dname, system, f"`{'+'.join(views)}`",
+                          ", ".join(f"seed {s} {seeds[s]:.4f}"
+                                    for s in sorted(seeds)),
+                          f"{stat['mean']:.4f} +/- {stat['std']:.4f}",
+                          f"seed {worst} ({seeds[worst]:.4f})",
+                          f"{rmean:.4f} +/- {rstd:.4f}"])]
+        out += ["", "A std at or above the mean is the tell. These rows "
+                "satisfy the 5-SEED RULE arithmetically and are still not "
+                "evidence of an effect of the size their mean suggests: quote "
+                "the per-seed column with them, never the mean alone. "
+                "`B_santos_to_rm / naive / [dns]` is the one that matters most, "
+                "because it is the view that solves the label and it is the "
+                "k=1 baseline the `dns` pairs in 5.2(a) reproduce.", ""]
+    else:
+        out += ["No `chorus k=1 eps=1.0` cell loses half its mean when its "
+                "largest seed is dropped, so no cell's mean is carried by one "
+                "seed at this grid point.", ""]
     return out
 
 
@@ -708,14 +895,44 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
         for c in record["systems"]["prismflow"]["cells"].values()
         if c.get("k") in (2, 3)
     )
-    out += ["", "**Verdict: consistent with L4, but this Part does not test the "
-            "mechanism.** The collusion is plainly measured - dependence among the "
-            f"compromised views reaches {dep_max:.4f} at its highest across all "
-            "k>=2 cells - and the attack still succeeds in those same cells, which "
-            "is L4's shape. "
-            "Part 29 measures no per-view alpha, no belief margin and no "
-            "sublinearity curve, so it adds no new evidence about WHY. L4's "
-            "mechanism evidence remains Part 09's diagnostic.", ""]
+    # The counter-cell: dependence near its measured maximum WITHOUT the
+    # attack succeeding. It is what makes this Part uninformative about L4.
+    counter = None
+    for dname, record in results["directions"].items():
+        cells = record["systems"]["prismflow"]["cells"]
+        rows = list(select(cells, "chorus", 2, 1.0, 1.0, False).values())
+        dep = [d for d in (cell_mean(c, "dependence_compromised")
+                           for c in rows) if d is not None]
+        lo, hi = succ_range(record, "prismflow", False)
+        if dep and hi is not None and (counter is None or hi < counter[3]):
+            counter = (dname, min(dep), max(dep), hi)
+    out += ["", "**Verdict: NOT INFORMATIVE about L4.** The cells do not "
+            "separate L4's prediction from its negation, so neither reading "
+            "gains support here.", ""]
+    if counter:
+        dname, dlo, dhi, shi = counter
+        out += [f"The deciding cell is **{dname} / prismflow, dns NOT "
+                f"compromised, chorus k=2 eps=1.0**: dependence among the "
+                f"compromised views runs {dlo:.4f}..{dhi:.4f} - up to "
+                f"{dhi / dep_max:.2f} of the {dep_max:.4f} maximum measured "
+                f"anywhere in this Part across all k>=2 cells - while attack "
+                f"success over those same subsets never exceeds {shi:.4f}. "
+                "Manufactured dependence at close to its observed ceiling "
+                "therefore coexists with an attack that essentially fails. "
+                "L4 says the discount is proportional and weakens as evidence "
+                "grows; a cell where dependence is high and the attack is "
+                "nonetheless harmless is equally consistent with a discount "
+                "that is proportional, one that caps, and one that does "
+                "nothing at all.", ""]
+    out += ["What would discriminate is not measured here. Part 29 records no "
+            "per-view alpha, no belief margin and no sublinearity curve - the "
+            "three quantities L4 is a statement about - so there is nothing in "
+            "`results.json` that could have come out differently if L4 were "
+            "false. The earlier wording, 'consistent with L4', was true and "
+            "empty: the attack succeeding in high-dependence cells is also "
+            "what a capping discount, or no discount, would produce. L4's "
+            "mechanism evidence remains Part 09's diagnostic, and this Part "
+            "neither adds to it nor weakens it.", ""]
 
     out += ["### L5 - the detector inherits the dependence blind spot and inverts "
             "under missing evidence", ""]
@@ -739,6 +956,9 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
                 side = "dns COMPROMISED" if dns else "dns NOT compromised"
                 out.append(f"  - {side}: {min(vals):.4f}..{max(vals):.4f} over the "
                            f"headline grid points.")
+    _batch_size = results["config"]["attack"].get("batch_size", NOT_MEASURED)
+    _n_tests = ", ".join(f"{d} n_test={r['n_test']}"
+                         for d, r in results["directions"].items())
     out += ["", "**Verdict: L5 is reproduced and is WORSE than L5 states, on both "
             "sides of the dns split.** L5 describes a detector that degrades to "
             "chance and inverts under missingness. On AIT the majority of all "
@@ -746,7 +966,32 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             "flag fires LESS under attack than under clean operation across most of "
             "the grid. Section 7.1 rules out the saturated-detector explanation on "
             "the subset measured: scores are well spread. The inversion is "
-            "directional.", ""]
+            "directional.", "",
+            "**What this protocol does and does not put to the test.** The "
+            "numbers above are a property of THIS measurement design, not of "
+            "a deployed detector, and three design choices decide them:", "",
+            f"- **Every window in the evaluated batch is attacked.** "
+            f"`attack: batch_size` is {_batch_size} against {_n_tests}, so "
+            "each direction is one batch and `views = views + result.delta` "
+            "(`run_ait_attack.py:511`) perturbs all of it. There is no clean "
+            "population inside an attacked run.",
+            "- **The baseline is the same windows unattacked.** "
+            "`detector_auc(cell['_scores'], clean_scores)` "
+            "(`run_ait_attack.py:920`) scores the fully-attacked run against "
+            "the clean pass over the same test windows for that "
+            "direction/system/seed, and the one clean reference is reused by "
+            "every subset in that unit. The AUC is therefore a between-run "
+            "comparison, not a within-batch one.",
+            "- **Partially contaminated batches were NOT tested.** No cell "
+            "mixes attacked and clean windows, and no cell varies the "
+            "contaminated fraction; that axis is absent from the grid, so "
+            f"this Part reports {NOT_MEASURED} for it.", "",
+            "A deployed detector sees a mostly-clean stream and must flag a "
+            "small contaminated part of it. That is the regime this Part does "
+            "not enter. The below-chance AUCs above are a real and "
+            "reproducible property of the all-or-nothing protocol, and they "
+            "do not license a claim about detection rates in deployment in "
+            "either direction.", ""]
 
     out += ["### L8 - detection and correction fail together", ""]
     for dname, record in results["directions"].items():
@@ -847,17 +1092,144 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             out.append(f"- **{dname} / {system}, chorus k=2 eps=1.0:** attack "
                        f"success {lo_y:.4f}..{hi_y:.4f} with `dns` compromised, "
                        f"against {lo_n:.4f}..{hi_n:.4f} without it.")
-    out += ["", "**Verdict: L17 is confirmed and it governs this whole Part.** "
-            "Whether `dns` is in the compromised set changes the attack-success "
-            "range by more than k, epsilon or beta do. The epsilon grid is also "
-            "not comparable across the two directions on this view: epsilon 1.0 "
-            "is a far larger perturbation relative to the `dns` spread in "
-            "B_santos_to_rm than in A_rm_to_santos, and `dns` has the smallest "
-            "per-view std only in B, not in both directions (section 3). "
-            "**Consequence: no number in this Part is evidence about "
-            "multi-view fusion.** It is evidence about perturbing the one view that "
-            "solves a single-view task, plus four views that are close to useless "
-            "on it.", ""]
+    out += ["", "**Verdict: L17 is confirmed - the label is solved by `dns` "
+            "alone.** Section 1's `label_meaning` is the ground for that: the "
+            "attack label is dominated by one continuously-running DNS "
+            "exfiltration tool, and section 3 shows `dns` is the view that "
+            "carries it. Everything below is the structure that fact imposes "
+            "on the grid, measured per direction and per system rather than "
+            "asserted.", ""]
+
+    # (i) what each view achieves ALONE, which is the floor for every pair.
+    out += ["**Each view compromised alone (chorus k=1 eps=1.0, 5-seed "
+            "means).** The two directions have different active views:", ""]
+    out += header(["direction", "system"] + [f"`{v}`" for v in
+                                             ("apache", "auth", "audit",
+                                              "dns", "suricata")])
+    for dname, record in results["directions"].items():
+        for system in ("naive", "prismflow"):
+            means = alone_means(record, system)
+            out += [line([dname, system] + [fmt(means.get(v)) for v in
+                                            ("apache", "auth", "audit",
+                                             "dns", "suricata")])]
+    out += [""]
+
+    # (ii) in B, suricata reproduces itself inside pairs at beta=0.
+    for dname, record in results["directions"].items():
+        for system in ("naive", "prismflow"):
+            cells = record["systems"][system]["cells"]
+            means = alone_means(record, system)
+            sur = means.get("suricata")
+            b0 = by_subset(cells, "chorus", 2, 1.0, 0.0)
+            gaps = []
+            for views, cell in b0.items():
+                if "suricata" not in views or "dns" in views:
+                    continue
+                stat = cell.get("summary", {}).get("attack_success")
+                if stat and sur is not None:
+                    gaps.append(abs(stat["mean"] - sur))
+            inert = {v: means[v] for v in ("apache", "auth", "audit")
+                     if v in means}
+            if not gaps or sur is None or not inert:
+                continue
+            out += [f"- **{dname} / {system}:** `suricata` alone reaches "
+                    f"{sur:.4f}. Its {len(gaps)} pairs without `dns`, at "
+                    f"`beta=0.0`, sit within {max(gaps):.4f} of that - the "
+                    "second view adds at most that much. `apache`, `auth` and "
+                    "`audit` alone reach "
+                    + ", ".join(f"`{v}` {m:.4f}" for v, m in inert.items())
+                    + f", a range of {min(inert.values()):.4f}.."
+                    f"{max(inert.values()):.4f}."]
+    out += [""]
+
+    # (iii) coordination: signed beta 0->1 shift, dns pairs against suricata.
+    out += ["**What `beta` does to each family of pairs** (paired within "
+            "seed, `chorus k=2 eps=1.0`, from section 11):", ""]
+    out += header(["direction", "system", "`dns` pairs: beta 0 -> 1",
+                   "all same sign", "`suricata` pairs without `dns`: "
+                   "beta 0 -> 1", "all same sign"])
+    clean, mixed = [], []
+    for dname, record in results["directions"].items():
+        for system in ("naive", "prismflow"):
+            cells = record["systems"][system]["cells"]
+            b0 = by_subset(cells, "chorus", 2, 1.0, 0.0)
+            b1 = by_subset(cells, "chorus", 2, 1.0, 1.0)
+            fam = {"dns": [], "suricata": []}
+            for views in b1:
+                shift = paired_diff(b1.get(views), b0.get(views))[3]
+                if shift is None:
+                    continue
+                if "dns" in views:
+                    fam["dns"].append(shift)
+                elif "suricata" in views:
+                    fam["suricata"].append(shift)
+            row, uniform = [dname, system], {}
+            for key in ("dns", "suricata"):
+                vals = fam[key]
+                uniform[key] = bool(vals) and (all(v > 0 for v in vals)
+                                               or all(v < 0 for v in vals))
+                row += [f"{min(vals):+.4f}..{max(vals):+.4f} over "
+                        f"{len(vals)} pairs" if vals else NOT_MEASURED,
+                        ("all +" if vals and all(v > 0 for v in vals) else
+                         "all -" if vals and all(v < 0 for v in vals) else
+                         "MIXED" if vals else NOT_MEASURED)]
+            out += [line(row)]
+            opposed = (uniform["dns"] and uniform["suricata"]
+                       and (min(fam["dns"]) > 0) != (min(fam["suricata"]) > 0))
+            (clean if opposed else mixed).append(f"{dname} / {system}")
+    out += [""]
+    if clean:
+        out += ["The two families are cleanly OPPOSED - every `dns` pair moving "
+                "one way and every `suricata`-without-`dns` pair the other - in "
+                + ", ".join(f"**{u}**" for u in clean) + "."]
+    if mixed:
+        out += ["In " + ", ".join(f"**{u}**" for u in mixed)
+                + " the split is NOT clean: the `suricata` family spans both "
+                "signs there, so 'coordination hurts suricata pairs' is a "
+                "statement about "
+                + (", ".join(f"**{u}**" for u in clean) if clean
+                   else "no unit here")
+                + " and must not be carried across to it."]
+    out += ["", "What is common to all four units is that the `dns` family "
+            "moves UP with `beta` while the `suricata` family does not follow "
+            "it. A single 'effect of beta' averaged over the ten pairs would "
+            "average those behaviours and describe neither; section 11 keeps "
+            "them per pair for that reason.", ""]
+
+    # (iv) the confound that survives all of it, derived.
+    ratios = {d: dns_epsilon_in_std(r)
+              for d, r in results["directions"].items()}
+    ratios = {d: v for d, v in ratios.items() if v is not None}
+    if len(ratios) == 2:
+        (da, va), (db, vb) = sorted(ratios.items())
+        bigger, smaller = (db, da) if vb > va else (da, db)
+        out += [f"**The epsilon grid is not comparable across the two "
+                f"directions on `dns`.** `epsilon 1.0` is "
+                + ", ".join(f"{v:.3f} of the `dns` std in {d}"
+                            for d, v in sorted(ratios.items()))
+                + f", so the same nominal epsilon is "
+                f"{max(ratios.values()) / min(ratios.values()):.2f}x larger "
+                f"relative to that view's own spread in {bigger} than in "
+                f"{smaller}. Cross-direction comparisons of attack success on "
+                "`dns` are confounded by this, and `dns` has the smallest "
+                "per-view std in only one of the two directions (section 3).",
+                ""]
+
+    out += ["**What this Part is therefore evidence about.** It measures, on "
+            "two real AIT scenario pairs with 5 seeds per cell: how far a "
+            "bounded perturbation of a chosen subset of views moves a fused "
+            "prediction when one view carries the label; how that depends on "
+            "whether the carrying view is in the subset; how the chorus "
+            "coordination term changes it, with the opposite sign on `dns` "
+            "pairs and `suricata` pairs; and how the suspicion detector and "
+            "the calibration metrics behave across that grid. "
+            "It does NOT measure how fusion behaves when several views carry "
+            "independent evidence about the label, because this label does "
+            "not provide that: the previous wording, 'no number in this Part "
+            "is evidence about multi-view fusion', overstated it in the other "
+            "direction - the k=2 and k=3 cells do measure fusion under attack, "
+            "on a task where the views are not of comparable value. Read every "
+            "number in this file as conditional on that.", ""]
     return out
 
 
@@ -945,6 +1317,191 @@ def gitignore_reignore_rows(manifest) -> list[list[str]]:
                      f"re-ignores the {size} raw json; the `.json.gz` "
                      f"stays tracked"])
     return rows
+
+
+#: The two views whose presence in a compromised set changes the result enough
+#: that every section 11 row is flagged for both. `dns` is the one view that
+#: solves this label; `suricata` is the one that acts alone in direction B.
+FLAGGED_VIEWS = ("dns", "suricata")
+
+
+def by_subset(cells: dict, kind: str, k: int, eps: float, beta) -> dict:
+    """`{(view, ...): cell}` for one grid point, keyed by compromised subset."""
+    return {tuple(c["compromised_views"]): c
+            for c in cells.values()
+            if c["kind"] == kind and c["k"] == k and c["epsilon"] == eps
+            and c["beta"] == beta}
+
+
+def per_seed_map(cell: dict, field: str) -> dict:
+    """`{seed: value}` for one cell, from its own `per_seed` list."""
+    if cell is None:
+        return {}
+    out = {}
+    for row in cell.get("per_seed") or []:
+        seed, value = row.get("seed"), row.get(field)
+        if seed is not None and isinstance(value, (int, float)):
+            out[seed] = float(value)
+    return out
+
+
+def paired_diff(cell_hi: dict, cell_lo: dict, field: str = "attack_success"):
+    """Within-seed `hi - lo`, then mean, population std and sign agreement.
+
+    The difference is formed seed by seed and only then aggregated, never as a
+    difference of two aggregates: a cell whose seeds disagree in sign would
+    otherwise read as "no effect" at the mean. `same_sign` counts the seeds
+    agreeing with the sign of the mean, so a 3/5 is visible as a split.
+
+    Returns `(text, n_agree, n_seeds, mean)`, or `(NOT_MEASURED, None, 0,
+    None)` when either cell is absent or they share no seed.
+    """
+    hi, lo = per_seed_map(cell_hi, field), per_seed_map(cell_lo, field)
+    shared = sorted(set(hi) & set(lo))
+    if not shared:
+        return NOT_MEASURED, None, 0, None
+    diffs = np.array([hi[s] - lo[s] for s in shared], dtype=np.float64)
+    mean, std = float(diffs.mean()), float(diffs.std())
+    if mean > 0:
+        agree = int((diffs > 0).sum())
+    elif mean < 0:
+        agree = int((diffs < 0).sum())
+    else:
+        agree = int((diffs == 0).sum())
+    return f"{mean:+.4f} +/- {std:.4f}", agree, len(shared), mean
+
+
+def flags(views) -> list[str]:
+    """`YES`/`no` per flagged view, so no row has to be read by its name."""
+    return ["YES" if v in views else "no" for v in FLAGGED_VIEWS]
+
+
+def dns_epsilon_in_std(record) -> float | None:
+    """`epsilon 1.0` expressed in `dns` standard deviations, for one direction.
+
+    `1.0 / std` is the same quantity section 3 tabulates. It is the whole
+    reason the two directions' epsilon grids are not comparable on the view
+    that carries the label, so L17 derives it rather than quoting section 3.
+    """
+    scale = record["systems"]["naive"]["feature_scale"]["per_view"]
+    std = (scale.get("dns") or {}).get("std")
+    if not isinstance(std, (int, float)) or not std:
+        return None
+    return 1.0 / std
+
+
+def alone_means(record, system: str) -> dict:
+    """`{view: 5-seed mean attack success}` at chorus k=1 eps=1.0 beta=1.0."""
+    cells = record["systems"][system]["cells"]
+    out = {}
+    for views, cell in by_subset(cells, "chorus", 1, 1.0, 1.0).items():
+        stat = cell.get("summary", {}).get("attack_success")
+        if len(views) == 1 and stat:
+            out[views[0]] = stat["mean"]
+    return out
+
+
+def section_coordination(results: dict) -> list[str]:
+    """Section 11: what the chorus coordination term `beta` actually buys.
+
+    Every figure is a WITHIN-SEED paired difference on one subset at one grid
+    point. Nothing is pooled across pairs, across the dns split or across the
+    two directions, because sections 5 and 9 establish that all three
+    disagree.
+    """
+    out = ["## 11. Coordination effect (beta)", "",
+           "`beta` is the weight on the chorus objective's agreement term, "
+           "`sum_v log b_v[target] - beta * sum_{i,j} ||b_i - b_j||^2` "
+           "(`prismflow/attacks/chorus.py`, `chorus_objective`). At `beta=0` "
+           "that term is off and the attacker only maximises the target's "
+           "likelihood; raising it pays the attacker to make the compromised "
+           "views AGREE while doing so.", "",
+           "Every number below is a **paired within-seed difference** on one "
+           "subset at `chorus k=2 eps=1.0`: the difference is formed seed by "
+           "seed and only then averaged, so a pair whose seeds disagree in "
+           "sign cannot read as `no effect`. The `same sign` column counts the "
+           "seeds agreeing with the sign of the mean - a `3/5` is a split "
+           "population, not a finding. **Nothing is pooled** across pairs, "
+           "across the `dns` split or across the two directions.", "",
+           "The last column pair is a consistency check, not an effect: "
+           "`run_ait_attack.py:501` passes `beta=beta if kind == \"chorus\" "
+           "else 0.0`, so `pgd` and `chorus beta=0.0` get an identical config "
+           "and differ only in which runner is called. `chorus beta 0.0 - pgd` "
+           "should therefore sit at ~0 wherever the two implementations agree, "
+           "and it says nothing about coordination.", ""]
+    for dname, record in results["directions"].items():
+        out += [f"### {dname} (train `{record['train_scenario']}` -> test "
+                f"`{record['test_scenario']}`)", ""]
+        for system in ("naive", "prismflow"):
+            cells = record["systems"][system]["cells"]
+            b0 = by_subset(cells, "chorus", 2, 1.0, 0.0)
+            b1 = by_subset(cells, "chorus", 2, 1.0, 1.0)
+            b5 = by_subset(cells, "chorus", 2, 1.0, 5.0)
+            pgd = by_subset(cells, "pgd", 2, 1.0, None)
+            subsets = sorted(set(b0) | set(b1) | set(b5) | set(pgd))
+            if not subsets:
+                out += [f"**{dname} / {system}**", "",
+                        f"{NOT_MEASURED}: no `chorus k=2 eps=1.0` cells in "
+                        "this unit.", ""]
+                continue
+            out += [f"**{dname} / {system}** - attack success, paired within "
+                    "seed", ""]
+            out += header(["compromised pair", "dns in set", "suricata in set",
+                           "beta 1.0 - beta 0.0 (5-seed mean +/- std)",
+                           "same sign",
+                           "beta 5.0 - beta 1.0 (5-seed mean +/- std)",
+                           "same sign",
+                           "chorus beta 0.0 - pgd (check)", "same sign"])
+            for views in subsets:
+                t10, a10, n10, _ = paired_diff(b1.get(views), b0.get(views))
+                t51, a51, n51, _ = paired_diff(b5.get(views), b1.get(views))
+                t0p, a0p, n0p, _ = paired_diff(b0.get(views), pgd.get(views))
+                out.append(line(
+                    [f"`{'+'.join(views)}`", *flags(views),
+                     t10, f"{a10}/{n10}" if a10 is not None else NOT_MEASURED,
+                     t51, f"{a51}/{n51}" if a51 is not None else NOT_MEASURED,
+                     t0p, f"{a0p}/{n0p}" if a0p is not None else NOT_MEASURED]))
+            out.append("")
+    out += coordination_reading(results)
+    return out
+
+
+def coordination_reading(results: dict) -> list[str]:
+    """What the section 11 tables say, every count re-derived from the cells."""
+    out = ["### What the tables say", ""]
+    for dname, record in results["directions"].items():
+        for system in ("naive", "prismflow"):
+            cells = record["systems"][system]["cells"]
+            b0 = by_subset(cells, "chorus", 2, 1.0, 0.0)
+            b1 = by_subset(cells, "chorus", 2, 1.0, 1.0)
+            pgd = by_subset(cells, "pgd", 2, 1.0, None)
+
+            def shift(views):
+                return paired_diff(b1.get(views), b0.get(views))[3]
+
+            dns_pairs = [v for v in b1 if "dns" in v]
+            sur_pairs = [v for v in b1 if "suricata" in v and "dns" not in v]
+            dns_up = [v for v in dns_pairs if (shift(v) or 0.0) > 0]
+            sur_dn = [v for v in sur_pairs if (shift(v) or 0.0) < 0]
+            checks = [abs(paired_diff(b0[v], pgd.get(v))[3] or 0.0)
+                      for v in b0 if v in pgd]
+            worst = max(checks) if checks else None
+            out.append(
+                f"- **{dname} / {system}:** `beta` 0 -> 1 RAISES attack success "
+                f"on {len(dns_up)} of the {len(dns_pairs)} pairs containing "
+                f"`dns` and lowers it on {len(dns_pairs) - len(dns_up)}; on the "
+                f"{len(sur_pairs)} pairs containing `suricata` but not `dns` it "
+                f"LOWERS {len(sur_dn)} and raises "
+                f"{len(sur_pairs) - len(sur_dn)}. Largest "
+                f"`|chorus beta 0.0 - pgd|` across the "
+                f"{len(checks)} pairs where both exist: "
+                + (f"{worst:.4f}." if worst is not None else f"{NOT_MEASURED}."))
+    out += ["", "Read those counts against the `same sign` columns before "
+            "treating any of them as an effect: a row carried by one seed "
+            "appears with a std of its own size and a `same sign` below 5/5, "
+            "and section 5 names the one case where a single seed carries a "
+            "whole mean.", ""]
+    return out
 
 
 def section_evidence(results: dict, manifest) -> list[str]:
@@ -1192,6 +1749,7 @@ def main() -> None:
     doc += section_not_like_for_like(results, subset)
     doc += section_verdicts(results, subset)
     doc += section_evidence(results, manifest)
+    doc += section_coordination(results)
 
     out_path.write_text("\n".join(doc) + "\n", encoding="utf-8")
     print(f"wrote {out_path} ({out_path.stat().st_size} bytes, {len(doc)} lines) "

@@ -144,7 +144,14 @@ Two things follow. The attack surface is the native features only, which is the 
 
 ## 5. Test B: attack success, never averaged across the dns split
 
-Every row is one grid point and one side of the dns split. The 5-seed column is the per-cell mean +/- population std over 5 seeds, ranged across the subsets in that group; the pooled column is the runner's own group figure, whose std pools subset-to-subset with seed-to-seed variation and is therefore **not** a 5-seed std.
+**Definition.** `attack_success` is `float((predictions == targets).mean())` (`experiments/ait_attack/run_ait_attack.py:538`), i.e. the fraction of **all** evaluated test windows - benign and attack windows alike - whose argmax class equals the attacker's per-window target, where that target is the LEAST-likely class on clean input (`target_strategy: least_likely`, `prismflow/attacks/chorus.py:choose_targets`), so it is never the clean prediction and a clean cell scores 0 by construction. The denominator is therefore every test window in the direction, not the attack windows and not the windows the attack moved.
+
+| direction | denominator (test windows) | attack windows | benign windows | attack prevalence |
+| --- | --- | --- | --- | --- |
+| A_rm_to_santos | 1108 | 667 | 441 | 0.6020 |
+| B_santos_to_rm | 1145 | 1031 | 114 | 0.9004 |
+
+Every row below is one grid point and one side of the dns split. The 5-seed column is the per-cell mean +/- population std over 5 seeds, ranged across the subsets in that group; the pooled column is the runner's own group figure, whose std pools subset-to-subset with seed-to-seed variation and is therefore **not** a 5-seed std.
 
 ### A_rm_to_santos (train `russellmitchell` -> test `santos`)
 
@@ -201,6 +208,58 @@ Every row is one grid point and one side of the dns split. The 5-seed column is 
 | chorus k=3 eps=1.0 beta=1.0 | no | 4 | 0.0260..0.0828 | 0.0403 +/- 0.0489 | 4 subsets x 5 seeds |
 | pgd k=2 eps=1.0 | YES | 4 | 0.0390..0.6082 | 0.1876 +/- 0.2682 | 4 subsets x 5 seeds |
 | pgd k=2 eps=1.0 | no | 6 | 0.0372..0.7434 | 0.3910 +/- 0.3539 | 6 subsets x 5 seeds |
+
+### 5.1 One view at a time (chorus k=1 eps=1.0 beta=1.0)
+
+Each row is a single view compromised ALONE, per subset, 5 seeds, never pooled. These are the floor for the k=2 rows above: a pair scoring no higher than one of its members did alone has not been shown to gain anything from the second view.
+
+**A_rm_to_santos** (train `russellmitchell` -> test `santos`)
+
+| compromised view | dns in set | suricata in set | naive (5-seed mean +/- std) | prismflow (5-seed mean +/- std) |
+| --- | --- | --- | --- | --- |
+| `apache` | no | no | 0.1038 +/- 0.0094 | 0.0744 +/- 0.0151 |
+| `audit` | no | no | 0.0258 +/- 0.0066 | 0.0087 +/- 0.0036 |
+| `auth` | no | no | 0.0345 +/- 0.0048 | 0.0155 +/- 0.0084 |
+| `dns` | YES | no | 0.0538 +/- 0.0040 | 0.0518 +/- 0.0098 |
+| `suricata` | no | YES | 0.1838 +/- 0.0228 | 0.1150 +/- 0.0300 |
+
+**B_santos_to_rm** (train `santos` -> test `russellmitchell`)
+
+| compromised view | dns in set | suricata in set | naive (5-seed mean +/- std) | prismflow (5-seed mean +/- std) |
+| --- | --- | --- | --- | --- |
+| `apache` | no | no | 0.0049 +/- 0.0100 | 0.0203 +/- 0.0274 |
+| `audit` | no | no | 0.0094 +/- 0.0172 | 0.0262 +/- 0.0406 |
+| `auth` | no | no | 0.0051 +/- 0.0089 | 0.0108 +/- 0.0090 |
+| `dns` | YES | no | 0.0996 +/- 0.1248 | 0.0356 +/- 0.0231 |
+| `suricata` | no | YES | 0.7541 +/- 0.0812 | 0.5972 +/- 0.1877 |
+
+### 5.2 Two things to check before quoting a cell
+
+**(a) Some `dns` pairs reproduce `dns` alone.** Where a k=2 mean prints the same as the k=1 `[dns]` mean, the second view in the pair changed nothing visible at this precision and the cell is a `dns`-alone result wearing a pair's label. Every `dns` pair at `chorus beta=0.0` and at `pgd` whose 5-seed mean agrees with `dns` alone to at least 3 decimals:
+
+| direction | system | grid point | compromised pair | pair mean (4 dp) | `dns` alone, k=1 (4 dp) | difference | agree to |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| B_santos_to_rm | naive | chorus beta=0.0 | `apache+dns` | 0.0997 | 0.0996 | +0.0002 | 3 dp |
+| B_santos_to_rm | naive | chorus beta=0.0 | `auth+dns` | 0.0996 | 0.0996 | +0.0000 | 4 dp (equal as printed) |
+| B_santos_to_rm | naive | chorus beta=0.0 | `dns+audit` | 0.0996 | 0.0996 | +0.0000 | 4 dp (equal as printed) |
+| B_santos_to_rm | naive | pgd | `apache+dns` | 0.0997 | 0.0996 | +0.0002 | 3 dp |
+| B_santos_to_rm | naive | pgd | `auth+dns` | 0.0996 | 0.0996 | +0.0000 | 4 dp (equal as printed) |
+| B_santos_to_rm | naive | pgd | `dns+audit` | 0.0996 | 0.0996 | +0.0000 | 4 dp (equal as printed) |
+
+The agreement is confined to `beta=0.0` and `pgd`, which are the two configurations with the coordination term off. At `chorus beta=1.0` the same pairs differ from `dns` alone by 0.1540..0.8505 across all 16 direction/system/pair combinations - section 11 measures how far `beta` moves each of them.
+
+**(b) Some cells' means are carried by a single seed.** Found by dropping each cell's LARGEST seed and reprinting the remainder, and keeping the cells where that at least halves the mean. A cell whose mean survives the drop is a population; one whose mean collapses is one seed with four quiet ones beside it:
+
+| direction | system | compromised view | per-seed attack success | 5-seed mean +/- std | seed carrying it | mean +/- std without that seed |
+| --- | --- | --- | --- | --- | --- | --- |
+| B_santos_to_rm | naive | `apache` | seed 0 0.0009, seed 1 0.0227, seed 2 0.0000, seed 3 0.0000, seed 4 0.0009 | 0.0049 +/- 0.0100 | seed 1 (0.0227) | 0.0004 +/- 0.0004 |
+| B_santos_to_rm | naive | `auth` | seed 0 0.0009, seed 1 0.0009, seed 2 0.0009, seed 3 0.0210, seed 4 0.0017 | 0.0051 +/- 0.0089 | seed 3 (0.0210) | 0.0011 +/- 0.0004 |
+| B_santos_to_rm | naive | `dns` | seed 0 0.0437, seed 1 0.0332, seed 2 0.0585, seed 3 0.3223, seed 4 0.0402 | 0.0996 +/- 0.1248 | seed 3 (0.3223) | 0.0439 +/- 0.0093 |
+| B_santos_to_rm | naive | `audit` | seed 0 0.0009, seed 1 0.0017, seed 2 0.0017, seed 3 0.0402, seed 4 0.0026 | 0.0094 +/- 0.0172 | seed 3 (0.0402) | 0.0017 +/- 0.0006 |
+| B_santos_to_rm | prismflow | `apache` | seed 0 0.0096, seed 1 0.0087, seed 2 0.0114, seed 3 0.0690, seed 4 0.0026 | 0.0203 +/- 0.0274 | seed 3 (0.0690) | 0.0081 +/- 0.0033 |
+| B_santos_to_rm | prismflow | `audit` | seed 0 0.0070, seed 1 0.0052, seed 2 0.0070, seed 3 0.0987, seed 4 0.0131 | 0.0262 +/- 0.0406 | seed 3 (0.0987) | 0.0081 +/- 0.0030 |
+
+A std at or above the mean is the tell. These rows satisfy the 5-SEED RULE arithmetically and are still not evidence of an effect of the size their mean suggests: quote the per-seed column with them, never the mean alone. `B_santos_to_rm / naive / [dns]` is the one that matters most, because it is the view that solves the label and it is the k=1 baseline the `dns` pairs in 5.2(a) reproduce.
 
 ## 6. PrismFlow minus naive, paired within seed
 
@@ -412,7 +471,11 @@ Each verdict is split by whether `dns` - the single view that solves this label 
 - **B_santos_to_rm, dns COMPROMISED, chorus k=2 eps=1.0:** dependence among compromised views reaches 0.3934..0.8904 while PrismFlow's attack success is 0.8491..0.8861.
 - **B_santos_to_rm, dns NOT compromised, chorus k=2 eps=1.0:** dependence among compromised views reaches 0.1233..0.8098 while PrismFlow's attack success is 0.0262..0.0562.
 
-**Verdict: consistent with L4, but this Part does not test the mechanism.** The collusion is plainly measured - dependence among the compromised views reaches 0.9717 at its highest across all k>=2 cells - and the attack still succeeds in those same cells, which is L4's shape. Part 29 measures no per-view alpha, no belief margin and no sublinearity curve, so it adds no new evidence about WHY. L4's mechanism evidence remains Part 09's diagnostic.
+**Verdict: NOT INFORMATIVE about L4.** The cells do not separate L4's prediction from its negation, so neither reading gains support here.
+
+The deciding cell is **B_santos_to_rm / prismflow, dns NOT compromised, chorus k=2 eps=1.0**: dependence among the compromised views runs 0.1233..0.8098 - up to 0.83 of the 0.9717 maximum measured anywhere in this Part across all k>=2 cells - while attack success over those same subsets never exceeds 0.0562. Manufactured dependence at close to its observed ceiling therefore coexists with an attack that essentially fails. L4 says the discount is proportional and weakens as evidence grows; a cell where dependence is high and the attack is nonetheless harmless is equally consistent with a discount that is proportional, one that caps, and one that does nothing at all.
+
+What would discriminate is not measured here. Part 29 records no per-view alpha, no belief margin and no sublinearity curve - the three quantities L4 is a statement about - so there is nothing in `results.json` that could have come out differently if L4 were false. The earlier wording, 'consistent with L4', was true and empty: the attack succeeding in high-dependence cells is also what a capping discount, or no discount, would produce. L4's mechanism evidence remains Part 09's diagnostic, and this Part neither adds to it nor weakens it.
 
 ### L5 - the detector inherits the dependence blind spot and inverts under missing evidence
 
@@ -424,6 +487,14 @@ Each verdict is split by whether `dns` - the single view that solves this label 
   - dns NOT compromised: 0.1970..0.4810 over the headline grid points.
 
 **Verdict: L5 is reproduced and is WORSE than L5 states, on both sides of the dns split.** L5 describes a detector that degrades to chance and inverts under missingness. On AIT the majority of all conditions - attacked, not merely missing - sit below chance, so the flag fires LESS under attack than under clean operation across most of the grid. Section 7.1 rules out the saturated-detector explanation on the subset measured: scores are well spread. The inversion is directional.
+
+**What this protocol does and does not put to the test.** The numbers above are a property of THIS measurement design, not of a deployed detector, and three design choices decide them:
+
+- **Every window in the evaluated batch is attacked.** `attack: batch_size` is 1200 against A_rm_to_santos n_test=1108, B_santos_to_rm n_test=1145, so each direction is one batch and `views = views + result.delta` (`run_ait_attack.py:511`) perturbs all of it. There is no clean population inside an attacked run.
+- **The baseline is the same windows unattacked.** `detector_auc(cell['_scores'], clean_scores)` (`run_ait_attack.py:920`) scores the fully-attacked run against the clean pass over the same test windows for that direction/system/seed, and the one clean reference is reused by every subset in that unit. The AUC is therefore a between-run comparison, not a within-batch one.
+- **Partially contaminated batches were NOT tested.** No cell mixes attacked and clean windows, and no cell varies the contaminated fraction; that axis is absent from the grid, so this Part reports not measured for it.
+
+A deployed detector sees a mostly-clean stream and must flag a small contaminated part of it. That is the regime this Part does not enter. The below-chance AUCs above are a real and reproducible property of the all-or-nothing protocol, and they do not license a claim about detection rates in deployment in either direction.
 
 ### L8 - detection and correction fail together
 
@@ -462,7 +533,39 @@ L16's own caveats carry over unchanged: the positive class is 3 episodes on `san
 - **B_santos_to_rm / naive, chorus k=2 eps=1.0:** attack success 0.7822..0.9069 with `dns` compromised, against 0.0096..0.0917 without it.
 - **B_santos_to_rm / prismflow, chorus k=2 eps=1.0:** attack success 0.8491..0.8861 with `dns` compromised, against 0.0262..0.0562 without it.
 
-**Verdict: L17 is confirmed and it governs this whole Part.** Whether `dns` is in the compromised set changes the attack-success range by more than k, epsilon or beta do. The epsilon grid is also not comparable across the two directions on this view: epsilon 1.0 is a far larger perturbation relative to the `dns` spread in B_santos_to_rm than in A_rm_to_santos, and `dns` has the smallest per-view std only in B, not in both directions (section 3). **Consequence: no number in this Part is evidence about multi-view fusion.** It is evidence about perturbing the one view that solves a single-view task, plus four views that are close to useless on it.
+**Verdict: L17 is confirmed - the label is solved by `dns` alone.** Section 1's `label_meaning` is the ground for that: the attack label is dominated by one continuously-running DNS exfiltration tool, and section 3 shows `dns` is the view that carries it. Everything below is the structure that fact imposes on the grid, measured per direction and per system rather than asserted.
+
+**Each view compromised alone (chorus k=1 eps=1.0, 5-seed means).** The two directions have different active views:
+
+| direction | system | `apache` | `auth` | `audit` | `dns` | `suricata` |
+| --- | --- | --- | --- | --- | --- | --- |
+| A_rm_to_santos | naive | 0.1038 | 0.0345 | 0.0258 | 0.0538 | 0.1838 |
+| A_rm_to_santos | prismflow | 0.0744 | 0.0155 | 0.0087 | 0.0518 | 0.1150 |
+| B_santos_to_rm | naive | 0.0049 | 0.0051 | 0.0094 | 0.0996 | 0.7541 |
+| B_santos_to_rm | prismflow | 0.0203 | 0.0108 | 0.0262 | 0.0356 | 0.5972 |
+
+- **A_rm_to_santos / naive:** `suricata` alone reaches 0.1838. Its 3 pairs without `dns`, at `beta=0.0`, sit within 0.0352 of that - the second view adds at most that much. `apache`, `auth` and `audit` alone reach `apache` 0.1038, `auth` 0.0345, `audit` 0.0258, a range of 0.0258..0.1038.
+- **A_rm_to_santos / prismflow:** `suricata` alone reaches 0.1150. Its 3 pairs without `dns`, at `beta=0.0`, sit within 0.1135 of that - the second view adds at most that much. `apache`, `auth` and `audit` alone reach `apache` 0.0744, `auth` 0.0155, `audit` 0.0087, a range of 0.0087..0.0744.
+- **B_santos_to_rm / naive:** `suricata` alone reaches 0.7541. Its 3 pairs without `dns`, at `beta=0.0`, sit within 0.0148 of that - the second view adds at most that much. `apache`, `auth` and `audit` alone reach `apache` 0.0049, `auth` 0.0051, `audit` 0.0094, a range of 0.0049..0.0094.
+- **B_santos_to_rm / prismflow:** `suricata` alone reaches 0.5972. Its 3 pairs without `dns`, at `beta=0.0`, sit within 0.1392 of that - the second view adds at most that much. `apache`, `auth` and `audit` alone reach `apache` 0.0203, `auth` 0.0108, `audit` 0.0262, a range of 0.0108..0.0262.
+
+**What `beta` does to each family of pairs** (paired within seed, `chorus k=2 eps=1.0`, from section 11):
+
+| direction | system | `dns` pairs: beta 0 -> 1 | all same sign | `suricata` pairs without `dns`: beta 0 -> 1 | all same sign |
+| --- | --- | --- | --- | --- | --- |
+| A_rm_to_santos | naive | +0.0857..+0.1547 over 4 pairs | all + | -0.0112..+0.1085 over 3 pairs | MIXED |
+| A_rm_to_santos | prismflow | +0.1278..+0.2843 over 4 pairs | all + | -0.1560..+0.1036 over 3 pairs | MIXED |
+| B_santos_to_rm | naive | +0.0786..+0.6837 over 4 pairs | all + | -0.6562..-0.6500 over 3 pairs | all - |
+| B_santos_to_rm | prismflow | +0.2795..+0.8225 over 4 pairs | all + | -0.7048..-0.6966 over 3 pairs | all - |
+
+The two families are cleanly OPPOSED - every `dns` pair moving one way and every `suricata`-without-`dns` pair the other - in **B_santos_to_rm / naive**, **B_santos_to_rm / prismflow**.
+In **A_rm_to_santos / naive**, **A_rm_to_santos / prismflow** the split is NOT clean: the `suricata` family spans both signs there, so 'coordination hurts suricata pairs' is a statement about **B_santos_to_rm / naive**, **B_santos_to_rm / prismflow** and must not be carried across to it.
+
+What is common to all four units is that the `dns` family moves UP with `beta` while the `suricata` family does not follow it. A single 'effect of beta' averaged over the ten pairs would average those behaviours and describe neither; section 11 keeps them per pair for that reason.
+
+**The epsilon grid is not comparable across the two directions on `dns`.** `epsilon 1.0` is 0.639 of the `dns` std in A_rm_to_santos, 1.373 of the `dns` std in B_santos_to_rm, so the same nominal epsilon is 2.15x larger relative to that view's own spread in B_santos_to_rm than in A_rm_to_santos. Cross-direction comparisons of attack success on `dns` are confounded by this, and `dns` has the smallest per-view std in only one of the two directions (section 3).
+
+**What this Part is therefore evidence about.** It measures, on two real AIT scenario pairs with 5 seeds per cell: how far a bounded perturbation of a chosen subset of views moves a fused prediction when one view carries the label; how that depends on whether the carrying view is in the subset; how the chorus coordination term changes it, with the opposite sign on `dns` pairs and `suricata` pairs; and how the suspicion detector and the calibration metrics behave across that grid. It does NOT measure how fusion behaves when several views carry independent evidence about the label, because this label does not provide that: the previous wording, 'no number in this Part is evidence about multi-view fusion', overstated it in the other direction - the k=2 and k=3 cells do measure fusion under attack, on a task where the views are not of comparable value. Read every number in this file as conditional on that.
 
 ## 10. Retained run evidence
 
@@ -524,4 +627,85 @@ git add --dry-run results/ait_attack/results.json   # exits 1
 ```
 
 This replaces the `.git/info/exclude` entries described in an earlier commit, which were inert: `.gitignore` outranks `$GIT_DIR/info/exclude`, so an exclude entry could not override the `!results/*/*.json` un-ignore. The entries are harmless and are left in place. The committed `.json.gz`, `results_manifest.json` and every other tracked file under `results/` are unaffected: the two new rules match those two names only.
+
+## 11. Coordination effect (beta)
+
+`beta` is the weight on the chorus objective's agreement term, `sum_v log b_v[target] - beta * sum_{i,j} ||b_i - b_j||^2` (`prismflow/attacks/chorus.py`, `chorus_objective`). At `beta=0` that term is off and the attacker only maximises the target's likelihood; raising it pays the attacker to make the compromised views AGREE while doing so.
+
+Every number below is a **paired within-seed difference** on one subset at `chorus k=2 eps=1.0`: the difference is formed seed by seed and only then averaged, so a pair whose seeds disagree in sign cannot read as `no effect`. The `same sign` column counts the seeds agreeing with the sign of the mean - a `3/5` is a split population, not a finding. **Nothing is pooled** across pairs, across the `dns` split or across the two directions.
+
+The last column pair is a consistency check, not an effect: `run_ait_attack.py:501` passes `beta=beta if kind == "chorus" else 0.0`, so `pgd` and `chorus beta=0.0` get an identical config and differ only in which runner is called. `chorus beta 0.0 - pgd` should therefore sit at ~0 wherever the two implementations agree, and it says nothing about coordination.
+
+### A_rm_to_santos (train `russellmitchell` -> test `santos`)
+
+**A_rm_to_santos / naive** - attack success, paired within seed
+
+| compromised pair | dns in set | suricata in set | beta 1.0 - beta 0.0 (5-seed mean +/- std) | same sign | beta 5.0 - beta 1.0 (5-seed mean +/- std) | same sign | chorus beta 0.0 - pgd (check) | same sign |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `apache+audit` | no | no | -0.0105 +/- 0.0037 | 5/5 | -0.0417 +/- 0.0101 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `apache+auth` | no | no | -0.0403 +/- 0.0035 | 5/5 | -0.0238 +/- 0.0067 | 5/5 | -0.0005 +/- 0.0009 | 3/5 |
+| `apache+dns` | YES | no | +0.0857 +/- 0.0035 | 5/5 | -0.0161 +/- 0.0040 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `apache+suricata` | no | YES | +0.1085 +/- 0.0057 | 5/5 | -0.2417 +/- 0.0088 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `audit+suricata` | no | YES | -0.0112 +/- 0.0604 | 3/5 | -0.1713 +/- 0.0579 | 5/5 | -0.0005 +/- 0.0007 | 2/5 |
+| `auth+audit` | no | no | -0.0029 +/- 0.0037 | 4/5 | -0.0101 +/- 0.0049 | 5/5 | -0.0002 +/- 0.0011 | 2/5 |
+| `auth+dns` | YES | no | +0.1233 +/- 0.0065 | 5/5 | -0.0213 +/- 0.0071 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `auth+suricata` | no | YES | +0.0179 +/- 0.0170 | 4/5 | -0.1747 +/- 0.0044 | 5/5 | -0.0022 +/- 0.0026 | 4/5 |
+| `dns+audit` | YES | no | +0.1408 +/- 0.0076 | 5/5 | -0.0125 +/- 0.0037 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `dns+suricata` | YES | YES | +0.1547 +/- 0.0437 | 5/5 | -0.1303 +/- 0.0256 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+
+**A_rm_to_santos / prismflow** - attack success, paired within seed
+
+| compromised pair | dns in set | suricata in set | beta 1.0 - beta 0.0 (5-seed mean +/- std) | same sign | beta 5.0 - beta 1.0 (5-seed mean +/- std) | same sign | chorus beta 0.0 - pgd (check) | same sign |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `apache+audit` | no | no | -0.0282 +/- 0.0096 | 5/5 | -0.0431 +/- 0.0082 | 5/5 | +0.0005 +/- 0.0007 | 2/5 |
+| `apache+auth` | no | no | -0.0352 +/- 0.0075 | 5/5 | -0.0300 +/- 0.0058 | 5/5 | +0.0011 +/- 0.0007 | 4/5 |
+| `apache+dns` | YES | no | +0.1278 +/- 0.0098 | 5/5 | -0.0292 +/- 0.0052 | 5/5 | +0.0002 +/- 0.0004 | 1/5 |
+| `apache+suricata` | no | YES | +0.1036 +/- 0.0108 | 5/5 | -0.2094 +/- 0.0209 | 5/5 | +0.0000 +/- 0.0006 | 1/5 |
+| `audit+suricata` | no | YES | -0.1560 +/- 0.0153 | 5/5 | -0.0247 +/- 0.0104 | 5/5 | -0.0025 +/- 0.0011 | 5/5 |
+| `auth+audit` | no | no | -0.0009 +/- 0.0024 | 2/5 | -0.0170 +/- 0.0033 | 5/5 | +0.0018 +/- 0.0015 | 4/5 |
+| `auth+dns` | YES | no | +0.1695 +/- 0.0306 | 5/5 | -0.0312 +/- 0.0224 | 5/5 | -0.0002 +/- 0.0004 | 1/5 |
+| `auth+suricata` | no | YES | -0.0330 +/- 0.0423 | 3/5 | -0.1202 +/- 0.0409 | 5/5 | -0.0007 +/- 0.0032 | 3/5 |
+| `dns+audit` | YES | no | +0.1711 +/- 0.0153 | 5/5 | -0.0173 +/- 0.0070 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `dns+suricata` | YES | YES | +0.2843 +/- 0.0728 | 5/5 | -0.1496 +/- 0.0597 | 5/5 | -0.0002 +/- 0.0004 | 1/5 |
+
+### B_santos_to_rm (train `santos` -> test `russellmitchell`)
+
+**B_santos_to_rm / naive** - attack success, paired within seed
+
+| compromised pair | dns in set | suricata in set | beta 1.0 - beta 0.0 (5-seed mean +/- std) | same sign | beta 5.0 - beta 1.0 (5-seed mean +/- std) | same sign | chorus beta 0.0 - pgd (check) | same sign |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `apache+audit` | no | no | +0.0000 +/- 0.0000 | 5/5 | -0.0012 +/- 0.0024 | 1/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `apache+auth` | no | no | +0.0000 +/- 0.0000 | 5/5 | -0.0009 +/- 0.0017 | 1/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `apache+dns` | YES | no | +0.6837 +/- 0.2205 | 5/5 | -0.0089 +/- 0.0050 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `apache+suricata` | no | YES | -0.6562 +/- 0.1796 | 5/5 | -0.0028 +/- 0.0048 | 2/5 | -0.0026 +/- 0.0012 | 5/5 |
+| `audit+suricata` | no | YES | -0.6519 +/- 0.1634 | 5/5 | -0.0002 +/- 0.0003 | 1/5 | -0.0084 +/- 0.0044 | 5/5 |
+| `auth+audit` | no | no | +0.0000 +/- 0.0000 | 5/5 | +0.0000 +/- 0.0000 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `auth+dns` | YES | no | +0.6826 +/- 0.2213 | 5/5 | -0.0068 +/- 0.0019 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `auth+suricata` | no | YES | -0.6500 +/- 0.1707 | 5/5 | -0.0002 +/- 0.0003 | 1/5 | -0.0129 +/- 0.0084 | 5/5 |
+| `dns+audit` | YES | no | +0.6828 +/- 0.2210 | 5/5 | -0.0079 +/- 0.0036 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `dns+suricata` | YES | YES | +0.0786 +/- 0.0128 | 5/5 | -0.0742 +/- 0.0586 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+
+**B_santos_to_rm / prismflow** - attack success, paired within seed
+
+| compromised pair | dns in set | suricata in set | beta 1.0 - beta 0.0 (5-seed mean +/- std) | same sign | beta 5.0 - beta 1.0 (5-seed mean +/- std) | same sign | chorus beta 0.0 - pgd (check) | same sign |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `apache+audit` | no | no | +0.0007 +/- 0.0010 | 2/5 | -0.0024 +/- 0.0012 | 5/5 | -0.0003 +/- 0.0014 | 2/5 |
+| `apache+auth` | no | no | +0.0016 +/- 0.0023 | 3/5 | -0.0049 +/- 0.0068 | 4/5 | +0.0012 +/- 0.0029 | 1/5 |
+| `apache+dns` | YES | no | +0.8225 +/- 0.0629 | 5/5 | -0.0370 +/- 0.0209 | 5/5 | +0.0003 +/- 0.0007 | 1/5 |
+| `apache+suricata` | no | YES | -0.6966 +/- 0.0485 | 5/5 | -0.0136 +/- 0.0208 | 4/5 | -0.0070 +/- 0.0116 | 3/5 |
+| `audit+suricata` | no | YES | -0.7048 +/- 0.0537 | 5/5 | -0.0005 +/- 0.0010 | 1/5 | -0.0003 +/- 0.0046 | 2/5 |
+| `auth+audit` | no | no | -0.0014 +/- 0.0012 | 3/5 | -0.0009 +/- 0.0012 | 3/5 | -0.0028 +/- 0.0039 | 3/5 |
+| `auth+dns` | YES | no | +0.8112 +/- 0.0350 | 5/5 | -0.0110 +/- 0.0027 | 5/5 | +0.0002 +/- 0.0003 | 1/5 |
+| `auth+suricata` | no | YES | -0.6982 +/- 0.0618 | 5/5 | -0.0007 +/- 0.0014 | 1/5 | -0.0023 +/- 0.0089 | 3/5 |
+| `dns+audit` | YES | no | +0.7913 +/- 0.0658 | 5/5 | -0.0094 +/- 0.0029 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `dns+suricata` | YES | YES | +0.2795 +/- 0.1846 | 5/5 | -0.0176 +/- 0.0247 | 4/5 | -0.0016 +/- 0.0031 | 1/5 |
+
+### What the tables say
+
+- **A_rm_to_santos / naive:** `beta` 0 -> 1 RAISES attack success on 4 of the 4 pairs containing `dns` and lowers it on 0; on the 3 pairs containing `suricata` but not `dns` it LOWERS 1 and raises 2. Largest `|chorus beta 0.0 - pgd|` across the 10 pairs where both exist: 0.0022.
+- **A_rm_to_santos / prismflow:** `beta` 0 -> 1 RAISES attack success on 4 of the 4 pairs containing `dns` and lowers it on 0; on the 3 pairs containing `suricata` but not `dns` it LOWERS 2 and raises 1. Largest `|chorus beta 0.0 - pgd|` across the 10 pairs where both exist: 0.0025.
+- **B_santos_to_rm / naive:** `beta` 0 -> 1 RAISES attack success on 4 of the 4 pairs containing `dns` and lowers it on 0; on the 3 pairs containing `suricata` but not `dns` it LOWERS 3 and raises 0. Largest `|chorus beta 0.0 - pgd|` across the 10 pairs where both exist: 0.0129.
+- **B_santos_to_rm / prismflow:** `beta` 0 -> 1 RAISES attack success on 4 of the 4 pairs containing `dns` and lowers it on 0; on the 3 pairs containing `suricata` but not `dns` it LOWERS 3 and raises 0. Largest `|chorus beta 0.0 - pgd|` across the 10 pairs where both exist: 0.0070.
+
+Read those counts against the `same sign` columns before treating any of them as an effect: a row carried by one seed appears with a std of its own size and a `same sign` below 5/5, and section 5 names the one case where a single seed carries a whole mean.
 
