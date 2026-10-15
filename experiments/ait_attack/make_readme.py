@@ -455,6 +455,35 @@ def section_single_view(results: dict) -> list[str]:
     return out
 
 
+def seed_carried_cells(results: dict) -> list[tuple]:
+    """k=1 cells whose mean is carried by their single largest seed.
+
+    The criterion is INFLATION, not merely spread: the seed has to be the
+    largest, and dropping it has to at least halve the mean. A cell whose
+    outlier is its SMALLEST seed is a cell whose mean is held DOWN by one
+    seed, which is a different defect and is not what this reports.
+
+    Shared by section 5.2(b), which tabulates these, and section 11, which
+    counts them, so the two can never disagree about how many there are.
+    """
+    found = []
+    for dname, record in results["directions"].items():
+        for system in ("naive", "prismflow"):
+            cells = record["systems"][system]["cells"]
+            for views, cell in by_subset(cells, "chorus", 1, 1.0, 1.0).items():
+                seeds = per_seed_map(cell, "attack_success")
+                stat = cell.get("summary", {}).get("attack_success")
+                if len(seeds) < 3 or not stat or stat["mean"] <= 0:
+                    continue
+                top = max(seeds, key=lambda s: seeds[s])
+                rest = [v for s, v in seeds.items() if s != top]
+                rmean = float(np.mean(rest))
+                if rmean < 0.5 * stat["mean"]:
+                    found.append((dname, system, views, seeds, stat, top,
+                                  rmean, float(np.std(rest))))
+    return found
+
+
 def section_pairs_that_add_nothing(results: dict) -> list[str]:
     """5.2: the two read-before-quoting warnings, both derived.
 
@@ -540,27 +569,7 @@ def section_pairs_that_add_nothing(results: dict) -> list[str]:
             "mean. A cell whose mean survives the drop is a population; one "
             "whose mean collapses is one seed with four quiet ones beside "
             "it:", ""]
-    found = []
-    for dname, record in results["directions"].items():
-        for system in ("naive", "prismflow"):
-            cells = record["systems"][system]["cells"]
-            for views, cell in by_subset(cells, "chorus", 1, 1.0, 1.0).items():
-                seeds = per_seed_map(cell, "attack_success")
-                stat = cell.get("summary", {}).get("attack_success")
-                if len(seeds) < 3 or not stat or stat["mean"] <= 0:
-                    continue
-                mean = stat["mean"]
-                # The criterion is INFLATION, not merely spread: the seed has
-                # to be the largest, and dropping it has to at least halve the
-                # mean. A cell whose outlier is its SMALLEST seed is a cell
-                # whose mean is held DOWN by one seed, which is a different
-                # defect and is not what this table claims.
-                top = max(seeds, key=lambda s: seeds[s])
-                rest = [v for s, v in seeds.items() if s != top]
-                rmean = float(np.mean(rest))
-                if rmean < 0.5 * mean:
-                    found.append((dname, system, views, seeds, stat, top,
-                                  rmean, float(np.std(rest))))
+    found = seed_carried_cells(results)
     if found:
         out += header(["direction", "system", "compromised view",
                        "per-seed attack success", "5-seed mean +/- std",
@@ -1496,11 +1505,16 @@ def coordination_reading(results: dict) -> list[str]:
                 f"`|chorus beta 0.0 - pgd|` across the "
                 f"{len(checks)} pairs where both exist: "
                 + (f"{worst:.4f}." if worst is not None else f"{NOT_MEASURED}."))
+    carried = seed_carried_cells(results)
+    units = sorted({f"{d} / {s}" for d, s, *_ in carried})
     out += ["", "Read those counts against the `same sign` columns before "
-            "treating any of them as an effect: a row carried by one seed "
-            "appears with a std of its own size and a `same sign` below 5/5, "
-            "and section 5 names the one case where a single seed carries a "
-            "whole mean.", ""]
+            "treating any of them as an effect: a `same sign` below 5/5 means "
+            "the seeds disagree and the mean is an average over a split "
+            "population, not a measurement of one. Section 5.2(b) lists the "
+            f"{len(carried)} `k=1` cells whose mean is carried by a single "
+            f"seed"
+            + (f", in {', '.join(units)}" if units else "")
+            + ".", ""]
     return out
 
 

@@ -707,5 +707,5 @@ The last column pair is a consistency check, not an effect: `run_ait_attack.py:5
 - **B_santos_to_rm / naive:** `beta` 0 -> 1 RAISES attack success on 4 of the 4 pairs containing `dns` and lowers it on 0; on the 3 pairs containing `suricata` but not `dns` it LOWERS 3 and raises 0. Largest `|chorus beta 0.0 - pgd|` across the 10 pairs where both exist: 0.0129.
 - **B_santos_to_rm / prismflow:** `beta` 0 -> 1 RAISES attack success on 4 of the 4 pairs containing `dns` and lowers it on 0; on the 3 pairs containing `suricata` but not `dns` it LOWERS 3 and raises 0. Largest `|chorus beta 0.0 - pgd|` across the 10 pairs where both exist: 0.0070.
 
-Read those counts against the `same sign` columns before treating any of them as an effect: a row carried by one seed appears with a std of its own size and a `same sign` below 5/5, and section 5 names the one case where a single seed carries a whole mean.
+Read those counts against the `same sign` columns before treating any of them as an effect: a `same sign` below 5/5 means the seeds disagree and the mean is an average over a split population, not a measurement of one. Section 5.2(b) lists the 6 `k=1` cells whose mean is carried by a single seed, in B_santos_to_rm / naive, B_santos_to_rm / prismflow.
 
