@@ -861,6 +861,36 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
     return out
 
 
+GITIGNORE = Path(".gitignore")
+
+#: The two raw result files re-ignored by name, and why each rule is there.
+REIGNORED = {
+    "results/ait_attack/results.json":
+        "re-ignores the 25.69 MB raw json; the `.json.gz` stays tracked",
+    "results/ait_attack/results.3of4units_20261014_0022.json":
+        "re-ignores the 17.44 MB raw json; the `.json.gz` stays tracked",
+}
+
+
+def gitignore_reignore_rows() -> list[list[str]]:
+    """Read `.gitignore` and report where each re-ignore rule actually sits.
+
+    The line numbers are read from the file rather than typed in, so they
+    cannot go stale if the block moves; a rule that is not present is
+    reported as NOT MEASURED rather than silently claimed.
+    """
+    try:
+        lines = GITIGNORE.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        lines = []
+    rows = []
+    for rule, effect in REIGNORED.items():
+        at = next((f"{i}" for i, text in enumerate(lines, 1)
+                   if text.strip() == rule), NOT_MEASURED)
+        rows.append([at, f"`{rule}`", effect])
+    return rows
+
+
 def section_evidence(results: dict, manifest) -> list[str]:
     out = ["## 10. Retained run evidence", "",
            "Nothing from the failed and completed runs was deleted. These files are "
@@ -920,8 +950,8 @@ def section_evidence(results: dict, manifest) -> list[str]:
             "largest results file tracked anywhere else in this repository is "
             "0.40 MB. They are therefore committed as **gzip (`-9`)** rather "
             "than raw json, which is the only departure from the convention "
-            "tracking `results/*/*.json`; `.gitignore` gains one line, "
-            "`!results/*/*.json.gz`, to allow it. Both are in the repository at "
+            "tracking `results/*/*.json`; `.gitignore` carries one un-ignore line "
+            "for them, `!results/*/*.json.gz`. Both are in the repository at "
             "this commit:", ""]
     entries = (manifest or {}).get("files", {})
     out += header(["committed file", "raw json", "gzip -9", "sha256 of the "
@@ -965,15 +995,30 @@ def section_evidence(results: dict, manifest) -> list[str]:
             "unchanged.", "",
             "**The uncompressed `results.json` and "
             "`results.3of4units_20261014_0022.json` remain on disk in this "
-            "working copy, and nothing currently stops them being committed "
-            "alongside the `.gz`.** They are listed in `.git/info/exclude`, but "
-            "that listing is INERT: `.gitignore`'s `!results/*/*.json` "
-            "re-includes them and `.gitignore` outranks "
-            "`$GIT_DIR/info/exclude`, so `git check-ignore -v "
-            "results/ait_attack/results.json` reports `.gitignore:31` as the "
-            "deciding rule and `git add` on either file still succeeds. Closing "
-            "that hole needs a `.gitignore` rule re-ignoring the two names ahead "
-            "of the `.json` un-ignore, which is NOT part of this commit.",
+            "working copy, and are re-ignored by `.gitignore`** so they cannot "
+            "be committed raw alongside the `.gz`. Two rules naming the two "
+            "files exactly sit AFTER the `!results/*/*.json` un-ignore that "
+            "would otherwise re-include them, and for `.gitignore` the last "
+            "matching pattern wins:", ""]
+    out += header(["`.gitignore` line", "rule", "effect"])
+    for lineno, rule, effect in gitignore_reignore_rows():
+        out += [line([lineno, rule, effect])]
+    out += ["",
+            "Measured, not asserted - `git check-ignore -v` names the new rule "
+            "as the deciding one and `git add` refuses both files without "
+            "`-f`:", "",
+            "```sh",
+            "git check-ignore -v results/ait_attack/results.json",
+            "git add --dry-run results/ait_attack/results.json   # exits 1",
+            "```", "",
+            "This replaces the `.git/info/exclude` entries described in an "
+            "earlier commit, which were inert: `.gitignore` outranks "
+            "`$GIT_DIR/info/exclude`, so an exclude entry could not override "
+            "the `!results/*/*.json` un-ignore. The entries are harmless and "
+            "are left in place. The committed `.json.gz`, "
+            "`results_manifest.json` and every other tracked file under "
+            "`results/` are unaffected: the two new rules match those two names "
+            "only.",
             ""]
     return out
 

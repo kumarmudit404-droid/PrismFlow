@@ -29,6 +29,8 @@ results/*
 !results/*/
 results/*/*
 !results/*/*.json
+results/ait_attack/results.json
+results/ait_attack/results.3of4units_20261014_0022.json
 # Part 29's two large result files are committed as gzip (-9): 25.69 MB and
 # 17.44 MB raw, against 0.40 MB for the largest results file tracked anywhere
 # else here. results_manifest.json pins the sha256 of the DECOMPRESSED json.

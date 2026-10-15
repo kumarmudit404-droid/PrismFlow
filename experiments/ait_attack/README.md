@@ -488,7 +488,7 @@ A third false start at 08:04:20 produced no log at all: cmd.exe quoting swallowe
 
 **What is and is not in the repository.** The four `logs/` entries are retained on disk but NOT committed: `.gitignore` ignores `logs/*` except `.gitkeep`, the existing convention, unchanged for this Part. So a fresh clone has no per-cell heartbeat trail.
 
-The two largest `results/` files exceed 10 MB as raw json, and the largest results file tracked anywhere else in this repository is 0.40 MB. They are therefore committed as **gzip (`-9`)** rather than raw json, which is the only departure from the convention tracking `results/*/*.json`; `.gitignore` gains one line, `!results/*/*.json.gz`, to allow it. Both are in the repository at this commit:
+The two largest `results/` files exceed 10 MB as raw json, and the largest results file tracked anywhere else in this repository is 0.40 MB. They are therefore committed as **gzip (`-9`)** rather than raw json, which is the only departure from the convention tracking `results/*/*.json`; `.gitignore` carries one un-ignore line for them, `!results/*/*.json.gz`. Both are in the repository at this commit:
 
 | committed file | raw json | gzip -9 | sha256 of the DECOMPRESSED json |
 | --- | --- | --- | --- |
@@ -509,5 +509,19 @@ PYTHONPATH=. .venv/Scripts/python.exe \
 
 The three reader scripts (`make_readme.py`, `check_determinism.py`, `detector_score_stats.py`) go through `experiments/ait_attack/results_io.py`, which prefers a raw `.json` when one is present on disk, falls back to the committed `.json.gz`, and checks the bytes it parsed against `results_manifest.json` before using them - a digest mismatch raises rather than being reported. `run_ait_attack.py` is unchanged and still writes raw json; the `.gz` and the manifest are produced after a run by `results_io.py --write-manifest`. The smaller `results.A_naive_checkpoint.json` (4.45 MB) is committed raw, unchanged.
 
-**The uncompressed `results.json` and `results.3of4units_20261014_0022.json` remain on disk in this working copy, and nothing currently stops them being committed alongside the `.gz`.** They are listed in `.git/info/exclude`, but that listing is INERT: `.gitignore`'s `!results/*/*.json` re-includes them and `.gitignore` outranks `$GIT_DIR/info/exclude`, so `git check-ignore -v results/ait_attack/results.json` reports `.gitignore:31` as the deciding rule and `git add` on either file still succeeds. Closing that hole needs a `.gitignore` rule re-ignoring the two names ahead of the `.json` un-ignore, which is NOT part of this commit.
+**The uncompressed `results.json` and `results.3of4units_20261014_0022.json` remain on disk in this working copy, and are re-ignored by `.gitignore`** so they cannot be committed raw alongside the `.gz`. Two rules naming the two files exactly sit AFTER the `!results/*/*.json` un-ignore that would otherwise re-include them, and for `.gitignore` the last matching pattern wins:
+
+| `.gitignore` line | rule | effect |
+| --- | --- | --- |
+| 32 | `results/ait_attack/results.json` | re-ignores the 25.69 MB raw json; the `.json.gz` stays tracked |
+| 33 | `results/ait_attack/results.3of4units_20261014_0022.json` | re-ignores the 17.44 MB raw json; the `.json.gz` stays tracked |
+
+Measured, not asserted - `git check-ignore -v` names the new rule as the deciding one and `git add` refuses both files without `-f`:
+
+```sh
+git check-ignore -v results/ait_attack/results.json
+git add --dry-run results/ait_attack/results.json   # exits 1
+```
+
+This replaces the `.git/info/exclude` entries described in an earlier commit, which were inert: `.gitignore` outranks `$GIT_DIR/info/exclude`, so an exclude entry could not override the `!results/*/*.json` un-ignore. The entries are harmless and are left in place. The committed `.json.gz`, `results_manifest.json` and every other tracked file under `results/` are unaffected: the two new rules match those two names only.
 
