@@ -1,11 +1,21 @@
 """Part 29 result loading, shared by the three reader scripts.
 
-`results.json` (25.69 MB) and `results.3of4units_20261014_0022.json` (17.44 MB)
+`results.json` (26.94 MB) and `results.3of4units_20261014_0022.json` (18.28 MB)
 are committed as gzip (`-9`) instead of raw JSON, because the convention in
-`.gitignore` tracks `results/*/*.json` and the largest results file previously
-tracked anywhere in this repository is 0.40 MB. The raw files stay on disk and
-are excluded locally via `.git/info/exclude`, so a working copy that still has
-them keeps using them.
+`.gitignore` tracks `results/*/*.json` and the largest results file tracked
+anywhere else in this repository is 0.42 MB
+(`results/comparison/detector.json`). Those three sizes are the `raw_bytes` of
+`results_manifest.json` and the byte count on disk, divided by 1e6 -- the same
+unit README section 10 prints, which derives all three rather than quoting
+these. An earlier version of this docstring gave 25.69, 17.44 and 0.40: those
+are MiB, and were labelled MB.
+
+The raw `.json` files stay on disk, so a working copy that still has them keeps
+using them, and they are re-ignored by name at `.gitignore` lines 32-33 so they
+cannot be committed raw alongside the `.gz`. The `.git/info/exclude` entries an
+earlier version of this docstring credited were inert: `.gitignore` outranks
+`$GIT_DIR/info/exclude`, so they could not override the `!results/*/*.json`
+un-ignore.
 
 `load_results` therefore:
 

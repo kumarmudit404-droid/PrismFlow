@@ -488,7 +488,7 @@ A third false start at 08:04:20 produced no log at all: cmd.exe quoting swallowe
 
 **What is and is not in the repository.** The four `logs/` entries are retained on disk but NOT committed: `.gitignore` ignores `logs/*` except `.gitkeep`, the existing convention, unchanged for this Part. So a fresh clone has no per-cell heartbeat trail.
 
-The two largest `results/` files exceed 10 MB as raw json, and the largest results file tracked anywhere else in this repository is 0.40 MB. They are therefore committed as **gzip (`-9`)** rather than raw json, which is the only departure from the convention tracking `results/*/*.json`; `.gitignore` carries one un-ignore line for them, `!results/*/*.json.gz`. Both are in the repository at this commit:
+The two largest `results/` files exceed 10 MB as raw json, and the largest results file tracked anywhere else in this repository is 0.42 MB (`results/comparison/detector.json`). Every MB in this section is bytes / 1e6, the same unit `results_manifest.json` records. They are therefore committed as **gzip (`-9`)** rather than raw json, which is the only departure from the convention tracking `results/*/*.json`; `.gitignore` carries one un-ignore line for them, `!results/*/*.json.gz`. Both are in the repository at this commit:
 
 | committed file | raw json | gzip -9 | sha256 of the DECOMPRESSED json |
 | --- | --- | --- | --- |
@@ -507,7 +507,7 @@ PYTHONPATH=. .venv/Scripts/python.exe \
     -m experiments.ait_attack.results_io --verify
 ```
 
-The three reader scripts (`make_readme.py`, `check_determinism.py`, `detector_score_stats.py`) go through `experiments/ait_attack/results_io.py`, which prefers a raw `.json` when one is present on disk, falls back to the committed `.json.gz`, and checks the bytes it parsed against `results_manifest.json` before using them - a digest mismatch raises rather than being reported. `run_ait_attack.py` is unchanged and still writes raw json; the `.gz` and the manifest are produced after a run by `results_io.py --write-manifest`. The smaller `results.A_naive_checkpoint.json` (4.45 MB) is committed raw, unchanged.
+The three reader scripts (`make_readme.py`, `check_determinism.py`, `detector_score_stats.py`) go through `experiments/ait_attack/results_io.py`, which prefers a raw `.json` when one is present on disk, falls back to the committed `.json.gz`, and checks the bytes it parsed against `results_manifest.json` before using them - a digest mismatch raises rather than being reported. `run_ait_attack.py` is unchanged and still writes raw json; the `.gz` and the manifest are produced after a run by `results_io.py --write-manifest`. The smaller `results.A_naive_checkpoint.json` (4.66 MB) is committed raw, unchanged.
 
 **The uncompressed `results.json` and `results.3of4units_20261014_0022.json` remain on disk in this working copy, and are re-ignored by `.gitignore`** so they cannot be committed raw alongside the `.gz`. Two rules naming the two files exactly sit AFTER the `!results/*/*.json` un-ignore that would otherwise re-include them, and for `.gitignore` the last matching pattern wins:
 

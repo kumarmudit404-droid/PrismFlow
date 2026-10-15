@@ -861,6 +861,58 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
     return out
 
 
+#: Every byte count the README prints is divided by this, and the unit is
+#: always written out as MB beside it, so no figure is ever a MiB wearing an
+#: MB label. results_manifest.json's raw_bytes/gz_bytes use the same divisor.
+MB = 1_000_000
+
+#: The Part 29 artefacts to exclude when asking what the LARGEST results file
+#: tracked anywhere ELSE in the repository is.
+PART29_ARTEFACTS = (
+    "results/ait_attack/results.json.gz",
+    "results/ait_attack/results.3of4units_20261014_0022.json.gz",
+    "results/ait_attack/results.A_naive_checkpoint.json",
+)
+
+
+def size_mb(path) -> str:
+    """`<n> MB` from the file's byte count on disk, or NOT MEASURED."""
+    try:
+        return f"{Path(path).stat().st_size / MB:.2f} MB"
+    except OSError:
+        return NOT_MEASURED
+
+
+def largest_other_tracked_result() -> tuple[str, str]:
+    """`(size, path)` of the biggest TRACKED file under `results/` that is not
+    a Part 29 artefact.
+
+    `git ls-files` is the only honest source here: the claim is about what the
+    repository tracks, and `results/` also holds untracked scratch output
+    (`*_quick/` directories) that a plain disk walk would count. Both values
+    are NOT MEASURED if git cannot be reached.
+    """
+    import subprocess
+    try:
+        listed = subprocess.run(["git", "ls-files", "results/"], check=True,
+                                capture_output=True, text=True).stdout.split()
+    except (OSError, subprocess.SubprocessError):
+        return NOT_MEASURED, NOT_MEASURED
+    biggest, where = -1, None
+    for rel in listed:
+        if rel in PART29_ARTEFACTS:
+            continue
+        try:
+            size = Path(rel).stat().st_size
+        except OSError:
+            continue
+        if size > biggest:
+            biggest, where = size, rel
+    if where is None:
+        return NOT_MEASURED, NOT_MEASURED
+    return f"{biggest / MB:.2f} MB", where
+
+
 GITIGNORE = Path(".gitignore")
 
 #: The raw result files re-ignored by name, keyed by their manifest entry so
@@ -888,7 +940,7 @@ def gitignore_reignore_rows(manifest) -> list[list[str]]:
         at = next((f"{i}" for i, text in enumerate(lines, 1)
                    if text.strip() == rule), NOT_MEASURED)
         raw = (entries.get(name) or {}).get("raw_bytes")
-        size = f"{raw / 1_000_000:.2f} MB" if raw else NOT_MEASURED
+        size = f"{raw / MB:.2f} MB" if raw else NOT_MEASURED
         rows.append([at, f"`{rule}`",
                      f"re-ignores the {size} raw json; the `.json.gz` "
                      f"stays tracked"])
@@ -896,6 +948,7 @@ def gitignore_reignore_rows(manifest) -> list[list[str]]:
 
 
 def section_evidence(results: dict, manifest) -> list[str]:
+    _other_size, _other_path = largest_other_tracked_result()
     out = ["## 10. Retained run evidence", "",
            "Nothing from the failed and completed runs was deleted. These files are "
            "kept deliberately and are not findings:", ""]
@@ -951,8 +1004,10 @@ def section_evidence(results: dict, manifest) -> list[str]:
             "`logs/*` except `.gitkeep`, the existing convention, unchanged for "
             "this Part. So a fresh clone has no per-cell heartbeat trail.", "",
             "The two largest `results/` files exceed 10 MB as raw json, and the "
-            "largest results file tracked anywhere else in this repository is "
-            "0.40 MB. They are therefore committed as **gzip (`-9`)** rather "
+            f"largest results file tracked anywhere else in this repository is "
+            f"{_other_size} (`{_other_path}`). Every MB in this section is "
+            f"bytes / 1e6, the same unit `results_manifest.json` records. They "
+            "are therefore committed as **gzip (`-9`)** rather "
             "than raw json, which is the only departure from the convention "
             "tracking `results/*/*.json`; `.gitignore` carries one un-ignore line "
             "for them, `!results/*/*.json.gz`. Both are in the repository at "
@@ -962,8 +1017,8 @@ def section_evidence(results: dict, manifest) -> list[str]:
                    "DECOMPRESSED json"])
     if entries:
         for name, entry in entries.items():
-            raw_mb = entry.get("raw_bytes", 0) / 1_000_000
-            gz_mb = entry.get("gz_bytes", 0) / 1_000_000
+            raw_mb = entry.get("raw_bytes", 0) / MB
+            gz_mb = entry.get("gz_bytes", 0) / MB
             out.append(line([f"`results/ait_attack/{entry.get('gz_name', name)}`",
                              f"{raw_mb:.2f} MB", f"{gz_mb:.2f} MB",
                              f"`{entry.get('sha256_decompressed_json', NOT_MEASURED)}`"]))
@@ -995,8 +1050,9 @@ def section_evidence(results: dict, manifest) -> list[str]:
             "rather than being reported. `run_ait_attack.py` is unchanged and "
             "still writes raw json; the `.gz` and the manifest are produced after "
             "a run by `results_io.py --write-manifest`. The smaller "
-            "`results.A_naive_checkpoint.json` (4.45 MB) is committed raw, "
-            "unchanged.", "",
+            f"`results.A_naive_checkpoint.json` "
+            f"({size_mb(ROOT / 'results.A_naive_checkpoint.json')}) is "
+            "committed raw, unchanged.", "",
             "**The uncompressed `results.json` and "
             "`results.3of4units_20261014_0022.json` remain on disk in this "
             "working copy, and are re-ignored by `.gitignore`** so they cannot "
