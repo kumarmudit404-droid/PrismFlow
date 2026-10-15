@@ -513,8 +513,8 @@ The three reader scripts (`make_readme.py`, `check_determinism.py`, `detector_sc
 
 | `.gitignore` line | rule | effect |
 | --- | --- | --- |
-| 32 | `results/ait_attack/results.json` | re-ignores the 25.69 MB raw json; the `.json.gz` stays tracked |
-| 33 | `results/ait_attack/results.3of4units_20261014_0022.json` | re-ignores the 17.44 MB raw json; the `.json.gz` stays tracked |
+| 32 | `results/ait_attack/results.json` | re-ignores the 26.94 MB raw json; the `.json.gz` stays tracked |
+| 33 | `results/ait_attack/results.3of4units_20261014_0022.json` | re-ignores the 18.28 MB raw json; the `.json.gz` stays tracked |
 
 Measured, not asserted - `git check-ignore -v` names the new rule as the deciding one and `git add` refuses both files without `-f`:
 

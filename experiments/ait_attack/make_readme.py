@@ -863,31 +863,35 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
 
 GITIGNORE = Path(".gitignore")
 
-#: The two raw result files re-ignored by name, and why each rule is there.
-REIGNORED = {
-    "results/ait_attack/results.json":
-        "re-ignores the 25.69 MB raw json; the `.json.gz` stays tracked",
-    "results/ait_attack/results.3of4units_20261014_0022.json":
-        "re-ignores the 17.44 MB raw json; the `.json.gz` stays tracked",
-}
+#: The raw result files re-ignored by name, keyed by their manifest entry so
+#: the size quoted for each is the manifest's, in the same MB as the table
+#: above it, and never a second hand-typed figure.
+REIGNORED = ["results.json", "results.3of4units_20261014_0022.json"]
 
 
-def gitignore_reignore_rows() -> list[list[str]]:
-    """Read `.gitignore` and report where each re-ignore rule actually sits.
+def gitignore_reignore_rows(manifest) -> list[list[str]]:
+    """Report where each re-ignore rule actually sits in `.gitignore`.
 
-    The line numbers are read from the file rather than typed in, so they
-    cannot go stale if the block moves; a rule that is not present is
-    reported as NOT MEASURED rather than silently claimed.
+    Both the line number and the file size are read rather than typed in -
+    the number from `.gitignore` itself, the size from
+    `results_manifest.json` - so neither can go stale, and a rule that is
+    not present is reported as NOT MEASURED rather than silently claimed.
     """
     try:
         lines = GITIGNORE.read_text(encoding="utf-8").splitlines()
     except OSError:
         lines = []
+    entries = (manifest or {}).get("files", {})
     rows = []
-    for rule, effect in REIGNORED.items():
+    for name in REIGNORED:
+        rule = f"results/ait_attack/{name}"
         at = next((f"{i}" for i, text in enumerate(lines, 1)
                    if text.strip() == rule), NOT_MEASURED)
-        rows.append([at, f"`{rule}`", effect])
+        raw = (entries.get(name) or {}).get("raw_bytes")
+        size = f"{raw / 1_000_000:.2f} MB" if raw else NOT_MEASURED
+        rows.append([at, f"`{rule}`",
+                     f"re-ignores the {size} raw json; the `.json.gz` "
+                     f"stays tracked"])
     return rows
 
 
@@ -1001,7 +1005,7 @@ def section_evidence(results: dict, manifest) -> list[str]:
             "would otherwise re-include them, and for `.gitignore` the last "
             "matching pattern wins:", ""]
     out += header(["`.gitignore` line", "rule", "effect"])
-    for lineno, rule, effect in gitignore_reignore_rows():
+    for lineno, rule, effect in gitignore_reignore_rows(manifest):
         out += [line([lineno, rule, effect])]
     out += ["",
             "Measured, not asserted - `git check-ignore -v` names the new rule "
