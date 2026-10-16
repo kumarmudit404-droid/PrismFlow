@@ -841,6 +841,303 @@ def section_not_like_for_like(results: dict, subset: dict | None) -> list[str]:
     return out
 
 
+#: L3's evidence, cut into groups that are never mixed. `chorus` and `pgd` are
+#: separate attacks and Part 09's claim is about the chorus attack
+#: specifically, so no group spans the two; `beta` and `epsilon` are the axes
+#: Part 09 held fixed, so each gets its own group rather than being averaged
+#: into the headline one. Each entry is (key, title, extra column, predicate,
+#: value of that column).
+def _l3_groups() -> list[tuple]:
+    def chorus(eps=None, beta=None, k=None):
+        def pred(c):
+            return (c["kind"] == "chorus"
+                    and (eps is None or c["epsilon"] == eps)
+                    and (beta is None or c["beta"] == beta)
+                    and (k is None or c["k"] == k))
+        return pred
+
+    groups = [("a", "(a) chorus, eps=1.0, beta=1.0 - the headline grid point",
+               None, chorus(eps=1.0, beta=1.0), None)]
+    for beta in (0.0, 5.0):
+        groups.append(("b", "(b) chorus, eps=1.0, beta=0.0 and beta=5.0 - "
+                       "coordination off and at 5x", "beta",
+                       chorus(eps=1.0, beta=beta), f"{beta:g}"))
+    groups.append(("c", "(c) pgd - a DIFFERENT attack, never pooled with "
+                   "chorus above", None, lambda c: c["kind"] == "pgd", None))
+    for eps in (0.2, 0.5, 1.0, 2.0):
+        groups.append(("d", "(d) chorus, beta=1.0, every epsilon in the grid",
+                       "epsilon", chorus(eps=eps, beta=1.0), f"{eps:g}"))
+    return groups
+
+
+def l3_cells(record: dict, predicate) -> list[tuple]:
+    """`(key, views, dns, Paired)` for prismflow - naive on every matching cell.
+
+    The pairing is by CELL KEY, so the two arms are always the same grid point
+    and the same compromised subset; `paired_diff` then pairs within seed.
+    """
+    pf = record["systems"]["prismflow"]["cells"]
+    nv = record["systems"]["naive"]["cells"]
+    out = []
+    for key, cell in sorted(pf.items()):
+        if not cell.get("k") or not predicate(cell):
+            continue
+        p = paired_diff(cell, nv.get(key))
+        if p.mean is None:
+            continue
+        out.append((key, tuple(cell["compromised_views"]),
+                    bool(cell["dns_compromised"]), p))
+    return out
+
+
+class L3Cut(NamedTuple):
+    """One (group, direction, dns side) cell count for L3.
+
+    `keys` carries the cell keys behind the counts so the verdict can
+    de-duplicate: group (d) sweeps every epsilon and therefore CONTAINS group
+    (a)'s eps=1.0 cells, and a total over both groups would count those twice.
+    """
+    direction: str
+    dns: bool
+    n: int
+    lower: int           # prismflow mean < naive mean: the discount helped
+    lower_unanimous: int  # ...and all 5 seeds agreed
+    higher: int          # prismflow mean > naive mean: Part 09's sign
+    higher_unanimous: int
+    lo: float
+    hi: float
+    keys: tuple          # (cell key, mean, unanimous) per cell
+    extra: str = ""      # the group's sub-row, e.g. `beta=0` or `epsilon=0.2`
+
+
+def l3_cut(dname: str, rows: list[tuple], dns: bool) -> L3Cut | None:
+    side = [(k, p) for k, _v, d, p in rows if d is dns]
+    if not side:
+        return None
+    means = [p.mean for _k, p in side]
+    return L3Cut(
+        dname, dns, len(side),
+        sum(1 for _k, p in side if p.mean < 0),
+        sum(1 for _k, p in side if p.mean < 0 and p.unanimous),
+        sum(1 for _k, p in side if p.mean > 0),
+        sum(1 for _k, p in side if p.mean > 0 and p.unanimous),
+        min(means), max(means),
+        tuple((k, p.mean, p.unanimous) for k, p in side))
+
+
+def section_l3(results: dict) -> list[str]:
+    """L3's evidence and verdict, re-cut by attack, beta, epsilon and dns side.
+
+    Every count is `prismflow - naive` attack success, paired WITHIN SEED on
+    the same cell key, then counted. The unanimity columns are what keep a
+    1-seed sign from being quoted as a direction: a cell counted under
+    `PrismFlow higher` with 2/5 unanimity has not been shown to move.
+    """
+    out = ["### L3 - the discount addresses redundant evidence, not unreliable "
+           "evidence (and Part 09's extension: reading the axis confers no "
+           "defence)", "",
+           "Part 09's claim is about **the chorus attack**: it found PrismFlow "
+           "strictly worse than naive fusion in 12/12 attacked cells on "
+           "synthetic data. The evidence below is therefore cut by attack "
+           "first - **`chorus` and `pgd` are never pooled** - then by the "
+           "`beta` and `epsilon` Part 09 held fixed, then by the `dns` split, "
+           "then by direction. Nothing is averaged across any of those four.",
+           "",
+           "Each cell is one grid point and one compromised subset. The "
+           "difference is `prismflow - naive` attack success **paired within "
+           "seed on the same cell key**, so the two arms always share the grid "
+           "point, the subset and the seed. **`PrismFlow higher` is Part 09's "
+           "sign** (the discount made the attack work better); `PrismFlow "
+           "lower` is the opposite. The `5/5` columns count the cells where "
+           "all five seeds agree with the sign of their own mean - a cell "
+           "counted in a direction without unanimity has not been shown to "
+           "move that way.", ""]
+    cuts: dict[str, list[L3Cut]] = {}
+    seen: set[str] = set()
+    for gkey, title, extra, pred, extra_value in _l3_groups():
+        if gkey not in seen:
+            out += [f"**{title}**", ""]
+            out += header([c for c in
+                           ([extra] if extra else []) + [
+                               "direction", "dns in set", "cells",
+                               "PrismFlow lower", "of those 5/5",
+                               "PrismFlow higher", "of those 5/5",
+                               "mean diff range"]])
+            seen.add(gkey)
+        for dname, record in results["directions"].items():
+            rows = l3_cells(record, pred)
+            for dns in (True, False):
+                cut = l3_cut(dname, rows, dns)
+                if cut is None:
+                    continue
+                if extra:
+                    cut = cut._replace(extra=f"{extra}={extra_value}")
+                cuts.setdefault(gkey, []).append(cut)
+                out.append(line(
+                    ([extra_value] if extra else [])
+                    + [cut.direction, "YES" if dns else "no", str(cut.n),
+                       str(cut.lower), str(cut.lower_unanimous),
+                       str(cut.higher), str(cut.higher_unanimous),
+                       f"{cut.lo:+.4f}..{cut.hi:+.4f}"]))
+        if gkey in ("a", "c") or extra_value in ("5", "2"):
+            out.append("")
+    if out[-1] != "":
+        out.append("")
+    out += l3_verdict(cuts)
+    return out
+
+
+def l3_verdict(cuts: dict[str, list[L3Cut]]) -> list[str]:
+    """L3's verdict, every clause derived from the tables above it.
+
+    States where Part 09's sign reappears and where it does not. Makes no
+    claim about why: nothing in this Part measures the discount's internals.
+    """
+    chorus_keys = ("a", "b", "d")
+    chorus = [c for k in chorus_keys for c in cuts.get(k, [])]
+    pgd = cuts.get("c", [])
+    if not chorus:
+        return ["**Verdict: NO EVIDENCE.** No paired chorus cell survived.", ""]
+
+    def side_name(c):
+        return (f"{c.direction}, dns "
+                + ("COMPROMISED" if c.dns else "NOT compromised"))
+
+    # Where Part 09's sign reappears UNANIMOUSLY, and where it reverses.
+    repro = sorted({side_name(c) for c in chorus
+                    if c.higher_unanimous > 0})
+    reversed_ = sorted({side_name(c) for c in chorus
+                        if c.lower_unanimous > 0})
+    both = sorted(set(repro) & set(reversed_))
+    only_repro = sorted(set(repro) - set(reversed_))
+    only_rev = sorted(set(reversed_) - set(repro))
+
+    # De-duplicate by (direction, cell key): group (d) contains group (a).
+    distinct: dict[tuple, tuple] = {}
+    for c in chorus:
+        for key, mean, uni in c.keys:
+            distinct[(c.direction, key)] = (mean, uni)
+    n_cells = len(distinct)
+    n_high = sum(1 for m, _u in distinct.values() if m > 0)
+    n_high_u = sum(1 for m, u in distinct.values() if m > 0 and u)
+    n_low = sum(1 for m, _u in distinct.values() if m < 0)
+    n_low_u = sum(1 for m, u in distinct.values() if m < 0 and u)
+
+    out = ["**Verdict: Part 09's result is PARTIALLY REPRODUCED - it reappears "
+           "in some chorus cells and reverses in others, and which one you get "
+           "is decided by the `dns` split, the direction and `epsilon`, not by "
+           "the attack being chorus.**", "",
+           f"Over the **{n_cells} distinct** paired chorus cells in the tables "
+           f"above - distinct because group (d) sweeps every epsilon and so "
+           f"CONTAINS group (a)'s `eps=1.0` cells, which are counted once "
+           f"here: PrismFlow is HIGHER than naive, which is Part 09's sign, "
+           f"in {n_high} cells, {n_high_u} of them with all 5 seeds agreeing; "
+           f"PrismFlow is LOWER in {n_low} cells, {n_low_u} of them unanimous. "
+           f"Part 09 had 12/12 one way. Neither sign is unanimous across any "
+           f"whole side here.", ""]
+    if only_repro:
+        out += ["**Where Part 09's sign reappears, and only that sign:** "
+                + ", ".join(f"**{s}**" for s in only_repro)
+                + ". Every unanimous chorus cell on these sides has PrismFlow "
+                  "worse than naive.", ""]
+    if both:
+        out += ["**Both signs appear unanimously, in different cells, on all "
+                "of these sides:** " + ", ".join(f"**{s}**" for s in both)
+                + ". So no side has a sign: a sentence of the form 'PrismFlow "
+                  "is worse with `dns` compromised' is false as stated for "
+                  "every side in this Part, and the per-group rows are the "
+                  "result rather than any summary of them.", ""]
+    if only_rev:
+        out += ["**Where Part 09's sign does NOT reappear:** "
+                + ", ".join(f"**{s}**" for s in only_rev)
+                + ". Every unanimous chorus cell on these sides has PrismFlow "
+                  "lower than naive, the opposite of Part 09.", ""]
+
+    # The rows where one sign does dominate its own side, named exactly.
+    def dominant(rows, worse: bool):
+        picked = []
+        for c in rows:
+            u = c.higher_unanimous if worse else c.lower_unanimous
+            other = c.lower_unanimous if worse else c.higher_unanimous
+            if u * 2 > c.n and u > other:
+                prefix = f"`{c.extra}` " if c.extra else ""
+                picked.append(f"{prefix}{side_name(c)} "
+                              f"({u}/{c.n} unanimous)")
+        return picked
+    worse_sides, better_sides = [], []
+    for gkey, label in (("a", "(a) `eps=1.0 beta=1.0`"),
+                        ("b", "(b) `beta=0.0` / `beta=5.0`"),
+                        ("d", "(d) the `epsilon` sweep")):
+        rows = cuts.get(gkey, [])
+        worse, better = dominant(rows, True), dominant(rows, False)
+        worse_sides += [c for c in rows
+                        if c.higher_unanimous * 2 > c.n
+                        and c.higher_unanimous > c.lower_unanimous]
+        better_sides += [c for c in rows
+                         if c.lower_unanimous * 2 > c.n
+                         and c.lower_unanimous > c.higher_unanimous]
+        if not (worse or better):
+            continue
+        out += [f"**Group {label} - sides where one sign carries a unanimous "
+                f"majority of the side's cells:**"]
+        out += [f"  - PrismFlow WORSE (Part 09's sign): "
+                + ("; ".join(worse) if worse else "none")]
+        out += [f"  - PrismFlow BETTER: "
+                + ("; ".join(better) if better else "none"), ""]
+
+    # One derived, checkable statement about where the dominant sides fall.
+    # It describes the arrangement of the counts; it explains nothing.
+    if worse_sides:
+        all_dns = all(c.dns for c in worse_sides)
+        out += [f"Across all three chorus groups, the "
+                f"{len(worse_sides)} (group, direction, side) rows where Part "
+                f"09's sign carries a unanimous majority "
+                + ("ALL have `dns` INSIDE the compromised set"
+                   if all_dns else
+                   f"include {sum(1 for c in worse_sides if not c.dns)} with "
+                   f"`dns` OUTSIDE it")
+                + (f", and the {len(better_sides)} rows where the opposite "
+                   f"sign carries a unanimous majority are "
+                   f"{sum(1 for c in better_sides if not c.dns)} with `dns` "
+                   f"outside and {sum(1 for c in better_sides if c.dns)} with "
+                   f"`dns` inside" if better_sides else "")
+                + ". That is the arrangement of the counts, stated so it can "
+                  "be checked against the tables; it is not a mechanism and "
+                  "nothing below infers one from it.", ""]
+
+    # The epsilon and beta groups, stated separately so neither is averaged in.
+    for gkey, label in (("a", "the headline `eps=1.0 beta=1.0` point"),
+                        ("b", "`beta=0.0` and `beta=5.0`"),
+                        ("d", "the full `epsilon` sweep at `beta=1.0`")):
+        rows = cuts.get(gkey, [])
+        if not rows:
+            continue
+        hi = sum(r.higher_unanimous for r in rows)
+        lo = sum(r.lower_unanimous for r in rows)
+        out += [f"- At {label}: {hi} unanimous cells with PrismFlow worse, "
+                f"{lo} with PrismFlow better, over {sum(r.n for r in rows)} "
+                f"cells."]
+    if pgd:
+        hi = sum(r.higher_unanimous for r in pgd)
+        lo = sum(r.lower_unanimous for r in pgd)
+        out += [f"- `pgd`, reported separately and **not** evidence about "
+                f"Part 09's chorus claim: {hi} unanimous cells with PrismFlow "
+                f"worse, {lo} with PrismFlow better, over "
+                f"{sum(r.n for r in pgd)} cells."]
+    out += ["", "**No mechanism is claimed.** This Part measures fused "
+            "attack success in each arm and nothing inside the discount - no "
+            "per-view alpha, no ENIV trace per cell, no belief margin - so it "
+            "cannot say why a cell came out either way, and the split by "
+            "`dns`, `beta` and `epsilon` above is a description of where the "
+            "signs fall, not an explanation of them. What it does establish "
+            "is narrower than Part 09's wording: PrismFlow was not uniformly "
+            "worse than naive fusion under the chorus attack on this data, so "
+            "'reading the axis confers no defence' must not be restated as a "
+            "blanket result, and neither may its negation. [[L17]] bounds how "
+            "much any of it is worth: one view solves this label.", ""]
+    return out
+
+
 def section_verdicts(results: dict, subset: dict | None) -> list[str]:
     out = ["## 9. Verdicts on L3, L4, L5, L8, L16 and L17", "",
            "Each verdict is split by whether `dns` - the single view that solves "
@@ -855,33 +1152,7 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
         means = [m for m in means if m is not None]
         return (min(means), max(means)) if means else (None, None)
 
-    out += ["### L3 - the discount addresses redundant evidence, not unreliable "
-            "evidence (and Part 09's extension: reading the axis confers no "
-            "defence)", ""]
-    for dname, record in results["directions"].items():
-        paired = record.get("paired_prismflow_minus_naive") or {}
-        for dns in (True, False):
-            rows = [v for v in paired.values()
-                    if v.get("dns_compromised") is dns
-                    and "attack_success" in v.get("diff", {})]
-            if not rows:
-                continue
-            means = [r["diff"]["attack_success"]["mean"] for r in rows]
-            better = sum(1 for m in means if m < 0)
-            side = "dns COMPROMISED" if dns else "dns NOT compromised"
-            out.append(f"- **{dname}, {side}:** PrismFlow lowers attack success in "
-                       f"**{better} of {len(rows)}** cells, difference range "
-                       f"{min(means):+.4f}..{max(means):+.4f}.")
-    out += ["", "**Verdict: L3's extension is NOT reproduced on this data, and the "
-            "direction of the effect depends on the dns split and on which "
-            "direction is read.** Part 09 found PrismFlow strictly worse than naive "
-            "fusion in 12/12 attacked cells on synthetic data. Here the sign is "
-            "mixed and in direction A with `dns` outside the compromised set it "
-            "mostly favours PrismFlow. This is NOT evidence that the discount "
-            "defends: the cells disagree, the two directions disagree, and [[L17]] "
-            "explains why a 5-view fusion comparison on this label is weak evidence "
-            "either way. It does mean Part 09's blanket statement should not be "
-            "restated as if it held on real data.", ""]
+    out += section_l3(results)
 
     out += ["### L4 - the discount is proportional, not capping, and weakens as "
             "evidence grows", ""]
@@ -921,6 +1192,15 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             "gains support here.", ""]
     if counter:
         dname, dlo, dhi, shi = counter
+        # The same cell in the NAIVE arm. If the attack is harmless there too,
+        # the harmlessness cannot be credited to (or blamed on) the discount.
+        nrecord = results["directions"][dname]
+        ncells = nrecord["systems"]["naive"]["cells"]
+        nrows = list(select(ncells, "chorus", 2, 1.0, 1.0, False).values())
+        nsucc = [v for v in (cell_mean(c, "attack_success") for c in nrows)
+                 if v is not None]
+        ndep = [v for v in (cell_mean(c, "dependence_compromised")
+                            for c in nrows) if v is not None]
         out += [f"The deciding cell is **{dname} / prismflow, dns NOT "
                 f"compromised, chorus k=2 eps=1.0**: dependence among the "
                 f"compromised views runs {dlo:.4f}..{dhi:.4f} - up to "
@@ -934,6 +1214,18 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
                 "nonetheless harmless is equally consistent with a discount "
                 "that is proportional, one that caps, and one that does "
                 "nothing at all.", ""]
+        if nsucc and ndep:
+            out += [f"**The naive arm fails in exactly the same cells, so the "
+                    f"harmlessness is not attributable to the discount at "
+                    f"all.** Over the same {len(nrows)} subsets at "
+                    f"**{dname} / naive, dns NOT compromised, chorus k=2 "
+                    f"eps=1.0**, attack success runs "
+                    f"{min(nsucc):.4f}..{max(nsucc):.4f} against PrismFlow's "
+                    f"{shi:.4f} ceiling, with dependence among the compromised "
+                    f"views at {min(ndep):.4f}..{max(ndep):.4f} - the same "
+                    f"high-dependence regime. Naive fusion applies no discount "
+                    f"whatsoever, so a cell where it is equally harmless "
+                    f"cannot be evidence about what the discount did.", ""]
     out += ["What would discriminate is not measured here. Part 29 records no "
             "per-view alpha, no belief margin and no sublinearity curve - the "
             "three quantities L4 is a statement about - so there is nothing in "
@@ -1205,6 +1497,26 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             "it. A single 'effect of beta' averaged over the ten pairs would "
             "average those behaviours and describe neither; section 11 keeps "
             "them per pair for that reason.", ""]
+    #: The directions in which the two families are cleanly opposed, derived
+    #: from the same per-pair shifts the table above prints. L17's closing
+    #: statement is scoped to these and must not be written as a Part-wide
+    #: result: in the other direction the suricata family spans both signs.
+    opposed_directions = sorted({u.split(" / ")[0] for u in clean})
+    other_directions = sorted({u.split(" / ")[0] for u in mixed}
+                              - set(opposed_directions))
+    if opposed_directions:
+        out += ["**The opposite-sign structure is a "
+                + ", ".join(f"`{d}`" for d in opposed_directions)
+                + " result only.** It holds in "
+                + ", ".join(f"**{u}**" for u in clean)
+                + (", and NOT in " + ", ".join(f"**{u}**" for u in mixed)
+                   if mixed else "")
+                + ". Every sentence below about `dns` pairs and `suricata` "
+                  "pairs moving in opposite directions is scoped to "
+                + ", ".join(f"`{d}`" for d in opposed_directions)
+                + (f"; nothing of the kind is established for "
+                   + ", ".join(f"`{d}`" for d in other_directions)
+                   if other_directions else "") + ".", ""]
 
     # (iv) the confound that survives all of it, derived.
     ratios = {d: dns_epsilon_in_std(r)
@@ -1230,8 +1542,15 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             "bounded perturbation of a chosen subset of views moves a fused "
             "prediction when one view carries the label; how that depends on "
             "whether the carrying view is in the subset; how the chorus "
-            "coordination term changes it, with the opposite sign on `dns` "
-            "pairs and `suricata` pairs; and how the suspicion detector and "
+            "coordination term changes it - with the opposite sign on `dns` "
+            "pairs and `suricata` pairs "
+            + ("in " + ", ".join(f"`{d}`" for d in opposed_directions)
+               + " only, not in "
+               + ", ".join(f"`{d}`" for d in other_directions)
+               if opposed_directions and other_directions else
+               "in " + ", ".join(f"`{d}`" for d in opposed_directions)
+               if opposed_directions else "in no direction measured here")
+            + "; and how the suspicion detector and "
             "the calibration metrics behave across that grid. "
             "It does NOT measure how fusion behaves when several views carry "
             "independent evidence about the label, because this label does "

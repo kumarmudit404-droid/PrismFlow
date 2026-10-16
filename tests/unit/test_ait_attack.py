@@ -601,3 +601,96 @@ def test_chorus_differs_from_pgd_at_k2(models_a, prepared_a):
     )
     assert not math.isnan(beta_on["dependence_compromised"]), "k=2 has a within-pair"
     assert beta_on["attack_success"] != beta_off["attack_success"]
+
+
+# ---------------------------------------------------------------------------
+# Section 11's two gates on the paired-difference rows (make_readme.py).
+# ---------------------------------------------------------------------------
+
+def test_sign_consistency_bar_is_unreachable_at_five_seeds():
+    """The |mean| > 2*std rule CANNOT fail at n=5, and that is why it is
+    labelled an invariant in the README rather than a check that passed.
+
+    Minimise the population std of a 5-vector whose mean is 1 subject to one
+    entry not agreeing with that sign. The optimum puts the odd seed at 0 and
+    the other four at 1.25, giving std exactly 0.5 and |mean|/std exactly 2.0,
+    so a strict `>` can never be satisfied by a non-unanimous row.
+    """
+    from experiments.ait_attack.make_readme import (
+        SIGN_CONSISTENCY_STDS, paired_seeds)
+
+    worst = paired_seeds({i: v for i, v in enumerate([1.25] * 4 + [0.0])},
+                         {i: 0.0 for i in range(5)})
+    assert worst.mean == pytest.approx(1.0)
+    assert worst.std == pytest.approx(0.5)
+    assert abs(worst.mean) / worst.std == pytest.approx(SIGN_CONSISTENCY_STDS)
+    assert not worst.unanimous, "the odd seed is exactly 0, so it agrees with neither sign"
+
+    # Nothing non-unanimous can beat it: sample the constrained space.
+    rng = np.random.default_rng(29)
+    for _ in range(20000):
+        d = rng.normal(0.0, 1.0, 5)
+        mean, std = d.mean(), d.std()
+        if std == 0 or mean == 0:
+            continue
+        agree = (d > 0).sum() if mean > 0 else (d < 0).sum()
+        if agree == 5:
+            continue
+        assert abs(mean) / std <= SIGN_CONSISTENCY_STDS + 1e-9
+
+
+def test_sign_consistency_fires_when_it_can():
+    """With the bar lowered it must raise and name the row, not warn."""
+    from experiments.ait_attack import make_readme
+
+    p = make_readme.paired_seeds({0: 1.0, 1: 1.0, 2: 1.0, 3: 1.0, 4: 0.0},
+                                 {i: 0.0 for i in range(5)})
+    row = ("DIR", "SYS", "apache+dns", "synthetic", p)
+    make_readme.check_sign_consistency([row])          # passes at 2.0
+    original = make_readme.SIGN_CONSISTENCY_STDS
+    try:
+        make_readme.SIGN_CONSISTENCY_STDS = 1.5
+        with pytest.raises(make_readme.SignConsistencyError) as excinfo:
+            make_readme.check_sign_consistency([row])
+    finally:
+        make_readme.SIGN_CONSISTENCY_STDS = original
+    message = str(excinfo.value)
+    assert "apache+dns" in message and "README NOT written" in message
+    assert "per-seed diffs=" in message, "the offending row must be printed"
+
+
+def test_row_wiring_check_catches_a_mismatched_aggregate():
+    """check_wiring is the falsifiable half: a printed mean that does not
+    recompute from the row's own per-seed diffs must stop the write."""
+    from experiments.ait_attack import make_readme
+
+    good = make_readme.paired_seeds({0: 1.0, 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.0},
+                                    {i: 0.0 for i in range(5)})
+    make_readme.check_wiring([("DIR", "SYS", "a+b", "col", good)])
+
+    for bad in (good._replace(mean=0.5),
+                good._replace(text="+9.9999 +/- 0.0000"),
+                good._replace(agree=3),
+                good._replace(diffs=(1.0, 1.0, 1.0))):
+        with pytest.raises(make_readme.RowWiringError):
+            make_readme.check_wiring([("DIR", "SYS", "a+b", "col", bad)])
+
+
+def test_paired_count_discloses_exact_zeros():
+    """A seed whose difference is exactly 0 agrees with neither sign, so the
+    count must say so: a 1/5 is not four seeds contradicting the mean."""
+    from experiments.ait_attack.make_readme import paired_seeds
+
+    p = paired_seeds({0: 0.0, 1: 0.0, 2: -1.0, 3: 0.0, 4: 0.0},
+                     {i: 0.0 for i in range(5)})
+    assert p.agree == 1 and p.zeros == 4 and p.opposite == 0
+    assert p.count == "1/5 (4 exactly 0)"
+
+    allzero = paired_seeds({i: 0.0 for i in range(5)},
+                           {i: 0.0 for i in range(5)})
+    assert allzero.count == "5/5 (all exactly 0)"
+
+    split = paired_seeds({0: 1.0, 1: 1.0, 2: 1.0, 3: -1.0, 4: -1.0},
+                         {i: 0.0 for i in range(5)})
+    assert split.opposite == 2 and split.zeros == 0
+    assert split.count == "3/5", "a genuine sign split carries no zero note"

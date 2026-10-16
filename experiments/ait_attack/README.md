@@ -457,12 +457,88 @@ Each verdict is split by whether `dns` - the single view that solves this label 
 
 ### L3 - the discount addresses redundant evidence, not unreliable evidence (and Part 09's extension: reading the axis confers no defence)
 
-- **A_rm_to_santos, dns COMPROMISED:** PrismFlow lowers attack success in **41 of 85** cells, difference range -0.0677..+0.0884.
-- **A_rm_to_santos, dns NOT compromised:** PrismFlow lowers attack success in **76 of 100** cells, difference range -0.1478..+0.0370.
-- **B_santos_to_rm, dns COMPROMISED:** PrismFlow lowers attack success in **50 of 85** cells, difference range -0.2217..+0.1036.
-- **B_santos_to_rm, dns NOT compromised:** PrismFlow lowers attack success in **48 of 100** cells, difference range -0.2082..+0.1401.
+Part 09's claim is about **the chorus attack**: it found PrismFlow strictly worse than naive fusion in 12/12 attacked cells on synthetic data. The evidence below is therefore cut by attack first - **`chorus` and `pgd` are never pooled** - then by the `beta` and `epsilon` Part 09 held fixed, then by the `dns` split, then by direction. Nothing is averaged across any of those four.
 
-**Verdict: L3's extension is NOT reproduced on this data, and the direction of the effect depends on the dns split and on which direction is read.** Part 09 found PrismFlow strictly worse than naive fusion in 12/12 attacked cells on synthetic data. Here the sign is mixed and in direction A with `dns` outside the compromised set it mostly favours PrismFlow. This is NOT evidence that the discount defends: the cells disagree, the two directions disagree, and [[L17]] explains why a 5-view fusion comparison on this label is weak evidence either way. It does mean Part 09's blanket statement should not be restated as if it held on real data.
+Each cell is one grid point and one compromised subset. The difference is `prismflow - naive` attack success **paired within seed on the same cell key**, so the two arms always share the grid point, the subset and the seed. **`PrismFlow higher` is Part 09's sign** (the discount made the attack work better); `PrismFlow lower` is the opposite. The `5/5` columns count the cells where all five seeds agree with the sign of their own mean - a cell counted in a direction without unanimity has not been shown to move that way.
+
+**(a) chorus, eps=1.0, beta=1.0 - the headline grid point**
+
+| direction | dns in set | cells | PrismFlow lower | of those 5/5 | PrismFlow higher | of those 5/5 | mean diff range |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A_rm_to_santos | YES | 11 | 1 | 0 | 10 | 8 | -0.0020..+0.0619 |
+| A_rm_to_santos | no | 14 | 13 | 12 | 1 | 1 | -0.1478..+0.0047 |
+| B_santos_to_rm | YES | 11 | 3 | 1 | 8 | 6 | -0.0639..+0.0849 |
+| B_santos_to_rm | no | 14 | 7 | 5 | 7 | 4 | -0.1569..+0.0631 |
+
+**(b) chorus, eps=1.0, beta=0.0 and beta=5.0 - coordination off and at 5x**
+
+| beta | direction | dns in set | cells | PrismFlow lower | of those 5/5 | PrismFlow higher | of those 5/5 | mean diff range |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | A_rm_to_santos | YES | 10 | 9 | 7 | 1 | 1 | -0.0677..+0.0079 |
+| 0 | A_rm_to_santos | no | 10 | 6 | 4 | 4 | 4 | -0.0265..+0.0119 |
+| 0 | B_santos_to_rm | YES | 10 | 10 | 7 | 0 | 0 | -0.2217..-0.0203 |
+| 0 | B_santos_to_rm | no | 10 | 3 | 0 | 7 | 2 | -0.0147..+0.0587 |
+| 5 | A_rm_to_santos | YES | 10 | 1 | 0 | 9 | 8 | -0.0005..+0.0884 |
+| 5 | A_rm_to_santos | no | 10 | 6 | 5 | 4 | 1 | -0.0419..+0.0370 |
+| 5 | B_santos_to_rm | YES | 10 | 1 | 0 | 9 | 4 | -0.1586..+0.0652 |
+| 5 | B_santos_to_rm | no | 10 | 6 | 6 | 4 | 3 | -0.0634..+0.0716 |
+
+**(c) pgd - a DIFFERENT attack, never pooled with chorus above**
+
+| direction | dns in set | cells | PrismFlow lower | of those 5/5 | PrismFlow higher | of those 5/5 | mean diff range |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A_rm_to_santos | YES | 21 | 16 | 12 | 5 | 1 | -0.0675..+0.0101 |
+| A_rm_to_santos | no | 24 | 14 | 11 | 10 | 7 | -0.0688..+0.0135 |
+| B_santos_to_rm | YES | 21 | 19 | 13 | 2 | 0 | -0.2201..+0.0403 |
+| B_santos_to_rm | no | 24 | 4 | 0 | 20 | 11 | -0.1569..+0.1401 |
+
+**(d) chorus, beta=1.0, every epsilon in the grid**
+
+| epsilon | direction | dns in set | cells | PrismFlow lower | of those 5/5 | PrismFlow higher | of those 5/5 | mean diff range |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.2 | A_rm_to_santos | YES | 11 | 6 | 0 | 5 | 0 | -0.0027..+0.0014 |
+| 0.2 | A_rm_to_santos | no | 14 | 12 | 7 | 2 | 0 | -0.0171..+0.0013 |
+| 0.2 | B_santos_to_rm | YES | 11 | 11 | 1 | 0 | 0 | -0.0755..-0.0416 |
+| 0.2 | B_santos_to_rm | no | 14 | 14 | 7 | 0 | 0 | -0.1244..-0.0002 |
+| 0.5 | A_rm_to_santos | YES | 11 | 6 | 2 | 5 | 0 | -0.0088..+0.0072 |
+| 0.5 | A_rm_to_santos | no | 14 | 14 | 11 | 0 | 0 | -0.0653..-0.0034 |
+| 0.5 | B_santos_to_rm | YES | 11 | 4 | 1 | 7 | 0 | -0.0627..+0.0576 |
+| 0.5 | B_santos_to_rm | no | 14 | 8 | 7 | 6 | 0 | -0.2082..+0.0079 |
+| 1 | A_rm_to_santos | YES | 11 | 1 | 0 | 10 | 8 | -0.0020..+0.0619 |
+| 1 | A_rm_to_santos | no | 14 | 13 | 12 | 1 | 1 | -0.1478..+0.0047 |
+| 1 | B_santos_to_rm | YES | 11 | 3 | 1 | 8 | 6 | -0.0639..+0.0849 |
+| 1 | B_santos_to_rm | no | 14 | 7 | 5 | 7 | 4 | -0.1569..+0.0631 |
+| 2 | A_rm_to_santos | YES | 11 | 2 | 0 | 9 | 6 | -0.0083..+0.0850 |
+| 2 | A_rm_to_santos | no | 14 | 11 | 6 | 3 | 0 | -0.0993..+0.0056 |
+| 2 | B_santos_to_rm | YES | 11 | 2 | 1 | 9 | 7 | -0.0653..+0.1036 |
+| 2 | B_santos_to_rm | no | 14 | 6 | 5 | 8 | 5 | -0.0632..+0.1371 |
+
+**Verdict: Part 09's result is PARTIALLY REPRODUCED - it reappears in some chorus cells and reverses in others, and which one you get is decided by the `dns` split, the direction and `epsilon`, not by the attack being chorus.**
+
+Over the **280 distinct** paired chorus cells in the tables above - distinct because group (d) sweeps every epsilon and so CONTAINS group (a)'s `eps=1.0` cells, which are counted once here: PrismFlow is HIGHER than naive, which is Part 09's sign, in 118 cells, 60 of them with all 5 seeds agreeing; PrismFlow is LOWER in 162 cells, 95 of them unanimous. Part 09 had 12/12 one way. Neither sign is unanimous across any whole side here.
+
+**Both signs appear unanimously, in different cells, on all of these sides:** **A_rm_to_santos, dns COMPROMISED**, **A_rm_to_santos, dns NOT compromised**, **B_santos_to_rm, dns COMPROMISED**, **B_santos_to_rm, dns NOT compromised**. So no side has a sign: a sentence of the form 'PrismFlow is worse with `dns` compromised' is false as stated for every side in this Part, and the per-group rows are the result rather than any summary of them.
+
+**Group (a) `eps=1.0 beta=1.0` - sides where one sign carries a unanimous majority of the side's cells:**
+  - PrismFlow WORSE (Part 09's sign): A_rm_to_santos, dns COMPROMISED (8/11 unanimous); B_santos_to_rm, dns COMPROMISED (6/11 unanimous)
+  - PrismFlow BETTER: A_rm_to_santos, dns NOT compromised (12/14 unanimous)
+
+**Group (b) `beta=0.0` / `beta=5.0` - sides where one sign carries a unanimous majority of the side's cells:**
+  - PrismFlow WORSE (Part 09's sign): `beta=5` A_rm_to_santos, dns COMPROMISED (8/10 unanimous)
+  - PrismFlow BETTER: `beta=0` A_rm_to_santos, dns COMPROMISED (7/10 unanimous); `beta=0` B_santos_to_rm, dns COMPROMISED (7/10 unanimous); `beta=5` B_santos_to_rm, dns NOT compromised (6/10 unanimous)
+
+**Group (d) the `epsilon` sweep - sides where one sign carries a unanimous majority of the side's cells:**
+  - PrismFlow WORSE (Part 09's sign): `epsilon=1` A_rm_to_santos, dns COMPROMISED (8/11 unanimous); `epsilon=1` B_santos_to_rm, dns COMPROMISED (6/11 unanimous); `epsilon=2` A_rm_to_santos, dns COMPROMISED (6/11 unanimous); `epsilon=2` B_santos_to_rm, dns COMPROMISED (7/11 unanimous)
+  - PrismFlow BETTER: `epsilon=0.5` A_rm_to_santos, dns NOT compromised (11/14 unanimous); `epsilon=1` A_rm_to_santos, dns NOT compromised (12/14 unanimous)
+
+Across all three chorus groups, the 7 (group, direction, side) rows where Part 09's sign carries a unanimous majority ALL have `dns` INSIDE the compromised set, and the 6 rows where the opposite sign carries a unanimous majority are 4 with `dns` outside and 2 with `dns` inside. That is the arrangement of the counts, stated so it can be checked against the tables; it is not a mechanism and nothing below infers one from it.
+
+- At the headline `eps=1.0 beta=1.0` point: 19 unanimous cells with PrismFlow worse, 18 with PrismFlow better, over 50 cells.
+- At `beta=0.0` and `beta=5.0`: 23 unanimous cells with PrismFlow worse, 29 with PrismFlow better, over 80 cells.
+- At the full `epsilon` sweep at `beta=1.0`: 37 unanimous cells with PrismFlow worse, 66 with PrismFlow better, over 200 cells.
+- `pgd`, reported separately and **not** evidence about Part 09's chorus claim: 19 unanimous cells with PrismFlow worse, 36 with PrismFlow better, over 90 cells.
+
+**No mechanism is claimed.** This Part measures fused attack success in each arm and nothing inside the discount - no per-view alpha, no ENIV trace per cell, no belief margin - so it cannot say why a cell came out either way, and the split by `dns`, `beta` and `epsilon` above is a description of where the signs fall, not an explanation of them. What it does establish is narrower than Part 09's wording: PrismFlow was not uniformly worse than naive fusion under the chorus attack on this data, so 'reading the axis confers no defence' must not be restated as a blanket result, and neither may its negation. [[L17]] bounds how much any of it is worth: one view solves this label.
 
 ### L4 - the discount is proportional, not capping, and weakens as evidence grows
 
@@ -474,6 +550,8 @@ Each verdict is split by whether `dns` - the single view that solves this label 
 **Verdict: NOT INFORMATIVE about L4.** The cells do not separate L4's prediction from its negation, so neither reading gains support here.
 
 The deciding cell is **B_santos_to_rm / prismflow, dns NOT compromised, chorus k=2 eps=1.0**: dependence among the compromised views runs 0.1233..0.8098 - up to 0.83 of the 0.9717 maximum measured anywhere in this Part across all k>=2 cells - while attack success over those same subsets never exceeds 0.0562. Manufactured dependence at close to its observed ceiling therefore coexists with an attack that essentially fails. L4 says the discount is proportional and weakens as evidence grows; a cell where dependence is high and the attack is nonetheless harmless is equally consistent with a discount that is proportional, one that caps, and one that does nothing at all.
+
+**The naive arm fails in exactly the same cells, so the harmlessness is not attributable to the discount at all.** Over the same 6 subsets at **B_santos_to_rm / naive, dns NOT compromised, chorus k=2 eps=1.0**, attack success runs 0.0096..0.0917 against PrismFlow's 0.0562 ceiling, with dependence among the compromised views at 0.1193..0.7426 - the same high-dependence regime. Naive fusion applies no discount whatsoever, so a cell where it is equally harmless cannot be evidence about what the discount did.
 
 What would discriminate is not measured here. Part 29 records no per-view alpha, no belief margin and no sublinearity curve - the three quantities L4 is a statement about - so there is nothing in `results.json` that could have come out differently if L4 were false. The earlier wording, 'consistent with L4', was true and empty: the attack succeeding in high-dependence cells is also what a capping discount, or no discount, would produce. L4's mechanism evidence remains Part 09's diagnostic, and this Part neither adds to it nor weakens it.
 
@@ -563,9 +641,11 @@ In **A_rm_to_santos / naive**, **A_rm_to_santos / prismflow** the split is NOT c
 
 What is common to all four units is that the `dns` family moves UP with `beta` while the `suricata` family does not follow it. A single 'effect of beta' averaged over the ten pairs would average those behaviours and describe neither; section 11 keeps them per pair for that reason.
 
+**The opposite-sign structure is a `B_santos_to_rm` result only.** It holds in **B_santos_to_rm / naive**, **B_santos_to_rm / prismflow**, and NOT in **A_rm_to_santos / naive**, **A_rm_to_santos / prismflow**. Every sentence below about `dns` pairs and `suricata` pairs moving in opposite directions is scoped to `B_santos_to_rm`; nothing of the kind is established for `A_rm_to_santos`.
+
 **The epsilon grid is not comparable across the two directions on `dns`.** `epsilon 1.0` is 0.639 of the `dns` std in A_rm_to_santos, 1.373 of the `dns` std in B_santos_to_rm, so the same nominal epsilon is 2.15x larger relative to that view's own spread in B_santos_to_rm than in A_rm_to_santos. Cross-direction comparisons of attack success on `dns` are confounded by this, and `dns` has the smallest per-view std in only one of the two directions (section 3).
 
-**What this Part is therefore evidence about.** It measures, on two real AIT scenario pairs with 5 seeds per cell: how far a bounded perturbation of a chosen subset of views moves a fused prediction when one view carries the label; how that depends on whether the carrying view is in the subset; how the chorus coordination term changes it, with the opposite sign on `dns` pairs and `suricata` pairs; and how the suspicion detector and the calibration metrics behave across that grid. It does NOT measure how fusion behaves when several views carry independent evidence about the label, because this label does not provide that: the previous wording, 'no number in this Part is evidence about multi-view fusion', overstated it in the other direction - the k=2 and k=3 cells do measure fusion under attack, on a task where the views are not of comparable value. Read every number in this file as conditional on that.
+**What this Part is therefore evidence about.** It measures, on two real AIT scenario pairs with 5 seeds per cell: how far a bounded perturbation of a chosen subset of views moves a fused prediction when one view carries the label; how that depends on whether the carrying view is in the subset; how the chorus coordination term changes it - with the opposite sign on `dns` pairs and `suricata` pairs in `B_santos_to_rm` only, not in `A_rm_to_santos`; and how the suspicion detector and the calibration metrics behave across that grid. It does NOT measure how fusion behaves when several views carry independent evidence about the label, because this label does not provide that: the previous wording, 'no number in this Part is evidence about multi-view fusion', overstated it in the other direction - the k=2 and k=3 cells do measure fusion under attack, on a task where the views are not of comparable value. Read every number in this file as conditional on that.
 
 ## 10. Retained run evidence
 
