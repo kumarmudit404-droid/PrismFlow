@@ -1926,14 +1926,18 @@ def section_verdicts(results: dict, subset: dict | None,
                    f"{ece_hi:.4f}/{ece_lo:.4f} = **{ece_hi / ece_lo:.2f}x**.")
     ratios = [r[3] / r[2] for r in honest_spread] + \
              [r[5] / r[4] for r in honest_spread]
+    below = [x for x in ratios if x < 10.0]
     out += ["",
             f"So the factor runs from **{min(ratios):.2f}x to "
             f"{max(ratios):.2f}x** depending on direction, system and which "
-            f"of the two metrics is read. The earlier wording, 'degrade by an "
-            f"order of magnitude' - taking an order of magnitude to mean "
-            f">= 10x - overstated the smallest of these ratios, "
-            f"{min(ratios):.2f}x, and is replaced by the per-unit figures "
-            f"above.", "",
+            f"of the two metrics is read. Taking an order of magnitude to "
+            f"mean **>= 10x**, **{len(below)} of the {len(ratios)}** ratios "
+            f"above are BELOW it"
+            + (f" ({', '.join(f'{x:.2f}x' for x in sorted(below))})"
+               if below else "")
+            + f". The earlier wording, 'degrade by an order of magnitude', "
+            f"overstated the smallest of them, {min(ratios):.2f}x, and is "
+            f"replaced by the per-unit figures above.", "",
             "With `dns` compromised in direction B, "
             f"ROC AUC falls to {worst_auc:.4f} ({worst_where}) - below chance, so "
             "the ordering is actively inverted, not merely poorly thresholded - and "
@@ -1984,7 +1988,10 @@ def section_verdicts(results: dict, subset: dict | None,
         reach = native_reach(audit, "B_santos_to_rm")
         out += ["Nothing in this Part's attack grid adds to that, and one "
                 "measurement here cuts against reading L17 off the grid at "
-                "all: compromising **`suricata` alone** at `beta=0` in "
+                "all: compromising **`suricata` alone** at "
+                "`chorus k=1 eps=1.0` (`beta` is inert at `k=1` - the "
+                "agreement term sums over PAIRS of compromised views, so with "
+                "one view there is no pair) in "
                 "`B_santos_to_rm` reaches attack success "
                 + " / ".join(f"**{sur_b[s]:.4f}** ({s})"
                              for s in ("naive", "prismflow") if s in sur_b)
@@ -2003,6 +2010,17 @@ def section_verdicts(results: dict, subset: dict | None,
                   "pick; this Part measures the latter and not the former.",
                 ""]
         if reach.get("suricata") is not None and reach.get("dns") is not None:
+            seeds = audit.get("seed") if audit else None
+            seed_list = seeds if isinstance(seeds, list) else [seeds]
+            seed_list = [s for s in seed_list if s is not None]
+            if len(seed_list) == 1:
+                seed_text = (f"**a single seed (seed {seed_list[0]})** - these "
+                             f"are not means over seeds and carry no +/-")
+            elif seed_list:
+                seed_text = (f"seeds {seed_list}, as "
+                             f"{len(seed_list)}-seed means")
+            else:
+                seed_text = f"a seed the file does not record ({NOT_MEASURED})"
             out += ["**That comparison is confounded by REACH, and the "
                     "confound is measured.** An epsilon-bounded perturbation "
                     "does not move the same amount of every view. At "
@@ -2010,7 +2028,8 @@ def section_verdicts(results: dict, subset: dict | None,
                     "of each view's NATIVE feature cells the attack actually "
                     "perturbed in `B_santos_to_rm` "
                     "(`results/ait_attack/padding_audit.json`, "
-                    "`audit_padding.py:102`, `k=1`) is "
+                    f"`audit_padding.py:102`, `k=1`), measured on {seed_text}, "
+                    "is "
                     + ", ".join(f"`{v}` **{reach[v] * 100:.1f}%**"
                                 for v in sorted(reach, key=lambda x: -reach[x]))
                     + f". `suricata` at {reach['suricata'] * 100:.1f}% against "
@@ -2021,7 +2040,18 @@ def section_verdicts(results: dict, subset: dict | None,
                       "that it is the better view to attack at equal effort - "
                       "the two cells are not equal effort. This Part does not "
                       "measure attack success at matched reach, so it cannot "
-                      "separate the two explanations.", ""]
+                      "separate the two explanations.", "",
+                    "The audit's own `seed_note` records why one seed is "
+                    "enough for the question it was built to answer: "
+                    + (f"\"{audit.get('seed_note')}\"" if audit
+                       and audit.get("seed_note") else NOT_MEASURED)
+                    + " That argument covers the PADDING result it was "
+                      "written for, which is zero by construction. It does "
+                      "NOT cover the native-cell fractions quoted here: those "
+                      "are a property of a trained model and a gradient sign "
+                      "pattern, they could differ seed to seed, and this file "
+                      "has no second seed to say by how much. Read the "
+                      "percentages as one observation each.", ""]
         out += ["Everything below is the structure L17 imposes on the grid, "
                 "measured per direction and per system rather than asserted.",
                 ""]
@@ -2070,9 +2100,11 @@ def section_verdicts(results: dict, subset: dict | None,
                 reading = (f"every pair scores BELOW `suricata` alone, by "
                            f"{hi:+.4f} to {lo:+.4f} - the second view adds "
                            f"NOTHING here and subtracts")
-            out += [f"- **{dname} / {system}:** `suricata` alone reaches "
+            out += [f"- **{dname} / {system}:** `suricata` alone, at "
+                    f"`chorus k=1 eps=1.0`, reaches "
                     f"{sur:.4f}. Its {len(gaps)} pairs without `dns`, at "
-                    f"`beta=0.0`, come to {lo:+.4f}..{hi:+.4f} against that "
+                    f"`chorus k=2 eps=1.0 beta=0.0`, come to "
+                    f"{lo:+.4f}..{hi:+.4f} against that "
                     f"(signed, pair minus single view): {reading}. "
                     "`apache`, `auth` and `audit` alone reach "
                     + ", ".join(f"`{v}` {m:.4f}" for v, m in inert.items())
