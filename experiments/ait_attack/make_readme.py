@@ -1166,6 +1166,128 @@ def l3_dependence_clause(signs: dict, name: str) -> str | None:
     return None
 
 
+def l3_strata(cuts: dict[str, list[L3Cut]]) -> dict[tuple, dict]:
+    """`{(group, sub-row, direction): {dns: L3Cut}}` - one entry per stratum.
+
+    A stratum is the finest cut at which the `dns` split can be compared
+    without averaging anything else away: one group sub-row (so `beta` and
+    `epsilon` are held fixed) in one direction. Each stratum holds exactly the
+    two `dns` levels, which is what makes the comparison below a comparison
+    and not a pooling.
+    """
+    strata: dict[tuple, dict] = {}
+    for gkey in ("a", "b", "d"):
+        for c in cuts.get(gkey, []):
+            strata.setdefault((gkey, c.extra, c.direction), {})[c.dns] = c
+    return strata
+
+
+def l3_stratum_signs(cut: L3Cut | None) -> set:
+    """The unanimous signs present in one stratum's one `dns` level."""
+    if cut is None:
+        return set()
+    signs = set()
+    if cut.higher_unanimous:
+        signs.add("hi")
+    if cut.lower_unanimous:
+        signs.add("lo")
+    return signs
+
+
+#: How a stratum's two `dns` levels compare. The first three are the asked-for
+#: buckets; `undetermined` exists because they do not cover a stratum with a
+#: level holding NO unanimous cell at all, and the four counts must sum to the
+#: number of strata or the sentence is hiding one.
+L3_STRATUM_BUCKETS = (
+    ("flip", "the two `dns` levels are each single-signed and DIFFER"),
+    ("same", "both levels are single-signed with the SAME sign"),
+    ("mixed", "at least one level holds BOTH signs"),
+    ("undetermined", "a level has no unanimous cell at all, so the "
+                     "comparison is not defined there"),
+)
+
+
+def l3_stratum_bucket(yes: L3Cut | None, no: L3Cut | None) -> str:
+    """Classify one stratum. Exactly one bucket, by construction."""
+    sy, sn = l3_stratum_signs(yes), l3_stratum_signs(no)
+    if len(sy) == 2 or len(sn) == 2:
+        return "mixed"
+    if len(sy) == 1 and len(sn) == 1:
+        return "flip" if sy != sn else "same"
+    return "undetermined"
+
+
+def _has(n: int) -> str:
+    """Verb agreement, so a derived count of 1 does not read as `1 have`."""
+    return "has" if n == 1 else "have"
+
+
+def l3_stratum_label(key: tuple) -> str:
+    gkey, extra, direction = key
+    return f"({gkey})" + (f" `{extra}`" if extra else "") + f" {direction}"
+
+
+def l3_stratified_sentence(cuts: dict[str, list[L3Cut]]) -> list[str]:
+    """The stratified `dns` comparison, every number and name derived.
+
+    Sits directly under the headline because the headline's "not determined
+    by the `dns` split alone" is a statement about the whole chorus set, and a
+    reader is entitled to ask whether that survives holding `beta`, `epsilon`
+    and direction fixed. This answers that at the finest available cut.
+    """
+    strata = l3_strata(cuts)
+    if not strata:
+        return []
+    buckets: dict[str, list[str]] = {name: [] for name, _d in
+                                     L3_STRATUM_BUCKETS}
+    no_higher_with_dns: list[str] = []
+    for key in sorted(strata):
+        yes, no = strata[key].get(True), strata[key].get(False)
+        buckets[l3_stratum_bucket(yes, no)].append(l3_stratum_label(key))
+        if yes is not None and yes.higher_unanimous == 0:
+            no_higher_with_dns.append(l3_stratum_label(key))
+
+    n_subrows = len({(g, extra) for g, extra, _d in strata})
+    n_dirs = len({d for _g, _e, d in strata})
+    out = [f"**Stratified, holding `beta`, `epsilon` and direction fixed.** A "
+           f"stratum is one group sub-row in one direction, which is the "
+           f"finest cut at which the two `dns` levels can be compared without "
+           f"averaging anything else away. There are {len(strata)} of them "
+           f"({n_subrows} sub-rows x {n_dirs} directions). Comparing each "
+           f"stratum's dns-YES and dns-NO unanimous sign sets:", ""]
+    for name, description in L3_STRATUM_BUCKETS:
+        out.append(f"- **{len(buckets[name])} of {len(strata)}** - "
+                   f"{description}"
+                   + (": " + ", ".join(buckets[name]) if buckets[name]
+                      else ": none"))
+    total = sum(len(v) for v in buckets.values())
+    out += ["", f"The four counts sum to {total} of {len(strata)} strata."]
+    flips = buckets["flip"]
+    out += ["", f"**The `dns` split flips the sign in {len(flips)} of "
+            f"{len(strata)} strata**"
+            + (": " + ", ".join(f"**{s}**" for s in flips) + "."
+               if flips else ".")
+            + f" In the other {len(strata) - len(flips)} it does not: "
+            f"{len(buckets['same'])} "
+            f"{_has(len(buckets['same']))} the same single sign on both "
+            f"sides, {len(buckets['mixed'])} "
+            f"{_has(len(buckets['mixed']))} a side carrying both signs, and "
+            f"{len(buckets['undetermined'])} "
+            f"{_has(len(buckets['undetermined']))} a side with no unanimous "
+            f"cell to compare."]
+    out += ["", f"**Strata with NO unanimous PrismFlow-higher cell when "
+            f"`dns` IS in the compromised set: {len(no_higher_with_dns)} of "
+            f"{len(strata)}**"
+            + (": " + ", ".join(no_higher_with_dns) + "."
+               if no_higher_with_dns else ".")]
+    out += ["", "This is a description of how the grid came out, stratum by "
+            "stratum, and it gives no mechanism: the strata are nested "
+            "subsets on shared seeds (above), nothing inside the discount is "
+            "recorded per cell, and a sign set is a count of unanimous cells "
+            "rather than a measurement of why any cell moved.", ""]
+    return out
+
+
 def l3_headline(cuts: dict[str, list[L3Cut]]) -> str:
     """THE L3 verdict sentence. One source of text, used wherever it appears.
 
@@ -1234,9 +1356,10 @@ def l3_verdict(cuts: dict[str, list[L3Cut]]) -> list[str]:
     n_low = sum(1 for c in distinct.values() if c.mean < 0)
     n_low_u = sum(1 for c in distinct.values() if c.mean < 0 and c.unanimous)
 
-    out = [l3_headline(cuts), "",
-           "It reappears in some chorus cells and reverses in others. The "
-           "counts below say which.", "",
+    out = [l3_headline(cuts), ""]
+    out += l3_stratified_sentence(cuts)
+    out += ["It reappears in some chorus cells and reverses in others. The "
+            "counts below say which.", "",
            f"Over the **{n_cells} distinct** paired chorus cells in the tables "
            f"above - distinct because group (d) sweeps every epsilon and so "
            f"CONTAINS group (a)'s `eps=1.0` cells, which are counted once "

@@ -783,3 +783,78 @@ def test_l3_headline_states_counts_and_strength_word():
     none_u = {"a": [_l3cut("DIR", True, [("chorus_k2_eps1.0_beta1.0_[a+b]", +0.5, False)])]}
     assert "NO EVIDENCE (0 higher / 0 lower unanimous" in l3_headline(none_u)
     assert l3_headline({}).startswith("**Verdict on L3: NO EVIDENCE**")
+
+
+def test_l3_stratum_bucket_is_total_and_exclusive():
+    """Every (dns-YES, dns-NO) sign-set pair lands in exactly one bucket."""
+    from experiments.ait_attack.make_readme import (
+        L3_STRATUM_BUCKETS, l3_stratum_bucket)
+
+    def cut(signs):
+        return _l3cut("DIR", True,
+                      [("chorus_k2_eps1.0_beta1.0_[a+b]", +0.5, "hi" in signs),
+                       ("chorus_k2_eps1.0_beta1.0_[a+c]", -0.5, "lo" in signs)])
+
+    names = [n for n, _d in L3_STRATUM_BUCKETS]
+    assert names == ["flip", "same", "mixed", "undetermined"]
+
+    sets = [set(), {"hi"}, {"lo"}, {"hi", "lo"}]
+    expected = {}
+    for sy in sets:
+        for sn in sets:
+            if len(sy) == 2 or len(sn) == 2:
+                want = "mixed"
+            elif len(sy) == 1 and len(sn) == 1:
+                want = "flip" if sy != sn else "same"
+            else:
+                want = "undetermined"
+            expected[(frozenset(sy), frozenset(sn))] = want
+
+    # All 16 ordered pairs of the 4 possible sign sets, exhaustively.
+    assert len(expected) == 16
+    for (sy, sn), want in expected.items():
+        got = l3_stratum_bucket(cut(set(sy)), cut(set(sn)))
+        assert got == want, f"{sorted(sy)} vs {sorted(sn)} -> {got}, want {want}"
+        assert got in names
+
+    # Each bucket is reached by at least one pair, so none is dead.
+    assert set(expected.values()) == set(names)
+    # A missing level is `undetermined`, never a crash.
+    assert l3_stratum_bucket(None, cut({"hi"})) == "undetermined"
+    assert l3_stratum_bucket(None, None) == "undetermined"
+
+
+def test_l3_strata_counts_sum_to_the_number_of_strata():
+    """The four printed counts must account for every stratum."""
+    from experiments.ait_attack.make_readme import (
+        l3_strata, l3_stratum_bucket, l3_stratified_sentence)
+    from experiments.ait_attack.results_io import load_results
+    from experiments.ait_attack import make_readme as mr
+
+    results = load_results("results.json")
+    if results is None:
+        pytest.skip("results/ait_attack/results.json[.gz] not present")
+    cuts = {}
+    for gkey, _title, extra, pred, value in mr._l3_groups():
+        for dname, record in results["directions"].items():
+            rows = mr.l3_cells(record, pred)
+            for dns in (True, False):
+                cut = mr.l3_cut(dname, rows, dns)
+                if cut is None:
+                    continue
+                if extra:
+                    cut = cut._replace(extra=f"{extra}={value}")
+                cuts.setdefault(gkey, []).append(cut)
+
+    strata = l3_strata(cuts)
+    assert len(strata) == 14, "7 group sub-rows x 2 directions"
+    for levels in strata.values():
+        assert set(levels) == {True, False}, "each stratum holds both dns levels"
+    tally = {}
+    for key, levels in strata.items():
+        bucket = l3_stratum_bucket(levels.get(True), levels.get(False))
+        tally[bucket] = tally.get(bucket, 0) + 1
+    assert sum(tally.values()) == len(strata)
+    text = "\n".join(l3_stratified_sentence(cuts))
+    assert f"sum to {len(strata)} of {len(strata)} strata" in text
+    assert "gives no mechanism" in text

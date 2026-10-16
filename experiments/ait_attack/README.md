@@ -537,6 +537,21 @@ Example keys: `chorus_k2_eps1.0_beta0.0_[apache+audit]` and `pgd_k1_eps1.0_[apac
 
 **Verdict on L3: Part 09's result is PARTIALLY reproduced (60 higher / 95 lower unanimous, of 280 distinct cells), not determined by the `dns` split alone, not determined by direction alone.**
 
+**Stratified, holding `beta`, `epsilon` and direction fixed.** A stratum is one group sub-row in one direction, which is the finest cut at which the two `dns` levels can be compared without averaging anything else away. There are 14 of them (7 sub-rows x 2 directions). Comparing each stratum's dns-YES and dns-NO unanimous sign sets:
+
+- **2 of 14** - the two `dns` levels are each single-signed and DIFFER: (b) `beta=0` B_santos_to_rm, (d) `epsilon=2` A_rm_to_santos
+- **3 of 14** - both levels are single-signed with the SAME sign: (d) `epsilon=0.2` B_santos_to_rm, (d) `epsilon=0.5` A_rm_to_santos, (d) `epsilon=0.5` B_santos_to_rm
+- **8 of 14** - at least one level holds BOTH signs: (a) A_rm_to_santos, (a) B_santos_to_rm, (b) `beta=0` A_rm_to_santos, (b) `beta=5` A_rm_to_santos, (b) `beta=5` B_santos_to_rm, (d) `epsilon=1` A_rm_to_santos, (d) `epsilon=1` B_santos_to_rm, (d) `epsilon=2` B_santos_to_rm
+- **1 of 14** - a level has no unanimous cell at all, so the comparison is not defined there: (d) `epsilon=0.2` A_rm_to_santos
+
+The four counts sum to 14 of 14 strata.
+
+**The `dns` split flips the sign in 2 of 14 strata**: **(b) `beta=0` B_santos_to_rm**, **(d) `epsilon=2` A_rm_to_santos**. In the other 12 it does not: 3 have the same single sign on both sides, 8 have a side carrying both signs, and 1 has a side with no unanimous cell to compare.
+
+**Strata with NO unanimous PrismFlow-higher cell when `dns` IS in the compromised set: 5 of 14**: (b) `beta=0` B_santos_to_rm, (d) `epsilon=0.2` A_rm_to_santos, (d) `epsilon=0.2` B_santos_to_rm, (d) `epsilon=0.5` A_rm_to_santos, (d) `epsilon=0.5` B_santos_to_rm.
+
+This is a description of how the grid came out, stratum by stratum, and it gives no mechanism: the strata are nested subsets on shared seeds (above), nothing inside the discount is recorded per cell, and a sign set is a count of unanimous cells rather than a measurement of why any cell moved.
+
 It reappears in some chorus cells and reverses in others. The counts below say which.
 
 Over the **280 distinct** paired chorus cells in the tables above - distinct because group (d) sweeps every epsilon and so CONTAINS group (a)'s `eps=1.0` cells, which are counted once here: PrismFlow is HIGHER than naive, which is Part 09's sign, in 118 cells, 60 of them with all 5 seeds agreeing; PrismFlow is LOWER in 162 cells, 95 of them unanimous. Part 09 had 12/12 one way. Neither sign is unanimous across any whole side here.
