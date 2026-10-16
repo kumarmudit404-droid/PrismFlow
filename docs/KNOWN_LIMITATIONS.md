@@ -958,3 +958,201 @@ or more attack episodes, so the comparison rests on more than the 3 and 1
 independent blocks these two scenarios provide. Either would make a
 fusion-against-flat comparison on real data informative; neither exists in
 the AIT scenarios loaded so far.
+
+## L18. On real data the detector inverts under attack, and the protocol cannot speak to deployment
+
+**Component:** the suspicion detector measured under attack on real data
+(Part 29, `experiments/ait_attack/`), and the measurement design it is
+measured by.
+
+**Evidence:** `results/ait_attack/results.json`
+(`directions.<name>.systems.prismflow.cells.<cell>.summary.detector_auc`,
+5 seeds, two directions, never pooled), tabulated in
+`experiments/ait_attack/README.md` sections 7 and 9.
+
+- **The majority of all conditions sit below chance.** The detector scores
+  below AUC 0.5 in **129 of 187** conditions in direction A
+  (`russellmitchell` -> `santos`) and **159 of 187** in direction B
+  (`santos` -> `russellmitchell`); the per-cell 5-seed mean AUC ranges
+  **0.2384..0.7133** in A and **0.1314..0.6220** in B. The flag therefore
+  fires LESS under attack than under clean operation across most of the grid.
+- **Every window in the evaluated batch is attacked.** `attack: batch_size`
+  is 1200 against n_test 1108 (A) and 1145 (B), so each direction is one
+  batch and the perturbation is applied to all of it. There is no clean
+  population inside an attacked run.
+- **The AUC compares an attacked run with the clean run of the same
+  windows.** It is a between-run comparison at fixed width, not a
+  within-batch separation of contaminated from clean cases.
+- **Partially contaminated batches were not tested.** No cell mixes attacked
+  and clean windows and no cell varies the contaminated fraction; that axis
+  is absent from the grid and is reported as not measured.
+
+**What this means.** The below-chance AUCs are a real and reproducible
+property of this all-or-nothing protocol, and **no claim about deployed
+detection rates follows from them in either direction**. A deployed detector
+sees a mostly-clean stream and must flag a small contaminated part of it;
+that is the regime this Part does not enter. This extends [[L5]], which
+describes a detector degrading to chance and inverting under missingness, by
+showing the inversion on real data under attack as well -- and by bounding
+what the measurement can mean.
+
+**What would change our understanding.** A contaminated-fraction axis in the
+grid, so the detector is scored on batches that are partly clean; and a
+within-batch decision rule, so the AUC separates cases rather than runs.
+
+## L19. The coordination term's effect depends on the view and the direction
+
+**Component:** the chorus attack's agreement term `beta`
+(`prismflow/attacks/chorus.py`, `chorus_objective`) as it acts on real data
+(Part 29, `experiments/ait_attack/`).
+
+**Evidence:** `results/ait_attack/results.json`, paired WITHIN SEED at
+`chorus k=2 eps=1.0` and only then aggregated; tabulated per pair in
+`experiments/ait_attack/README.md` section 11 and its sub-sections 11.1
+and 11.2.
+
+- **Raising `beta` from 0 to 1 increases attack success on all four
+  `dns`-pair families in all four units, 5/5 seeds.** In direction B the
+  paired shift is **+0.0786..+0.6837** for naive fusion and
+  **+0.2795..+0.8225** for PrismFlow across the four `dns` pairs.
+- **For `dns` pairs, PrismFlow minus naive changes sign with `beta`.** It is
+  negative at `beta=0` in **8 of 8** pairs and positive at `beta=1` in
+  **7 of 8**; the difference-in-differences -- the `beta` shift measured on
+  PrismFlow minus the same shift measured on naive -- is positive in
+  **8 of 8**. The four pairs per direction share the `dns` view and the same
+  seeds, so these are **not independent** observations.
+- **In direction B the `suricata` pairs without `dns` move the other way**,
+  falling by about **0.65** (naive) and **0.70** (PrismFlow) as `beta` rises.
+  In direction A the `suricata` family spans both signs, so the opposition is
+  a direction-B result only.
+- **No mechanism is measured.** No per-view alpha and no belief margin is
+  recorded per cell, so nothing here says why `beta` moves a pair either way.
+
+**What this means.** There is no single "effect of `beta`". A figure averaged
+over the ten pairs would average opposed behaviours and describe neither, and
+a figure averaged over the two directions would hide that the opposition only
+holds in one of them. Any claim about the coordination term must name the
+pair family and the direction it was measured in ([[L17]]).
+
+**What would change our understanding.** A per-view alpha and belief-margin
+trace per cell, which would let the sign be attributed rather than observed;
+and a label whose signal is not carried by one view, so the `dns` and
+`suricata` families are not two different experiments.
+
+## L20. Part 09's L3 extension is only partially reproduced on AIT
+
+**Component:** the comparison between PrismFlow and naive fusion under the
+chorus attack on real data (Part 29, `experiments/ait_attack/`), against
+Part 09's finding that PrismFlow was strictly worse in 12/12 attacked cells.
+
+**Evidence:** `results/ait_attack/results.json`, `prismflow - naive` attack
+success paired WITHIN SEED on the same cell key; tabulated and de-duplicated
+in `experiments/ait_attack/README.md` section 9 under [[L3]]. The
+de-duplication key is `(direction, cell_key)`, because the `eps=1.0 beta=1.0`
+group and the epsilon sweep select identical cells.
+
+- **Over 280 distinct chorus cells, both signs appear.** PrismFlow is higher
+  than naive -- Part 09's sign -- in **118** cells, **60** of them with all 5
+  seeds agreeing; it is lower in **162**, **95** of them unanimous. Nothing
+  here is 12/12 either way.
+- **Over 12 strata (sub-row x direction), the `dns` split flips the sign in
+  2.** Read by majority instead of by presence, `dns`-outside is **never**
+  higher-dominant (**0 of 12**).
+- **Part 09's sign carries a unanimous majority in 5 rows, all of them with
+  `dns` inside the compromised set**; the opposite sign carries one in 5 rows
+  (3 with `dns` outside, 2 inside).
+- **The cells are nested and share seeds.** They are nested compromised
+  subsets evaluated on the same test windows with the same 5 seeds and the
+  same trained models, so every count above is a DESCRIPTION of how the grid
+  came out and **not a tally of independent trials**; no p-value or binomial
+  reading may be built on it.
+- **`pgd` is reported separately and is not evidence on the chorus claim.**
+  Part 09's claim is about the chorus attack, so no count mixes the two
+  attacks.
+
+**What this means.** Part 09's blanket statement -- that reading the
+dependence axis confers no defence -- must not be restated as if it held on
+real data, and neither may its negation. Which sign a cell shows is decided
+by the `dns` split, the direction and `epsilon`, not by the attack being
+chorus. No mechanism is claimed: this Part measures fused attack success in
+each arm and nothing inside the discount ([[L4]]).
+
+**What would change our understanding.** Cells that are not nested subsets on
+shared seeds, so the counts could support an inferential claim; and a
+per-cell record of the discount's internals, so a sign could be explained
+rather than located.
+
+## L21. Fixed epsilon is not comparable across views or directions
+
+**Component:** the epsilon grid shared by Part 09 and Part 29
+(`experiments/ait_attack/config.yaml`), applied to views of different scale
+and reach.
+
+**Evidence:** `results/ait_attack/results.json`
+(`directions.<name>.systems.naive.feature_scale.per_view`),
+`results/ait_attack/padding_audit.json` for the reach figures, and
+`results/ait_clean/baselines.md` for the clean single-view scores.
+
+- **The same nominal epsilon is a different perturbation per direction.**
+  `epsilon 1.0` equals **0.639** of the `dns` standard deviation in direction
+  A and **1.373** in direction B -- **2.15x** larger relative to that view's
+  own spread in B.
+- **It is also a different perturbation per view.** In direction B at
+  `chorus eps=1.0, k=1`, the fraction of each view's native feature cells the
+  attack actually perturbed is **86.9%** for `suricata` against **3.7%** for
+  `dns`. These are from a **single seed (seed 0)**, one observation each, and
+  are not means.
+- **The view with the highest attack success is not the view that carries the
+  label.** Compromised alone in direction B, `suricata` reaches attack
+  success **0.7541** (naive) and **0.5972** (PrismFlow), while `dns` reaches
+  **0.0996 +/- 0.1248** (naive -- carried by one seed, 0.3223 of five, and
+  **0.0439 +/- 0.0093** without it) and **0.0356 +/- 0.0231** (PrismFlow).
+  On clean data `dns` solves the label and `suricata` barely beats chance:
+  balanced accuracy **1.0000** against **0.5115** on `russellmitchell`.
+- **Attack success per view is therefore confounded by reach**, and
+  matched-reach -- for example a std-scaled epsilon -- is **not measured**.
+
+**What this means.** Attack-success figures are not comparable across views
+or across directions at fixed nominal epsilon, so `suricata`'s higher number
+is not evidence that it is the better view to attack at equal effort: the two
+cells are not equal effort. Clean single-view accuracy does not predict which
+view an attacker should pick, which is why [[L17]] cannot be read off this
+Part's attack grid.
+
+**What would change our understanding.** An epsilon scaled per view, by that
+view's own standard deviation or by a fixed perturbed-cell fraction, so two
+views can be attacked at matched effort; and more than one seed for the reach
+figures.
+
+## L22. Part 10's clone comparison is not like-for-like
+
+**Component:** Part 10's `clone_k2` detector condition
+(`experiments/comparison/`), quoted in [[L5]] as AUC 0.8743 +/- 0.0583.
+
+**Evidence:** confirmed from the code rather than inferred, at
+`experiments/comparison/run_comparison.py:88` and `:69`,
+`prismflow/data/corruption.py:15-20`, `run_comparison.py:232-234`, `:271`,
+`:279-281` and `:292`; set out in `experiments/ait_attack/README.md`
+section 8.
+
+- **The attacked model and its clean reference have different widths.**
+  `duplicate_view` APPENDS k copies of a view, so `clone_k2` runs
+  **6 views** (4 + 2) while the reference it is scored against is the `clean`
+  condition at k = 0 and therefore **4 views**.
+- **The suspicion score is a MAXIMUM over off-diagonal entries, so width
+  matters.** A 6-view model maximises over **30** ordered off-diagonal
+  entries (6x5) and the 4-view reference over **12** (4x3) -- 15 against 6
+  unordered pairs. A maximum over 30 draws is stochastically larger than one
+  over 12 even when every per-pair distribution is identical.
+- **A clean clone with equal pair count has not been run.**
+
+**What this means.** The **0.8743** figure compares different pair counts, so
+part of it is the width change itself rather than detected duplication, and
+it must not be differenced against any fixed-width result. Part 29 has no
+such asymmetry -- every condition and its clean reference run the same
+5-view model -- and it also runs no duplication condition, so the two Parts
+can only be compared qualitatively ([[L5]], [[L8]]).
+
+**What would change our understanding.** A clone condition whose clean
+reference has the same view count as the attacked model, which would separate
+detected duplication from the width change.
