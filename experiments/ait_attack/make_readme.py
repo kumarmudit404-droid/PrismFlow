@@ -51,6 +51,75 @@ def load(name: str):
     return json.loads(path.read_text())
 
 
+#: Part 28's non-fusion baselines. The single-view scores L17 rests on live
+#: in this markdown table and NOT in `results/ait_clean/results.json`, so a
+#: figure quoted from them has to be parsed out of it rather than read from
+#: json. This is the same file the 0.9898 / 1.0000 / 0.71 figures come from.
+PART28_BASELINES = Path("results/ait_clean/baselines.md")
+
+
+def single_view_baselines() -> dict:
+    """`{test_scenario: {view: {metric: value}}}` from Part 28's baselines.md.
+
+    The column is located by its HEADER NAME, not by position, so a reordered
+    table cannot silently shift which metric is quoted. Returns {} when the
+    file is absent, and every caller then prints NOT MEASURED.
+    """
+    if not PART28_BASELINES.is_file():
+        return {}
+    out: dict = {}
+    scenario, columns = None, None
+    for raw in PART28_BASELINES.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if line.startswith("### Direction") and "test " in line:
+            scenario = line.rsplit("test ", 1)[1].strip()
+            columns = None
+            continue
+        if not line.startswith("|") or scenario is None:
+            continue
+        parts = [c.strip().strip("`*") for c in line.strip("|").split("|")]
+        if columns is None:
+            columns = parts
+            continue
+        if set(line) <= set("|- "):
+            continue
+        name = parts[0]
+        if not name.startswith("single_view_"):
+            continue
+        view = name[len("single_view_"):]
+        row = {}
+        for col, cell in zip(columns[1:], parts[1:]):
+            try:
+                row[col] = float(cell.split()[0])
+            except (ValueError, IndexError):
+                continue
+        out.setdefault(scenario, {})[view] = row
+    return out
+
+
+def native_reach(audit, dname: str, kind: str = "chorus",
+                 epsilon: float = 1.0) -> dict:
+    """`{view: fraction of that view's NATIVE cells the attack perturbed}`.
+
+    From `padding_audit.json`, which compromises ONE view at a time
+    (`audit_padding.py:102`, `k=1`). It is the only measurement in this Part
+    of how much of a view an epsilon-bounded attack actually moves, which is
+    what makes two views' attack-success figures not like-for-like.
+    """
+    if not audit:
+        return {}
+    per_view = (audit.get("directions", {}).get(dname, {})
+                .get("per_view", {}))
+    key = f"{kind}_eps{epsilon}"
+    out = {}
+    for view, rec in per_view.items():
+        cell = (rec.get("attacks") or {}).get(key) or {}
+        total, moved = cell.get("native_cells"), cell.get("native_cells_perturbed")
+        if total:
+            out[view] = moved / total
+    return out
+
+
 def fmt(value, places: int = 4) -> str:
     if value is None or (isinstance(value, float) and not np.isfinite(value)):
         return NOT_MEASURED
@@ -1204,7 +1273,7 @@ def l3_strata(cuts: dict[str, list[L3Cut]]) -> tuple[dict[tuple, dict], list[str
             if other != keep:
                 dropped.append(f"{l3_stratum_label(other)} (identical cells to "
                                f"{l3_stratum_label(keep)})")
-        strata[(l3_stratum_label(keep), direction)] = candidates[keep]
+        strata[(l3_subrow_name(keep), direction)] = candidates[keep]
     return strata, sorted(dropped)
 
 
@@ -1264,9 +1333,20 @@ def _has(n: int) -> str:
     return "has" if n == 1 else "have"
 
 
+def l3_subrow_name(key: tuple) -> str:
+    """The sub-row WITHOUT the direction, e.g. ``(d) `epsilon=1```.
+
+    The strata are keyed on this and the direction separately, because the
+    header counts sub-rows and directions as independent factors: keying on
+    the combined label made `len(set(labels))` equal the number of strata and
+    printed "12 distinct sub-rows x 2 directions" for 12 strata.
+    """
+    gkey, extra, _direction = key
+    return f"({gkey})" + (f" `{extra}`" if extra else "")
+
+
 def l3_stratum_label(key: tuple) -> str:
-    gkey, extra, direction = key
-    return f"({gkey})" + (f" `{extra}`" if extra else "") + f" {direction}"
+    return f"{l3_subrow_name(key)} {key[2]}"
 
 
 #: How a dominant sign is spelled in the majority companion.
@@ -1288,7 +1368,7 @@ def l3_majority_companion(strata: dict[tuple, dict]) -> list[str]:
         levels = strata[(label, direction)]
         yes, no = levels.get(True), levels.get(False)
         dy, dn = l3_dominant_sign(yes), l3_dominant_sign(no)
-        rows.append([label,
+        rows.append([f"{label} {direction}",
                      L3_SIGN_WORDS[dy]
                      + (f" ({yes.higher_unanimous if dy == 'hi' else yes.lower_unanimous}"
                         f"/{yes.n})" if dy and yes else ""),
@@ -1296,9 +1376,9 @@ def l3_majority_companion(strata: dict[tuple, dict]) -> list[str]:
                      + (f" ({no.higher_unanimous if dn == 'hi' else no.lower_unanimous}"
                         f"/{no.n})" if dn and no else "")])
         if dy and dn and dy != dn:
-            opposite.append(label)
+            opposite.append(f"{label} {direction}")
         if dn == "hi":
-            no_dominant_higher.append(label)
+            no_dominant_higher.append(f"{label} {direction}")
 
     out = ["", "**By MAJORITY rather than by presence.** The buckets above ask "
            "whether a sign appears at all, so a single unanimous cell is "
@@ -1338,9 +1418,9 @@ def l3_stratified_sentence(cuts: dict[str, list[L3Cut]]) -> list[str]:
     no_higher_with_dns: list[str] = []
     for key in sorted(strata):
         yes, no = strata[key].get(True), strata[key].get(False)
-        buckets[l3_stratum_bucket(yes, no)].append(key[0])
+        buckets[l3_stratum_bucket(yes, no)].append(f"{key[0]} {key[1]}")
         if yes is not None and yes.higher_unanimous == 0:
-            no_higher_with_dns.append(key[0])
+            no_higher_with_dns.append(f"{key[0]} {key[1]}")
 
     n_subrows = len({label for label, _d in strata})
     n_dirs = len({d for _label, d in strata})
@@ -1584,7 +1664,8 @@ def l3_verdict(cuts: dict[str, list[L3Cut]]) -> list[str]:
     return out
 
 
-def section_verdicts(results: dict, subset: dict | None) -> list[str]:
+def section_verdicts(results: dict, subset: dict | None,
+                     audit: dict | None = None) -> list[str]:
     out = ["## 9. Verdicts on L3, L4, L5, L8, L16 and L17", "",
            "Each verdict is split by whether `dns` - the single view that solves "
            "this label - is inside the compromised set. **Nothing below is "
@@ -1768,14 +1849,19 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             "as evidence for or against the other.", "",
             "Part 14 swept one attacker objective and watched gate AUC and "
             "dependence fall TOGETHER along that axis (r = +0.9578 over six "
-            "levels): a correlation ALONG an attacker-strength axis, within one "
-            "condition type. Part 29 correlates ACROSS heterogeneous "
-            "conditions - different k, subsets, epsilon and beta - at fixed "
-            "attacker strength, and finds that the conditions with the HIGHEST "
-            "measured dependence are the ones the detector scores LOWEST. "
-            "Different axes, different populations, different quantities "
-            "varying. The sign above must not be quoted as reproducing Part "
-            "14's, and Part 14's must not be quoted as surviving here.", "",
+            "levels): a correlation ALONG one attacker-objective axis, within "
+            "one condition type. Part 29's correlation is taken ACROSS "
+            "heterogeneous conditions - different k, different compromised "
+            "subsets, different epsilon and different beta, all mixed into "
+            "the one Pearson r per side - and finds that the conditions with "
+            "the HIGHEST measured dependence are the ones the detector scores "
+            "LOWEST. **Epsilon is one of the things varying inside those "
+            "85 and 100 conditions, not held fixed**, so Part 29's r is not a "
+            "measurement at any single attacker strength and cannot be read "
+            "as Part 14's axis re-measured. Different axes, different "
+            "populations, different quantities varying. The sign above must "
+            "not be quoted as reproducing Part 14's, and Part 14's must not "
+            "be quoted as surviving here.", "",
             "The negative sign would follow from the suspicion score's own "
             "definition ONLY IF `expected` rises with the estimated "
             "dependence, and this Part does not measure that. The score is "
@@ -1841,15 +1927,13 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
     ratios = [r[3] / r[2] for r in honest_spread] + \
              [r[5] / r[4] for r in honest_spread]
     out += ["",
-            f"So the factor runs from {min(ratios):.2f}x to "
-            f"{max(ratios):.2f}x depending on direction, system and which of "
-            f"the two metrics is read. The earlier wording, 'degrade by an "
-            f"order of magnitude', held for "
-            f"{sum(1 for x in ratios if 5.0 <= x < 50.0)} of the "
-            f"{len(ratios)} ratios and overstated the smallest "
-            f"({min(ratios):.2f}x) by about "
-            f"{10.0 / min(ratios):.1f}x; it is replaced by the measured "
-            f"figures.", "",
+            f"So the factor runs from **{min(ratios):.2f}x to "
+            f"{max(ratios):.2f}x** depending on direction, system and which "
+            f"of the two metrics is read. The earlier wording, 'degrade by an "
+            f"order of magnitude' - taking an order of magnitude to mean "
+            f">= 10x - overstated the smallest of these ratios, "
+            f"{min(ratios):.2f}x, and is replaced by the per-unit figures "
+            f"above.", "",
             "With `dns` compromised in direction B, "
             f"ROC AUC falls to {worst_auc:.4f} ({worst_where}) - below chance, so "
             "the ordering is actively inverted, not merely poorly thresholded - and "
@@ -1891,21 +1975,56 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             "`label_meaning` is the mechanism for it: the attack label is "
             "dominated by one continuously-running DNS exfiltration tool.", ""]
     if sur_b:
+        b_record = results["directions"]["B_santos_to_rm"]
+        b_scenario = b_record["test_scenario"]
+        base = single_view_baselines().get(b_scenario, {})
+        sur_ba = (base.get("suricata") or {}).get("balanced accuracy")
+        dns_ba = (base.get("dns") or {}).get("balanced accuracy")
+        dns_b = alone_means(b_record, "naive").get("dns")
+        reach = native_reach(audit, "B_santos_to_rm")
         out += ["Nothing in this Part's attack grid adds to that, and one "
                 "measurement here cuts against reading L17 off the grid at "
                 "all: compromising **`suricata` alone** at `beta=0` in "
                 "`B_santos_to_rm` reaches attack success "
                 + " / ".join(f"**{sur_b[s]:.4f}** ({s})"
                              for s in ("naive", "prismflow") if s in sur_b)
-                + ", far above `dns` alone in the same unit. A view that is "
-                  "nearly useless as a clean classifier is therefore the most "
-                  "effective one to compromise in that direction. 'One view "
-                  "solves the label' is a statement about clean accuracy and "
-                  "does not transfer to which view an attacker should pick; "
-                  "this Part measures the latter and not the former. "
-                  "Everything below is the structure L17 imposes on the grid, "
-                  "measured per direction and per system rather than "
-                  "asserted.", ""]
+                + (f", against {dns_b:.4f} for `dns` alone (naive) in the "
+                   f"same unit" if dns_b is not None else "")
+                + ". On Part 28's clean baselines for the same test scenario "
+                  "(`results/ait_clean/baselines.md`), `suricata`'s "
+                  "single-view balanced accuracy there is "
+                + (f"**{sur_ba:.4f}**" if sur_ba is not None else NOT_MEASURED)
+                + (f", against {dns_ba:.4f} for `dns`"
+                   if dns_ba is not None else "")
+                + ". So the view with the **highest attack success at this "
+                  "epsilon** is not the view that carries the label. 'One "
+                  "view solves the label' is a statement about clean accuracy "
+                  "and does not transfer to which view an attacker should "
+                  "pick; this Part measures the latter and not the former.",
+                ""]
+        if reach.get("suricata") is not None and reach.get("dns") is not None:
+            out += ["**That comparison is confounded by REACH, and the "
+                    "confound is measured.** An epsilon-bounded perturbation "
+                    "does not move the same amount of every view. At "
+                    "`chorus eps=1.0` with one view compromised, the fraction "
+                    "of each view's NATIVE feature cells the attack actually "
+                    "perturbed in `B_santos_to_rm` "
+                    "(`results/ait_attack/padding_audit.json`, "
+                    "`audit_padding.py:102`, `k=1`) is "
+                    + ", ".join(f"`{v}` **{reach[v] * 100:.1f}%**"
+                                for v in sorted(reach, key=lambda x: -reach[x]))
+                    + f". `suricata` at {reach['suricata'] * 100:.1f}% against "
+                      f"`dns` at {reach['dns'] * 100:.1f}% is a "
+                      f"{reach['suricata'] / reach['dns']:.1f}x difference in "
+                      "how much of the view the same nominal epsilon reaches, "
+                      "so `suricata`'s higher attack success is not evidence "
+                      "that it is the better view to attack at equal effort - "
+                      "the two cells are not equal effort. This Part does not "
+                      "measure attack success at matched reach, so it cannot "
+                      "separate the two explanations.", ""]
+        out += ["Everything below is the structure L17 imposes on the grid, "
+                "measured per direction and per system rather than asserted.",
+                ""]
 
     # (i) what each view achieves ALONE, which is the floor for every pair.
     out += ["**Each view compromised alone (chorus k=1 eps=1.0, 5-seed "
@@ -2976,7 +3095,7 @@ def main() -> None:
     doc += section_paired(results)
     doc += section_detector(results, subset)
     doc += section_not_like_for_like(results, subset)
-    doc += section_verdicts(results, subset)
+    doc += section_verdicts(results, subset, audit)
     doc += section_evidence(results, manifest)
     doc += section_coordination(results)
 

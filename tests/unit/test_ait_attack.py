@@ -885,7 +885,9 @@ def test_l3_strata_dedup_collapses_identical_subrows():
     }
     strata, dropped = l3_strata(cuts)
     labels = sorted(label for label, _d in strata)
-    assert labels == ["(d) `epsilon=1` DIR", "(d) `epsilon=2` DIR"]
+    # The key holds the sub-row name only; the direction is the second element.
+    assert labels == ["(d) `epsilon=1`", "(d) `epsilon=2`"]
+    assert {d for _label, d in strata} == {"DIR"}
     assert len(dropped) == 1 and "(a) DIR" in dropped[0]
     assert "identical cells" in dropped[0]
     for levels in strata.values():
@@ -926,3 +928,101 @@ def test_l17_suricata_pair_gap_is_signed_not_absolute():
     assert "every pair scores BELOW `suricata` alone" in line
     assert "subtracts" in line
     assert "adds at most" not in text, "the absolute-value wording must be gone"
+
+
+def test_stratified_header_counts_subrows_not_labels():
+    """The header must read "6 distinct sub-rows x 2 directions", not 12 x 2.
+
+    The strata are keyed on (sub-row, direction). Keying on the combined
+    label made the distinct-label count equal the stratum count, so the
+    header printed "12 distinct sub-rows x 2 directions" for 12 strata -
+    arithmetic that cannot be right for any grid with more than one direction.
+    """
+    from experiments.ait_attack.make_readme import (
+        l3_strata, l3_subrow_name, l3_stratified_sentence)
+
+    def cell(eps, mean=+0.5):
+        return [(f"chorus_k2_eps{eps}_beta1.0_[a+b]", mean, True)]
+
+    cuts = {"d": []}
+    for eps in ("0.2", "0.5"):
+        for direction in ("DIR_A", "DIR_B"):
+            for dns in (True, False):
+                cuts["d"].append(
+                    _l3cut(direction, dns, cell(eps))._replace(
+                        extra=f"epsilon={eps}"))
+    strata, _dropped = l3_strata(cuts)
+    assert len(strata) == 4, "2 sub-rows x 2 directions"
+    n_subrows = len({label for label, _d in strata})
+    n_dirs = len({d for _label, d in strata})
+    assert (n_subrows, n_dirs) == (2, 2), (
+        "the sub-row count must exclude the direction")
+    assert n_subrows != len(strata), "a label carrying the direction would do this"
+    text = "\n".join(l3_stratified_sentence(cuts))
+    assert "(2 distinct sub-rows x 2 directions)" in text
+    assert "(4 distinct sub-rows x 2 directions)" not in text
+
+    assert l3_subrow_name(("d", "epsilon=1", "DIR_A")) == "(d) `epsilon=1`"
+    assert "DIR_A" not in l3_subrow_name(("d", "epsilon=1", "DIR_A"))
+
+    # And on the real grid: 6 sub-rows, 2 directions, 12 strata.
+    from experiments.ait_attack.results_io import load_results
+    from experiments.ait_attack import make_readme as mr
+    results = load_results("results.json")
+    if results is None:
+        pytest.skip("results/ait_attack/results.json[.gz] not present")
+    real = {}
+    for gkey, _t, extra, pred, value in mr._l3_groups():
+        for dname, record in results["directions"].items():
+            rows = mr.l3_cells(record, pred)
+            for dns in (True, False):
+                c = mr.l3_cut(dname, rows, dns)
+                if c is None:
+                    continue
+                if extra:
+                    c = c._replace(extra=f"{extra}={value}")
+                real.setdefault(gkey, []).append(c)
+    strata, _d = l3_strata(real)
+    assert len(strata) == 12
+    assert len({label for label, _x in strata}) == 6
+    assert "(6 distinct sub-rows x 2 directions)" in \
+        "\n".join(l3_stratified_sentence(real))
+
+
+def test_single_view_baselines_read_by_header_name():
+    """Part 28's baselines table is parsed by column NAME, not position."""
+    from experiments.ait_attack.make_readme import (
+        PART28_BASELINES, single_view_baselines)
+
+    if not PART28_BASELINES.is_file():
+        pytest.skip("results/ait_clean/baselines.md not present")
+    base = single_view_baselines()
+    assert set(base) == {"santos", "russellmitchell"}
+    # The figures L17 cites, read rather than typed.
+    assert base["santos"]["dns"]["balanced accuracy"] == pytest.approx(0.9898)
+    assert base["russellmitchell"]["dns"]["balanced accuracy"] == pytest.approx(1.0)
+    assert base["santos"]["suricata"]["balanced accuracy"] == pytest.approx(0.7061)
+    assert base["russellmitchell"]["suricata"]["balanced accuracy"] == \
+        pytest.approx(0.5115)
+    for scenario, views in base.items():
+        assert set(views) == set(SOURCES), scenario
+        for view, row in views.items():
+            assert "balanced accuracy" in row and "ROC AUC" in row
+
+
+def test_native_reach_is_a_fraction_per_view():
+    """The reach confound figures come from padding_audit.json, not prose."""
+    from experiments.ait_attack.make_readme import load, native_reach
+
+    audit = load("padding_audit.json")
+    if audit is None:
+        pytest.skip("padding_audit.json not present")
+    reach = native_reach(audit, "B_santos_to_rm")
+    assert set(reach) == set(SOURCES)
+    for view, frac in reach.items():
+        assert 0.0 <= frac <= 1.0, view
+    assert reach["suricata"] == pytest.approx(0.869, abs=5e-4)
+    assert reach["dns"] == pytest.approx(0.0367, abs=5e-4)
+    assert reach["suricata"] > reach["dns"] * 10
+    assert native_reach(None, "B_santos_to_rm") == {}
+    assert native_reach(audit, "no_such_direction") == {}
