@@ -835,6 +835,8 @@ Only the 4 `dns` pairs per direction appear: section 11 measures the `beta` shif
 | `dns+audit` | no | +0.1711 +/- 0.0153 | 5/5 | +0.1408 +/- 0.0076 | 5/5 | +0.0303 +/- 0.0085 | 5/5 |
 | `dns+suricata` | YES | +0.2843 +/- 0.0728 | 5/5 | +0.1547 +/- 0.0437 | 5/5 | +0.1296 +/- 0.0418 | 5/5 |
 
+A_rm_to_santos: the DiD is POSITIVE on 4 of the 4 `dns` pairs (4 with all 5 seeds agreeing) and negative on 0 (0 unanimous), spanning +0.0303..+0.1296. A positive DiD means `beta` 0 -> 1 raised attack success MORE against PrismFlow than against naive fusion on that pair. This is the measured difference of two measured shifts and nothing more: no quantity inside the discount is recorded per cell, so the section does not say why.
+
 **B_santos_to_rm** - difference-in-differences, paired within seed, `chorus k=2 eps=1.0`
 
 | compromised pair | suricata in set | prismflow: beta 1.0 - beta 0.0 | same sign | naive: beta 1.0 - beta 0.0 | same sign | DiD prismflow - naive (5-seed mean +/- std) | same sign |
@@ -843,6 +845,8 @@ Only the 4 `dns` pairs per direction appear: section 11 measures the `beta` shif
 | `auth+dns` | no | +0.8112 +/- 0.0350 | 5/5 | +0.6826 +/- 0.2213 | 5/5 | +0.1286 +/- 0.1926 | 5/5 |
 | `dns+audit` | no | +0.7913 +/- 0.0658 | 5/5 | +0.6828 +/- 0.2210 | 5/5 | +0.1085 +/- 0.1582 | 5/5 |
 | `dns+suricata` | YES | +0.2795 +/- 0.1846 | 5/5 | +0.0786 +/- 0.0128 | 5/5 | +0.2009 +/- 0.1791 | 5/5 |
+
+B_santos_to_rm: the DiD is POSITIVE on 4 of the 4 `dns` pairs (4 with all 5 seeds agreeing) and negative on 0 (0 unanimous), spanning +0.1085..+0.2009. A positive DiD means `beta` 0 -> 1 raised attack success MORE against PrismFlow than against naive fusion on that pair. This is the measured difference of two measured shifts and nothing more: no quantity inside the discount is recorded per cell, so the section does not say why.
 
 ### What the tables say
 

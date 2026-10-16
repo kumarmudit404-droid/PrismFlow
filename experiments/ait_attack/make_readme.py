@@ -2123,6 +2123,7 @@ def section_coordination_systems(results: dict) -> tuple[list[str], list[tuple]]
                        "naive: beta 1.0 - beta 0.0", "same sign",
                        "DiD prismflow - naive (5-seed mean +/- std)",
                        "same sign"])
+        dids = []
         for views in dns_pairs:
             pair = "+".join(views)
             ppf = paired_diff(pf1.get(views), pf0.get(views))
@@ -2131,11 +2132,30 @@ def section_coordination_systems(results: dict) -> tuple[list[str], list[tuple]]
                                seed_diff_map(nv1.get(views), nv0.get(views)))
             gated += [(dname, "prismflow-vs-naive", pair,
                        "DiD (prismflow beta shift) - (naive beta shift)", did)]
+            dids.append(did)
             out.append(line([f"`{pair}`",
                              "YES" if "suricata" in views else "no",
                              ppf.text, ppf.count, pnv.text, pnv.count,
                              did.text, did.count]))
         out.append("")
+        scored = [d for d in dids if d.mean is not None]
+        if scored:
+            pos = [d for d in scored if d.mean > 0]
+            pos_u = [d for d in pos if d.unanimous]
+            neg = [d for d in scored if d.mean < 0]
+            neg_u = [d for d in neg if d.unanimous]
+            out += [f"{dname}: the DiD is POSITIVE on {len(pos)} of the "
+                    f"{len(scored)} `dns` pairs ({len(pos_u)} with all 5 "
+                    f"seeds agreeing) and negative on {len(neg)} "
+                    f"({len(neg_u)} unanimous)"
+                    + (f", spanning {min(d.mean for d in pos):+.4f}.."
+                       f"{max(d.mean for d in pos):+.4f}" if pos else "")
+                    + ". A positive DiD means `beta` 0 -> 1 raised attack "
+                      "success MORE against PrismFlow than against naive "
+                      "fusion on that pair. This is the measured difference "
+                      "of two measured shifts and nothing more: no quantity "
+                      "inside the discount is recorded per cell, so the "
+                      "section does not say why.", ""]
     return out, gated
 
 
