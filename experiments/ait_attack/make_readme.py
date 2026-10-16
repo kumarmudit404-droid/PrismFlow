@@ -1096,25 +1096,90 @@ def l3_dedup_key_parts(results: dict) -> list[list[str]]:
     ]
 
 
+class L3Cell(NamedTuple):
+    """One de-duplicated chorus cell, as the headline counts it."""
+    mean: float
+    unanimous: bool
+    dns: bool
+    direction: str
+
+
+def l3_distinct_cells(cuts: dict[str, list[L3Cut]]) -> dict[tuple, L3Cell]:
+    """The chorus cells, de-duplicated on `L3_DEDUP_KEY`.
+
+    Group (d) sweeps every epsilon and so CONTAINS group (a)'s `eps=1.0`
+    cells; keying on `(direction, cell_key)` counts each one once. Both the
+    headline and the verdict body read their counts from this one dict, so
+    they cannot disagree.
+    """
+    out: dict[tuple, L3Cell] = {}
+    for gkey in ("a", "b", "d"):
+        for c in cuts.get(gkey, []):
+            for key, mean, uni in c.keys:
+                out[(c.direction, key)] = L3Cell(mean, uni, c.dns, c.direction)
+    return out
+
+
+def l3_sign_sets(cells: dict[tuple, L3Cell], pick) -> dict:
+    """`{level: set of unanimous signs at that level}`, over DISTINCT cells.
+
+    A level's sign set is the UNION over the cells at that level - `hi` if any
+    of them is a unanimous PrismFlow-higher cell, `lo` if any is a unanimous
+    PrismFlow-lower one. Levels with no unanimous cell at all map to the empty
+    set.
+
+    This is deliberately not a dict comprehension over the per-group `L3Cut`
+    rows: there are 28 of those keyed on 2 level values, so a comprehension
+    silently keeps only the last row per level and reports one group's signs
+    as the level's. That is the defect this function replaces.
+    """
+    acc: dict = {}
+    for cell in cells.values():
+        signs = acc.setdefault(pick(cell), set())
+        if cell.unanimous and cell.mean > 0:
+            signs.add("hi")
+        if cell.unanimous and cell.mean < 0:
+            signs.add("lo")
+    return acc
+
+
+def l3_dependence_clause(signs: dict, name: str) -> str | None:
+    """How the headline may speak about one factor, from its sign sets alone.
+
+    Three outcomes, and no other:
+
+      * at least two levels carry DIFFERENT sign sets and at least one of
+        those levels is single-signed  ->  "conditional on <name>";
+      * every level carries BOTH signs ->  "not determined by <name> alone";
+      * anything else (one level only, or levels differing only by an empty
+        set) -> no clause, because neither statement is supported.
+    """
+    levels = [frozenset(v) for v in signs.values()]
+    if len(levels) < 2:
+        return None
+    distinct_sets = set(levels)
+    single = [s for s in levels if len(s) == 1]
+    if len(distinct_sets) > 1 and single:
+        return f"conditional on {name}"
+    if all(s == frozenset({"hi", "lo"}) for s in levels):
+        return f"not determined by {name} alone"
+    return None
+
+
 def l3_headline(cuts: dict[str, list[L3Cut]]) -> str:
     """THE L3 verdict sentence. One source of text, used wherever it appears.
 
-    Every word that could have come out otherwise is derived from the counts:
-    the strength word from whether each sign has any unanimous cell, and the
-    conditionality clause from whether the dns sides and the directions
-    actually disagree. There is no fixed verdict string to drift from the
-    tables.
+    Every word that could have come out otherwise is derived: the strength
+    word from whether each sign has any unanimous cell, the counts from the
+    de-duplicated cells, and each factor's clause from `l3_dependence_clause`
+    applied to that factor's sign sets. There is no fixed verdict string.
     """
-    chorus = [c for k in ("a", "b", "d") for c in cuts.get(k, [])]
-    if not chorus:
+    cells = l3_distinct_cells(cuts)
+    if not cells:
         return ("**Verdict on L3: NO EVIDENCE** - no paired chorus cell "
                 "survived.")
-    distinct: dict[tuple, tuple] = {}
-    for c in chorus:
-        for key, mean, uni in c.keys:
-            distinct[(c.direction, key)] = (mean, uni)
-    hi_u = sum(1 for m, u in distinct.values() if m > 0 and u)
-    lo_u = sum(1 for m, u in distinct.values() if m < 0 and u)
+    hi_u = sum(1 for c in cells.values() if c.unanimous and c.mean > 0)
+    lo_u = sum(1 for c in cells.values() if c.unanimous and c.mean < 0)
     if hi_u and lo_u:
         word = "PARTIALLY reproduced"
     elif hi_u:
@@ -1123,24 +1188,17 @@ def l3_headline(cuts: dict[str, list[L3Cut]]) -> str:
         word = "CONTRADICTED"
     else:
         word = "NO EVIDENCE"
+    counts = (f"({hi_u} higher / {lo_u} lower unanimous, of {len(cells)} "
+              f"distinct cells)")
 
-    # Does the result actually depend on the dns split, and on direction?
-    def side_signs(pick):
-        return {pick(c): {("hi" if c.higher_unanimous else None),
-                          ("lo" if c.lower_unanimous else None)} - {None}
-                for c in chorus}
-    by_dns, by_dir = side_signs(lambda c: c.dns), side_signs(lambda c: c.direction)
-    conds = []
-    if len({frozenset(v) for v in by_dns.values()}) > 1 or any(
-            len(v) > 1 for v in by_dns.values()):
-        conds.append("the `dns` split")
-    if len({frozenset(v) for v in by_dir.values()}) > 1 or any(
-            len(v) > 1 for v in by_dir.values()):
-        conds.append("direction")
-    tail = (" and ".join(conds) if conds else "neither the `dns` split nor "
-            "direction")
-    return (f"**Verdict on L3: Part 09's result is {word}, conditional on "
-            f"{tail}.**")
+    clauses = [c for c in
+               (l3_dependence_clause(l3_sign_sets(cells, lambda x: x.dns),
+                                     "the `dns` split"),
+                l3_dependence_clause(l3_sign_sets(cells, lambda x: x.direction),
+                                     "direction"))
+               if c]
+    tail = ", " + ", ".join(clauses) if clauses else ""
+    return (f"**Verdict on L3: Part 09's result is {word} {counts}{tail}.**")
 
 
 def l3_verdict(cuts: dict[str, list[L3Cut]]) -> list[str]:
@@ -1168,16 +1226,13 @@ def l3_verdict(cuts: dict[str, list[L3Cut]]) -> list[str]:
     only_repro = sorted(set(repro) - set(reversed_))
     only_rev = sorted(set(reversed_) - set(repro))
 
-    # De-duplicate by (direction, cell key): group (d) contains group (a).
-    distinct: dict[tuple, tuple] = {}
-    for c in chorus:
-        for key, mean, uni in c.keys:
-            distinct[(c.direction, key)] = (mean, uni)
+    # The same de-duplicated cells the headline counts, so the two agree.
+    distinct = l3_distinct_cells(cuts)
     n_cells = len(distinct)
-    n_high = sum(1 for m, _u in distinct.values() if m > 0)
-    n_high_u = sum(1 for m, u in distinct.values() if m > 0 and u)
-    n_low = sum(1 for m, _u in distinct.values() if m < 0)
-    n_low_u = sum(1 for m, u in distinct.values() if m < 0 and u)
+    n_high = sum(1 for c in distinct.values() if c.mean > 0)
+    n_high_u = sum(1 for c in distinct.values() if c.mean > 0 and c.unanimous)
+    n_low = sum(1 for c in distinct.values() if c.mean < 0)
+    n_low_u = sum(1 for c in distinct.values() if c.mean < 0 and c.unanimous)
 
     out = [l3_headline(cuts), "",
            "It reappears in some chorus cells and reverses in others. The "

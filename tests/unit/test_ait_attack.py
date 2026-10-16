@@ -694,3 +694,92 @@ def test_paired_count_discloses_exact_zeros():
                          {i: 0.0 for i in range(5)})
     assert split.opposite == 2 and split.zeros == 0
     assert split.count == "3/5", "a genuine sign split carries no zero note"
+
+
+# ---------------------------------------------------------------------------
+# L3 headline logic (make_readme.py): sign sets and the dependence clause.
+# ---------------------------------------------------------------------------
+
+def _l3cut(direction, dns, cells):
+    """An L3Cut carrying `cells` as (key, mean, unanimous) triples."""
+    from experiments.ait_attack.make_readme import L3Cut
+
+    hi = [c for c in cells if c[1] > 0]
+    lo = [c for c in cells if c[1] < 0]
+    return L3Cut(direction, dns, len(cells),
+                 len(lo), sum(1 for c in lo if c[2]),
+                 len(hi), sum(1 for c in hi if c[2]),
+                 min(c[1] for c in cells), max(c[1] for c in cells),
+                 tuple(cells))
+
+
+def test_l3_dependence_clause_three_branches():
+    """The clause must follow the rule, with no fourth outcome."""
+    from experiments.ait_attack.make_readme import l3_dependence_clause as cl
+
+    # Differing sign sets with at least one single-signed level -> conditional.
+    assert cl({True: {"hi"}, False: {"lo"}}, "X") == "conditional on X"
+    assert cl({True: {"hi"}, False: {"hi", "lo"}}, "X") == "conditional on X"
+    # Every level holds both signs -> not determined by X alone.
+    assert cl({True: {"hi", "lo"}, False: {"hi", "lo"}}, "X") == \
+        "not determined by X alone"
+    # Neither statement supported: identical single-signed levels, an empty
+    # level beside a two-signed one, or a single level.
+    assert cl({True: {"hi"}, False: {"hi"}}, "X") is None
+    assert cl({True: set(), False: {"hi", "lo"}}, "X") is None
+    assert cl({True: {"hi", "lo"}}, "X") is None
+    assert cl({}, "X") is None
+
+
+def test_l3_sign_sets_union_over_cells_not_last_cut():
+    """A level's sign set is the union over its cells.
+
+    Regression guard: a dict comprehension over the per-group L3Cut rows keeps
+    only the LAST row per level, which reported one group's signs as the whole
+    level's and produced a wrong "conditional on" clause.
+    """
+    from experiments.ait_attack.make_readme import (
+        l3_distinct_cells, l3_sign_sets)
+
+    cuts = {
+        # Same dns side, same direction, two groups: one all-higher, one
+        # all-lower. The union is both signs; the last cut alone says "lo".
+        "a": [_l3cut("DIR", True, [("chorus_k2_eps1.0_beta1.0_[a+b]", +0.5, True)])],
+        "d": [_l3cut("DIR", True, [("chorus_k2_eps0.2_beta1.0_[a+b]", -0.5, True)])],
+    }
+    cells = l3_distinct_cells(cuts)
+    assert len(cells) == 2, "distinct cells keyed on (direction, cell_key)"
+    assert l3_sign_sets(cells, lambda c: c.dns) == {True: {"hi", "lo"}}
+    assert l3_sign_sets(cells, lambda c: c.direction) == {"DIR": {"hi", "lo"}}
+
+
+def test_l3_distinct_cells_dedup_counts_overlap_once():
+    """Group (d) contains group (a); the shared cell must be counted once."""
+    from experiments.ait_attack.make_readme import l3_distinct_cells
+
+    shared = ("chorus_k2_eps1.0_beta1.0_[a+b]", +0.5, True)
+    cuts = {"a": [_l3cut("DIR", True, [shared])],
+            "d": [_l3cut("DIR", True, [shared,
+                                       ("chorus_k2_eps2.0_beta1.0_[a+b]", -0.1, True)])]}
+    assert len(l3_distinct_cells(cuts)) == 2
+
+
+def test_l3_headline_states_counts_and_strength_word():
+    """The headline must carry the counts and derive the strength word."""
+    from experiments.ait_attack.make_readme import l3_headline
+
+    both = {"a": [_l3cut("DIR", True, [("chorus_k2_eps1.0_beta1.0_[a+b]", +0.5, True)]),
+                  _l3cut("DIR", False, [("chorus_k2_eps1.0_beta1.0_[a+c]", -0.5, True)])]}
+    text = l3_headline(both)
+    assert "PARTIALLY reproduced" in text
+    assert "(1 higher / 1 lower unanimous, of 2 distinct cells)" in text
+
+    only_hi = {"a": [_l3cut("DIR", True, [("chorus_k2_eps1.0_beta1.0_[a+b]", +0.5, True)])]}
+    assert "is reproduced (1 higher / 0 lower unanimous" in l3_headline(only_hi)
+
+    only_lo = {"a": [_l3cut("DIR", True, [("chorus_k2_eps1.0_beta1.0_[a+b]", -0.5, True)])]}
+    assert "CONTRADICTED (0 higher / 1 lower unanimous" in l3_headline(only_lo)
+
+    none_u = {"a": [_l3cut("DIR", True, [("chorus_k2_eps1.0_beta1.0_[a+b]", +0.5, False)])]}
+    assert "NO EVIDENCE (0 higher / 0 lower unanimous" in l3_headline(none_u)
+    assert l3_headline({}).startswith("**Verdict on L3: NO EVIDENCE**")

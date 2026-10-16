@@ -535,7 +535,7 @@ Each cell is one grid point and one compromised subset. The difference is `prism
 
 Example keys: `chorus_k2_eps1.0_beta0.0_[apache+audit]` and `pgd_k1_eps1.0_[apache]`. `beta` is absent from a `pgd` key because `pgd` has no beta; the `chorus`/`pgd` prefix already separates those cells, so no two distinct grid cells can collide.
 
-**Verdict on L3: Part 09's result is PARTIALLY reproduced, conditional on the `dns` split and direction.**
+**Verdict on L3: Part 09's result is PARTIALLY reproduced (60 higher / 95 lower unanimous, of 280 distinct cells), not determined by the `dns` split alone, not determined by direction alone.**
 
 It reappears in some chorus cells and reverses in others. The counts below say which.
 
