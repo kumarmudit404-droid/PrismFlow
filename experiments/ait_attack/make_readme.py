@@ -1166,20 +1166,62 @@ def l3_dependence_clause(signs: dict, name: str) -> str | None:
     return None
 
 
-def l3_strata(cuts: dict[str, list[L3Cut]]) -> dict[tuple, dict]:
-    """`{(group, sub-row, direction): {dns: L3Cut}}` - one entry per stratum.
+def l3_strata(cuts: dict[str, list[L3Cut]]) -> tuple[dict[tuple, dict], list[str]]:
+    """`({(label, direction): {dns: L3Cut}}, dropped_labels)` - the strata.
 
     A stratum is the finest cut at which the `dns` split can be compared
     without averaging anything else away: one group sub-row (so `beta` and
     `epsilon` are held fixed) in one direction. Each stratum holds exactly the
-    two `dns` levels, which is what makes the comparison below a comparison
-    and not a pooling.
+    two `dns` levels, which is what makes the comparison a comparison and not
+    a pooling.
+
+    SUB-ROWS ARE DE-DUPLICATED BY THEIR CELL-KEY SET. Group (a) is
+    `chorus eps=1.0 beta=1.0` and group (d)'s `epsilon=1` sub-row is the same
+    predicate, so the two select the IDENTICAL 25 cells per direction and are
+    one sub-row wearing two labels. Counting both would weight that grid point
+    twice. The de-duplication is derived - two sub-rows collapse when their
+    cell-key sets are equal, not because this function knows which groups
+    overlap - and the more specific label (the one carrying a `beta` or
+    `epsilon`) is kept so the surviving name says which grid point it is.
+    Returns the dropped labels so the README can name them.
     """
-    strata: dict[tuple, dict] = {}
+    candidates: dict[tuple, dict] = {}
     for gkey in ("a", "b", "d"):
         for c in cuts.get(gkey, []):
-            strata.setdefault((gkey, c.extra, c.direction), {})[c.dns] = c
-    return strata
+            candidates.setdefault((gkey, c.extra, c.direction), {})[c.dns] = c
+
+    by_cells: dict[tuple, list[tuple]] = {}
+    for key, levels in candidates.items():
+        cells = frozenset(k for cut in levels.values() for k, _m, _u in cut.keys)
+        by_cells.setdefault((key[2], cells), []).append(key)
+
+    strata: dict[tuple, dict] = {}
+    dropped: list[str] = []
+    for (direction, _cells), keys in by_cells.items():
+        # Prefer the labelled sub-row; it names the grid point explicitly.
+        keep = sorted(keys, key=lambda k: (k[1] == "", k[0]))[0]
+        for other in keys:
+            if other != keep:
+                dropped.append(f"{l3_stratum_label(other)} (identical cells to "
+                               f"{l3_stratum_label(keep)})")
+        strata[(l3_stratum_label(keep), direction)] = candidates[keep]
+    return strata, sorted(dropped)
+
+
+def l3_dominant_sign(cut: L3Cut | None) -> str | None:
+    """The sign holding a unanimous MAJORITY of one level's cells, or None.
+
+    `hi` or `lo` when that sign's unanimous count is strictly more than half
+    the level's cells; None when neither is, which includes every level whose
+    unanimous cells are split or absent.
+    """
+    if cut is None or not cut.n:
+        return None
+    if cut.higher_unanimous * 2 > cut.n:
+        return "hi"
+    if cut.lower_unanimous * 2 > cut.n:
+        return "lo"
+    return None
 
 
 def l3_stratum_signs(cut: L3Cut | None) -> set:
@@ -1227,6 +1269,59 @@ def l3_stratum_label(key: tuple) -> str:
     return f"({gkey})" + (f" `{extra}`" if extra else "") + f" {direction}"
 
 
+#: How a dominant sign is spelled in the majority companion.
+L3_SIGN_WORDS = {"hi": "PrismFlow higher", "lo": "PrismFlow lower",
+                 None: "no majority"}
+
+
+def l3_majority_companion(strata: dict[tuple, dict]) -> list[str]:
+    """The same strata read by MAJORITY rather than by presence of a sign.
+
+    The sign-set buckets above ask whether a sign appears at all, so one
+    unanimous cell out of fourteen puts a level in `mixed`. This asks the
+    stricter question: does one sign hold a unanimous majority of that level's
+    cells. A stratum where the two `dns` levels have OPPOSITE dominant signs
+    is the strongest form of a dns flip available in this grid.
+    """
+    rows, opposite, no_dominant_higher = [], [], []
+    for (label, direction) in sorted(strata):
+        levels = strata[(label, direction)]
+        yes, no = levels.get(True), levels.get(False)
+        dy, dn = l3_dominant_sign(yes), l3_dominant_sign(no)
+        rows.append([label,
+                     L3_SIGN_WORDS[dy]
+                     + (f" ({yes.higher_unanimous if dy == 'hi' else yes.lower_unanimous}"
+                        f"/{yes.n})" if dy and yes else ""),
+                     L3_SIGN_WORDS[dn]
+                     + (f" ({no.higher_unanimous if dn == 'hi' else no.lower_unanimous}"
+                        f"/{no.n})" if dn and no else "")])
+        if dy and dn and dy != dn:
+            opposite.append(label)
+        if dn == "hi":
+            no_dominant_higher.append(label)
+
+    out = ["", "**By MAJORITY rather than by presence.** The buckets above ask "
+           "whether a sign appears at all, so a single unanimous cell is "
+           "enough to put a level in `mixed`. This asks the stricter "
+           "question: which sign, if either, holds a unanimous majority "
+           "(strictly more than half) of that level's cells.", ""]
+    out += header(["stratum", "dns-YES dominant sign",
+                   "dns-NO dominant sign"])
+    for row in rows:
+        out.append(line(row))
+    out += ["", f"**Strata whose two `dns` levels have OPPOSITE dominant "
+            f"signs: {len(opposite)} of {len(strata)}**"
+            + (": " + ", ".join(f"**{s}**" for s in opposite) + "."
+               if opposite else "."),
+            "", f"**Strata where dns-NO is PrismFlow-higher-dominant - the "
+            f"attack working better against the discount with `dns` OUTSIDE "
+            f"the compromised set: {len(no_dominant_higher)} of "
+            f"{len(strata)}**"
+            + (": " + ", ".join(no_dominant_higher) + "."
+               if no_dominant_higher else ".")]
+    return out
+
+
 def l3_stratified_sentence(cuts: dict[str, list[L3Cut]]) -> list[str]:
     """The stratified `dns` comparison, every number and name derived.
 
@@ -1235,7 +1330,7 @@ def l3_stratified_sentence(cuts: dict[str, list[L3Cut]]) -> list[str]:
     reader is entitled to ask whether that survives holding `beta`, `epsilon`
     and direction fixed. This answers that at the finest available cut.
     """
-    strata = l3_strata(cuts)
+    strata, dropped = l3_strata(cuts)
     if not strata:
         return []
     buckets: dict[str, list[str]] = {name: [] for name, _d in
@@ -1243,18 +1338,26 @@ def l3_stratified_sentence(cuts: dict[str, list[L3Cut]]) -> list[str]:
     no_higher_with_dns: list[str] = []
     for key in sorted(strata):
         yes, no = strata[key].get(True), strata[key].get(False)
-        buckets[l3_stratum_bucket(yes, no)].append(l3_stratum_label(key))
+        buckets[l3_stratum_bucket(yes, no)].append(key[0])
         if yes is not None and yes.higher_unanimous == 0:
-            no_higher_with_dns.append(l3_stratum_label(key))
+            no_higher_with_dns.append(key[0])
 
-    n_subrows = len({(g, extra) for g, extra, _d in strata})
-    n_dirs = len({d for _g, _e, d in strata})
+    n_subrows = len({label for label, _d in strata})
+    n_dirs = len({d for _label, d in strata})
     out = [f"**Stratified, holding `beta`, `epsilon` and direction fixed.** A "
            f"stratum is one group sub-row in one direction, which is the "
            f"finest cut at which the two `dns` levels can be compared without "
-           f"averaging anything else away. There are {len(strata)} of them "
-           f"({n_subrows} sub-rows x {n_dirs} directions). Comparing each "
-           f"stratum's dns-YES and dns-NO unanimous sign sets:", ""]
+           f"averaging anything else away. There are **{len(strata)}** of them "
+           f"({n_subrows} distinct sub-rows x {n_dirs} directions).", ""]
+    if dropped:
+        out += [f"{len(dropped)} sub-row label(s) were DROPPED as duplicates "
+                f"before counting, because they select the identical cells and "
+                f"would weight that grid point twice: "
+                + "; ".join(dropped)
+                + ". The de-duplication is on the cell-key set, so it is "
+                  "derived rather than assumed.", ""]
+    out += ["Comparing each stratum's dns-YES and dns-NO unanimous sign sets:",
+            ""]
     for name, description in L3_STRATUM_BUCKETS:
         out.append(f"- **{len(buckets[name])} of {len(strata)}** - "
                    f"{description}"
@@ -1280,6 +1383,7 @@ def l3_stratified_sentence(cuts: dict[str, list[L3Cut]]) -> list[str]:
             f"{len(strata)}**"
             + (": " + ", ".join(no_higher_with_dns) + "."
                if no_higher_with_dns else ".")]
+    out += l3_majority_companion(strata)
     out += ["", "This is a description of how the grid came out, stratum by "
             "stratum, and it gives no mechanism: the strata are nested "
             "subsets on shared seeds (above), nothing inside the discount is "
@@ -1397,18 +1501,24 @@ def l3_verdict(cuts: dict[str, list[L3Cut]]) -> list[str]:
                 picked.append(f"{prefix}{side_name(c)} "
                               f"({u}/{c.n} unanimous)")
         return picked
+    # De-duplicated (direction, side, sub-row) rows for the arrangement
+    # sentence: group (a) and group (d)'s `epsilon=1` sub-row select the
+    # identical cells, so a row appearing in both must be counted once.
+    strata, _dropped = l3_strata(cuts)
     worse_sides, better_sides = [], []
+    for (_label, _direction), levels in strata.items():
+        for cut in levels.values():
+            if (cut.higher_unanimous * 2 > cut.n
+                    and cut.higher_unanimous > cut.lower_unanimous):
+                worse_sides.append(cut)
+            if (cut.lower_unanimous * 2 > cut.n
+                    and cut.lower_unanimous > cut.higher_unanimous):
+                better_sides.append(cut)
     for gkey, label in (("a", "(a) `eps=1.0 beta=1.0`"),
                         ("b", "(b) `beta=0.0` / `beta=5.0`"),
                         ("d", "(d) the `epsilon` sweep")):
         rows = cuts.get(gkey, [])
         worse, better = dominant(rows, True), dominant(rows, False)
-        worse_sides += [c for c in rows
-                        if c.higher_unanimous * 2 > c.n
-                        and c.higher_unanimous > c.lower_unanimous]
-        better_sides += [c for c in rows
-                         if c.lower_unanimous * 2 > c.n
-                         and c.lower_unanimous > c.higher_unanimous]
         if not (worse or better):
             continue
         out += [f"**Group {label} - sides where one sign carries a unanimous "
@@ -1422,8 +1532,11 @@ def l3_verdict(cuts: dict[str, list[L3Cut]]) -> list[str]:
     # It describes the arrangement of the counts; it explains nothing.
     if worse_sides:
         all_dns = all(c.dns for c in worse_sides)
-        out += [f"Across all three chorus groups, the "
-                f"{len(worse_sides)} (group, direction, side) rows where Part "
+        out += [f"Across the chorus groups, counting DISTINCT (direction, "
+                f"side, sub-row) rows only - group (a) and group (d)'s "
+                f"`epsilon=1` sub-row select the identical cells, so a row in "
+                f"both is counted once - the "
+                f"{len(worse_sides)} rows where Part "
                 f"09's sign carries a unanimous majority "
                 + ("ALL have `dns` INSIDE the compromised set"
                    if all_dns else
@@ -1649,30 +1762,40 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             out.append(f"- **{dname}, {side}:** across {len(pairs)} conditions, "
                        f"Pearson r between per-cell detector AUC and mean dependence "
                        f"= **{r:+.4f}**.")
-    out += ["", "**Verdict: the correlation here is NEGATIVE, which is the "
-            "opposite sign to Part 14's, and the two are not measuring the same "
-            "thing.** Part 14 swept one attacker objective and watched gate AUC and "
+    out += ["", "**Verdict: Part 29 neither confirms nor refutes L8.** The "
+            "correlation here is NEGATIVE, the opposite sign to Part 14's, and "
+            "the two numbers correlate different things, so neither can stand "
+            "as evidence for or against the other.", "",
+            "Part 14 swept one attacker objective and watched gate AUC and "
             "dependence fall TOGETHER along that axis (r = +0.9578 over six "
-            "levels). Part 29 correlates across heterogeneous conditions at fixed "
+            "levels): a correlation ALONG an attacker-strength axis, within one "
+            "condition type. Part 29 correlates ACROSS heterogeneous "
+            "conditions - different k, subsets, epsilon and beta - at fixed "
             "attacker strength, and finds that the conditions with the HIGHEST "
-            "measured dependence are the ones the detector scores LOWEST. Both "
-            "readings are consistent with L8's underlying claim - that detection "
-            "and correction are functions of one quantity - but the sign above must "
-            "not be quoted as reproducing Part 14's.", "",
-            "The negative sign is close to mechanical, and worth stating because it "
-            "sharpens [[L5]] rather than contradicting it. The suspicion score is "
+            "measured dependence are the ones the detector scores LOWEST. "
+            "Different axes, different populations, different quantities "
+            "varying. The sign above must not be quoted as reproducing Part "
+            "14's, and Part 14's must not be quoted as surviving here.", "",
+            "The negative sign would follow from the suspicion score's own "
+            "definition ONLY IF `expected` rises with the estimated "
+            "dependence, and this Part does not measure that. The score is "
             "agreement left UNEXPLAINED by the estimated dependence "
-            "(`prismflow/statistics/suspicion.py`: `excess = agreement - expected` "
-            "where `expected` rises with the estimated matrix). An attack that "
-            "successfully manufactures dependence therefore raises `expected`, "
-            "shrinks `excess`, and lowers its own suspicion score. Succeeding at "
-            "collusion is itself what buys cover from a detector watching for "
-            "collusion. Part 29 does not establish this mechanism - it measures the "
-            "correlation, not the causal path - so it is offered as the likely "
-            "reading, not a finding.", ""]
+            "(`prismflow/statistics/suspicion.py`: `excess = agreement - "
+            "expected`). If `expected` does rise with the estimated matrix, "
+            "then an attack that manufactures dependence raises `expected`, "
+            "shrinks `excess` and lowers its own suspicion score - succeeding "
+            "at collusion buying cover from a detector watching for collusion. "
+            "Part 29 records no per-cell `expected` and no estimated matrix, so "
+            "that antecedent is untested here and the reading is a conjecture "
+            "about the mechanism, not a measurement of it.", ""]
 
     out += ["### L16 - discrimination and calibration come apart on real "
             "cross-scenario data", ""]
+    #: (unit, min ROC AUC, min/max Brier, min/max ECE) with `dns` OUTSIDE the
+    #: compromised set - the rows L16's shape is read off. The max/min ratios
+    #: replace the old "an order of magnitude", which was true of one unit
+    #: out of four and wrong by a factor of three in another.
+    honest_spread: list[tuple] = []
     for dname, record in results["directions"].items():
         for system in ("naive", "prismflow"):
             cells = record["systems"][system]["cells"]
@@ -1690,6 +1813,10 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
                            f"ROC AUC {min(auc):.4f}..{max(auc):.4f}, "
                            f"Brier {min(br):.4f}..{max(br):.4f}, "
                            f"ECE {min(ece):.4f}..{max(ece):.4f}.")
+                if not dns:
+                    honest_spread.append(
+                        (f"{dname} / {system}", min(auc), min(br), max(br),
+                         min(ece), max(ece)))
     worst_auc, worst_where = None, None
     for dname, record in results["directions"].items():
         for system in ("naive", "prismflow"):
@@ -1701,9 +1828,29 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
     out += ["", "**Verdict: L16's shape holds only while `dns` is outside the "
             "compromised set. Once `dns` is compromised the two do NOT merely come "
             "apart - ranking collapses as well.**", "",
-            "With `dns` honest, the rows above are L16 exactly: ROC AUC stays at or "
-            "above 0.98 in both directions while Brier and ECE degrade by an order "
-            "of magnitude across subsets. With `dns` compromised in direction B, "
+            "With `dns` honest, the rows above are L16 exactly: ROC AUC stays "
+            f"at or above {min(r[1] for r in honest_spread):.4f} in both "
+            "directions while Brier and ECE spread widely across subsets. The "
+            "spread is NOT one factor: per unit, as max/min of the ranges "
+            "printed above, it is",
+            ""]
+    for unit, _auc, br_lo, br_hi, ece_lo, ece_hi in honest_spread:
+        out.append(f"- **{unit}, dns NOT compromised:** Brier "
+                   f"{br_hi:.4f}/{br_lo:.4f} = **{br_hi / br_lo:.2f}x**, ECE "
+                   f"{ece_hi:.4f}/{ece_lo:.4f} = **{ece_hi / ece_lo:.2f}x**.")
+    ratios = [r[3] / r[2] for r in honest_spread] + \
+             [r[5] / r[4] for r in honest_spread]
+    out += ["",
+            f"So the factor runs from {min(ratios):.2f}x to "
+            f"{max(ratios):.2f}x depending on direction, system and which of "
+            f"the two metrics is read. The earlier wording, 'degrade by an "
+            f"order of magnitude', held for "
+            f"{sum(1 for x in ratios if 5.0 <= x < 50.0)} of the "
+            f"{len(ratios)} ratios and overstated the smallest "
+            f"({min(ratios):.2f}x) by about "
+            f"{10.0 / min(ratios):.1f}x; it is replaced by the measured "
+            f"figures.", "",
+            "With `dns` compromised in direction B, "
             f"ROC AUC falls to {worst_auc:.4f} ({worst_where}) - below chance, so "
             "the ordering is actively inverted, not merely poorly thresholded - and "
             "Brier reaches the far end of its range at the same time. Describing "
@@ -1727,13 +1874,38 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             out.append(f"- **{dname} / {system}, chorus k=2 eps=1.0:** attack "
                        f"success {lo_y:.4f}..{hi_y:.4f} with `dns` compromised, "
                        f"against {lo_n:.4f}..{hi_n:.4f} without it.")
-    out += ["", "**Verdict: L17 is confirmed - the label is solved by `dns` "
-            "alone.** Section 1's `label_meaning` is the ground for that: the "
-            "attack label is dominated by one continuously-running DNS "
-            "exfiltration tool, and section 3 shows `dns` is the view that "
-            "carries it. Everything below is the structure that fact imposes "
-            "on the grid, measured per direction and per system rather than "
-            "asserted.", ""]
+    # The counter-evidence to reading L17 off this Part's attack grid: in
+    # direction B another view alone scores high at beta=0, so "one view
+    # solves the label" does not follow from these numbers.
+    sur_b = {s: alone_means(results["directions"]["B_santos_to_rm"], s)
+             .get("suricata")
+             for s in ("naive", "prismflow")
+             if "B_santos_to_rm" in results["directions"]}
+    sur_b = {s: v for s, v in sur_b.items() if v is not None}
+    out += ["", "**Verdict: L17 STANDS ON PART 28's CLEAN BASELINES, and "
+            "Part 29's attack results do not independently confirm it.** "
+            "L17's evidence is `single_view_dns` scoring balanced accuracy "
+            "0.9898 on `santos` and 1.0000 on `russellmitchell` with no other "
+            "single view clearing 0.71 - all of it measured on CLEAN data in "
+            "Part 28, cited here and not re-measured. Section 1's "
+            "`label_meaning` is the mechanism for it: the attack label is "
+            "dominated by one continuously-running DNS exfiltration tool.", ""]
+    if sur_b:
+        out += ["Nothing in this Part's attack grid adds to that, and one "
+                "measurement here cuts against reading L17 off the grid at "
+                "all: compromising **`suricata` alone** at `beta=0` in "
+                "`B_santos_to_rm` reaches attack success "
+                + " / ".join(f"**{sur_b[s]:.4f}** ({s})"
+                             for s in ("naive", "prismflow") if s in sur_b)
+                + ", far above `dns` alone in the same unit. A view that is "
+                  "nearly useless as a clean classifier is therefore the most "
+                  "effective one to compromise in that direction. 'One view "
+                  "solves the label' is a statement about clean accuracy and "
+                  "does not transfer to which view an attacker should pick; "
+                  "this Part measures the latter and not the former. "
+                  "Everything below is the structure L17 imposes on the grid, "
+                  "measured per direction and per system rather than "
+                  "asserted.", ""]
 
     # (i) what each view achieves ALONE, which is the floor for every pair.
     out += ["**Each view compromised alone (chorus k=1 eps=1.0, 5-seed "
@@ -1756,26 +1928,45 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             means = alone_means(record, system)
             sur = means.get("suricata")
             b0 = by_subset(cells, "chorus", 2, 1.0, 0.0)
+            # SIGNED pair-minus-single-view, not |difference|. The absolute
+            # value read as "the second view adds at most X" even where every
+            # pair scored BELOW the single view, which is the opposite claim.
             gaps = []
             for views, cell in b0.items():
                 if "suricata" not in views or "dns" in views:
                     continue
                 stat = cell.get("summary", {}).get("attack_success")
                 if stat and sur is not None:
-                    gaps.append(abs(stat["mean"] - sur))
+                    gaps.append(stat["mean"] - sur)
             inert = {v: means[v] for v in ("apache", "auth", "audit")
                      if v in means}
             if not gaps or sur is None or not inert:
                 continue
+            lo, hi = min(gaps), max(gaps)
+            if hi > 0:
+                reading = (f"the second view ADDS up to {hi:+.4f}"
+                           + (f" and at least {lo:+.4f}" if lo > 0 else
+                              f", though the weakest pair is {lo:+.4f}"))
+            else:
+                reading = (f"every pair scores BELOW `suricata` alone, by "
+                           f"{hi:+.4f} to {lo:+.4f} - the second view adds "
+                           f"NOTHING here and subtracts")
             out += [f"- **{dname} / {system}:** `suricata` alone reaches "
                     f"{sur:.4f}. Its {len(gaps)} pairs without `dns`, at "
-                    f"`beta=0.0`, sit within {max(gaps):.4f} of that - the "
-                    "second view adds at most that much. `apache`, `auth` and "
-                    "`audit` alone reach "
+                    f"`beta=0.0`, come to {lo:+.4f}..{hi:+.4f} against that "
+                    f"(signed, pair minus single view): {reading}. "
+                    "`apache`, `auth` and `audit` alone reach "
                     + ", ".join(f"`{v}` {m:.4f}" for v, m in inert.items())
                     + f", a range of {min(inert.values()):.4f}.."
                     f"{max(inert.values()):.4f}."]
-    out += [""]
+    out += ["", "The single-view baseline in those four lines is the `k=1` "
+            "cell at `beta=1.0`, because the grid has no `k=1 beta=0.0` cell. "
+            "That is not a mismatch: the chorus agreement term sums over PAIRS "
+            "of compromised views, so with one compromised view there is no "
+            "pair and `beta` cannot act. `test_chorus_equals_pgd_at_k1` "
+            "(`tests/unit/test_ait_attack.py`) asserts chorus and `pgd` give "
+            "identical attack success at `k=1`, and `pgd` runs at `beta=0.0`, "
+            "so the `k=1` cell is the same cell at either `beta`.", ""]
 
     # (iii) coordination: signed beta 0->1 shift, dns pairs against suricata.
     out += ["**What `beta` does to each family of pairs** (paired within "
@@ -2437,7 +2628,14 @@ def section_coordination_systems(results: dict) -> tuple[list[str], list[tuple]]
             "the `beta` shift on the other 6 pairs as at or near zero in both "
             "arms, so a difference of two near-zero shifts would be a ratio "
             "of noise. The two `beta` columns are repeated here from section "
-            "11 so the DiD can be checked against its operands.", ""]
+            "11 so the DiD can be checked against its operands.", "",
+            "**The 4 rows per direction are not independent trials.** All four "
+            "pairs contain the `dns` view, and all four are evaluated on the "
+            "same test windows with the same 5 seeds and the same trained "
+            "models; they differ only in which second view joins `dns`. Four "
+            "rows agreeing in sign is therefore one shared `dns` perturbation "
+            "seen four times, not four independent confirmations, and no "
+            "count across the rows may be read as replication.", ""]
     for dname, record in results["directions"].items():
         pf = record["systems"]["prismflow"]["cells"]
         nv = record["systems"]["naive"]["cells"]

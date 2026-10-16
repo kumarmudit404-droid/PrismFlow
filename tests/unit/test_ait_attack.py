@@ -846,8 +846,13 @@ def test_l3_strata_counts_sum_to_the_number_of_strata():
                     cut = cut._replace(extra=f"{extra}={value}")
                 cuts.setdefault(gkey, []).append(cut)
 
-    strata = l3_strata(cuts)
-    assert len(strata) == 14, "7 group sub-rows x 2 directions"
+    strata, dropped = l3_strata(cuts)
+    assert len(strata) == 12, (
+        "6 DISTINCT group sub-rows x 2 directions: group (a) and group (d)'s "
+        "epsilon=1 sub-row select identical cells and collapse to one")
+    assert len(dropped) == 2, "the two (a) labels are dropped, one per direction"
+    assert all("identical cells" in d for d in dropped)
+    assert not any(label.startswith("(a)") for label, _d in strata)
     for levels in strata.values():
         assert set(levels) == {True, False}, "each stratum holds both dns levels"
     tally = {}
@@ -858,3 +863,66 @@ def test_l3_strata_counts_sum_to_the_number_of_strata():
     text = "\n".join(l3_stratified_sentence(cuts))
     assert f"sum to {len(strata)} of {len(strata)} strata" in text
     assert "gives no mechanism" in text
+
+
+def test_l3_strata_dedup_collapses_identical_subrows():
+    """Group (a) and group (d) epsilon=1.0 select the same cells.
+
+    They must collapse to ONE stratum, by cell-key set rather than by a
+    hard-coded knowledge of which groups overlap, and the surviving label must
+    be the one that names the grid point.
+    """
+    from experiments.ait_attack.make_readme import l3_strata
+
+    shared = [("chorus_k2_eps1.0_beta1.0_[a+b]", +0.5, True)]
+    other = [("chorus_k2_eps2.0_beta1.0_[a+b]", -0.5, True)]
+    cuts = {
+        "a": [_l3cut("DIR", True, shared), _l3cut("DIR", False, shared)],
+        "d": [_l3cut("DIR", True, shared)._replace(extra="epsilon=1"),
+              _l3cut("DIR", False, shared)._replace(extra="epsilon=1"),
+              _l3cut("DIR", True, other)._replace(extra="epsilon=2"),
+              _l3cut("DIR", False, other)._replace(extra="epsilon=2")],
+    }
+    strata, dropped = l3_strata(cuts)
+    labels = sorted(label for label, _d in strata)
+    assert labels == ["(d) `epsilon=1` DIR", "(d) `epsilon=2` DIR"]
+    assert len(dropped) == 1 and "(a) DIR" in dropped[0]
+    assert "identical cells" in dropped[0]
+    for levels in strata.values():
+        assert set(levels) == {True, False}
+
+
+def test_l3_dominant_sign_needs_a_strict_majority():
+    """`hi`/`lo` only on strictly more than half the level's cells."""
+    from experiments.ait_attack.make_readme import L3Cut, l3_dominant_sign
+
+    def cut(n, hi_u, lo_u):
+        return L3Cut("DIR", True, n, 0, lo_u, 0, hi_u, -1.0, 1.0, (), "")
+
+    assert l3_dominant_sign(cut(10, 6, 0)) == "hi"
+    assert l3_dominant_sign(cut(10, 5, 0)) is None, "exactly half is not a majority"
+    assert l3_dominant_sign(cut(10, 0, 6)) == "lo"
+    assert l3_dominant_sign(cut(10, 0, 5)) is None
+    assert l3_dominant_sign(cut(11, 6, 1)) == "hi"
+    assert l3_dominant_sign(cut(10, 0, 0)) is None
+    assert l3_dominant_sign(cut(0, 0, 0)) is None
+    assert l3_dominant_sign(None) is None
+
+
+def test_l17_suricata_pair_gap_is_signed_not_absolute():
+    """The L17 pair-vs-single lines must carry a signed range.
+
+    In B_santos_to_rm / naive every suricata pair at beta=0 scores BELOW
+    suricata alone, so an absolute value there read as "the second view adds
+    at most X" - the opposite claim. The README must say it subtracts.
+    """
+    readme = Path("experiments/ait_attack/README.md")
+    if not readme.is_file():
+        pytest.skip("README not generated")
+    text = readme.read_text(encoding="utf-8")
+    assert "signed, pair minus single view" in text
+    line = next(l for l in text.splitlines()
+                if l.startswith("- **B_santos_to_rm / naive:** `suricata` alone"))
+    assert "every pair scores BELOW `suricata` alone" in line
+    assert "subtracts" in line
+    assert "adds at most" not in text, "the absolute-value wording must be gone"

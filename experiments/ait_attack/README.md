@@ -537,18 +537,43 @@ Example keys: `chorus_k2_eps1.0_beta0.0_[apache+audit]` and `pgd_k1_eps1.0_[apac
 
 **Verdict on L3: Part 09's result is PARTIALLY reproduced (60 higher / 95 lower unanimous, of 280 distinct cells), not determined by the `dns` split alone, not determined by direction alone.**
 
-**Stratified, holding `beta`, `epsilon` and direction fixed.** A stratum is one group sub-row in one direction, which is the finest cut at which the two `dns` levels can be compared without averaging anything else away. There are 14 of them (7 sub-rows x 2 directions). Comparing each stratum's dns-YES and dns-NO unanimous sign sets:
+**Stratified, holding `beta`, `epsilon` and direction fixed.** A stratum is one group sub-row in one direction, which is the finest cut at which the two `dns` levels can be compared without averaging anything else away. There are **12** of them (12 distinct sub-rows x 2 directions).
 
-- **2 of 14** - the two `dns` levels are each single-signed and DIFFER: (b) `beta=0` B_santos_to_rm, (d) `epsilon=2` A_rm_to_santos
-- **3 of 14** - both levels are single-signed with the SAME sign: (d) `epsilon=0.2` B_santos_to_rm, (d) `epsilon=0.5` A_rm_to_santos, (d) `epsilon=0.5` B_santos_to_rm
-- **8 of 14** - at least one level holds BOTH signs: (a) A_rm_to_santos, (a) B_santos_to_rm, (b) `beta=0` A_rm_to_santos, (b) `beta=5` A_rm_to_santos, (b) `beta=5` B_santos_to_rm, (d) `epsilon=1` A_rm_to_santos, (d) `epsilon=1` B_santos_to_rm, (d) `epsilon=2` B_santos_to_rm
-- **1 of 14** - a level has no unanimous cell at all, so the comparison is not defined there: (d) `epsilon=0.2` A_rm_to_santos
+2 sub-row label(s) were DROPPED as duplicates before counting, because they select the identical cells and would weight that grid point twice: (a) A_rm_to_santos (identical cells to (d) `epsilon=1` A_rm_to_santos); (a) B_santos_to_rm (identical cells to (d) `epsilon=1` B_santos_to_rm). The de-duplication is on the cell-key set, so it is derived rather than assumed.
 
-The four counts sum to 14 of 14 strata.
+Comparing each stratum's dns-YES and dns-NO unanimous sign sets:
 
-**The `dns` split flips the sign in 2 of 14 strata**: **(b) `beta=0` B_santos_to_rm**, **(d) `epsilon=2` A_rm_to_santos**. In the other 12 it does not: 3 have the same single sign on both sides, 8 have a side carrying both signs, and 1 has a side with no unanimous cell to compare.
+- **2 of 12** - the two `dns` levels are each single-signed and DIFFER: (b) `beta=0` B_santos_to_rm, (d) `epsilon=2` A_rm_to_santos
+- **3 of 12** - both levels are single-signed with the SAME sign: (d) `epsilon=0.2` B_santos_to_rm, (d) `epsilon=0.5` A_rm_to_santos, (d) `epsilon=0.5` B_santos_to_rm
+- **6 of 12** - at least one level holds BOTH signs: (b) `beta=0` A_rm_to_santos, (b) `beta=5` A_rm_to_santos, (b) `beta=5` B_santos_to_rm, (d) `epsilon=1` A_rm_to_santos, (d) `epsilon=1` B_santos_to_rm, (d) `epsilon=2` B_santos_to_rm
+- **1 of 12** - a level has no unanimous cell at all, so the comparison is not defined there: (d) `epsilon=0.2` A_rm_to_santos
 
-**Strata with NO unanimous PrismFlow-higher cell when `dns` IS in the compromised set: 5 of 14**: (b) `beta=0` B_santos_to_rm, (d) `epsilon=0.2` A_rm_to_santos, (d) `epsilon=0.2` B_santos_to_rm, (d) `epsilon=0.5` A_rm_to_santos, (d) `epsilon=0.5` B_santos_to_rm.
+The four counts sum to 12 of 12 strata.
+
+**The `dns` split flips the sign in 2 of 12 strata**: **(b) `beta=0` B_santos_to_rm**, **(d) `epsilon=2` A_rm_to_santos**. In the other 10 it does not: 3 have the same single sign on both sides, 6 have a side carrying both signs, and 1 has a side with no unanimous cell to compare.
+
+**Strata with NO unanimous PrismFlow-higher cell when `dns` IS in the compromised set: 5 of 12**: (b) `beta=0` B_santos_to_rm, (d) `epsilon=0.2` A_rm_to_santos, (d) `epsilon=0.2` B_santos_to_rm, (d) `epsilon=0.5` A_rm_to_santos, (d) `epsilon=0.5` B_santos_to_rm.
+
+**By MAJORITY rather than by presence.** The buckets above ask whether a sign appears at all, so a single unanimous cell is enough to put a level in `mixed`. This asks the stricter question: which sign, if either, holds a unanimous majority (strictly more than half) of that level's cells.
+
+| stratum | dns-YES dominant sign | dns-NO dominant sign |
+| --- | --- | --- |
+| (b) `beta=0` A_rm_to_santos | PrismFlow lower (7/10) | no majority |
+| (b) `beta=0` B_santos_to_rm | PrismFlow lower (7/10) | no majority |
+| (b) `beta=5` A_rm_to_santos | PrismFlow higher (8/10) | no majority |
+| (b) `beta=5` B_santos_to_rm | no majority | PrismFlow lower (6/10) |
+| (d) `epsilon=0.2` A_rm_to_santos | no majority | no majority |
+| (d) `epsilon=0.2` B_santos_to_rm | no majority | no majority |
+| (d) `epsilon=0.5` A_rm_to_santos | no majority | PrismFlow lower (11/14) |
+| (d) `epsilon=0.5` B_santos_to_rm | no majority | no majority |
+| (d) `epsilon=1` A_rm_to_santos | PrismFlow higher (8/11) | PrismFlow lower (12/14) |
+| (d) `epsilon=1` B_santos_to_rm | PrismFlow higher (6/11) | no majority |
+| (d) `epsilon=2` A_rm_to_santos | PrismFlow higher (6/11) | no majority |
+| (d) `epsilon=2` B_santos_to_rm | PrismFlow higher (7/11) | no majority |
+
+**Strata whose two `dns` levels have OPPOSITE dominant signs: 1 of 12**: **(d) `epsilon=1` A_rm_to_santos**.
+
+**Strata where dns-NO is PrismFlow-higher-dominant - the attack working better against the discount with `dns` OUTSIDE the compromised set: 0 of 12**.
 
 This is a description of how the grid came out, stratum by stratum, and it gives no mechanism: the strata are nested subsets on shared seeds (above), nothing inside the discount is recorded per cell, and a sign set is a count of unanimous cells rather than a measurement of why any cell moved.
 
@@ -570,7 +595,7 @@ Over the **280 distinct** paired chorus cells in the tables above - distinct bec
   - PrismFlow WORSE (Part 09's sign): `epsilon=1` A_rm_to_santos, dns COMPROMISED (8/11 unanimous); `epsilon=1` B_santos_to_rm, dns COMPROMISED (6/11 unanimous); `epsilon=2` A_rm_to_santos, dns COMPROMISED (6/11 unanimous); `epsilon=2` B_santos_to_rm, dns COMPROMISED (7/11 unanimous)
   - PrismFlow BETTER: `epsilon=0.5` A_rm_to_santos, dns NOT compromised (11/14 unanimous); `epsilon=1` A_rm_to_santos, dns NOT compromised (12/14 unanimous)
 
-Across all three chorus groups, the 7 (group, direction, side) rows where Part 09's sign carries a unanimous majority ALL have `dns` INSIDE the compromised set, and the 6 rows where the opposite sign carries a unanimous majority are 4 with `dns` outside and 2 with `dns` inside. That is the arrangement of the counts, stated so it can be checked against the tables; it is not a mechanism and nothing below infers one from it.
+Across the chorus groups, counting DISTINCT (direction, side, sub-row) rows only - group (a) and group (d)'s `epsilon=1` sub-row select the identical cells, so a row in both is counted once - the 5 rows where Part 09's sign carries a unanimous majority ALL have `dns` INSIDE the compromised set, and the 5 rows where the opposite sign carries a unanimous majority are 3 with `dns` outside and 2 with `dns` inside. That is the arrangement of the counts, stated so it can be checked against the tables; it is not a mechanism and nothing below infers one from it.
 
 - At the headline `eps=1.0 beta=1.0` point: 19 unanimous cells with PrismFlow worse, 18 with PrismFlow better, over 50 cells.
 - At `beta=0.0` and `beta=5.0`: 23 unanimous cells with PrismFlow worse, 29 with PrismFlow better, over 80 cells.
@@ -620,9 +645,11 @@ A deployed detector sees a mostly-clean stream and must flag a small contaminate
 - **B_santos_to_rm, dns COMPROMISED:** across 85 conditions, Pearson r between per-cell detector AUC and mean dependence = **-0.7323**.
 - **B_santos_to_rm, dns NOT compromised:** across 100 conditions, Pearson r between per-cell detector AUC and mean dependence = **-0.7259**.
 
-**Verdict: the correlation here is NEGATIVE, which is the opposite sign to Part 14's, and the two are not measuring the same thing.** Part 14 swept one attacker objective and watched gate AUC and dependence fall TOGETHER along that axis (r = +0.9578 over six levels). Part 29 correlates across heterogeneous conditions at fixed attacker strength, and finds that the conditions with the HIGHEST measured dependence are the ones the detector scores LOWEST. Both readings are consistent with L8's underlying claim - that detection and correction are functions of one quantity - but the sign above must not be quoted as reproducing Part 14's.
+**Verdict: Part 29 neither confirms nor refutes L8.** The correlation here is NEGATIVE, the opposite sign to Part 14's, and the two numbers correlate different things, so neither can stand as evidence for or against the other.
 
-The negative sign is close to mechanical, and worth stating because it sharpens [[L5]] rather than contradicting it. The suspicion score is agreement left UNEXPLAINED by the estimated dependence (`prismflow/statistics/suspicion.py`: `excess = agreement - expected` where `expected` rises with the estimated matrix). An attack that successfully manufactures dependence therefore raises `expected`, shrinks `excess`, and lowers its own suspicion score. Succeeding at collusion is itself what buys cover from a detector watching for collusion. Part 29 does not establish this mechanism - it measures the correlation, not the causal path - so it is offered as the likely reading, not a finding.
+Part 14 swept one attacker objective and watched gate AUC and dependence fall TOGETHER along that axis (r = +0.9578 over six levels): a correlation ALONG an attacker-strength axis, within one condition type. Part 29 correlates ACROSS heterogeneous conditions - different k, subsets, epsilon and beta - at fixed attacker strength, and finds that the conditions with the HIGHEST measured dependence are the ones the detector scores LOWEST. Different axes, different populations, different quantities varying. The sign above must not be quoted as reproducing Part 14's, and Part 14's must not be quoted as surviving here.
+
+The negative sign would follow from the suspicion score's own definition ONLY IF `expected` rises with the estimated dependence, and this Part does not measure that. The score is agreement left UNEXPLAINED by the estimated dependence (`prismflow/statistics/suspicion.py`: `excess = agreement - expected`). If `expected` does rise with the estimated matrix, then an attack that manufactures dependence raises `expected`, shrinks `excess` and lowers its own suspicion score - succeeding at collusion buying cover from a detector watching for collusion. Part 29 records no per-cell `expected` and no estimated matrix, so that antecedent is untested here and the reading is a conjecture about the mechanism, not a measurement of it.
 
 ### L16 - discrimination and calibration come apart on real cross-scenario data
 
@@ -637,7 +664,16 @@ The negative sign is close to mechanical, and worth stating because it sharpens 
 
 **Verdict: L16's shape holds only while `dns` is outside the compromised set. Once `dns` is compromised the two do NOT merely come apart - ranking collapses as well.**
 
-With `dns` honest, the rows above are L16 exactly: ROC AUC stays at or above 0.98 in both directions while Brier and ECE degrade by an order of magnitude across subsets. With `dns` compromised in direction B, ROC AUC falls to 0.1427 (B_santos_to_rm / prismflow) - below chance, so the ordering is actively inverted, not merely poorly thresholded - and Brier reaches the far end of its range at the same time. Describing that cell as 'discrimination holds, calibration fails' would be wrong.
+With `dns` honest, the rows above are L16 exactly: ROC AUC stays at or above 0.9807 in both directions while Brier and ECE spread widely across subsets. The spread is NOT one factor: per unit, as max/min of the ranges printed above, it is
+
+- **A_rm_to_santos / naive, dns NOT compromised:** Brier 0.5213/0.1483 = **3.52x**, ECE 0.2746/0.0516 = **5.32x**.
+- **A_rm_to_santos / prismflow, dns NOT compromised:** Brier 0.4617/0.1015 = **4.55x**, ECE 0.2528/0.0238 = **10.62x**.
+- **B_santos_to_rm / naive, dns NOT compromised:** Brier 0.2109/0.0065 = **32.39x**, ECE 0.2016/0.0469 = **4.30x**.
+- **B_santos_to_rm / prismflow, dns NOT compromised:** Brier 0.2174/0.0125 = **17.33x**, ECE 0.2121/0.0700 = **3.03x**.
+
+So the factor runs from 3.03x to 32.39x depending on direction, system and which of the two metrics is read. The earlier wording, 'degrade by an order of magnitude', held for 4 of the 8 ratios and overstated the smallest (3.03x) by about 3.3x; it is replaced by the measured figures.
+
+With `dns` compromised in direction B, ROC AUC falls to 0.1427 (B_santos_to_rm / prismflow) - below chance, so the ordering is actively inverted, not merely poorly thresholded - and Brier reaches the far end of its range at the same time. Describing that cell as 'discrimination holds, calibration fails' would be wrong.
 
 Brier here is the multi-class sum form, the same convention L16 uses when it reports the majority-class baseline as exactly `2p(1-p)`, so values above 1.0 are in range and are not a unit error.
 
@@ -650,7 +686,9 @@ L16's own caveats carry over unchanged: the positive class is 3 episodes on `san
 - **B_santos_to_rm / naive, chorus k=2 eps=1.0:** attack success 0.7822..0.9069 with `dns` compromised, against 0.0096..0.0917 without it.
 - **B_santos_to_rm / prismflow, chorus k=2 eps=1.0:** attack success 0.8491..0.8861 with `dns` compromised, against 0.0262..0.0562 without it.
 
-**Verdict: L17 is confirmed - the label is solved by `dns` alone.** Section 1's `label_meaning` is the ground for that: the attack label is dominated by one continuously-running DNS exfiltration tool, and section 3 shows `dns` is the view that carries it. Everything below is the structure that fact imposes on the grid, measured per direction and per system rather than asserted.
+**Verdict: L17 STANDS ON PART 28's CLEAN BASELINES, and Part 29's attack results do not independently confirm it.** L17's evidence is `single_view_dns` scoring balanced accuracy 0.9898 on `santos` and 1.0000 on `russellmitchell` with no other single view clearing 0.71 - all of it measured on CLEAN data in Part 28, cited here and not re-measured. Section 1's `label_meaning` is the mechanism for it: the attack label is dominated by one continuously-running DNS exfiltration tool.
+
+Nothing in this Part's attack grid adds to that, and one measurement here cuts against reading L17 off the grid at all: compromising **`suricata` alone** at `beta=0` in `B_santos_to_rm` reaches attack success **0.7541** (naive) / **0.5972** (prismflow), far above `dns` alone in the same unit. A view that is nearly useless as a clean classifier is therefore the most effective one to compromise in that direction. 'One view solves the label' is a statement about clean accuracy and does not transfer to which view an attacker should pick; this Part measures the latter and not the former. Everything below is the structure L17 imposes on the grid, measured per direction and per system rather than asserted.
 
 **Each view compromised alone (chorus k=1 eps=1.0, 5-seed means).** The two directions have different active views:
 
@@ -661,10 +699,12 @@ L16's own caveats carry over unchanged: the positive class is 3 episodes on `san
 | B_santos_to_rm | naive | 0.0049 | 0.0051 | 0.0094 | 0.0996 | 0.7541 |
 | B_santos_to_rm | prismflow | 0.0203 | 0.0108 | 0.0262 | 0.0356 | 0.5972 |
 
-- **A_rm_to_santos / naive:** `suricata` alone reaches 0.1838. Its 3 pairs without `dns`, at `beta=0.0`, sit within 0.0352 of that - the second view adds at most that much. `apache`, `auth` and `audit` alone reach `apache` 0.1038, `auth` 0.0345, `audit` 0.0258, a range of 0.0258..0.1038.
-- **A_rm_to_santos / prismflow:** `suricata` alone reaches 0.1150. Its 3 pairs without `dns`, at `beta=0.0`, sit within 0.1135 of that - the second view adds at most that much. `apache`, `auth` and `audit` alone reach `apache` 0.0744, `auth` 0.0155, `audit` 0.0087, a range of 0.0087..0.0744.
-- **B_santos_to_rm / naive:** `suricata` alone reaches 0.7541. Its 3 pairs without `dns`, at `beta=0.0`, sit within 0.0148 of that - the second view adds at most that much. `apache`, `auth` and `audit` alone reach `apache` 0.0049, `auth` 0.0051, `audit` 0.0094, a range of 0.0049..0.0094.
-- **B_santos_to_rm / prismflow:** `suricata` alone reaches 0.5972. Its 3 pairs without `dns`, at `beta=0.0`, sit within 0.1392 of that - the second view adds at most that much. `apache`, `auth` and `audit` alone reach `apache` 0.0203, `auth` 0.0108, `audit` 0.0262, a range of 0.0108..0.0262.
+- **A_rm_to_santos / naive:** `suricata` alone reaches 0.1838. Its 3 pairs without `dns`, at `beta=0.0`, come to +0.0060..+0.0352 against that (signed, pair minus single view): the second view ADDS up to +0.0352 and at least +0.0060. `apache`, `auth` and `audit` alone reach `apache` 0.1038, `auth` 0.0345, `audit` 0.0258, a range of 0.0258..0.1038.
+- **A_rm_to_santos / prismflow:** `suricata` alone reaches 0.1150. Its 3 pairs without `dns`, at `beta=0.0`, come to +0.0729..+0.1135 against that (signed, pair minus single view): the second view ADDS up to +0.1135 and at least +0.0729. `apache`, `auth` and `audit` alone reach `apache` 0.0744, `auth` 0.0155, `audit` 0.0087, a range of 0.0087..0.0744.
+- **B_santos_to_rm / naive:** `suricata` alone reaches 0.7541. Its 3 pairs without `dns`, at `beta=0.0`, come to -0.0148..-0.0061 against that (signed, pair minus single view): every pair scores BELOW `suricata` alone, by -0.0061 to -0.0148 - the second view adds NOTHING here and subtracts. `apache`, `auth` and `audit` alone reach `apache` 0.0049, `auth` 0.0051, `audit` 0.0094, a range of 0.0049..0.0094.
+- **B_santos_to_rm / prismflow:** `suricata` alone reaches 0.5972. Its 3 pairs without `dns`, at `beta=0.0`, come to +0.1273..+0.1392 against that (signed, pair minus single view): the second view ADDS up to +0.1392 and at least +0.1273. `apache`, `auth` and `audit` alone reach `apache` 0.0203, `auth` 0.0108, `audit` 0.0262, a range of 0.0108..0.0262.
+
+The single-view baseline in those four lines is the `k=1` cell at `beta=1.0`, because the grid has no `k=1 beta=0.0` cell. That is not a mismatch: the chorus agreement term sums over PAIRS of compromised views, so with one compromised view there is no pair and `beta` cannot act. `test_chorus_equals_pgd_at_k1` (`tests/unit/test_ait_attack.py`) asserts chorus and `pgd` give identical attack success at `k=1`, and `pgd` runs at `beta=0.0`, so the `k=1` cell is the same cell at either `beta`.
 
 **What `beta` does to each family of pairs** (paired within seed, `chorus k=2 eps=1.0`, from section 11):
 
@@ -864,6 +904,8 @@ Within-seed `prismflow - naive` attack success at one `beta`, `chorus k=2 eps=1.
 `(prismflow: beta 1.0 - beta 0.0) - (naive: beta 1.0 - beta 0.0)`, paired within seed at both steps: the per-seed `beta` shift is formed for each arm first, and the two shifts are then subtracted seed by seed. **Positive means coordination bought the attacker MORE against PrismFlow than against naive fusion** at `chorus k=2 eps=1.0`.
 
 Only the 4 `dns` pairs per direction appear: section 11 measures the `beta` shift on the other 6 pairs as at or near zero in both arms, so a difference of two near-zero shifts would be a ratio of noise. The two `beta` columns are repeated here from section 11 so the DiD can be checked against its operands.
+
+**The 4 rows per direction are not independent trials.** All four pairs contain the `dns` view, and all four are evaluated on the same test windows with the same 5 seeds and the same trained models; they differ only in which second view joins `dns`. Four rows agreeing in sign is therefore one shared `dns` perturbation seen four times, not four independent confirmations, and no count across the rows may be read as replication.
 
 **A_rm_to_santos** - difference-in-differences, paired within seed, `chorus k=2 eps=1.0`
 
