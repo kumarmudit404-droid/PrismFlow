@@ -1,0 +1,21 @@
+{
+  "what": "Digests for the two Part 29 result files that are committed as gzip (-9) rather than raw json. The sha256 is of the DECOMPRESSED json, which is identical whether the file is read from the raw .json or through gzip.open; a gzip stream's own digest is not stable across gzip implementations and is deliberately not recorded.",
+  "verify": "gzip -dc results/ait_attack/results.json.gz | sha256sum",
+  "written_by": "experiments/ait_attack/results_io.py --write-manifest",
+  "files": {
+    "results.json": {
+      "name": "results.json",
+      "gz_name": "results.json.gz",
+      "raw_bytes": 26941804,
+      "gz_bytes": 2832261,
+      "sha256_decompressed_json": "034833205c8f5be3ee56e08353209d4b12079958d40f7f99383c4e0170b9588e"
+    },
+    "results.3of4units_20261014_0022.json": {
+      "name": "results.3of4units_20261014_0022.json",
+      "gz_name": "results.3of4units_20261014_0022.json.gz",
+      "raw_bytes": 18282669,
+      "gz_bytes": 1887184,
+      "sha256_decompressed_json": "60cd47ee3f1a9393723e21c0aae7329978e62cffdea4c16a3a48a75cea7f3e0d"
+    }
+  }
+}

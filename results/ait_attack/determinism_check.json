@@ -1,0 +1,84 @@
+{
+  "question": "Do the three units shared by the died 2026-10-13 run and the completed 2026-10-14 run agree, given the runner has no resume and recomputed them from scratch?",
+  "new_file": "results\\ait_attack\\results.json",
+  "old_file": "results\\ait_attack\\results.3of4units_20261014_0022.json",
+  "new_commit": "ead178c",
+  "old_commit": "ead178c",
+  "new_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "old_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "shared_units": [
+    "A_rm_to_santos/naive",
+    "A_rm_to_santos/prismflow",
+    "B_santos_to_rm/naive"
+  ],
+  "unit_present_only_in_new": [
+    "B_santos_to_rm/prismflow"
+  ],
+  "per_family": {
+    "success_rate": {
+      "fields": [
+        "attack_success"
+      ],
+      "max_abs_diff": 0.0,
+      "max_abs_diff_at": null,
+      "n_values_compared": 2775,
+      "n_cells_differing": 0,
+      "cells_differing": [],
+      "none_vs_value_mismatches": 0
+    },
+    "detector_auc": {
+      "fields": [
+        "detector_auc"
+      ],
+      "max_abs_diff": 0.0,
+      "max_abs_diff_at": null,
+      "n_values_compared": 935,
+      "n_cells_differing": 0,
+      "cells_differing": [],
+      "none_vs_value_mismatches": 0
+    },
+    "eniv": {
+      "fields": [
+        "eniv_eigen",
+        "eniv_design_effect"
+      ],
+      "max_abs_diff": 0.0,
+      "max_abs_diff_at": null,
+      "n_values_compared": 5610,
+      "n_cells_differing": 0,
+      "cells_differing": [],
+      "none_vs_value_mismatches": 0
+    },
+    "accuracy": {
+      "fields": [
+        "accuracy"
+      ],
+      "max_abs_diff": 0.0,
+      "max_abs_diff_at": null,
+      "n_values_compared": 2805,
+      "n_cells_differing": 0,
+      "cells_differing": [],
+      "none_vs_value_mismatches": 0
+    }
+  },
+  "exhaustive": {
+    "n_leaves_compared": 333500,
+    "n_numeric_leaves_compared": 275908,
+    "n_differences": 0,
+    "differences": [],
+    "differences_truncated": false
+  },
+  "bit_identical_on_shared_units": true
+}

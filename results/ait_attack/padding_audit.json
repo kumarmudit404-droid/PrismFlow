@@ -1,0 +1,521 @@
+{
+  "question": "Does the frozen chorus attack write +/- epsilon into the structurally-zero padding columns of a compromised view?",
+  "answer": "NO. Across both directions, all five views, chorus and pgd, at epsilon 1.0 and 2.0, every padding cell's delta is exactly zero and the objective's gradient with respect to every padding column is exactly zero. The padding columns lie inside the attack's mask but are unreachable through the encoder, so the brief's premise that the attack writes +/- epsilon into them is NOT what this pipeline does.",
+  "seed": 0,
+  "seed_note": "One seed. The gradient with respect to a column the encoder never reads is zero by construction, for every seed, so this is a structural audit and NOT a 5-seed finding.",
+  "padded_view_width": 10,
+  "per_view_native_and_padding": {
+    "apache": {
+      "native_dims": 9,
+      "padding_columns": 1
+    },
+    "auth": {
+      "native_dims": 8,
+      "padding_columns": 2
+    },
+    "dns": {
+      "native_dims": 9,
+      "padding_columns": 1
+    },
+    "audit": {
+      "native_dims": 9,
+      "padding_columns": 1
+    },
+    "suricata": {
+      "native_dims": 10,
+      "padding_columns": 0
+    }
+  },
+  "mechanism": {
+    "attack_mask_covers_padding": true,
+    "attack_mask_site": "prismflow/attacks/chorus.py:148-149",
+    "step_site": "prismflow/attacks/chorus.py:165-166",
+    "encoder_native_width_site": "experiments/ait_clean/run_ait_clean.py:300-301",
+    "why_zero": "view_configs gives each view's encoder its native input width, so the padded columns are never read; the gradient with respect to them is identically zero and sign(0) == 0."
+  },
+  "directions": {
+    "A_rm_to_santos": {
+      "n_test_windows": 1108,
+      "sources_in_tensor_order": [
+        "apache",
+        "auth",
+        "dns",
+        "audit",
+        "suricata"
+      ],
+      "per_view": {
+        "apache": {
+          "native_dims": 9,
+          "padding_columns": 1,
+          "n_windows": 1108,
+          "padding_cells": 1108,
+          "data_max_abs_in_padding": 0.0,
+          "attacks": {
+            "chorus_eps1.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 7131,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "chorus_eps2.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 7137,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps1.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 7131,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps2.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 7137,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            }
+          },
+          "objective_gradient": {
+            "padding_max_abs": 0.0,
+            "padding_nonzero_cells": 0,
+            "padding_cells": 1108,
+            "native_max_abs": 0.007112155202776194
+          }
+        },
+        "auth": {
+          "native_dims": 8,
+          "padding_columns": 2,
+          "n_windows": 1108,
+          "padding_cells": 2216,
+          "data_max_abs_in_padding": 0.0,
+          "attacks": {
+            "chorus_eps1.0": {
+              "native_cells": 8864,
+              "native_cells_perturbed": 4488,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 2216,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "chorus_eps2.0": {
+              "native_cells": 8864,
+              "native_cells_perturbed": 4488,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 2216,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps1.0": {
+              "native_cells": 8864,
+              "native_cells_perturbed": 4488,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 2216,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps2.0": {
+              "native_cells": 8864,
+              "native_cells_perturbed": 4488,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 2216,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            }
+          },
+          "objective_gradient": {
+            "padding_max_abs": 0.0,
+            "padding_nonzero_cells": 0,
+            "padding_cells": 2216,
+            "native_max_abs": 0.0022924188524484634
+          }
+        },
+        "dns": {
+          "native_dims": 9,
+          "padding_columns": 1,
+          "n_windows": 1108,
+          "padding_cells": 1108,
+          "data_max_abs_in_padding": 0.0,
+          "attacks": {
+            "chorus_eps1.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 675,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "chorus_eps2.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 675,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps1.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 675,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps2.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 675,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            }
+          },
+          "objective_gradient": {
+            "padding_max_abs": 0.0,
+            "padding_nonzero_cells": 0,
+            "padding_cells": 1108,
+            "native_max_abs": 0.07501641660928726
+          }
+        },
+        "audit": {
+          "native_dims": 9,
+          "padding_columns": 1,
+          "n_windows": 1108,
+          "padding_cells": 1108,
+          "data_max_abs_in_padding": 0.0,
+          "attacks": {
+            "chorus_eps1.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 8073,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "chorus_eps2.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 8073,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps1.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 8073,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps2.0": {
+              "native_cells": 9972,
+              "native_cells_perturbed": 8073,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 1108,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            }
+          },
+          "objective_gradient": {
+            "padding_max_abs": 0.0,
+            "padding_nonzero_cells": 0,
+            "padding_cells": 1108,
+            "native_max_abs": 0.002851941389963031
+          }
+        },
+        "suricata": {
+          "native_dims": 10,
+          "padding_columns": 0,
+          "n_windows": 1108,
+          "padding_cells": 0,
+          "data_max_abs_in_padding": 0.0,
+          "attacks": {
+            "chorus_eps1.0": {
+              "native_cells": 11080,
+              "native_cells_perturbed": 3859,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 0,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "chorus_eps2.0": {
+              "native_cells": 11080,
+              "native_cells_perturbed": 3860,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 0,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps1.0": {
+              "native_cells": 11080,
+              "native_cells_perturbed": 3859,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 0,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps2.0": {
+              "native_cells": 11080,
+              "native_cells_perturbed": 3860,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 0,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            }
+          }
+        }
+      }
+    },
+    "B_santos_to_rm": {
+      "n_test_windows": 1145,
+      "sources_in_tensor_order": [
+        "apache",
+        "auth",
+        "dns",
+        "audit",
+        "suricata"
+      ],
+      "per_view": {
+        "apache": {
+          "native_dims": 9,
+          "padding_columns": 1,
+          "n_windows": 1145,
+          "padding_cells": 1145,
+          "data_max_abs_in_padding": 0.0,
+          "attacks": {
+            "chorus_eps1.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 8400,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "chorus_eps2.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 8415,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps1.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 8400,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps2.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 8415,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            }
+          },
+          "objective_gradient": {
+            "padding_max_abs": 0.0,
+            "padding_nonzero_cells": 0,
+            "padding_cells": 1145,
+            "native_max_abs": 0.007388351019471884
+          }
+        },
+        "auth": {
+          "native_dims": 8,
+          "padding_columns": 2,
+          "n_windows": 1145,
+          "padding_cells": 2290,
+          "data_max_abs_in_padding": 0.0,
+          "attacks": {
+            "chorus_eps1.0": {
+              "native_cells": 9160,
+              "native_cells_perturbed": 4704,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 2290,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "chorus_eps2.0": {
+              "native_cells": 9160,
+              "native_cells_perturbed": 4704,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 2290,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps1.0": {
+              "native_cells": 9160,
+              "native_cells_perturbed": 4704,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 2290,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps2.0": {
+              "native_cells": 9160,
+              "native_cells_perturbed": 4704,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 2290,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            }
+          },
+          "objective_gradient": {
+            "padding_max_abs": 0.0,
+            "padding_nonzero_cells": 0,
+            "padding_cells": 2290,
+            "native_max_abs": 0.0022789270151406527
+          }
+        },
+        "dns": {
+          "native_dims": 9,
+          "padding_columns": 1,
+          "n_windows": 1145,
+          "padding_cells": 1145,
+          "data_max_abs_in_padding": 0.0,
+          "attacks": {
+            "chorus_eps1.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 378,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "chorus_eps2.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 378,
+              "native_max_abs_delta": 1.999999761581421,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps1.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 378,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps2.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 378,
+              "native_max_abs_delta": 1.999999761581421,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            }
+          },
+          "objective_gradient": {
+            "padding_max_abs": 0.0,
+            "padding_nonzero_cells": 0,
+            "padding_cells": 1145,
+            "native_max_abs": 0.05827423185110092
+          }
+        },
+        "audit": {
+          "native_dims": 9,
+          "padding_columns": 1,
+          "n_windows": 1145,
+          "padding_cells": 1145,
+          "data_max_abs_in_padding": 0.0,
+          "attacks": {
+            "chorus_eps1.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 7353,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "chorus_eps2.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 7353,
+              "native_max_abs_delta": 1.9635412693023682,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps1.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 7353,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps2.0": {
+              "native_cells": 10305,
+              "native_cells_perturbed": 7353,
+              "native_max_abs_delta": 1.9635412693023682,
+              "padding_cells": 1145,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            }
+          },
+          "objective_gradient": {
+            "padding_max_abs": 0.0,
+            "padding_nonzero_cells": 0,
+            "padding_cells": 1145,
+            "native_max_abs": 0.002847040770575404
+          }
+        },
+        "suricata": {
+          "native_dims": 10,
+          "padding_columns": 0,
+          "n_windows": 1145,
+          "padding_cells": 0,
+          "data_max_abs_in_padding": 0.0,
+          "attacks": {
+            "chorus_eps1.0": {
+              "native_cells": 11450,
+              "native_cells_perturbed": 9950,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 0,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "chorus_eps2.0": {
+              "native_cells": 11450,
+              "native_cells_perturbed": 9950,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 0,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps1.0": {
+              "native_cells": 11450,
+              "native_cells_perturbed": 9950,
+              "native_max_abs_delta": 1.0,
+              "padding_cells": 0,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            },
+            "pgd_eps2.0": {
+              "native_cells": 11450,
+              "native_cells_perturbed": 9950,
+              "native_max_abs_delta": 2.0,
+              "padding_cells": 0,
+              "padding_cells_perturbed": 0,
+              "padding_max_abs_delta": 0.0
+            }
+          }
+        }
+      }
+    }
+  },
+  "padding_ever_written": false
+}

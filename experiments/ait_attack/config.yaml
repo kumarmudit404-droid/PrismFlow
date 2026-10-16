@@ -1,0 +1,240 @@
+experiment:
+  id: ait_attack
+  description: >
+    Part 29. The chorus attack, independent PGD, the suspicion detector,
+    natural-dependence false alarms and extra missingness, on the AIT Log
+    Data Set v2.0 at 300 s network windows. Same two directions, same five
+    seeds and the same trained models as Part 28.
+
+# ---------------------------------------------------------------------------
+# WHAT THE LABEL MEANS, and the one fact that shapes every table below
+# ---------------------------------------------------------------------------
+# A window is attack=1 if ANY officially labelled line falls in it, and on both
+# scenarios that label is dominated by one continuously-running DNS
+# exfiltration tool: 1,026 of 1,031 attack windows on russellmitchell and 663
+# of 667 on santos carry only dnsteal-family steps (docs/part26-ait-loader.md
+# sections 0 and 12). So the task is "was the exfiltration tool running in this
+# window", NOT "detect an APT" and not "detect a multi-step intrusion".
+#
+# ONE VIEW SOLVES THAT LABEL (docs/KNOWN_LIMITATIONS.md L17). single_view_dns
+# scores balanced accuracy 0.9898 on santos and 1.0000 on russellmitchell; no
+# other single view clears 0.7061. Therefore "k views compromised" is NOT one
+# experiment. Compromising dns attacks the only view carrying the label;
+# compromising any subset of apache, auth, audit and suricata perturbs views
+# that score 0.3733-0.7061 balanced accuracy alone. Every result in test B is
+# reported in two blocks, dns compromised and dns not compromised, and NOTHING
+# is averaged across that split.
+dns_split:
+  view_name: dns
+  # Enforced in code, not left to the reader: `assert_no_pooling` refuses to
+  # summarise a list of subsets that mixes the two sides.
+  never_pool: true
+
+# ---------------------------------------------------------------------------
+# WHAT A SEED VARIES. Identical to Part 28: train and test are whole
+# scenarios, so a seed CANNOT redraw or re-partition the data. A seed selects
+# the model's parameter initialisation (set_seed) and the minibatch order of
+# every training epoch (iter_batches(shuffle=True, seed=seed+epoch)). The
+# attack itself is deterministic given the model.
+#
+# Every +/- here is INITIALISATION-AND-BATCH-ORDER variance on a fixed pair of
+# scenarios. It is not dataset variance and it is not a spread over
+# independent attacks: the test sets hold 3 (santos) and 1 (russellmitchell)
+# independent contiguous attack blocks (docs/KNOWN_LIMITATIONS.md L16).
+# ---------------------------------------------------------------------------
+seeds: [0, 1, 2, 3, 4]
+
+data:
+  processed_root: data/processed
+  window_seconds: 300
+  sample_mode: network
+  # Must equal Part 28's, and the runner stops if results/ait_clean/ disagrees.
+  must_match_part28: true
+
+directions:
+  - name: A_rm_to_santos
+    label: "A: train russellmitchell -> test santos"
+    train: russellmitchell
+    test: santos
+  - name: B_santos_to_rm
+    label: "B: train santos -> test russellmitchell"
+    train: santos
+    test: russellmitchell
+
+systems:
+  - {name: naive, label: naive fusion, use_discount: false}
+  - {name: prismflow, label: V1 PrismFlow, use_discount: true}
+
+# Part 28's values, unchanged, so the models are the same models.
+model:
+  hidden_dims: [64, 64]
+  feature_dim: 32
+  dropout: 0.0
+
+training:
+  epochs: 40
+  batch_size: 64
+  lr: 0.001
+  anneal_epochs: 10
+  per_view_loss_weight: 1.0
+
+scaling:
+  method: zscore
+  present_rows_only: true
+  epsilon: 1.0e-8
+
+evaluation:
+  batch_size: 256
+  n_bins: 15
+  coverages: [1.0, 0.9, 0.8, 0.5]
+
+# ---------------------------------------------------------------------------
+# EPSILON IS NOT RESCALED, and this is the measurement that justifies it.
+# ---------------------------------------------------------------------------
+# Part 09 chose the grid 0.2 / 0.5 / 1.0 / 2.0 against synthetic view features
+# with std ~1.3 (experiments/chorus/README.md, Limitations). AIT features are
+# z-scored by Part 28's scaler, fitted on the TRAIN scenario and applied to the
+# TEST scenario, so the test-set std is near 1 but not exactly 1. Measured on
+# each direction's test set over present native columns (the runner recomputes
+# this table every run and writes it to feature_scale in the results JSON):
+#
+#   direction A, test santos      per-view std  min 0.8423  median 1.5639  max 16.2177
+#   direction B, test rm          per-view std  min 0.7285  median 0.9537  max  1.5947
+#
+# The MEDIAN per-view std brackets Part 09's 1.3 in both directions (1.56 and
+# 0.95), so a fixed epsilon means approximately what it meant there and the
+# grid is carried over unchanged. Rescaling by a single factor would move both
+# directions away from 1.3, not toward it.
+#
+# THE ONE EXCEPTION, reported rather than smoothed: apache on santos has std
+# 16.2177 because of a heavy tail (its IQR is only 1.3901 and max|x| is
+# 1374.93). For that one view in direction A a fixed epsilon is a much smaller
+# perturbation relative to the feature spread than it is for the other four.
+# ChorusConfig.epsilon is a scalar and prismflow/attacks/ is frozen, so a
+# per-view epsilon cannot be expressed; the heterogeneity is a limitation of
+# this Part, not something it corrects.
+attack:
+  steps: 30
+  # ONE batch for both test sets (n = 1,108 and 1,145). Part 09 and Part 10
+  # batched at 64; this deviates deliberately. The dependence estimator's
+  # permutation null runs once per batch, so fewer batches is far cheaper
+  # (measured 6.0 s against 14.3 s per PrismFlow attack), which is what makes
+  # the full 25-subset enumeration affordable; and it matches Part 28's
+  # convention of measuring dependence and ENIV over the whole test set at
+  # once. It also makes the chorus objective's backtracking a GLOBAL accept /
+  # reject rather than a per-64 one -- a different attack, not a strictly
+  # weaker or stronger one. Measured on direction A, seed 0, PrismFlow, the
+  # success rates agree across batch sizes well inside the seed spread:
+  #   views (2,4):   0.5000 (bs 64) / 0.5153 (bs 256) / 0.5171 (bs 1200)
+  #   views (0,1,3): 0.0578 / 0.0542 / 0.0614
+  batch_size: 1200
+  target_strategy: least_likely
+  fixed_target: 0
+  epsilon_rescaled: false
+  epsilon_reference_std_synthetic: 1.3
+  # Part 09's grid, carried over.
+  epsilon_grid: [0.2, 0.5, 1.0, 2.0]
+  beta_primary: 1.0
+  # Part 09's beta grid at epsilon 1.0. beta is INERT at k=1: the agreement
+  # term sums over ordered pairs within the compromised set and there are none,
+  # so the runner skips beta != beta_primary for k=1 rather than recording the
+  # same number three times.
+  beta_grid: [0.0, 1.0, 5.0]
+  beta_sweep_epsilon: 1.0
+  # Independent PGD: the attack Part 09 showed the dependence signal cannot
+  # see and Part 10 showed the detector sees best. Needed here or the
+  # detector's headline has no comparison.
+  pgd_epsilon_grid: [1.0, 2.0]
+  # k over which subsets are enumerated. With 5 views this is 25 subsets:
+  # k=1 -> 1 with dns + 4 without; k=2 -> 4 + 6; k=3 -> 6 + 4.
+  k_grid: [1, 2, 3]
+  # EXHAUSTIVE. All 25 subsets are run at every applicable grid point; no
+  # cell is sampled, so `subset_sampling.sampled` is false in the results
+  # JSON and no cell is presented as exhaustive when it is not.
+  #
+  # Two grid points are omitted at k = 1, both because the omitted cell is
+  # provably the SAME NUMBER as one already run, not to save time:
+  #   - beta is inert at k = 1: chorus_objective adds the agreement penalty
+  #     only when the compromised set has more than one member, so beta 0 and
+  #     beta 5 are bit-identical to beta 1 there.
+  #   - chorus IS pgd at k = 1 for the same reason. One pgd cell is kept at
+  #     k = 1 (epsilon 1.0) so the identity is visible in the results, not
+  #     only asserted in a test.
+  enumerate_all_subsets: true
+
+# Part 10's detector settings, unchanged.
+detector:
+  permutations: 16
+  # Thresholds are calibrated per seed on that seed's own CLEAN scores, so the
+  # clean row reads the budget by construction and every other row is a
+  # true-positive rate at that false-positive budget.
+  fpr_budgets: [0.05, 0.01]
+  reference_threshold: 0.05
+
+diagnostics:
+  eniv_methods: [eigen, design_effect]
+  headline_eniv_method: eigen
+
+# ---------------------------------------------------------------------------
+# TEST A. Natural windows, no synthetic perturbation. The two attack-window
+# populations are reported SEPARATELY and never pooled.
+# ---------------------------------------------------------------------------
+# The multi-step set uses the STRICT definition: attack windows carrying at
+# least one step outside EXFILTRATION_TOOL_STEPS (the dnsteal family plus the
+# exfiltration tool's own service record). That is 3 windows on santos and 4 on
+# russellmitchell. experiments/ait_clean/config.yaml and the run_ait_clean.py
+# module docstring quote a LOOSER count for russellmitchell (5, beyond the
+# dnsteal family alone); this Part does not use that definition anywhere and
+# does not mix the two.
+natural_windows:
+  multi_step_definition: strict_beyond_exfiltration_tool_steps
+  # 3 and 4 windows is a handful-of-windows result: descriptive only, no ROC
+  # AUC over it, no significance claim, and the window count is printed beside
+  # every number in the table cell itself.
+  multi_step_descriptive_only: true
+
+# ---------------------------------------------------------------------------
+# TEST C. The brief's same-sensor pair does not exist on this data.
+# ---------------------------------------------------------------------------
+# prismflow.data.ait_lds.sensor_groups() returns {'network': [4]} -- one
+# member, suricata -- so no within-group PAIR exists. Part 28 already recorded
+# this (results/ait_clean/results.json, directions.<name>.sensor_group_check,
+# "status": "NOT COMPUTABLE"). The verdict for strict same-sensor pairs is
+# NO EVIDENCE and nothing is substituted under that name.
+#
+# The additional block is a DIFFERENT quantity and is labelled as one
+# everywhere it appears: "different sensors, naturally dependent". These views
+# sit on different sensors; the dependence is a property of the scenario, not
+# of shared hardware. Pairs are read from Part 28's committed pair table, not
+# re-derived here.
+natural_dependence:
+  same_sensor_group: network
+  label: "different sensors, naturally dependent"
+  n_most_dependent: 2
+  n_least_dependent: 2
+  pair_table_source: results/ait_clean/results.json
+  # Read from the committed file at run time and cross-checked against these,
+  # which are what that file held when this config was written. A mismatch
+  # stops the run rather than silently reporting a different pair.
+  expected_most_dependent:
+    A_rm_to_santos: [dns-suricata, auth-audit]
+    B_santos_to_rm: [auth-audit, apache-suricata]
+  expected_least_dependent:
+    A_rm_to_santos: [auth-dns, apache-dns]
+    B_santos_to_rm: [auth-dns, auth-suricata]
+
+# ---------------------------------------------------------------------------
+# TEST D. Extra masking on top of the natural missingness, which is already
+# substantial: auth is absent in 47.1-47.5% of windows and apache in
+# 18.0-27.5% (results/ait_clean/results.json, directions.<name>.missingness).
+# So these rates are ADDITIONAL, not total.
+# ---------------------------------------------------------------------------
+missingness:
+  rates: [0.3, 0.5]
+  rates_are_additional: true
+
+output:
+  results_root: results/ait_attack
+  # Written after every (direction, system) pair so an interrupted run keeps
+  # its completed work, as Part 10's run_comparison.py does.
+  checkpoint: true
