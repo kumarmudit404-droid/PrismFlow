@@ -632,9 +632,15 @@ This replaces the `.git/info/exclude` entries described in an earlier commit, wh
 
 `beta` is the weight on the chorus objective's agreement term, `sum_v log b_v[target] - beta * sum_{i,j} ||b_i - b_j||^2` (`prismflow/attacks/chorus.py`, `chorus_objective`). At `beta=0` that term is off and the attacker only maximises the target's likelihood; raising it pays the attacker to make the compromised views AGREE while doing so.
 
-Every number below is a **paired within-seed difference** on one subset at `chorus k=2 eps=1.0`: the difference is formed seed by seed and only then averaged, so a pair whose seeds disagree in sign cannot read as `no effect`. The `same sign` column counts the seeds agreeing with the sign of the mean - a `3/5` is a split population, not a finding. **Nothing is pooled** across pairs, across the `dns` split or across the two directions.
+Every number below is a **paired within-seed difference** on one subset at `chorus k=2 eps=1.0`: the difference is formed seed by seed and only then averaged, so a pair whose seeds disagree in sign cannot read as `no effect`. The `same sign` column counts the seeds agreeing with the sign of the mean. A seed whose difference is **exactly 0.0** agrees with neither sign, so it is excluded from that count and disclosed in the cell as `(n exactly 0)`: a `1/5 (4 exactly 0)` is four seeds that did not move, NOT four seeds contradicting the mean. 36 of the 168 rows in this section are in that position. Read a low count WITHOUT a zero disclosure as a genuine sign split. **Nothing is pooled** across pairs, across the `dns` split or across the two directions.
 
-The last column pair is a consistency check, not an effect: `run_ait_attack.py:501` passes `beta=beta if kind == "chorus" else 0.0`, so `pgd` and `chorus beta=0.0` get an identical config and differ only in which runner is called. `chorus beta 0.0 - pgd` should therefore sit at ~0 wherever the two implementations agree, and it says nothing about coordination.
+**The gate on these rows, and what it is worth.** Two assertions run over every paired-difference row in this section before this file is written; either one printing an offending row aborts the write.
+
+1. `check_sign_consistency`: if `|mean| > 2 * std` (population std) the seeds must be unanimous. **At n=5 this cannot fail, and is reported here as an invariant rather than as a check that passed.** The smallest population std a 5-seed vector can have while one seed disagrees is reached by putting that seed at 0 and the other four at 1.25 the mean, which gives `|mean|/std` exactly 2.0; every other non-unanimous arrangement is wider and scores lower. 2.0 is thus the attained supremum, so a strict `>` against it is a tautology at this n. It becomes load-bearing only at n>5. Measured headroom: the largest `|mean|/std` among the non-unanimous rows in this section is **1.6036**, against a bar of 2 that no 5-seed row can reach.
+
+2. `check_wiring`: every row's printed `mean +/- std`, its `same sign` count and its `agree + exactly-0 + opposite` partition must all recompute from that row's own per-seed difference vector. This one CAN fail - it is what would catch a column read off the wrong cell or a mean and a count taken over different seed sets - and it is the assertion to trust.
+
+The last column pair of the first four tables is a consistency check, not an effect: `run_ait_attack.py:501` passes `beta=beta if kind == "chorus" else 0.0`, so `pgd` and `chorus beta=0.0` get an identical config and differ only in which runner is called. `chorus beta 0.0 - pgd` should therefore sit at ~0 wherever the two implementations agree, and it says nothing about coordination.
 
 ### A_rm_to_santos (train `russellmitchell` -> test `santos`)
 
@@ -642,31 +648,31 @@ The last column pair is a consistency check, not an effect: `run_ait_attack.py:5
 
 | compromised pair | dns in set | suricata in set | beta 1.0 - beta 0.0 (5-seed mean +/- std) | same sign | beta 5.0 - beta 1.0 (5-seed mean +/- std) | same sign | chorus beta 0.0 - pgd (check) | same sign |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `apache+audit` | no | no | -0.0105 +/- 0.0037 | 5/5 | -0.0417 +/- 0.0101 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `apache+auth` | no | no | -0.0403 +/- 0.0035 | 5/5 | -0.0238 +/- 0.0067 | 5/5 | -0.0005 +/- 0.0009 | 3/5 |
-| `apache+dns` | YES | no | +0.0857 +/- 0.0035 | 5/5 | -0.0161 +/- 0.0040 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `apache+suricata` | no | YES | +0.1085 +/- 0.0057 | 5/5 | -0.2417 +/- 0.0088 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `audit+suricata` | no | YES | -0.0112 +/- 0.0604 | 3/5 | -0.1713 +/- 0.0579 | 5/5 | -0.0005 +/- 0.0007 | 2/5 |
-| `auth+audit` | no | no | -0.0029 +/- 0.0037 | 4/5 | -0.0101 +/- 0.0049 | 5/5 | -0.0002 +/- 0.0011 | 2/5 |
-| `auth+dns` | YES | no | +0.1233 +/- 0.0065 | 5/5 | -0.0213 +/- 0.0071 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `auth+suricata` | no | YES | +0.0179 +/- 0.0170 | 4/5 | -0.1747 +/- 0.0044 | 5/5 | -0.0022 +/- 0.0026 | 4/5 |
-| `dns+audit` | YES | no | +0.1408 +/- 0.0076 | 5/5 | -0.0125 +/- 0.0037 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `dns+suricata` | YES | YES | +0.1547 +/- 0.0437 | 5/5 | -0.1303 +/- 0.0256 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `apache+audit` | no | no | -0.0105 +/- 0.0037 | 5/5 | -0.0417 +/- 0.0101 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `apache+auth` | no | no | -0.0403 +/- 0.0035 | 5/5 | -0.0238 +/- 0.0067 | 5/5 | -0.0005 +/- 0.0009 | 3/5 (1 exactly 0) |
+| `apache+dns` | YES | no | +0.0857 +/- 0.0035 | 5/5 | -0.0161 +/- 0.0040 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `apache+suricata` | no | YES | +0.1085 +/- 0.0057 | 5/5 | -0.2417 +/- 0.0088 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `audit+suricata` | no | YES | -0.0112 +/- 0.0604 | 3/5 | -0.1713 +/- 0.0579 | 5/5 | -0.0005 +/- 0.0007 | 2/5 (3 exactly 0) |
+| `auth+audit` | no | no | -0.0029 +/- 0.0037 | 4/5 | -0.0101 +/- 0.0049 | 5/5 | -0.0002 +/- 0.0011 | 2/5 (1 exactly 0) |
+| `auth+dns` | YES | no | +0.1233 +/- 0.0065 | 5/5 | -0.0213 +/- 0.0071 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `auth+suricata` | no | YES | +0.0179 +/- 0.0170 | 4/5 | -0.1747 +/- 0.0044 | 5/5 | -0.0022 +/- 0.0026 | 4/5 (1 exactly 0) |
+| `dns+audit` | YES | no | +0.1408 +/- 0.0076 | 5/5 | -0.0125 +/- 0.0037 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `dns+suricata` | YES | YES | +0.1547 +/- 0.0437 | 5/5 | -0.1303 +/- 0.0256 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
 
 **A_rm_to_santos / prismflow** - attack success, paired within seed
 
 | compromised pair | dns in set | suricata in set | beta 1.0 - beta 0.0 (5-seed mean +/- std) | same sign | beta 5.0 - beta 1.0 (5-seed mean +/- std) | same sign | chorus beta 0.0 - pgd (check) | same sign |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `apache+audit` | no | no | -0.0282 +/- 0.0096 | 5/5 | -0.0431 +/- 0.0082 | 5/5 | +0.0005 +/- 0.0007 | 2/5 |
-| `apache+auth` | no | no | -0.0352 +/- 0.0075 | 5/5 | -0.0300 +/- 0.0058 | 5/5 | +0.0011 +/- 0.0007 | 4/5 |
-| `apache+dns` | YES | no | +0.1278 +/- 0.0098 | 5/5 | -0.0292 +/- 0.0052 | 5/5 | +0.0002 +/- 0.0004 | 1/5 |
-| `apache+suricata` | no | YES | +0.1036 +/- 0.0108 | 5/5 | -0.2094 +/- 0.0209 | 5/5 | +0.0000 +/- 0.0006 | 1/5 |
+| `apache+audit` | no | no | -0.0282 +/- 0.0096 | 5/5 | -0.0431 +/- 0.0082 | 5/5 | +0.0005 +/- 0.0007 | 2/5 (3 exactly 0) |
+| `apache+auth` | no | no | -0.0352 +/- 0.0075 | 5/5 | -0.0300 +/- 0.0058 | 5/5 | +0.0011 +/- 0.0007 | 4/5 (1 exactly 0) |
+| `apache+dns` | YES | no | +0.1278 +/- 0.0098 | 5/5 | -0.0292 +/- 0.0052 | 5/5 | +0.0002 +/- 0.0004 | 1/5 (4 exactly 0) |
+| `apache+suricata` | no | YES | +0.1036 +/- 0.0108 | 5/5 | -0.2094 +/- 0.0209 | 5/5 | +0.0000 +/- 0.0006 | 1/5 (3 exactly 0) |
 | `audit+suricata` | no | YES | -0.1560 +/- 0.0153 | 5/5 | -0.0247 +/- 0.0104 | 5/5 | -0.0025 +/- 0.0011 | 5/5 |
-| `auth+audit` | no | no | -0.0009 +/- 0.0024 | 2/5 | -0.0170 +/- 0.0033 | 5/5 | +0.0018 +/- 0.0015 | 4/5 |
-| `auth+dns` | YES | no | +0.1695 +/- 0.0306 | 5/5 | -0.0312 +/- 0.0224 | 5/5 | -0.0002 +/- 0.0004 | 1/5 |
-| `auth+suricata` | no | YES | -0.0330 +/- 0.0423 | 3/5 | -0.1202 +/- 0.0409 | 5/5 | -0.0007 +/- 0.0032 | 3/5 |
-| `dns+audit` | YES | no | +0.1711 +/- 0.0153 | 5/5 | -0.0173 +/- 0.0070 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `dns+suricata` | YES | YES | +0.2843 +/- 0.0728 | 5/5 | -0.1496 +/- 0.0597 | 5/5 | -0.0002 +/- 0.0004 | 1/5 |
+| `auth+audit` | no | no | -0.0009 +/- 0.0024 | 2/5 (1 exactly 0) | -0.0170 +/- 0.0033 | 5/5 | +0.0018 +/- 0.0015 | 4/5 (1 exactly 0) |
+| `auth+dns` | YES | no | +0.1695 +/- 0.0306 | 5/5 | -0.0312 +/- 0.0224 | 5/5 | -0.0002 +/- 0.0004 | 1/5 (4 exactly 0) |
+| `auth+suricata` | no | YES | -0.0330 +/- 0.0423 | 3/5 | -0.1202 +/- 0.0409 | 5/5 | -0.0007 +/- 0.0032 | 3/5 (1 exactly 0) |
+| `dns+audit` | YES | no | +0.1711 +/- 0.0153 | 5/5 | -0.0173 +/- 0.0070 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `dns+suricata` | YES | YES | +0.2843 +/- 0.0728 | 5/5 | -0.1496 +/- 0.0597 | 5/5 | -0.0002 +/- 0.0004 | 1/5 (4 exactly 0) |
 
 ### B_santos_to_rm (train `santos` -> test `russellmitchell`)
 
@@ -674,31 +680,89 @@ The last column pair is a consistency check, not an effect: `run_ait_attack.py:5
 
 | compromised pair | dns in set | suricata in set | beta 1.0 - beta 0.0 (5-seed mean +/- std) | same sign | beta 5.0 - beta 1.0 (5-seed mean +/- std) | same sign | chorus beta 0.0 - pgd (check) | same sign |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `apache+audit` | no | no | +0.0000 +/- 0.0000 | 5/5 | -0.0012 +/- 0.0024 | 1/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `apache+auth` | no | no | +0.0000 +/- 0.0000 | 5/5 | -0.0009 +/- 0.0017 | 1/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `apache+dns` | YES | no | +0.6837 +/- 0.2205 | 5/5 | -0.0089 +/- 0.0050 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `apache+suricata` | no | YES | -0.6562 +/- 0.1796 | 5/5 | -0.0028 +/- 0.0048 | 2/5 | -0.0026 +/- 0.0012 | 5/5 |
-| `audit+suricata` | no | YES | -0.6519 +/- 0.1634 | 5/5 | -0.0002 +/- 0.0003 | 1/5 | -0.0084 +/- 0.0044 | 5/5 |
-| `auth+audit` | no | no | +0.0000 +/- 0.0000 | 5/5 | +0.0000 +/- 0.0000 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `auth+dns` | YES | no | +0.6826 +/- 0.2213 | 5/5 | -0.0068 +/- 0.0019 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `auth+suricata` | no | YES | -0.6500 +/- 0.1707 | 5/5 | -0.0002 +/- 0.0003 | 1/5 | -0.0129 +/- 0.0084 | 5/5 |
-| `dns+audit` | YES | no | +0.6828 +/- 0.2210 | 5/5 | -0.0079 +/- 0.0036 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `dns+suricata` | YES | YES | +0.0786 +/- 0.0128 | 5/5 | -0.0742 +/- 0.0586 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
+| `apache+audit` | no | no | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) | -0.0012 +/- 0.0024 | 1/5 (4 exactly 0) | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `apache+auth` | no | no | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) | -0.0009 +/- 0.0017 | 1/5 (4 exactly 0) | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `apache+dns` | YES | no | +0.6837 +/- 0.2205 | 5/5 | -0.0089 +/- 0.0050 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `apache+suricata` | no | YES | -0.6562 +/- 0.1796 | 5/5 | -0.0028 +/- 0.0048 | 2/5 (3 exactly 0) | -0.0026 +/- 0.0012 | 5/5 |
+| `audit+suricata` | no | YES | -0.6519 +/- 0.1634 | 5/5 | -0.0002 +/- 0.0003 | 1/5 (4 exactly 0) | -0.0084 +/- 0.0044 | 5/5 |
+| `auth+audit` | no | no | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `auth+dns` | YES | no | +0.6826 +/- 0.2213 | 5/5 | -0.0068 +/- 0.0019 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `auth+suricata` | no | YES | -0.6500 +/- 0.1707 | 5/5 | -0.0002 +/- 0.0003 | 1/5 (4 exactly 0) | -0.0129 +/- 0.0084 | 5/5 |
+| `dns+audit` | YES | no | +0.6828 +/- 0.2210 | 5/5 | -0.0079 +/- 0.0036 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `dns+suricata` | YES | YES | +0.0786 +/- 0.0128 | 5/5 | -0.0742 +/- 0.0586 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
 
 **B_santos_to_rm / prismflow** - attack success, paired within seed
 
 | compromised pair | dns in set | suricata in set | beta 1.0 - beta 0.0 (5-seed mean +/- std) | same sign | beta 5.0 - beta 1.0 (5-seed mean +/- std) | same sign | chorus beta 0.0 - pgd (check) | same sign |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `apache+audit` | no | no | +0.0007 +/- 0.0010 | 2/5 | -0.0024 +/- 0.0012 | 5/5 | -0.0003 +/- 0.0014 | 2/5 |
-| `apache+auth` | no | no | +0.0016 +/- 0.0023 | 3/5 | -0.0049 +/- 0.0068 | 4/5 | +0.0012 +/- 0.0029 | 1/5 |
-| `apache+dns` | YES | no | +0.8225 +/- 0.0629 | 5/5 | -0.0370 +/- 0.0209 | 5/5 | +0.0003 +/- 0.0007 | 1/5 |
-| `apache+suricata` | no | YES | -0.6966 +/- 0.0485 | 5/5 | -0.0136 +/- 0.0208 | 4/5 | -0.0070 +/- 0.0116 | 3/5 |
-| `audit+suricata` | no | YES | -0.7048 +/- 0.0537 | 5/5 | -0.0005 +/- 0.0010 | 1/5 | -0.0003 +/- 0.0046 | 2/5 |
-| `auth+audit` | no | no | -0.0014 +/- 0.0012 | 3/5 | -0.0009 +/- 0.0012 | 3/5 | -0.0028 +/- 0.0039 | 3/5 |
-| `auth+dns` | YES | no | +0.8112 +/- 0.0350 | 5/5 | -0.0110 +/- 0.0027 | 5/5 | +0.0002 +/- 0.0003 | 1/5 |
-| `auth+suricata` | no | YES | -0.6982 +/- 0.0618 | 5/5 | -0.0007 +/- 0.0014 | 1/5 | -0.0023 +/- 0.0089 | 3/5 |
-| `dns+audit` | YES | no | +0.7913 +/- 0.0658 | 5/5 | -0.0094 +/- 0.0029 | 5/5 | +0.0000 +/- 0.0000 | 5/5 |
-| `dns+suricata` | YES | YES | +0.2795 +/- 0.1846 | 5/5 | -0.0176 +/- 0.0247 | 4/5 | -0.0016 +/- 0.0031 | 1/5 |
+| `apache+audit` | no | no | +0.0007 +/- 0.0010 | 2/5 (3 exactly 0) | -0.0024 +/- 0.0012 | 5/5 | -0.0003 +/- 0.0014 | 2/5 (2 exactly 0) |
+| `apache+auth` | no | no | +0.0016 +/- 0.0023 | 3/5 (2 exactly 0) | -0.0049 +/- 0.0068 | 4/5 (1 exactly 0) | +0.0012 +/- 0.0029 | 1/5 (3 exactly 0) |
+| `apache+dns` | YES | no | +0.8225 +/- 0.0629 | 5/5 | -0.0370 +/- 0.0209 | 5/5 | +0.0003 +/- 0.0007 | 1/5 (4 exactly 0) |
+| `apache+suricata` | no | YES | -0.6966 +/- 0.0485 | 5/5 | -0.0136 +/- 0.0208 | 4/5 (1 exactly 0) | -0.0070 +/- 0.0116 | 3/5 (1 exactly 0) |
+| `audit+suricata` | no | YES | -0.7048 +/- 0.0537 | 5/5 | -0.0005 +/- 0.0010 | 1/5 (4 exactly 0) | -0.0003 +/- 0.0046 | 2/5 (1 exactly 0) |
+| `auth+audit` | no | no | -0.0014 +/- 0.0012 | 3/5 (2 exactly 0) | -0.0009 +/- 0.0012 | 3/5 (1 exactly 0) | -0.0028 +/- 0.0039 | 3/5 (1 exactly 0) |
+| `auth+dns` | YES | no | +0.8112 +/- 0.0350 | 5/5 | -0.0110 +/- 0.0027 | 5/5 | +0.0002 +/- 0.0003 | 1/5 (4 exactly 0) |
+| `auth+suricata` | no | YES | -0.6982 +/- 0.0618 | 5/5 | -0.0007 +/- 0.0014 | 1/5 (4 exactly 0) | -0.0023 +/- 0.0089 | 3/5 |
+| `dns+audit` | YES | no | +0.7913 +/- 0.0658 | 5/5 | -0.0094 +/- 0.0029 | 5/5 | +0.0000 +/- 0.0000 | 5/5 (all exactly 0) |
+| `dns+suricata` | YES | YES | +0.2795 +/- 0.1846 | 5/5 | -0.0176 +/- 0.0247 | 4/5 | -0.0016 +/- 0.0031 | 1/5 (4 exactly 0) |
+
+### 11.1 PrismFlow minus naive at each beta, by pair
+
+Within-seed `prismflow - naive` attack success at one `beta`, `chorus k=2 eps=1.0`. **Negative favours PrismFlow** (lower attack success). The two columns are separate measurements at separate grid points and are never averaged together; 11.2 pairs them. All 10 pairs are listed, flagged for `dns` and `suricata`, and nothing is pooled across the `dns` split.
+
+**A_rm_to_santos** (train `russellmitchell` -> test `santos`) - prismflow minus naive attack success, paired within seed
+
+| compromised pair | dns in set | suricata in set | beta=1.0: prismflow - naive (5-seed mean +/- std) | same sign | beta=0.0: prismflow - naive (5-seed mean +/- std) | same sign |
+| --- | --- | --- | --- | --- | --- | --- |
+| `apache+audit` | no | no | -0.0404 +/- 0.0053 | 5/5 | -0.0227 +/- 0.0064 | 5/5 |
+| `apache+auth` | no | no | -0.0144 +/- 0.0088 | 5/5 | -0.0195 +/- 0.0100 | 5/5 |
+| `apache+dns` | YES | no | +0.0126 +/- 0.0062 | 5/5 | -0.0294 +/- 0.0081 | 5/5 |
+| `apache+suricata` | no | YES | +0.0047 +/- 0.0032 | 5/5 | +0.0096 +/- 0.0049 | 5/5 |
+| `audit+suricata` | no | YES | -0.1478 +/- 0.0506 | 5/5 | -0.0031 +/- 0.0079 | 4/5 |
+| `auth+audit` | no | no | -0.0245 +/- 0.0083 | 5/5 | -0.0265 +/- 0.0096 | 5/5 |
+| `auth+dns` | YES | no | +0.0240 +/- 0.0230 | 5/5 | -0.0222 +/- 0.0065 | 5/5 |
+| `auth+suricata` | no | YES | -0.0527 +/- 0.0404 | 5/5 | -0.0018 +/- 0.0125 | 3/5 |
+| `dns+audit` | YES | no | +0.0130 +/- 0.0071 | 5/5 | -0.0173 +/- 0.0021 | 5/5 |
+| `dns+suricata` | YES | YES | +0.0619 +/- 0.0463 | 4/5 | -0.0677 +/- 0.0160 | 5/5 |
+
+**B_santos_to_rm** (train `santos` -> test `russellmitchell`) - prismflow minus naive attack success, paired within seed
+
+| compromised pair | dns in set | suricata in set | beta=1.0: prismflow - naive (5-seed mean +/- std) | same sign | beta=0.0: prismflow - naive (5-seed mean +/- std) | same sign |
+| --- | --- | --- | --- | --- | --- | --- |
+| `apache+audit` | no | no | +0.0426 +/- 0.0539 | 4/5 (1 exactly 0) | +0.0419 +/- 0.0541 | 4/5 (1 exactly 0) |
+| `apache+auth` | no | no | +0.0304 +/- 0.0358 | 4/5 | +0.0288 +/- 0.0357 | 4/5 |
+| `apache+dns` | YES | no | +0.0849 +/- 0.0925 | 5/5 | -0.0540 +/- 0.0810 | 5/5 |
+| `apache+suricata` | no | YES | -0.0519 +/- 0.0998 | 4/5 | -0.0115 +/- 0.1045 | 4/5 |
+| `audit+suricata` | no | YES | -0.0631 +/- 0.0959 | 5/5 | -0.0101 +/- 0.1042 | 3/5 |
+| `auth+audit` | no | no | +0.0311 +/- 0.0258 | 5/5 | +0.0325 +/- 0.0264 | 5/5 |
+| `auth+dns` | YES | no | +0.0681 +/- 0.0964 | 5/5 | -0.0604 +/- 0.0963 | 5/5 |
+| `auth+suricata` | no | YES | -0.0629 +/- 0.0960 | 5/5 | -0.0147 +/- 0.1101 | 3/5 |
+| `dns+audit` | YES | no | +0.0667 +/- 0.0958 | 5/5 | -0.0417 +/- 0.0624 | 5/5 |
+| `dns+suricata` | YES | YES | -0.0208 +/- 0.0186 | 4/5 | -0.2217 +/- 0.1738 | 5/5 |
+
+### 11.2 Difference-in-differences on the `dns` pairs
+
+`(prismflow: beta 1.0 - beta 0.0) - (naive: beta 1.0 - beta 0.0)`, paired within seed at both steps: the per-seed `beta` shift is formed for each arm first, and the two shifts are then subtracted seed by seed. **Positive means coordination bought the attacker MORE against PrismFlow than against naive fusion** at `chorus k=2 eps=1.0`.
+
+Only the 4 `dns` pairs per direction appear: section 11 measures the `beta` shift on the other 6 pairs as at or near zero in both arms, so a difference of two near-zero shifts would be a ratio of noise. The two `beta` columns are repeated here from section 11 so the DiD can be checked against its operands.
+
+**A_rm_to_santos** - difference-in-differences, paired within seed, `chorus k=2 eps=1.0`
+
+| compromised pair | suricata in set | prismflow: beta 1.0 - beta 0.0 | same sign | naive: beta 1.0 - beta 0.0 | same sign | DiD prismflow - naive (5-seed mean +/- std) | same sign |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `apache+dns` | no | +0.1278 +/- 0.0098 | 5/5 | +0.0857 +/- 0.0035 | 5/5 | +0.0421 +/- 0.0079 | 5/5 |
+| `auth+dns` | no | +0.1695 +/- 0.0306 | 5/5 | +0.1233 +/- 0.0065 | 5/5 | +0.0462 +/- 0.0279 | 5/5 |
+| `dns+audit` | no | +0.1711 +/- 0.0153 | 5/5 | +0.1408 +/- 0.0076 | 5/5 | +0.0303 +/- 0.0085 | 5/5 |
+| `dns+suricata` | YES | +0.2843 +/- 0.0728 | 5/5 | +0.1547 +/- 0.0437 | 5/5 | +0.1296 +/- 0.0418 | 5/5 |
+
+**B_santos_to_rm** - difference-in-differences, paired within seed, `chorus k=2 eps=1.0`
+
+| compromised pair | suricata in set | prismflow: beta 1.0 - beta 0.0 | same sign | naive: beta 1.0 - beta 0.0 | same sign | DiD prismflow - naive (5-seed mean +/- std) | same sign |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `apache+dns` | no | +0.8225 +/- 0.0629 | 5/5 | +0.6837 +/- 0.2205 | 5/5 | +0.1389 +/- 0.1721 | 5/5 |
+| `auth+dns` | no | +0.8112 +/- 0.0350 | 5/5 | +0.6826 +/- 0.2213 | 5/5 | +0.1286 +/- 0.1926 | 5/5 |
+| `dns+audit` | no | +0.7913 +/- 0.0658 | 5/5 | +0.6828 +/- 0.2210 | 5/5 | +0.1085 +/- 0.1582 | 5/5 |
+| `dns+suricata` | YES | +0.2795 +/- 0.1846 | 5/5 | +0.0786 +/- 0.0128 | 5/5 | +0.2009 +/- 0.1791 | 5/5 |
 
 ### What the tables say
 

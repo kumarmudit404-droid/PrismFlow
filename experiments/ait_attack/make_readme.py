@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import NamedTuple
 
 import numpy as np
 
@@ -1165,7 +1166,7 @@ def section_verdicts(results: dict, subset: dict | None) -> list[str]:
             b1 = by_subset(cells, "chorus", 2, 1.0, 1.0)
             fam = {"dns": [], "suricata": []}
             for views in b1:
-                shift = paired_diff(b1.get(views), b0.get(views))[3]
+                shift = paired_diff(b1.get(views), b0.get(views)).mean
                 if shift is None:
                     continue
                 if "dns" in views:
@@ -1354,21 +1355,62 @@ def per_seed_map(cell: dict, field: str) -> dict:
     return out
 
 
-def paired_diff(cell_hi: dict, cell_lo: dict, field: str = "attack_success"):
+class Paired(NamedTuple):
+    """One within-seed paired difference, aggregated only after pairing.
+
+    `agree` counts the seeds whose difference has the SAME SIGN as the mean.
+    A seed whose difference is exactly 0.0 agrees with neither sign, so it is
+    counted in `zeros` and not in `agree`: `agree < n` therefore does NOT by
+    itself mean any seed disagreed, and `opposite` is the count that does.
+    """
+    text: str
+    mean: float | None
+    std: float | None
+    agree: int | None
+    zeros: int
+    opposite: int
+    n: int
+    diffs: tuple
+
+    @property
+    def count(self) -> str:
+        """`agree/n`, disclosing exact zeros.
+
+        Without the disclosure a `1/5` reads as four seeds contradicting the
+        mean when in fact four seeds moved by exactly nothing - a different
+        claim, and the one the data makes in 34 of section 11's 120 rows.
+        """
+        if self.agree is None:
+            return NOT_MEASURED
+        text = f"{self.agree}/{self.n}"
+        if self.zeros == self.n:
+            text += " (all exactly 0)"
+        elif self.zeros:
+            text += f" ({self.zeros} exactly 0)"
+        return text
+
+    @property
+    def unanimous(self) -> bool:
+        return self.agree is not None and self.n > 0 and self.agree == self.n
+
+
+MISSING_PAIR = Paired(NOT_MEASURED, None, None, None, 0, 0, 0, ())
+
+
+def paired_diff(cell_hi: dict, cell_lo: dict,
+                field: str = "attack_success") -> Paired:
     """Within-seed `hi - lo`, then mean, population std and sign agreement.
 
     The difference is formed seed by seed and only then aggregated, never as a
     difference of two aggregates: a cell whose seeds disagree in sign would
-    otherwise read as "no effect" at the mean. `same_sign` counts the seeds
-    agreeing with the sign of the mean, so a 3/5 is visible as a split.
+    otherwise read as "no effect" at the mean.
 
-    Returns `(text, n_agree, n_seeds, mean)`, or `(NOT_MEASURED, None, 0,
-    None)` when either cell is absent or they share no seed.
+    Returns `MISSING_PAIR` when either cell is absent or they share no seed.
     """
     hi, lo = per_seed_map(cell_hi, field), per_seed_map(cell_lo, field)
     shared = sorted(set(hi) & set(lo))
     if not shared:
-        return NOT_MEASURED, None, 0, None
+        return MISSING_PAIR
     diffs = np.array([hi[s] - lo[s] for s in shared], dtype=np.float64)
     mean, std = float(diffs.mean()), float(diffs.std())
     if mean > 0:
@@ -1377,7 +1419,142 @@ def paired_diff(cell_hi: dict, cell_lo: dict, field: str = "attack_success"):
         agree = int((diffs < 0).sum())
     else:
         agree = int((diffs == 0).sum())
-    return f"{mean:+.4f} +/- {std:.4f}", agree, len(shared), mean
+    return Paired(f"{mean:+.4f} +/- {std:.4f}", mean, std, agree,
+                  int((diffs == 0).sum()),
+                  len(shared) - agree - int((diffs == 0).sum()),
+                  len(shared), tuple(float(d) for d in diffs))
+
+
+def paired_seeds(hi_map: dict, lo_map: dict) -> Paired:
+    """`paired_diff` over two `{seed: value}` maps already in hand.
+
+    Used for the difference-in-differences in 11.2, whose two operands are
+    themselves paired differences and so have no cell to read.
+    """
+    shared = sorted(set(hi_map) & set(lo_map))
+    if not shared:
+        return MISSING_PAIR
+    diffs = np.array([hi_map[s] - lo_map[s] for s in shared], dtype=np.float64)
+    mean, std = float(diffs.mean()), float(diffs.std())
+    if mean > 0:
+        agree = int((diffs > 0).sum())
+    elif mean < 0:
+        agree = int((diffs < 0).sum())
+    else:
+        agree = int((diffs == 0).sum())
+    return Paired(f"{mean:+.4f} +/- {std:.4f}", mean, std, agree,
+                  int((diffs == 0).sum()),
+                  len(shared) - agree - int((diffs == 0).sum()),
+                  len(shared), tuple(float(d) for d in diffs))
+
+
+#: Section 11's sign-consistency gate, in population stds. A row whose mean
+#: sits further than this from zero should be a tight population, so every
+#: seed must agree with the sign of its own mean.
+#:
+#: BE WARNED THAT AT n=5 THIS EXACT RULE CANNOT FIRE. Normalise a difference
+#: vector so its mean is 1 and ask for the smallest population std compatible
+#: with one seed not agreeing: put that seed at 0 (the closest a non-agreeing
+#: value can sit to the mean) and the other four at 1.25, and the std is
+#: exactly 0.5, so |mean|/std is exactly 2.0. Spreading the other four, or
+#: making the odd seed properly negative, only raises the std and lowers the
+#: ratio. 2.0 is therefore the attained SUPREMUM of |mean|/std over all
+#: non-unanimous 5-seed vectors, and a strict `>` against it is a tautology:
+#: no data can violate it. It is kept because it states the invariant and
+#: becomes load-bearing at n>5, but `check_wiring` below is the falsifiable
+#: half of the gate, and the README prints the measured headroom so the slack
+#: is visible instead of implied.
+SIGN_CONSISTENCY_STDS = 2.0
+
+
+class SignConsistencyError(AssertionError):
+    """A section 11 row with |mean| > 2*std whose seeds are not unanimous."""
+
+
+class RowWiringError(AssertionError):
+    """A section 11 row whose printed aggregate does not match its own seeds."""
+
+
+def _row_report(direction, system, pair, column, p: Paired) -> list[str]:
+    ratio = abs(p.mean) / p.std if (p.mean is not None and p.std) else None
+    return [
+        f"  {direction} / {system}  pair={pair}  column={column}",
+        f"    printed={p.text!r}  count={p.count!r}",
+        f"    mean={p.mean:+.9f}  std(pop,n={p.n})={p.std:.9f}  "
+        f"|mean|/std={ratio:.4f}" if ratio is not None else
+        f"    mean={p.mean}  std={p.std}  n={p.n}",
+        f"    same sign={p.agree}/{p.n}  exactly 0={p.zeros}  "
+        f"opposite sign={p.opposite}",
+        f"    per-seed diffs={[round(d, 9) for d in p.diffs]}",
+    ]
+
+
+def check_wiring(rows: list[tuple]) -> None:
+    """The falsifiable half: every printed aggregate must match its own seeds.
+
+    This is the check that actually catches the failure modes a generated
+    table is exposed to - a column read from the wrong cell, a mean and a
+    count computed over different seed sets, a partition that does not add up.
+    Unlike `SIGN_CONSISTENCY_STDS` it can fail, so it is the one that earns
+    the word assertion.
+    """
+    offending = []
+    for direction, system, pair, column, p in rows:
+        if p.mean is None or p.n == 0:
+            continue
+        diffs = np.array(p.diffs, dtype=np.float64)
+        bad = (len(diffs) != p.n
+               or p.agree + p.zeros + p.opposite != p.n
+               or not np.isclose(diffs.mean(), p.mean, rtol=0, atol=1e-12)
+               or not np.isclose(diffs.std(), p.std, rtol=0, atol=1e-12)
+               or p.text != f"{p.mean:+.4f} +/- {p.std:.4f}")
+        if bad:
+            offending.append((direction, system, pair, column, p))
+    if not offending:
+        return
+    lines = [f"section 11 row-wiring assertion FAILED on {len(offending)} "
+             f"row(s): the printed aggregate does not match the row's own "
+             f"per-seed differences. README NOT written."]
+    for row in offending:
+        lines += _row_report(*row)
+    message = "\n".join(lines)
+    print(message)
+    raise RowWiringError(message)
+
+
+def check_sign_consistency(rows: list[tuple]) -> float | None:
+    """Gate every section 11 paired-difference row. Raises, never warns.
+
+    `rows` is `(direction, system, pair, column, Paired)`. Rows with no shared
+    seed are skipped - they print NOT MEASURED and assert nothing.
+
+    Returns the largest `|mean|/std` observed among the NON-unanimous rows, so
+    section 11 can print how far the data actually sits from the gate rather
+    than leaving the reader to assume the gate is tight.
+    """
+    check_wiring(rows)
+    offending, headroom = [], None
+    for direction, system, pair, column, p in rows:
+        if p.mean is None or p.std is None or p.n == 0:
+            continue
+        if not p.std:
+            continue
+        ratio = abs(p.mean) / p.std
+        if not p.unanimous:
+            headroom = ratio if headroom is None else max(headroom, ratio)
+            if ratio > SIGN_CONSISTENCY_STDS:
+                offending.append((direction, system, pair, column, p))
+    if offending:
+        lines = [f"section 11 sign-consistency assertion FAILED on "
+                 f"{len(offending)} row(s): |mean| > "
+                 f"{SIGN_CONSISTENCY_STDS:g}*std but the seeds are not "
+                 f"unanimous. README NOT written."]
+        for row in offending:
+            lines += _row_report(*row)
+        message = "\n".join(lines)
+        print(message)
+        raise SignConsistencyError(message)
+    return headroom
 
 
 def flags(views) -> list[str]:
@@ -1418,26 +1595,8 @@ def section_coordination(results: dict) -> list[str]:
     two directions, because sections 5 and 9 establish that all three
     disagree.
     """
-    out = ["## 11. Coordination effect (beta)", "",
-           "`beta` is the weight on the chorus objective's agreement term, "
-           "`sum_v log b_v[target] - beta * sum_{i,j} ||b_i - b_j||^2` "
-           "(`prismflow/attacks/chorus.py`, `chorus_objective`). At `beta=0` "
-           "that term is off and the attacker only maximises the target's "
-           "likelihood; raising it pays the attacker to make the compromised "
-           "views AGREE while doing so.", "",
-           "Every number below is a **paired within-seed difference** on one "
-           "subset at `chorus k=2 eps=1.0`: the difference is formed seed by "
-           "seed and only then averaged, so a pair whose seeds disagree in "
-           "sign cannot read as `no effect`. The `same sign` column counts the "
-           "seeds agreeing with the sign of the mean - a `3/5` is a split "
-           "population, not a finding. **Nothing is pooled** across pairs, "
-           "across the `dns` split or across the two directions.", "",
-           "The last column pair is a consistency check, not an effect: "
-           "`run_ait_attack.py:501` passes `beta=beta if kind == \"chorus\" "
-           "else 0.0`, so `pgd` and `chorus beta=0.0` get an identical config "
-           "and differ only in which runner is called. `chorus beta 0.0 - pgd` "
-           "should therefore sit at ~0 wherever the two implementations agree, "
-           "and it says nothing about coordination.", ""]
+    out: list[str] = []
+    gated: list[tuple] = []
     for dname, record in results["directions"].items():
         out += [f"### {dname} (train `{record['train_scenario']}` -> test "
                 f"`{record['test_scenario']}`)", ""]
@@ -1462,17 +1621,203 @@ def section_coordination(results: dict) -> list[str]:
                            "same sign",
                            "chorus beta 0.0 - pgd (check)", "same sign"])
             for views in subsets:
-                t10, a10, n10, _ = paired_diff(b1.get(views), b0.get(views))
-                t51, a51, n51, _ = paired_diff(b5.get(views), b1.get(views))
-                t0p, a0p, n0p, _ = paired_diff(b0.get(views), pgd.get(views))
+                pair = "+".join(views)
+                p10 = paired_diff(b1.get(views), b0.get(views))
+                p51 = paired_diff(b5.get(views), b1.get(views))
+                p0p = paired_diff(b0.get(views), pgd.get(views))
+                gated += [(dname, system, pair, "beta 1.0 - beta 0.0", p10),
+                          (dname, system, pair, "beta 5.0 - beta 1.0", p51),
+                          (dname, system, pair, "chorus beta 0.0 - pgd", p0p)]
                 out.append(line(
-                    [f"`{'+'.join(views)}`", *flags(views),
-                     t10, f"{a10}/{n10}" if a10 is not None else NOT_MEASURED,
-                     t51, f"{a51}/{n51}" if a51 is not None else NOT_MEASURED,
-                     t0p, f"{a0p}/{n0p}" if a0p is not None else NOT_MEASURED]))
+                    [f"`{pair}`", *flags(views),
+                     p10.text, p10.count, p51.text, p51.count,
+                     p0p.text, p0p.count]))
             out.append("")
-    out += coordination_reading(results)
-    return out
+    sub, sub_rows = section_coordination_systems(results)
+    out += sub
+    gated += sub_rows
+    # The gate runs BEFORE the preamble is built, both because it may stop the
+    # write and because the preamble quotes the headroom it measures.
+    headroom = check_sign_consistency(gated)
+    n_rows = sum(1 for *_ , p in gated if p.mean is not None and p.n)
+    n_zero = sum(1 for *_ , p in gated
+                 if p.mean is not None and p.n and not p.unanimous and p.zeros)
+    return coordination_preamble(n_rows, n_zero, headroom) + out \
+        + coordination_reading(results)
+
+
+def coordination_preamble(n_rows: int, n_zero: int,
+                          headroom: float | None) -> list[str]:
+    """Section 11's heading and the three things a reader must know first.
+
+    `n_rows`, `n_zero` and `headroom` are measured over the rows actually
+    emitted, so the prose cannot drift from the tables the way a hand-written
+    count would.
+    """
+    return ["## 11. Coordination effect (beta)", "",
+            "`beta` is the weight on the chorus objective's agreement term, "
+            "`sum_v log b_v[target] - beta * sum_{i,j} ||b_i - b_j||^2` "
+            "(`prismflow/attacks/chorus.py`, `chorus_objective`). At `beta=0` "
+            "that term is off and the attacker only maximises the target's "
+            "likelihood; raising it pays the attacker to make the compromised "
+            "views AGREE while doing so.", "",
+            "Every number below is a **paired within-seed difference** on one "
+            "subset at `chorus k=2 eps=1.0`: the difference is formed seed by "
+            "seed and only then averaged, so a pair whose seeds disagree in "
+            "sign cannot read as `no effect`. The `same sign` column counts "
+            "the seeds agreeing with the sign of the mean. A seed whose "
+            "difference is **exactly 0.0** agrees with neither sign, so it is "
+            "excluded from that count and disclosed in the cell as `(n "
+            "exactly 0)`: a `1/5 (4 exactly 0)` is four seeds that did not "
+            "move, NOT four seeds contradicting the mean. "
+            f"{n_zero} of the {n_rows} rows in this section are in that "
+            "position. Read a low count WITHOUT a zero disclosure as a "
+            "genuine sign split. **Nothing is pooled** across pairs, across "
+            "the `dns` split or across the two directions.", "",
+            "**The gate on these rows, and what it is worth.** Two "
+            "assertions run over every paired-difference row in this section "
+            "before this file is written; either one printing an offending "
+            "row aborts the write.",
+            "",
+            f"1. `check_sign_consistency`: if `|mean| > "
+            f"{SIGN_CONSISTENCY_STDS:g} * std` (population std) the seeds "
+            f"must be unanimous. **At n=5 this cannot fail, and is reported "
+            f"here as an invariant rather than as a check that passed.** The "
+            f"smallest population std a 5-seed vector can have while one seed "
+            f"disagrees is reached by putting that seed at 0 and the other "
+            f"four at 1.25 the mean, which gives `|mean|/std` exactly 2.0; "
+            f"every other non-unanimous arrangement is wider and scores "
+            f"lower. 2.0 is thus the attained supremum, so a strict `>` "
+            f"against it is a tautology at this n. It becomes load-bearing "
+            f"only at n>5."
+            + (f" Measured headroom: the largest `|mean|/std` among the "
+               f"non-unanimous rows in this section is **{headroom:.4f}**, "
+               f"against a bar of {SIGN_CONSISTENCY_STDS:g} that no 5-seed "
+               f"row can reach."
+               if headroom is not None else ""),
+            "",
+            "2. `check_wiring`: every row's printed `mean +/- std`, its "
+            "`same sign` count and its `agree + exactly-0 + opposite` "
+            "partition must all recompute from that row's own per-seed "
+            "difference vector. This one CAN fail - it is what would catch a "
+            "column read off the wrong cell or a mean and a count taken over "
+            "different seed sets - and it is the assertion to trust.",
+            "",
+            "The last column pair of the first four tables is a consistency "
+            "check, not an effect: `run_ait_attack.py:501` passes `beta=beta "
+            "if kind == \"chorus\" else 0.0`, so `pgd` and `chorus beta=0.0` "
+            "get an identical config and differ only in which runner is "
+            "called. `chorus beta 0.0 - pgd` should therefore sit at ~0 "
+            "wherever the two implementations agree, and it says nothing "
+            "about coordination.", ""]
+
+
+def seed_diff_map(cell_hi: dict, cell_lo: dict,
+                  field: str = "attack_success") -> dict:
+    """`{seed: hi - lo}`, the per-seed operand a difference-in-differences needs."""
+    hi, lo = per_seed_map(cell_hi, field), per_seed_map(cell_lo, field)
+    return {s: hi[s] - lo[s] for s in sorted(set(hi) & set(lo))}
+
+
+def section_coordination_systems(results: dict) -> tuple[list[str], list[tuple]]:
+    """11.1 and 11.2: the same beta cells read as prismflow against naive.
+
+    11.1 is the LEVEL difference at each beta separately - prismflow minus
+    naive attack success at `beta=1.0` and at `beta=0.0` - so a reader can see
+    whether the two arms start level before coordination is switched on.
+
+    11.2 is the difference-in-differences: the `beta 1.0 - beta 0.0` shift
+    measured on prismflow minus the same shift measured on naive, paired
+    within seed at every step. It answers a narrower question than 11.1 - does
+    coordination buy the attacker MORE against the discount than against plain
+    fusion - and it is reported only for the 4 `dns` pairs per direction,
+    because those are the pairs where `beta` moves anything at all (section 11).
+
+    Returns `(lines, gated_rows)`; the rows join section 11's assertion.
+    """
+    out = ["### 11.1 PrismFlow minus naive at each beta, by pair", "",
+           "Within-seed `prismflow - naive` attack success at one `beta`, "
+           "`chorus k=2 eps=1.0`. **Negative favours PrismFlow** (lower attack "
+           "success). The two columns are separate measurements at separate "
+           "grid points and are never averaged together; 11.2 pairs them. "
+           "All 10 pairs are listed, flagged for `dns` and `suricata`, and "
+           "nothing is pooled across the `dns` split.", ""]
+    gated: list[tuple] = []
+    for dname, record in results["directions"].items():
+        pf = record["systems"]["prismflow"]["cells"]
+        nv = record["systems"]["naive"]["cells"]
+        pf0, nv0 = (by_subset(pf, "chorus", 2, 1.0, 0.0),
+                    by_subset(nv, "chorus", 2, 1.0, 0.0))
+        pf1, nv1 = (by_subset(pf, "chorus", 2, 1.0, 1.0),
+                    by_subset(nv, "chorus", 2, 1.0, 1.0))
+        subsets = sorted(set(pf0) | set(pf1) | set(nv0) | set(nv1))
+        out += [f"**{dname}** (train `{record['train_scenario']}` -> test "
+                f"`{record['test_scenario']}`) - prismflow minus naive attack "
+                f"success, paired within seed", ""]
+        if not subsets:
+            out += [f"{NOT_MEASURED}: no `chorus k=2 eps=1.0` cells.", ""]
+            continue
+        out += header(["compromised pair", "dns in set", "suricata in set",
+                       "beta=1.0: prismflow - naive (5-seed mean +/- std)",
+                       "same sign",
+                       "beta=0.0: prismflow - naive (5-seed mean +/- std)",
+                       "same sign"])
+        for views in subsets:
+            pair = "+".join(views)
+            q1 = paired_diff(pf1.get(views), nv1.get(views))
+            q0 = paired_diff(pf0.get(views), nv0.get(views))
+            gated += [(dname, "prismflow-vs-naive", pair,
+                       "beta=1.0 prismflow - naive", q1),
+                      (dname, "prismflow-vs-naive", pair,
+                       "beta=0.0 prismflow - naive", q0)]
+            out.append(line([f"`{pair}`", *flags(views),
+                             q1.text, q1.count, q0.text, q0.count]))
+        out.append("")
+
+    out += ["### 11.2 Difference-in-differences on the `dns` pairs", "",
+            "`(prismflow: beta 1.0 - beta 0.0) - (naive: beta 1.0 - beta "
+            "0.0)`, paired within seed at both steps: the per-seed `beta` "
+            "shift is formed for each arm first, and the two shifts are then "
+            "subtracted seed by seed. **Positive means coordination bought "
+            "the attacker MORE against PrismFlow than against naive fusion** "
+            "at `chorus k=2 eps=1.0`.", "",
+            "Only the 4 `dns` pairs per direction appear: section 11 measures "
+            "the `beta` shift on the other 6 pairs as at or near zero in both "
+            "arms, so a difference of two near-zero shifts would be a ratio "
+            "of noise. The two `beta` columns are repeated here from section "
+            "11 so the DiD can be checked against its operands.", ""]
+    for dname, record in results["directions"].items():
+        pf = record["systems"]["prismflow"]["cells"]
+        nv = record["systems"]["naive"]["cells"]
+        pf0, pf1 = (by_subset(pf, "chorus", 2, 1.0, 0.0),
+                    by_subset(pf, "chorus", 2, 1.0, 1.0))
+        nv0, nv1 = (by_subset(nv, "chorus", 2, 1.0, 0.0),
+                    by_subset(nv, "chorus", 2, 1.0, 1.0))
+        dns_pairs = sorted(v for v in set(pf1) | set(nv1) if "dns" in v)
+        out += [f"**{dname}** - difference-in-differences, paired within "
+                f"seed, `chorus k=2 eps=1.0`", ""]
+        if not dns_pairs:
+            out += [f"{NOT_MEASURED}: no `dns` pairs at this grid point.", ""]
+            continue
+        out += header(["compromised pair", "suricata in set",
+                       "prismflow: beta 1.0 - beta 0.0", "same sign",
+                       "naive: beta 1.0 - beta 0.0", "same sign",
+                       "DiD prismflow - naive (5-seed mean +/- std)",
+                       "same sign"])
+        for views in dns_pairs:
+            pair = "+".join(views)
+            ppf = paired_diff(pf1.get(views), pf0.get(views))
+            pnv = paired_diff(nv1.get(views), nv0.get(views))
+            did = paired_seeds(seed_diff_map(pf1.get(views), pf0.get(views)),
+                               seed_diff_map(nv1.get(views), nv0.get(views)))
+            gated += [(dname, "prismflow-vs-naive", pair,
+                       "DiD (prismflow beta shift) - (naive beta shift)", did)]
+            out.append(line([f"`{pair}`",
+                             "YES" if "suricata" in views else "no",
+                             ppf.text, ppf.count, pnv.text, pnv.count,
+                             did.text, did.count]))
+        out.append("")
+    return out, gated
 
 
 def coordination_reading(results: dict) -> list[str]:
@@ -1486,13 +1831,13 @@ def coordination_reading(results: dict) -> list[str]:
             pgd = by_subset(cells, "pgd", 2, 1.0, None)
 
             def shift(views):
-                return paired_diff(b1.get(views), b0.get(views))[3]
+                return paired_diff(b1.get(views), b0.get(views)).mean
 
             dns_pairs = [v for v in b1 if "dns" in v]
             sur_pairs = [v for v in b1 if "suricata" in v and "dns" not in v]
             dns_up = [v for v in dns_pairs if (shift(v) or 0.0) > 0]
             sur_dn = [v for v in sur_pairs if (shift(v) or 0.0) < 0]
-            checks = [abs(paired_diff(b0[v], pgd.get(v))[3] or 0.0)
+            checks = [abs(paired_diff(b0[v], pgd.get(v)).mean or 0.0)
                       for v in b0 if v in pgd]
             worst = max(checks) if checks else None
             out.append(
