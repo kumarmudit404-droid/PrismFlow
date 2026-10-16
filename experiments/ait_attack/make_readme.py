@@ -925,6 +925,43 @@ def l3_cut(dname: str, rows: list[tuple], dns: bool) -> L3Cut | None:
         tuple((k, p.mean, p.unanimous) for k, p in side))
 
 
+def l3_pooled_lines(results: dict) -> list[str]:
+    """The four `paired_prismflow_minus_naive` lines, explicitly NOT the test.
+
+    These are the runner's own per-direction, per-dns-side counts, and they
+    POOL chorus with pgd and every beta and epsilon into one number. Part 09's
+    claim is about the chorus attack at one grid point, so a count that mixes
+    two attacks cannot address it. They are kept because they are measured and
+    were the only L3 evidence in earlier revisions of this file, and they are
+    labelled so they are never quoted as the L3 test.
+    """
+    out = ["**Descriptive, all attacks pooled - NOT the L3 test.** The four "
+           "lines below are `directions.<name>.paired_prismflow_minus_naive` "
+           "as the runner wrote it: one count per direction and `dns` side "
+           "over every cell in the grid, which **pools `chorus` with `pgd`** "
+           "and pools every `beta` and `epsilon` together. Part 09's claim is "
+           "about the chorus attack, so these cannot test it and must not be "
+           "cited as the L3 result; the grouped tables below are the test.", ""]
+    for dname, record in results["directions"].items():
+        paired = record.get("paired_prismflow_minus_naive") or {}
+        for dns in (True, False):
+            rows = [v for v in paired.values()
+                    if v.get("dns_compromised") is dns
+                    and "attack_success" in v.get("diff", {})]
+            if not rows:
+                continue
+            means = [r["diff"]["attack_success"]["mean"] for r in rows]
+            kinds = sorted({r.get("kind") for r in rows if r.get("kind")})
+            side = "dns COMPROMISED" if dns else "dns NOT compromised"
+            out.append(f"- **{dname}, {side}:** PrismFlow lowers attack "
+                       f"success in **{sum(1 for m in means if m < 0)} of "
+                       f"{len(rows)}** cells, difference range "
+                       f"{min(means):+.4f}..{max(means):+.4f} "
+                       f"(attacks pooled here: {', '.join(kinds)}).")
+    out.append("")
+    return out
+
+
 def section_l3(results: dict) -> list[str]:
     """L3's evidence and verdict, re-cut by attack, beta, epsilon and dns side.
 
@@ -935,8 +972,9 @@ def section_l3(results: dict) -> list[str]:
     """
     out = ["### L3 - the discount addresses redundant evidence, not unreliable "
            "evidence (and Part 09's extension: reading the axis confers no "
-           "defence)", "",
-           "Part 09's claim is about **the chorus attack**: it found PrismFlow "
+           "defence)", ""]
+    out += l3_pooled_lines(results)
+    out += ["Part 09's claim is about **the chorus attack**: it found PrismFlow "
            "strictly worse than naive fusion in 12/12 attacked cells on "
            "synthetic data. The evidence below is therefore cut by attack "
            "first - **`chorus` and `pgd` are never pooled** - then by the "
@@ -951,7 +989,14 @@ def section_l3(results: dict) -> list[str]:
            "lower` is the opposite. The `5/5` columns count the cells where "
            "all five seeds agree with the sign of their own mean - a cell "
            "counted in a direction without unanimity has not been shown to "
-           "move that way.", ""]
+           "move that way.", "",
+           "**The cells are not independent trials.** They are nested "
+           "compromised subsets - `[dns]` is inside `[apache+dns]` is inside "
+           "`[apache+dns+audit]` - evaluated on the same test windows with the "
+           "same 5 seeds and the same trained models, so every count in this "
+           "section is a DESCRIPTION of how the grid came out and not a tally "
+           "of independent experiments; no p-value, binomial reading or "
+           "'N of M cells agree' significance claim may be built on it.", ""]
     cuts: dict[str, list[L3Cut]] = {}
     seen: set[str] = set()
     for gkey, title, extra, pred, extra_value in _l3_groups():
@@ -983,8 +1028,119 @@ def section_l3(results: dict) -> list[str]:
             out.append("")
     if out[-1] != "":
         out.append("")
+    out += [f"**The de-duplication key: `{L3_DEDUP_KEY}`.** "
+            f"Group (d) sweeps every epsilon and therefore CONTAINS group "
+            f"(a)'s `eps=1.0` cells; the totals in the verdict count each "
+            f"cell once, keyed on `{L3_DEDUP_KEY}`, where `cell_key` is the "
+            f"key `run_ait_attack.py` writes into "
+            f"`systems.<system>.cells`. Each component below is confirmed "
+            f"against the cell records rather than read off the key's "
+            f"spelling:", ""]
+    out += header(["component", "where it appears in the key", "confirmed"])
+    for row in l3_dedup_key_parts(results):
+        out.append(line(row))
+    out += ["", "Example keys: `chorus_k2_eps1.0_beta0.0_[apache+audit]` and "
+            "`pgd_k1_eps1.0_[apache]`. `beta` is absent from a `pgd` key "
+            "because `pgd` has no beta; the `chorus`/`pgd` prefix already "
+            "separates those cells, so no two distinct grid cells can "
+            "collide.", ""]
     out += l3_verdict(cuts)
     return out
+
+
+#: The composite key group (d)'s cells are de-duplicated against group (a)'s
+#: by. `cell_key` is the key `run_ait_attack.py` writes into
+#: `systems.<system>.cells`, and it encodes the attack, k, epsilon, beta and
+#: the compromised subset - e.g. `chorus_k2_eps1.0_beta0.0_[apache+audit]`,
+#: or `pgd_k1_eps1.0_[apache]` where beta does not apply. Pairing the
+#: direction with it makes the key unique across the whole Part, so a cell
+#: that appears in both groups is counted once.
+L3_DEDUP_KEY = "(direction, cell_key)"
+
+
+def l3_dedup_key_parts(results: dict) -> list[list[str]]:
+    """The components of `L3_DEDUP_KEY`, each CONFIRMED against the cells.
+
+    Nothing here is asserted from the key's spelling: every row re-reads the
+    field off the cell record and checks the key actually carries it, so the
+    README's claim about what the key distinguishes is measured.
+    """
+    cells = [(d, k, c)
+             for d, rec in results["directions"].items()
+             for k, c in rec["systems"]["prismflow"]["cells"].items()
+             if c.get("k")]
+
+    def present(field, render) -> str:
+        total = ok = 0
+        for _d, key, cell in cells:
+            value = cell.get(field)
+            if field == "beta" and value is None:
+                continue          # pgd has no beta; counted under `attack`
+            total += 1
+            ok += render(value) in key
+        return f"{ok}/{total} cells confirmed"
+
+    return [
+        ["direction", "the key's first element",
+         f"{len(results['directions'])}/{len(results['directions'])} "
+         f"directions are separate dict keys"],
+        ["attack (`kind`)", "`chorus` / `pgd` prefix of `cell_key`",
+         present("kind", lambda v: str(v))],
+        ["`k`", "`_k<k>_` in `cell_key`", present("k", lambda v: f"_k{v}_")],
+        ["`epsilon`", "`eps<epsilon>` in `cell_key`",
+         present("epsilon", lambda v: f"eps{v}")],
+        ["`beta`", "`beta<beta>` in `cell_key` (absent for `pgd`)",
+         present("beta", lambda v: f"beta{v}")],
+        ["compromised subset", "`[v1+v2+...]` in `cell_key`",
+         present("compromised_views", lambda v: "[" + "+".join(v) + "]")],
+    ]
+
+
+def l3_headline(cuts: dict[str, list[L3Cut]]) -> str:
+    """THE L3 verdict sentence. One source of text, used wherever it appears.
+
+    Every word that could have come out otherwise is derived from the counts:
+    the strength word from whether each sign has any unanimous cell, and the
+    conditionality clause from whether the dns sides and the directions
+    actually disagree. There is no fixed verdict string to drift from the
+    tables.
+    """
+    chorus = [c for k in ("a", "b", "d") for c in cuts.get(k, [])]
+    if not chorus:
+        return ("**Verdict on L3: NO EVIDENCE** - no paired chorus cell "
+                "survived.")
+    distinct: dict[tuple, tuple] = {}
+    for c in chorus:
+        for key, mean, uni in c.keys:
+            distinct[(c.direction, key)] = (mean, uni)
+    hi_u = sum(1 for m, u in distinct.values() if m > 0 and u)
+    lo_u = sum(1 for m, u in distinct.values() if m < 0 and u)
+    if hi_u and lo_u:
+        word = "PARTIALLY reproduced"
+    elif hi_u:
+        word = "reproduced"
+    elif lo_u:
+        word = "CONTRADICTED"
+    else:
+        word = "NO EVIDENCE"
+
+    # Does the result actually depend on the dns split, and on direction?
+    def side_signs(pick):
+        return {pick(c): {("hi" if c.higher_unanimous else None),
+                          ("lo" if c.lower_unanimous else None)} - {None}
+                for c in chorus}
+    by_dns, by_dir = side_signs(lambda c: c.dns), side_signs(lambda c: c.direction)
+    conds = []
+    if len({frozenset(v) for v in by_dns.values()}) > 1 or any(
+            len(v) > 1 for v in by_dns.values()):
+        conds.append("the `dns` split")
+    if len({frozenset(v) for v in by_dir.values()}) > 1 or any(
+            len(v) > 1 for v in by_dir.values()):
+        conds.append("direction")
+    tail = (" and ".join(conds) if conds else "neither the `dns` split nor "
+            "direction")
+    return (f"**Verdict on L3: Part 09's result is {word}, conditional on "
+            f"{tail}.**")
 
 
 def l3_verdict(cuts: dict[str, list[L3Cut]]) -> list[str]:
@@ -997,7 +1153,7 @@ def l3_verdict(cuts: dict[str, list[L3Cut]]) -> list[str]:
     chorus = [c for k in chorus_keys for c in cuts.get(k, [])]
     pgd = cuts.get("c", [])
     if not chorus:
-        return ["**Verdict: NO EVIDENCE.** No paired chorus cell survived.", ""]
+        return [l3_headline(cuts), ""]
 
     def side_name(c):
         return (f"{c.direction}, dns "
@@ -1023,10 +1179,9 @@ def l3_verdict(cuts: dict[str, list[L3Cut]]) -> list[str]:
     n_low = sum(1 for m, _u in distinct.values() if m < 0)
     n_low_u = sum(1 for m, u in distinct.values() if m < 0 and u)
 
-    out = ["**Verdict: Part 09's result is PARTIALLY REPRODUCED - it reappears "
-           "in some chorus cells and reverses in others, and which one you get "
-           "is decided by the `dns` split, the direction and `epsilon`, not by "
-           "the attack being chorus.**", "",
+    out = [l3_headline(cuts), "",
+           "It reappears in some chorus cells and reverses in others. The "
+           "counts below say which.", "",
            f"Over the **{n_cells} distinct** paired chorus cells in the tables "
            f"above - distinct because group (d) sweeps every epsilon and so "
            f"CONTAINS group (a)'s `eps=1.0` cells, which are counted once "

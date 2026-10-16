@@ -457,9 +457,18 @@ Each verdict is split by whether `dns` - the single view that solves this label 
 
 ### L3 - the discount addresses redundant evidence, not unreliable evidence (and Part 09's extension: reading the axis confers no defence)
 
+**Descriptive, all attacks pooled - NOT the L3 test.** The four lines below are `directions.<name>.paired_prismflow_minus_naive` as the runner wrote it: one count per direction and `dns` side over every cell in the grid, which **pools `chorus` with `pgd`** and pools every `beta` and `epsilon` together. Part 09's claim is about the chorus attack, so these cannot test it and must not be cited as the L3 result; the grouped tables below are the test.
+
+- **A_rm_to_santos, dns COMPROMISED:** PrismFlow lowers attack success in **41 of 85** cells, difference range -0.0677..+0.0884 (attacks pooled here: chorus, pgd).
+- **A_rm_to_santos, dns NOT compromised:** PrismFlow lowers attack success in **76 of 100** cells, difference range -0.1478..+0.0370 (attacks pooled here: chorus, pgd).
+- **B_santos_to_rm, dns COMPROMISED:** PrismFlow lowers attack success in **50 of 85** cells, difference range -0.2217..+0.1036 (attacks pooled here: chorus, pgd).
+- **B_santos_to_rm, dns NOT compromised:** PrismFlow lowers attack success in **48 of 100** cells, difference range -0.2082..+0.1401 (attacks pooled here: chorus, pgd).
+
 Part 09's claim is about **the chorus attack**: it found PrismFlow strictly worse than naive fusion in 12/12 attacked cells on synthetic data. The evidence below is therefore cut by attack first - **`chorus` and `pgd` are never pooled** - then by the `beta` and `epsilon` Part 09 held fixed, then by the `dns` split, then by direction. Nothing is averaged across any of those four.
 
 Each cell is one grid point and one compromised subset. The difference is `prismflow - naive` attack success **paired within seed on the same cell key**, so the two arms always share the grid point, the subset and the seed. **`PrismFlow higher` is Part 09's sign** (the discount made the attack work better); `PrismFlow lower` is the opposite. The `5/5` columns count the cells where all five seeds agree with the sign of their own mean - a cell counted in a direction without unanimity has not been shown to move that way.
+
+**The cells are not independent trials.** They are nested compromised subsets - `[dns]` is inside `[apache+dns]` is inside `[apache+dns+audit]` - evaluated on the same test windows with the same 5 seeds and the same trained models, so every count in this section is a DESCRIPTION of how the grid came out and not a tally of independent experiments; no p-value, binomial reading or 'N of M cells agree' significance claim may be built on it.
 
 **(a) chorus, eps=1.0, beta=1.0 - the headline grid point**
 
@@ -513,7 +522,22 @@ Each cell is one grid point and one compromised subset. The difference is `prism
 | 2 | B_santos_to_rm | YES | 11 | 2 | 1 | 9 | 7 | -0.0653..+0.1036 |
 | 2 | B_santos_to_rm | no | 14 | 6 | 5 | 8 | 5 | -0.0632..+0.1371 |
 
-**Verdict: Part 09's result is PARTIALLY REPRODUCED - it reappears in some chorus cells and reverses in others, and which one you get is decided by the `dns` split, the direction and `epsilon`, not by the attack being chorus.**
+**The de-duplication key: `(direction, cell_key)`.** Group (d) sweeps every epsilon and therefore CONTAINS group (a)'s `eps=1.0` cells; the totals in the verdict count each cell once, keyed on `(direction, cell_key)`, where `cell_key` is the key `run_ait_attack.py` writes into `systems.<system>.cells`. Each component below is confirmed against the cell records rather than read off the key's spelling:
+
+| component | where it appears in the key | confirmed |
+| --- | --- | --- |
+| direction | the key's first element | 2/2 directions are separate dict keys |
+| attack (`kind`) | `chorus` / `pgd` prefix of `cell_key` | 370/370 cells confirmed |
+| `k` | `_k<k>_` in `cell_key` | 370/370 cells confirmed |
+| `epsilon` | `eps<epsilon>` in `cell_key` | 370/370 cells confirmed |
+| `beta` | `beta<beta>` in `cell_key` (absent for `pgd`) | 280/280 cells confirmed |
+| compromised subset | `[v1+v2+...]` in `cell_key` | 370/370 cells confirmed |
+
+Example keys: `chorus_k2_eps1.0_beta0.0_[apache+audit]` and `pgd_k1_eps1.0_[apache]`. `beta` is absent from a `pgd` key because `pgd` has no beta; the `chorus`/`pgd` prefix already separates those cells, so no two distinct grid cells can collide.
+
+**Verdict on L3: Part 09's result is PARTIALLY reproduced, conditional on the `dns` split and direction.**
+
+It reappears in some chorus cells and reverses in others. The counts below say which.
 
 Over the **280 distinct** paired chorus cells in the tables above - distinct because group (d) sweeps every epsilon and so CONTAINS group (a)'s `eps=1.0` cells, which are counted once here: PrismFlow is HIGHER than naive, which is Part 09's sign, in 118 cells, 60 of them with all 5 seeds agreeing; PrismFlow is LOWER in 162 cells, 95 of them unanimous. Part 09 had 12/12 one way. Neither sign is unanimous across any whole side here.
 
