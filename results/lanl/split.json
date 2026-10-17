@@ -1,0 +1,1935 @@
+{
+  "label_meaning": "A sample is (computer, 300 s window). attack = 1 means a redteam.txt.gz event in that window names that computer as its source or its destination. benign = 0 means NO KNOWN red-team event does, which is not the same as verified clean: the red-team file covers only the activity LANL's red team recorded, so an unlabelled compromise inside the capture is counted as benign here.",
+  "per_split": {
+    "train": {
+      "seconds": [
+        1,
+        864000
+      ],
+      "days": [
+        1,
+        10
+      ],
+      "n_samples": 42912,
+      "n_attack_samples": 439,
+      "n_benign_samples": 42473,
+      "attack_prevalence_in_sample": 0.010230238627889635,
+      "n_distinct_attack_windows": 150,
+      "per_day": {
+        "1": {
+          "samples": 3491,
+          "attack_samples": 0,
+          "attack_windows": 0
+        },
+        "2": {
+          "samples": 4210,
+          "attack_samples": 18,
+          "attack_windows": 8
+        },
+        "3": {
+          "samples": 4061,
+          "attack_samples": 22,
+          "attack_windows": 11
+        },
+        "4": {
+          "samples": 3665,
+          "attack_samples": 0,
+          "attack_windows": 0
+        },
+        "5": {
+          "samples": 3660,
+          "attack_samples": 0,
+          "attack_windows": 0
+        },
+        "6": {
+          "samples": 4654,
+          "attack_samples": 36,
+          "attack_windows": 18
+        },
+        "7": {
+          "samples": 4928,
+          "attack_samples": 6,
+          "attack_windows": 2
+        },
+        "8": {
+          "samples": 4749,
+          "attack_samples": 2,
+          "attack_windows": 1
+        },
+        "9": {
+          "samples": 5145,
+          "attack_samples": 351,
+          "attack_windows": 108
+        },
+        "10": {
+          "samples": 4349,
+          "attack_samples": 4,
+          "attack_windows": 2
+        }
+      },
+      "attack_blocks_on_window_grid": [
+        {
+          "start_index": 6,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:25:01+00:00"
+        },
+        {
+          "start_index": 45,
+          "length_windows": 1,
+          "start_time": "1970-01-09T14:40:01+00:00"
+        },
+        {
+          "start_index": 108,
+          "length_windows": 1,
+          "start_time": "1970-01-02T17:50:01+00:00"
+        },
+        {
+          "start_index": 110,
+          "length_windows": 1,
+          "start_time": "1970-01-03T15:55:01+00:00"
+        },
+        {
+          "start_index": 112,
+          "length_windows": 1,
+          "start_time": "1970-01-06T08:40:01+00:00"
+        },
+        {
+          "start_index": 199,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:40:01+00:00"
+        },
+        {
+          "start_index": 391,
+          "length_windows": 1,
+          "start_time": "1970-01-09T10:30:01+00:00"
+        },
+        {
+          "start_index": 411,
+          "length_windows": 1,
+          "start_time": "1970-01-09T14:05:01+00:00"
+        },
+        {
+          "start_index": 595,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:40:01+00:00"
+        },
+        {
+          "start_index": 769,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:40:01+00:00"
+        },
+        {
+          "start_index": 1505,
+          "length_windows": 1,
+          "start_time": "1970-01-09T12:55:01+00:00"
+        },
+        {
+          "start_index": 1671,
+          "length_windows": 1,
+          "start_time": "1970-01-07T16:40:01+00:00"
+        },
+        {
+          "start_index": 2074,
+          "length_windows": 1,
+          "start_time": "1970-01-09T13:50:01+00:00"
+        },
+        {
+          "start_index": 2267,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:15:01+00:00"
+        },
+        {
+          "start_index": 2620,
+          "length_windows": 2,
+          "start_time": "1970-01-09T15:15:01+00:00"
+        },
+        {
+          "start_index": 2965,
+          "length_windows": 2,
+          "start_time": "1970-01-09T21:55:01+00:00"
+        },
+        {
+          "start_index": 3005,
+          "length_windows": 1,
+          "start_time": "1970-01-09T15:45:01+00:00"
+        },
+        {
+          "start_index": 3016,
+          "length_windows": 1,
+          "start_time": "1970-01-09T12:45:01+00:00"
+        },
+        {
+          "start_index": 3144,
+          "length_windows": 1,
+          "start_time": "1970-01-09T09:45:01+00:00"
+        },
+        {
+          "start_index": 3168,
+          "length_windows": 1,
+          "start_time": "1970-01-09T18:20:01+00:00"
+        },
+        {
+          "start_index": 3288,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:15:01+00:00"
+        },
+        {
+          "start_index": 4318,
+          "length_windows": 1,
+          "start_time": "1970-01-09T09:55:01+00:00"
+        },
+        {
+          "start_index": 4324,
+          "length_windows": 1,
+          "start_time": "1970-01-02T18:10:01+00:00"
+        },
+        {
+          "start_index": 4599,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:20:01+00:00"
+        },
+        {
+          "start_index": 4778,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:15:01+00:00"
+        },
+        {
+          "start_index": 5256,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:45:01+00:00"
+        },
+        {
+          "start_index": 5348,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:30:01+00:00"
+        },
+        {
+          "start_index": 5518,
+          "length_windows": 1,
+          "start_time": "1970-01-09T11:10:01+00:00"
+        },
+        {
+          "start_index": 5753,
+          "length_windows": 2,
+          "start_time": "1970-01-09T21:20:01+00:00"
+        },
+        {
+          "start_index": 6052,
+          "length_windows": 2,
+          "start_time": "1970-01-09T15:30:01+00:00"
+        },
+        {
+          "start_index": 6227,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:05:01+00:00"
+        },
+        {
+          "start_index": 6443,
+          "length_windows": 3,
+          "start_time": "1970-01-09T09:55:01+00:00"
+        },
+        {
+          "start_index": 6625,
+          "length_windows": 1,
+          "start_time": "1970-01-09T14:30:01+00:00"
+        },
+        {
+          "start_index": 6632,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:45:01+00:00"
+        },
+        {
+          "start_index": 6779,
+          "length_windows": 3,
+          "start_time": "1970-01-06T11:25:01+00:00"
+        },
+        {
+          "start_index": 9001,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:45:01+00:00"
+        },
+        {
+          "start_index": 10019,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:55:01+00:00"
+        },
+        {
+          "start_index": 10370,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:05:01+00:00"
+        },
+        {
+          "start_index": 10584,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:45:01+00:00"
+        },
+        {
+          "start_index": 10816,
+          "length_windows": 2,
+          "start_time": "1970-01-09T10:15:01+00:00"
+        },
+        {
+          "start_index": 11121,
+          "length_windows": 2,
+          "start_time": "1970-01-09T15:45:01+00:00"
+        },
+        {
+          "start_index": 11487,
+          "length_windows": 1,
+          "start_time": "1970-01-09T17:05:01+00:00"
+        },
+        {
+          "start_index": 11544,
+          "length_windows": 1,
+          "start_time": "1970-01-09T15:35:01+00:00"
+        },
+        {
+          "start_index": 11563,
+          "length_windows": 4,
+          "start_time": "1970-01-03T15:00:01+00:00"
+        },
+        {
+          "start_index": 11680,
+          "length_windows": 2,
+          "start_time": "1970-01-09T12:40:01+00:00"
+        },
+        {
+          "start_index": 11871,
+          "length_windows": 2,
+          "start_time": "1970-01-03T10:20:01+00:00"
+        },
+        {
+          "start_index": 12035,
+          "length_windows": 1,
+          "start_time": "1970-01-09T15:30:01+00:00"
+        },
+        {
+          "start_index": 12111,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:15:01+00:00"
+        },
+        {
+          "start_index": 12172,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:50:01+00:00"
+        },
+        {
+          "start_index": 12436,
+          "length_windows": 1,
+          "start_time": "1970-01-09T18:45:01+00:00"
+        },
+        {
+          "start_index": 12445,
+          "length_windows": 1,
+          "start_time": "1970-01-02T19:05:01+00:00"
+        },
+        {
+          "start_index": 12519,
+          "length_windows": 1,
+          "start_time": "1970-01-09T13:50:01+00:00"
+        },
+        {
+          "start_index": 13056,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:20:01+00:00"
+        },
+        {
+          "start_index": 13160,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:10:01+00:00"
+        },
+        {
+          "start_index": 13418,
+          "length_windows": 2,
+          "start_time": "1970-01-06T08:15:01+00:00"
+        },
+        {
+          "start_index": 14135,
+          "length_windows": 1,
+          "start_time": "1970-01-09T13:25:01+00:00"
+        },
+        {
+          "start_index": 14154,
+          "length_windows": 1,
+          "start_time": "1970-01-09T09:40:01+00:00"
+        },
+        {
+          "start_index": 14164,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:45:01+00:00"
+        },
+        {
+          "start_index": 14226,
+          "length_windows": 2,
+          "start_time": "1970-01-09T15:15:01+00:00"
+        },
+        {
+          "start_index": 14428,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:10:01+00:00"
+        },
+        {
+          "start_index": 14815,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:05:01+00:00"
+        },
+        {
+          "start_index": 15992,
+          "length_windows": 2,
+          "start_time": "1970-01-09T20:45:01+00:00"
+        },
+        {
+          "start_index": 16349,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:35:01+00:00"
+        },
+        {
+          "start_index": 16419,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:45:01+00:00"
+        },
+        {
+          "start_index": 16520,
+          "length_windows": 1,
+          "start_time": "1970-01-09T16:00:01+00:00"
+        },
+        {
+          "start_index": 16797,
+          "length_windows": 1,
+          "start_time": "1970-01-06T09:50:01+00:00"
+        },
+        {
+          "start_index": 16849,
+          "length_windows": 3,
+          "start_time": "1970-01-09T21:15:01+00:00"
+        },
+        {
+          "start_index": 16913,
+          "length_windows": 17,
+          "start_time": "1970-01-02T17:50:01+00:00"
+        },
+        {
+          "start_index": 16931,
+          "length_windows": 125,
+          "start_time": "1970-01-06T07:45:01+00:00"
+        },
+        {
+          "start_index": 17162,
+          "length_windows": 2,
+          "start_time": "1970-01-09T20:20:01+00:00"
+        },
+        {
+          "start_index": 17190,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:30:01+00:00"
+        },
+        {
+          "start_index": 17242,
+          "length_windows": 1,
+          "start_time": "1970-01-09T18:55:01+00:00"
+        },
+        {
+          "start_index": 17279,
+          "length_windows": 2,
+          "start_time": "1970-01-09T12:40:01+00:00"
+        },
+        {
+          "start_index": 17318,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:25:01+00:00"
+        },
+        {
+          "start_index": 17516,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:05:01+00:00"
+        },
+        {
+          "start_index": 17603,
+          "length_windows": 2,
+          "start_time": "1970-01-03T10:20:01+00:00"
+        },
+        {
+          "start_index": 17725,
+          "length_windows": 1,
+          "start_time": "1970-01-09T15:50:01+00:00"
+        },
+        {
+          "start_index": 17857,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:20:01+00:00"
+        },
+        {
+          "start_index": 17909,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:45:01+00:00"
+        },
+        {
+          "start_index": 18440,
+          "length_windows": 2,
+          "start_time": "1970-01-09T11:00:01+00:00"
+        },
+        {
+          "start_index": 18787,
+          "length_windows": 1,
+          "start_time": "1970-01-09T12:55:01+00:00"
+        },
+        {
+          "start_index": 19161,
+          "length_windows": 2,
+          "start_time": "1970-01-09T15:45:01+00:00"
+        },
+        {
+          "start_index": 19404,
+          "length_windows": 1,
+          "start_time": "1970-01-09T17:45:01+00:00"
+        },
+        {
+          "start_index": 19411,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:40:01+00:00"
+        },
+        {
+          "start_index": 19500,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:30:01+00:00"
+        },
+        {
+          "start_index": 19507,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:30:01+00:00"
+        },
+        {
+          "start_index": 19620,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:50:01+00:00"
+        },
+        {
+          "start_index": 19825,
+          "length_windows": 1,
+          "start_time": "1970-01-09T23:00:01+00:00"
+        },
+        {
+          "start_index": 20034,
+          "length_windows": 1,
+          "start_time": "1970-01-09T16:00:01+00:00"
+        },
+        {
+          "start_index": 20204,
+          "length_windows": 5,
+          "start_time": "1970-01-06T09:00:01+00:00"
+        },
+        {
+          "start_index": 20475,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:30:01+00:00"
+        },
+        {
+          "start_index": 20551,
+          "length_windows": 2,
+          "start_time": "1970-01-09T15:25:01+00:00"
+        },
+        {
+          "start_index": 20830,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:50:01+00:00"
+        },
+        {
+          "start_index": 20962,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:15:01+00:00"
+        },
+        {
+          "start_index": 20972,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:30:01+00:00"
+        },
+        {
+          "start_index": 21149,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:40:01+00:00"
+        },
+        {
+          "start_index": 21177,
+          "length_windows": 2,
+          "start_time": "1970-01-09T10:50:01+00:00"
+        },
+        {
+          "start_index": 21223,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:25:01+00:00"
+        },
+        {
+          "start_index": 21301,
+          "length_windows": 2,
+          "start_time": "1970-01-09T19:50:01+00:00"
+        },
+        {
+          "start_index": 21337,
+          "length_windows": 1,
+          "start_time": "1970-01-09T14:55:01+00:00"
+        },
+        {
+          "start_index": 21646,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:25:01+00:00"
+        },
+        {
+          "start_index": 21850,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:20:01+00:00"
+        },
+        {
+          "start_index": 21944,
+          "length_windows": 3,
+          "start_time": "1970-01-09T14:40:01+00:00"
+        },
+        {
+          "start_index": 22009,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:05:01+00:00"
+        },
+        {
+          "start_index": 22024,
+          "length_windows": 3,
+          "start_time": "1970-01-09T21:25:01+00:00"
+        },
+        {
+          "start_index": 22266,
+          "length_windows": 2,
+          "start_time": "1970-01-10T14:40:01+00:00"
+        },
+        {
+          "start_index": 22599,
+          "length_windows": 2,
+          "start_time": "1970-01-03T15:30:01+00:00"
+        },
+        {
+          "start_index": 22605,
+          "length_windows": 4,
+          "start_time": "1970-01-09T19:05:01+00:00"
+        },
+        {
+          "start_index": 22741,
+          "length_windows": 1,
+          "start_time": "1970-01-02T19:10:01+00:00"
+        },
+        {
+          "start_index": 22979,
+          "length_windows": 3,
+          "start_time": "1970-01-09T20:15:01+00:00"
+        },
+        {
+          "start_index": 23629,
+          "length_windows": 1,
+          "start_time": "1970-01-06T11:10:01+00:00"
+        },
+        {
+          "start_index": 23631,
+          "length_windows": 5,
+          "start_time": "1970-01-09T12:40:01+00:00"
+        },
+        {
+          "start_index": 23873,
+          "length_windows": 1,
+          "start_time": "1970-01-09T16:50:01+00:00"
+        },
+        {
+          "start_index": 23951,
+          "length_windows": 1,
+          "start_time": "1970-01-09T13:05:01+00:00"
+        },
+        {
+          "start_index": 24002,
+          "length_windows": 1,
+          "start_time": "1970-01-09T13:10:01+00:00"
+        },
+        {
+          "start_index": 24189,
+          "length_windows": 1,
+          "start_time": "1970-01-09T18:25:01+00:00"
+        },
+        {
+          "start_index": 24327,
+          "length_windows": 1,
+          "start_time": "1970-01-07T18:20:01+00:00"
+        },
+        {
+          "start_index": 24329,
+          "length_windows": 2,
+          "start_time": "1970-01-09T09:30:01+00:00"
+        },
+        {
+          "start_index": 24910,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:20:01+00:00"
+        },
+        {
+          "start_index": 25009,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:20:01+00:00"
+        },
+        {
+          "start_index": 25013,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:35:01+00:00"
+        },
+        {
+          "start_index": 25021,
+          "length_windows": 2,
+          "start_time": "1970-01-09T13:15:01+00:00"
+        },
+        {
+          "start_index": 25283,
+          "length_windows": 2,
+          "start_time": "1970-01-09T17:40:01+00:00"
+        },
+        {
+          "start_index": 25369,
+          "length_windows": 1,
+          "start_time": "1970-01-02T18:40:01+00:00"
+        },
+        {
+          "start_index": 25371,
+          "length_windows": 4,
+          "start_time": "1970-01-06T14:15:01+00:00"
+        },
+        {
+          "start_index": 25376,
+          "length_windows": 1,
+          "start_time": "1970-01-06T16:35:01+00:00"
+        },
+        {
+          "start_index": 25398,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:15:01+00:00"
+        },
+        {
+          "start_index": 25644,
+          "length_windows": 1,
+          "start_time": "1970-01-09T18:00:01+00:00"
+        },
+        {
+          "start_index": 25764,
+          "length_windows": 1,
+          "start_time": "1970-01-02T17:55:01+00:00"
+        },
+        {
+          "start_index": 25812,
+          "length_windows": 2,
+          "start_time": "1970-01-09T21:25:01+00:00"
+        },
+        {
+          "start_index": 25848,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:00:01+00:00"
+        },
+        {
+          "start_index": 26148,
+          "length_windows": 5,
+          "start_time": "1970-01-09T09:35:01+00:00"
+        },
+        {
+          "start_index": 26213,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:30:01+00:00"
+        },
+        {
+          "start_index": 26294,
+          "length_windows": 1,
+          "start_time": "1970-01-09T09:45:01+00:00"
+        },
+        {
+          "start_index": 26586,
+          "length_windows": 1,
+          "start_time": "1970-01-09T17:25:01+00:00"
+        },
+        {
+          "start_index": 26639,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:45:01+00:00"
+        },
+        {
+          "start_index": 26691,
+          "length_windows": 1,
+          "start_time": "1970-01-02T19:10:01+00:00"
+        },
+        {
+          "start_index": 26899,
+          "length_windows": 1,
+          "start_time": "1970-01-09T15:35:01+00:00"
+        },
+        {
+          "start_index": 27008,
+          "length_windows": 1,
+          "start_time": "1970-01-09T13:15:01+00:00"
+        },
+        {
+          "start_index": 27053,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:55:01+00:00"
+        },
+        {
+          "start_index": 27068,
+          "length_windows": 1,
+          "start_time": "1970-01-09T18:20:01+00:00"
+        },
+        {
+          "start_index": 27124,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:30:01+00:00"
+        },
+        {
+          "start_index": 27144,
+          "length_windows": 2,
+          "start_time": "1970-01-09T15:20:01+00:00"
+        },
+        {
+          "start_index": 27354,
+          "length_windows": 1,
+          "start_time": "1970-01-09T09:40:01+00:00"
+        },
+        {
+          "start_index": 27373,
+          "length_windows": 3,
+          "start_time": "1970-01-09T14:30:01+00:00"
+        },
+        {
+          "start_index": 27377,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:15:01+00:00"
+        },
+        {
+          "start_index": 27561,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:25:01+00:00"
+        },
+        {
+          "start_index": 27578,
+          "length_windows": 1,
+          "start_time": "1970-01-09T14:25:01+00:00"
+        },
+        {
+          "start_index": 27622,
+          "length_windows": 1,
+          "start_time": "1970-01-09T12:40:01+00:00"
+        },
+        {
+          "start_index": 27925,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:05:01+00:00"
+        },
+        {
+          "start_index": 28122,
+          "length_windows": 2,
+          "start_time": "1970-01-09T21:05:01+00:00"
+        },
+        {
+          "start_index": 28131,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:45:01+00:00"
+        },
+        {
+          "start_index": 28645,
+          "length_windows": 5,
+          "start_time": "1970-01-09T09:30:01+00:00"
+        },
+        {
+          "start_index": 28717,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:40:01+00:00"
+        },
+        {
+          "start_index": 28783,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:15:01+00:00"
+        },
+        {
+          "start_index": 29182,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:35:01+00:00"
+        },
+        {
+          "start_index": 29192,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:25:01+00:00"
+        },
+        {
+          "start_index": 29272,
+          "length_windows": 1,
+          "start_time": "1970-01-09T13:20:01+00:00"
+        },
+        {
+          "start_index": 29489,
+          "length_windows": 1,
+          "start_time": "1970-01-02T19:30:01+00:00"
+        },
+        {
+          "start_index": 30196,
+          "length_windows": 1,
+          "start_time": "1970-01-06T09:25:01+00:00"
+        },
+        {
+          "start_index": 30222,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:20:01+00:00"
+        },
+        {
+          "start_index": 30267,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:15:01+00:00"
+        },
+        {
+          "start_index": 30375,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:20:01+00:00"
+        },
+        {
+          "start_index": 30865,
+          "length_windows": 1,
+          "start_time": "1970-01-09T17:15:01+00:00"
+        },
+        {
+          "start_index": 31063,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:05:01+00:00"
+        },
+        {
+          "start_index": 31325,
+          "length_windows": 2,
+          "start_time": "1970-01-03T12:40:01+00:00"
+        },
+        {
+          "start_index": 31549,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:25:01+00:00"
+        },
+        {
+          "start_index": 31925,
+          "length_windows": 1,
+          "start_time": "1970-01-08T08:20:01+00:00"
+        },
+        {
+          "start_index": 32303,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:20:01+00:00"
+        },
+        {
+          "start_index": 32700,
+          "length_windows": 3,
+          "start_time": "1970-01-09T20:15:01+00:00"
+        },
+        {
+          "start_index": 32760,
+          "length_windows": 1,
+          "start_time": "1970-01-02T19:05:01+00:00"
+        },
+        {
+          "start_index": 33011,
+          "length_windows": 2,
+          "start_time": "1970-01-09T15:15:01+00:00"
+        },
+        {
+          "start_index": 33576,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:00:01+00:00"
+        },
+        {
+          "start_index": 33629,
+          "length_windows": 1,
+          "start_time": "1970-01-06T09:00:01+00:00"
+        },
+        {
+          "start_index": 33632,
+          "length_windows": 1,
+          "start_time": "1970-01-07T18:20:01+00:00"
+        },
+        {
+          "start_index": 34154,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:20:01+00:00"
+        },
+        {
+          "start_index": 34232,
+          "length_windows": 2,
+          "start_time": "1970-01-09T21:35:01+00:00"
+        },
+        {
+          "start_index": 34514,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:10:01+00:00"
+        },
+        {
+          "start_index": 34589,
+          "length_windows": 1,
+          "start_time": "1970-01-09T18:40:01+00:00"
+        },
+        {
+          "start_index": 35980,
+          "length_windows": 3,
+          "start_time": "1970-01-09T19:05:01+00:00"
+        },
+        {
+          "start_index": 36156,
+          "length_windows": 1,
+          "start_time": "1970-01-09T16:15:01+00:00"
+        },
+        {
+          "start_index": 36327,
+          "length_windows": 3,
+          "start_time": "1970-01-06T07:45:01+00:00"
+        },
+        {
+          "start_index": 36489,
+          "length_windows": 1,
+          "start_time": "1970-01-02T18:05:01+00:00"
+        },
+        {
+          "start_index": 36803,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:05:01+00:00"
+        },
+        {
+          "start_index": 36918,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:40:01+00:00"
+        },
+        {
+          "start_index": 37008,
+          "length_windows": 1,
+          "start_time": "1970-01-09T16:25:01+00:00"
+        },
+        {
+          "start_index": 37087,
+          "length_windows": 4,
+          "start_time": "1970-01-09T09:55:01+00:00"
+        },
+        {
+          "start_index": 37217,
+          "length_windows": 3,
+          "start_time": "1970-01-09T16:40:01+00:00"
+        },
+        {
+          "start_index": 37357,
+          "length_windows": 2,
+          "start_time": "1970-01-09T22:00:01+00:00"
+        },
+        {
+          "start_index": 37658,
+          "length_windows": 1,
+          "start_time": "1970-01-09T22:05:01+00:00"
+        },
+        {
+          "start_index": 37677,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:45:01+00:00"
+        },
+        {
+          "start_index": 38121,
+          "length_windows": 1,
+          "start_time": "1970-01-09T17:55:01+00:00"
+        },
+        {
+          "start_index": 38210,
+          "length_windows": 3,
+          "start_time": "1970-01-09T13:55:01+00:00"
+        },
+        {
+          "start_index": 38610,
+          "length_windows": 1,
+          "start_time": "1970-01-09T16:25:01+00:00"
+        },
+        {
+          "start_index": 39370,
+          "length_windows": 1,
+          "start_time": "1970-01-09T12:40:01+00:00"
+        },
+        {
+          "start_index": 39372,
+          "length_windows": 1,
+          "start_time": "1970-01-09T21:05:01+00:00"
+        },
+        {
+          "start_index": 39466,
+          "length_windows": 2,
+          "start_time": "1970-01-09T15:05:01+00:00"
+        },
+        {
+          "start_index": 40136,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:15:01+00:00"
+        },
+        {
+          "start_index": 40157,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:15:01+00:00"
+        },
+        {
+          "start_index": 40179,
+          "length_windows": 1,
+          "start_time": "1970-01-09T20:15:01+00:00"
+        },
+        {
+          "start_index": 40249,
+          "length_windows": 1,
+          "start_time": "1970-01-09T13:45:01+00:00"
+        },
+        {
+          "start_index": 40347,
+          "length_windows": 2,
+          "start_time": "1970-01-09T12:35:01+00:00"
+        },
+        {
+          "start_index": 40607,
+          "length_windows": 1,
+          "start_time": "1970-01-09T17:00:01+00:00"
+        },
+        {
+          "start_index": 41020,
+          "length_windows": 1,
+          "start_time": "1970-01-09T19:40:01+00:00"
+        },
+        {
+          "start_index": 41090,
+          "length_windows": 4,
+          "start_time": "1970-01-09T13:25:01+00:00"
+        },
+        {
+          "start_index": 41164,
+          "length_windows": 1,
+          "start_time": "1970-01-09T15:10:01+00:00"
+        },
+        {
+          "start_index": 42216,
+          "length_windows": 1,
+          "start_time": "1970-01-09T16:15:01+00:00"
+        },
+        {
+          "start_index": 42800,
+          "length_windows": 4,
+          "start_time": "1970-01-09T10:05:01+00:00"
+        }
+      ]
+    },
+    "test": {
+      "seconds": [
+        1036801,
+        1382400
+      ],
+      "days": [
+        13,
+        16
+      ],
+      "n_samples": 18729,
+      "n_attack_samples": 410,
+      "n_benign_samples": 18319,
+      "attack_prevalence_in_sample": 0.021891184793635537,
+      "n_distinct_attack_windows": 141,
+      "per_day": {
+        "13": {
+          "samples": 4805,
+          "attack_samples": 222,
+          "attack_windows": 64
+        },
+        "14": {
+          "samples": 4897,
+          "attack_samples": 109,
+          "attack_windows": 43
+        },
+        "15": {
+          "samples": 4736,
+          "attack_samples": 37,
+          "attack_windows": 15
+        },
+        "16": {
+          "samples": 4291,
+          "attack_samples": 42,
+          "attack_windows": 19
+        }
+      },
+      "attack_blocks_on_window_grid": [
+        {
+          "start_index": 1,
+          "length_windows": 3,
+          "start_time": "1970-01-14T12:00:01+00:00"
+        },
+        {
+          "start_index": 70,
+          "length_windows": 1,
+          "start_time": "1970-01-13T08:55:01+00:00"
+        },
+        {
+          "start_index": 72,
+          "length_windows": 1,
+          "start_time": "1970-01-14T15:30:01+00:00"
+        },
+        {
+          "start_index": 148,
+          "length_windows": 11,
+          "start_time": "1970-01-13T10:40:01+00:00"
+        },
+        {
+          "start_index": 160,
+          "length_windows": 1,
+          "start_time": "1970-01-16T17:40:01+00:00"
+        },
+        {
+          "start_index": 210,
+          "length_windows": 1,
+          "start_time": "1970-01-13T10:05:01+00:00"
+        },
+        {
+          "start_index": 426,
+          "length_windows": 1,
+          "start_time": "1970-01-14T13:40:01+00:00"
+        },
+        {
+          "start_index": 439,
+          "length_windows": 1,
+          "start_time": "1970-01-13T10:15:01+00:00"
+        },
+        {
+          "start_index": 483,
+          "length_windows": 2,
+          "start_time": "1970-01-14T08:15:01+00:00"
+        },
+        {
+          "start_index": 864,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:55:01+00:00"
+        },
+        {
+          "start_index": 959,
+          "length_windows": 1,
+          "start_time": "1970-01-13T12:15:01+00:00"
+        },
+        {
+          "start_index": 1491,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:15:01+00:00"
+        },
+        {
+          "start_index": 1493,
+          "length_windows": 1,
+          "start_time": "1970-01-14T15:30:01+00:00"
+        },
+        {
+          "start_index": 1884,
+          "length_windows": 1,
+          "start_time": "1970-01-13T08:50:01+00:00"
+        },
+        {
+          "start_index": 2190,
+          "length_windows": 2,
+          "start_time": "1970-01-13T15:45:01+00:00"
+        },
+        {
+          "start_index": 2618,
+          "length_windows": 2,
+          "start_time": "1970-01-13T12:30:01+00:00"
+        },
+        {
+          "start_index": 2630,
+          "length_windows": 1,
+          "start_time": "1970-01-16T18:10:01+00:00"
+        },
+        {
+          "start_index": 2903,
+          "length_windows": 1,
+          "start_time": "1970-01-14T10:45:01+00:00"
+        },
+        {
+          "start_index": 3070,
+          "length_windows": 1,
+          "start_time": "1970-01-13T16:20:01+00:00"
+        },
+        {
+          "start_index": 3637,
+          "length_windows": 1,
+          "start_time": "1970-01-13T17:25:01+00:00"
+        },
+        {
+          "start_index": 4074,
+          "length_windows": 1,
+          "start_time": "1970-01-13T16:10:01+00:00"
+        },
+        {
+          "start_index": 4133,
+          "length_windows": 3,
+          "start_time": "1970-01-13T09:10:01+00:00"
+        },
+        {
+          "start_index": 4509,
+          "length_windows": 2,
+          "start_time": "1970-01-13T08:15:01+00:00"
+        },
+        {
+          "start_index": 4672,
+          "length_windows": 2,
+          "start_time": "1970-01-16T18:15:01+00:00"
+        },
+        {
+          "start_index": 4676,
+          "length_windows": 1,
+          "start_time": "1970-01-16T16:25:01+00:00"
+        },
+        {
+          "start_index": 4750,
+          "length_windows": 1,
+          "start_time": "1970-01-14T12:25:01+00:00"
+        },
+        {
+          "start_index": 5083,
+          "length_windows": 1,
+          "start_time": "1970-01-14T11:50:01+00:00"
+        },
+        {
+          "start_index": 5258,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:10:01+00:00"
+        },
+        {
+          "start_index": 5343,
+          "length_windows": 1,
+          "start_time": "1970-01-13T13:50:01+00:00"
+        },
+        {
+          "start_index": 5346,
+          "length_windows": 1,
+          "start_time": "1970-01-14T15:15:01+00:00"
+        },
+        {
+          "start_index": 5714,
+          "length_windows": 1,
+          "start_time": "1970-01-14T15:30:01+00:00"
+        },
+        {
+          "start_index": 5785,
+          "length_windows": 1,
+          "start_time": "1970-01-13T12:05:01+00:00"
+        },
+        {
+          "start_index": 5939,
+          "length_windows": 1,
+          "start_time": "1970-01-15T09:25:01+00:00"
+        },
+        {
+          "start_index": 6398,
+          "length_windows": 6,
+          "start_time": "1970-01-13T11:10:01+00:00"
+        },
+        {
+          "start_index": 6581,
+          "length_windows": 6,
+          "start_time": "1970-01-13T10:00:01+00:00"
+        },
+        {
+          "start_index": 6806,
+          "length_windows": 2,
+          "start_time": "1970-01-13T12:25:01+00:00"
+        },
+        {
+          "start_index": 6832,
+          "length_windows": 107,
+          "start_time": "1970-01-13T08:10:01+00:00"
+        },
+        {
+          "start_index": 6940,
+          "length_windows": 30,
+          "start_time": "1970-01-15T09:40:01+00:00"
+        },
+        {
+          "start_index": 6976,
+          "length_windows": 1,
+          "start_time": "1970-01-15T12:25:01+00:00"
+        },
+        {
+          "start_index": 7277,
+          "length_windows": 1,
+          "start_time": "1970-01-14T15:25:01+00:00"
+        },
+        {
+          "start_index": 7561,
+          "length_windows": 1,
+          "start_time": "1970-01-13T17:30:01+00:00"
+        },
+        {
+          "start_index": 7920,
+          "length_windows": 2,
+          "start_time": "1970-01-14T10:45:01+00:00"
+        },
+        {
+          "start_index": 7923,
+          "length_windows": 1,
+          "start_time": "1970-01-15T11:30:01+00:00"
+        },
+        {
+          "start_index": 8074,
+          "length_windows": 1,
+          "start_time": "1970-01-15T06:35:01+00:00"
+        },
+        {
+          "start_index": 8095,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:25:01+00:00"
+        },
+        {
+          "start_index": 8371,
+          "length_windows": 7,
+          "start_time": "1970-01-13T10:30:01+00:00"
+        },
+        {
+          "start_index": 8463,
+          "length_windows": 2,
+          "start_time": "1970-01-13T10:20:01+00:00"
+        },
+        {
+          "start_index": 8616,
+          "length_windows": 1,
+          "start_time": "1970-01-13T10:25:01+00:00"
+        },
+        {
+          "start_index": 8642,
+          "length_windows": 1,
+          "start_time": "1970-01-13T10:20:01+00:00"
+        },
+        {
+          "start_index": 8806,
+          "length_windows": 2,
+          "start_time": "1970-01-16T15:35:01+00:00"
+        },
+        {
+          "start_index": 8915,
+          "length_windows": 3,
+          "start_time": "1970-01-13T14:35:01+00:00"
+        },
+        {
+          "start_index": 9063,
+          "length_windows": 3,
+          "start_time": "1970-01-13T10:00:01+00:00"
+        },
+        {
+          "start_index": 9077,
+          "length_windows": 2,
+          "start_time": "1970-01-13T10:55:01+00:00"
+        },
+        {
+          "start_index": 9437,
+          "length_windows": 1,
+          "start_time": "1970-01-13T17:25:01+00:00"
+        },
+        {
+          "start_index": 9489,
+          "length_windows": 6,
+          "start_time": "1970-01-13T10:00:01+00:00"
+        },
+        {
+          "start_index": 9496,
+          "length_windows": 1,
+          "start_time": "1970-01-14T12:20:01+00:00"
+        },
+        {
+          "start_index": 9525,
+          "length_windows": 2,
+          "start_time": "1970-01-13T14:55:01+00:00"
+        },
+        {
+          "start_index": 10094,
+          "length_windows": 1,
+          "start_time": "1970-01-15T09:55:01+00:00"
+        },
+        {
+          "start_index": 10225,
+          "length_windows": 2,
+          "start_time": "1970-01-13T10:40:01+00:00"
+        },
+        {
+          "start_index": 10229,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:55:01+00:00"
+        },
+        {
+          "start_index": 10271,
+          "length_windows": 1,
+          "start_time": "1970-01-13T10:15:01+00:00"
+        },
+        {
+          "start_index": 10342,
+          "length_windows": 4,
+          "start_time": "1970-01-13T15:25:01+00:00"
+        },
+        {
+          "start_index": 10419,
+          "length_windows": 1,
+          "start_time": "1970-01-13T12:35:01+00:00"
+        },
+        {
+          "start_index": 10535,
+          "length_windows": 1,
+          "start_time": "1970-01-14T13:45:01+00:00"
+        },
+        {
+          "start_index": 10849,
+          "length_windows": 1,
+          "start_time": "1970-01-14T15:10:01+00:00"
+        },
+        {
+          "start_index": 10862,
+          "length_windows": 6,
+          "start_time": "1970-01-13T08:15:01+00:00"
+        },
+        {
+          "start_index": 10869,
+          "length_windows": 2,
+          "start_time": "1970-01-14T11:05:01+00:00"
+        },
+        {
+          "start_index": 10872,
+          "length_windows": 2,
+          "start_time": "1970-01-15T09:25:01+00:00"
+        },
+        {
+          "start_index": 10951,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:55:01+00:00"
+        },
+        {
+          "start_index": 11000,
+          "length_windows": 1,
+          "start_time": "1970-01-13T16:20:01+00:00"
+        },
+        {
+          "start_index": 11143,
+          "length_windows": 6,
+          "start_time": "1970-01-13T09:20:01+00:00"
+        },
+        {
+          "start_index": 11285,
+          "length_windows": 1,
+          "start_time": "1970-01-13T17:15:01+00:00"
+        },
+        {
+          "start_index": 11394,
+          "length_windows": 1,
+          "start_time": "1970-01-15T08:45:01+00:00"
+        },
+        {
+          "start_index": 11694,
+          "length_windows": 2,
+          "start_time": "1970-01-13T11:15:01+00:00"
+        },
+        {
+          "start_index": 11874,
+          "length_windows": 3,
+          "start_time": "1970-01-13T11:15:01+00:00"
+        },
+        {
+          "start_index": 11915,
+          "length_windows": 2,
+          "start_time": "1970-01-14T12:25:01+00:00"
+        },
+        {
+          "start_index": 11979,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:15:01+00:00"
+        },
+        {
+          "start_index": 12065,
+          "length_windows": 2,
+          "start_time": "1970-01-14T16:55:01+00:00"
+        },
+        {
+          "start_index": 12068,
+          "length_windows": 1,
+          "start_time": "1970-01-15T09:05:01+00:00"
+        },
+        {
+          "start_index": 12120,
+          "length_windows": 1,
+          "start_time": "1970-01-14T11:55:01+00:00"
+        },
+        {
+          "start_index": 12124,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:25:01+00:00"
+        },
+        {
+          "start_index": 12204,
+          "length_windows": 1,
+          "start_time": "1970-01-13T16:00:01+00:00"
+        },
+        {
+          "start_index": 12265,
+          "length_windows": 2,
+          "start_time": "1970-01-13T09:50:01+00:00"
+        },
+        {
+          "start_index": 12282,
+          "length_windows": 1,
+          "start_time": "1970-01-13T16:25:01+00:00"
+        },
+        {
+          "start_index": 12358,
+          "length_windows": 3,
+          "start_time": "1970-01-14T08:05:01+00:00"
+        },
+        {
+          "start_index": 12375,
+          "length_windows": 3,
+          "start_time": "1970-01-16T16:00:01+00:00"
+        },
+        {
+          "start_index": 12439,
+          "length_windows": 1,
+          "start_time": "1970-01-16T16:30:01+00:00"
+        },
+        {
+          "start_index": 12513,
+          "length_windows": 1,
+          "start_time": "1970-01-14T15:05:01+00:00"
+        },
+        {
+          "start_index": 12651,
+          "length_windows": 1,
+          "start_time": "1970-01-14T09:00:01+00:00"
+        },
+        {
+          "start_index": 12677,
+          "length_windows": 2,
+          "start_time": "1970-01-13T08:10:01+00:00"
+        },
+        {
+          "start_index": 12680,
+          "length_windows": 2,
+          "start_time": "1970-01-14T11:05:01+00:00"
+        },
+        {
+          "start_index": 12683,
+          "length_windows": 2,
+          "start_time": "1970-01-15T09:25:01+00:00"
+        },
+        {
+          "start_index": 12700,
+          "length_windows": 2,
+          "start_time": "1970-01-13T15:20:01+00:00"
+        },
+        {
+          "start_index": 12709,
+          "length_windows": 3,
+          "start_time": "1970-01-13T10:35:01+00:00"
+        },
+        {
+          "start_index": 12736,
+          "length_windows": 1,
+          "start_time": "1970-01-13T08:45:01+00:00"
+        },
+        {
+          "start_index": 12763,
+          "length_windows": 3,
+          "start_time": "1970-01-13T08:50:01+00:00"
+        },
+        {
+          "start_index": 12801,
+          "length_windows": 1,
+          "start_time": "1970-01-16T18:30:01+00:00"
+        },
+        {
+          "start_index": 12868,
+          "length_windows": 1,
+          "start_time": "1970-01-13T09:10:01+00:00"
+        },
+        {
+          "start_index": 12872,
+          "length_windows": 4,
+          "start_time": "1970-01-13T12:30:01+00:00"
+        },
+        {
+          "start_index": 12936,
+          "length_windows": 1,
+          "start_time": "1970-01-13T08:45:01+00:00"
+        },
+        {
+          "start_index": 12973,
+          "length_windows": 1,
+          "start_time": "1970-01-14T14:50:01+00:00"
+        },
+        {
+          "start_index": 13016,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:55:01+00:00"
+        },
+        {
+          "start_index": 13097,
+          "length_windows": 7,
+          "start_time": "1970-01-13T17:35:01+00:00"
+        },
+        {
+          "start_index": 13125,
+          "length_windows": 1,
+          "start_time": "1970-01-13T09:15:01+00:00"
+        },
+        {
+          "start_index": 13254,
+          "length_windows": 1,
+          "start_time": "1970-01-13T10:45:01+00:00"
+        },
+        {
+          "start_index": 13360,
+          "length_windows": 4,
+          "start_time": "1970-01-13T10:25:01+00:00"
+        },
+        {
+          "start_index": 13417,
+          "length_windows": 1,
+          "start_time": "1970-01-13T12:05:01+00:00"
+        },
+        {
+          "start_index": 13419,
+          "length_windows": 1,
+          "start_time": "1970-01-14T11:55:01+00:00"
+        },
+        {
+          "start_index": 13430,
+          "length_windows": 1,
+          "start_time": "1970-01-13T09:35:01+00:00"
+        },
+        {
+          "start_index": 13539,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:55:01+00:00"
+        },
+        {
+          "start_index": 13631,
+          "length_windows": 1,
+          "start_time": "1970-01-13T10:40:01+00:00"
+        },
+        {
+          "start_index": 13663,
+          "length_windows": 1,
+          "start_time": "1970-01-15T09:50:01+00:00"
+        },
+        {
+          "start_index": 13682,
+          "length_windows": 5,
+          "start_time": "1970-01-13T15:25:01+00:00"
+        },
+        {
+          "start_index": 13716,
+          "length_windows": 1,
+          "start_time": "1970-01-13T08:45:01+00:00"
+        },
+        {
+          "start_index": 13769,
+          "length_windows": 2,
+          "start_time": "1970-01-13T15:45:01+00:00"
+        },
+        {
+          "start_index": 13853,
+          "length_windows": 1,
+          "start_time": "1970-01-13T16:20:01+00:00"
+        },
+        {
+          "start_index": 13857,
+          "length_windows": 1,
+          "start_time": "1970-01-13T17:30:01+00:00"
+        },
+        {
+          "start_index": 13950,
+          "length_windows": 2,
+          "start_time": "1970-01-13T11:10:01+00:00"
+        },
+        {
+          "start_index": 13953,
+          "length_windows": 2,
+          "start_time": "1970-01-16T17:40:01+00:00"
+        },
+        {
+          "start_index": 14016,
+          "length_windows": 1,
+          "start_time": "1970-01-14T15:15:01+00:00"
+        },
+        {
+          "start_index": 14120,
+          "length_windows": 1,
+          "start_time": "1970-01-15T10:00:01+00:00"
+        },
+        {
+          "start_index": 14144,
+          "length_windows": 2,
+          "start_time": "1970-01-13T12:00:01+00:00"
+        },
+        {
+          "start_index": 14196,
+          "length_windows": 1,
+          "start_time": "1970-01-13T12:00:01+00:00"
+        },
+        {
+          "start_index": 14266,
+          "length_windows": 1,
+          "start_time": "1970-01-14T10:45:01+00:00"
+        },
+        {
+          "start_index": 14340,
+          "length_windows": 2,
+          "start_time": "1970-01-14T16:10:01+00:00"
+        },
+        {
+          "start_index": 14349,
+          "length_windows": 1,
+          "start_time": "1970-01-14T16:10:01+00:00"
+        },
+        {
+          "start_index": 14398,
+          "length_windows": 1,
+          "start_time": "1970-01-13T10:50:01+00:00"
+        },
+        {
+          "start_index": 14478,
+          "length_windows": 1,
+          "start_time": "1970-01-13T10:45:01+00:00"
+        },
+        {
+          "start_index": 14566,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:55:01+00:00"
+        },
+        {
+          "start_index": 14618,
+          "length_windows": 1,
+          "start_time": "1970-01-13T16:30:01+00:00"
+        },
+        {
+          "start_index": 14640,
+          "length_windows": 3,
+          "start_time": "1970-01-13T09:30:01+00:00"
+        },
+        {
+          "start_index": 14758,
+          "length_windows": 3,
+          "start_time": "1970-01-13T14:35:01+00:00"
+        },
+        {
+          "start_index": 15098,
+          "length_windows": 2,
+          "start_time": "1970-01-14T11:40:01+00:00"
+        },
+        {
+          "start_index": 15114,
+          "length_windows": 1,
+          "start_time": "1970-01-13T08:50:01+00:00"
+        },
+        {
+          "start_index": 15227,
+          "length_windows": 1,
+          "start_time": "1970-01-13T14:55:01+00:00"
+        },
+        {
+          "start_index": 15691,
+          "length_windows": 2,
+          "start_time": "1970-01-16T15:25:01+00:00"
+        },
+        {
+          "start_index": 15702,
+          "length_windows": 1,
+          "start_time": "1970-01-13T16:20:01+00:00"
+        },
+        {
+          "start_index": 16341,
+          "length_windows": 2,
+          "start_time": "1970-01-14T13:00:01+00:00"
+        },
+        {
+          "start_index": 16583,
+          "length_windows": 1,
+          "start_time": "1970-01-14T10:45:01+00:00"
+        },
+        {
+          "start_index": 16681,
+          "length_windows": 1,
+          "start_time": "1970-01-16T18:40:01+00:00"
+        },
+        {
+          "start_index": 16755,
+          "length_windows": 1,
+          "start_time": "1970-01-13T11:55:01+00:00"
+        },
+        {
+          "start_index": 17016,
+          "length_windows": 4,
+          "start_time": "1970-01-13T13:45:01+00:00"
+        },
+        {
+          "start_index": 17080,
+          "length_windows": 1,
+          "start_time": "1970-01-14T15:25:01+00:00"
+        },
+        {
+          "start_index": 17284,
+          "length_windows": 2,
+          "start_time": "1970-01-13T10:00:01+00:00"
+        },
+        {
+          "start_index": 17373,
+          "length_windows": 1,
+          "start_time": "1970-01-15T10:10:01+00:00"
+        },
+        {
+          "start_index": 17531,
+          "length_windows": 1,
+          "start_time": "1970-01-14T14:15:01+00:00"
+        },
+        {
+          "start_index": 17570,
+          "length_windows": 3,
+          "start_time": "1970-01-13T08:15:01+00:00"
+        },
+        {
+          "start_index": 17759,
+          "length_windows": 1,
+          "start_time": "1970-01-14T15:40:01+00:00"
+        },
+        {
+          "start_index": 17974,
+          "length_windows": 3,
+          "start_time": "1970-01-13T09:50:01+00:00"
+        },
+        {
+          "start_index": 17978,
+          "length_windows": 1,
+          "start_time": "1970-01-14T12:25:01+00:00"
+        },
+        {
+          "start_index": 17980,
+          "length_windows": 1,
+          "start_time": "1970-01-15T09:25:01+00:00"
+        },
+        {
+          "start_index": 18368,
+          "length_windows": 1,
+          "start_time": "1970-01-14T14:20:01+00:00"
+        },
+        {
+          "start_index": 18420,
+          "length_windows": 1,
+          "start_time": "1970-01-13T16:20:01+00:00"
+        },
+        {
+          "start_index": 18516,
+          "length_windows": 2,
+          "start_time": "1970-01-16T17:15:01+00:00"
+        }
+      ]
+    }
+  },
+  "gap": {
+    "seconds": [
+      864001,
+      1036800
+    ],
+    "days": [
+      11,
+      12
+    ],
+    "redteam_events_in_gap": 0,
+    "samples_built": 0
+  }
+}

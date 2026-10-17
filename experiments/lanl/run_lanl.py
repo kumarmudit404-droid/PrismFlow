@@ -691,10 +691,27 @@ def write_readme(results: dict, path: Path) -> None:
     if smoke:
         reason = "SMOKE RUN - a shortened read range. NOT A FINDING."
     elif expected != finished:
+        elapsed = results.get("elapsed_seconds")
+        missing = sorted(expected - finished)
+        scan = dig(results, "population", "scan_seconds")
         reason = (
             f"Only {sorted(finished)} of {sorted(expected)} view "
-            "configurations finished; every figure below covers the finished "
-            "ones only."
+            f"configurations finished. **{', '.join(missing)} did NOT run** "
+            "and every figure below covers the finished configuration only. "
+            + (
+                f"Reason, measured not estimated: the streaming pass took "
+                f"{scan:.0f} s and the finished configuration's 10 models took "
+                f"{elapsed - scan:.0f} s more "
+                "(`results/lanl/results.json`, `elapsed_seconds` minus "
+                "`population.scan_seconds`), because the discounted system "
+                "costs about 1.7x the undiscounted one per model on this data. "
+                "A second configuration needs the same again, which does not "
+                "fit this Part's 90-minute budget. Seeds were NOT reduced and "
+                "the day range was NOT shrunk to make it fit; the "
+                "configuration is simply missing."
+                if isinstance(elapsed, (int, float)) and isinstance(scan, (int, float))
+                else "The remaining configuration did not fit the time budget."
+            )
         )
     elif not seeds_ok:
         reason = (
@@ -1053,6 +1070,17 @@ def write_readme(results: dict, path: Path) -> None:
         A(f"Views missing in more than "
           f"{configuration['missingness']['threshold']:.0%} of train windows: "
           f"{', '.join(over) if over else 'none'}.")
+        if over:
+            A("")
+            A("**Not run, and it is in the brief.** Part 28's step 5 says that "
+              "when a view is missing in more than half the windows, a second "
+              "configuration WITHOUT that view should also be run. That "
+              f"applies here to {', '.join(over)} and was **not run** - the "
+              "time budget did not reach it (see the status line). So this "
+              "Part does not know whether the result above survives dropping "
+              f"{' or '.join(over)}. `dns` in particular is present in under "
+              "2% of windows, so its encoder sees almost nothing and its "
+              "contribution to the fusion is close to untested here.")
         A("")
 
     # -- test A ------------------------------------------------------------
@@ -1117,10 +1145,43 @@ def write_readme(results: dict, path: Path) -> None:
             system: {row["pair"]: row for row in block.get("pair_table", [])}
             for system, block in configuration["systems"].items()
         }
-        pairs = list(tables.get("naive", {}))
-        for pair in pairs:
-            A(f"| {pair} | {fmt(dig(tables, 'naive', pair, 'dependence'))} | "
-              f"{fmt(dig(tables, 'prismflow', pair, 'dependence'))} |")
+        # `pair_table` rows carry mean/std directly, so the row IS the entry
+        # fmt reads. Ordered most-dependent first, which is the ordering Part
+        # 29 test C asks to be READ from a committed table rather than
+        # re-derived.
+        naive_pairs = tables.get("naive", {})
+        ordered_pairs = sorted(
+            naive_pairs,
+            key=lambda p: (
+                -naive_pairs[p]["mean"]
+                if math.isfinite(naive_pairs[p].get("mean", float("nan")))
+                else 0.0
+            ),
+        )
+        for pair in ordered_pairs:
+            A(f"| {pair} | {fmt(dig(tables, 'naive', pair))} | "
+              f"{fmt(dig(tables, 'prismflow', pair))} |")
+        A("")
+        if ordered_pairs:
+            prism_pairs = tables.get("prismflow", {})
+            prism_order = sorted(
+                prism_pairs,
+                key=lambda p: (
+                    -prism_pairs[p]["mean"]
+                    if math.isfinite(prism_pairs[p].get("mean", float("nan")))
+                    else 0.0
+                ),
+            )
+            A(f"Most dependent pair: **{ordered_pairs[0]}** (naive), "
+              f"**{prism_order[0]}** (PrismFlow). Least dependent: "
+              f"**{ordered_pairs[-1]}** (naive), **{prism_order[-1]}** "
+              "(PrismFlow). "
+              + ("The two systems agree on both ends."
+                 if ordered_pairs[0] == prism_order[0]
+                 and ordered_pairs[-1] == prism_order[-1]
+                 else "**The two systems disagree on the ordering**, which is "
+                      "reported here rather than resolved by picking one, as "
+                      "Part 29 test C requires."))
         A("")
     A("Scoring the suspicion detector on the most and least dependent of these "
       "pairs was **not run** (see section 8), so this Part states no verdict "
