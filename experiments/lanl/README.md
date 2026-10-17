@@ -253,7 +253,7 @@ These are **INCOMPLETE**, not negative results. Nothing below should be read as 
 
 > **L23 (proposed).** On LANL cyber1 the `(computer, window)` sample space is ~2e7 cells at 300 s over days 1-16 against ~850 red-team cells, a prevalence near 2e-5. Part 30 therefore reports a declared case-control sample (all cases, deterministic 1/512 hash of controls), so its accuracy, Brier and ECE describe that sample and not the network. No population operating point has been measured on LANL.
 
-> **L24 (proposed).** LANL's red-team labels are derived from authentication records, so the `auth` view is label-adjacent. Part 30 reports WITH-auth and WITHOUT-auth separately; only the WITHOUT-auth arm bears on detection from independent evidence.
+> **L24 (proposed).** LANL's red-team labels are derived from authentication records, so the `auth` view is label-adjacent. **Part 30 measured only the WITH-auth arm**, so every LANL number it reports is label-adjacent and none of them bears on detection from evidence independent of the label source. The WITHOUT-auth arm part30.md step 2 requires is not measured.
 
 > **L25 (proposed).** Part 28's `fit_scaler`, `apply_scaler` and `train_ait` are not reusable across datasets: each resolves native view widths through `ait_lds.FEATURES`, keyed by AIT source names. Part 30 mirrored them rather than patching Part 28. Any future Part on a third dataset will hit the same wall.
 

@@ -1337,9 +1337,14 @@ def write_readme(results: dict, path: Path) -> None:
       "network. No population operating point has been measured on LANL.")
     A("")
     A("> **L24 (proposed).** LANL's red-team labels are derived from "
-      "authentication records, so the `auth` view is label-adjacent. Part 30 "
-      "reports WITH-auth and WITHOUT-auth separately; only the WITHOUT-auth "
-      "arm bears on detection from independent evidence.")
+      "authentication records, so the `auth` view is label-adjacent. "
+      + ("Part 30 reports WITH-auth and WITHOUT-auth separately; only the "
+         "WITHOUT-auth arm bears on detection from independent evidence."
+         if "without_auth" in configurations else
+         "**Part 30 measured only the WITH-auth arm**, so every LANL number "
+         "it reports is label-adjacent and none of them bears on detection "
+         "from evidence independent of the label source. The WITHOUT-auth "
+         "arm part30.md step 2 requires is not measured."))
     A("")
     A("> **L25 (proposed).** Part 28's `fit_scaler`, `apply_scaler` and "
       "`train_ait` are not reusable across datasets: each resolves native view "
