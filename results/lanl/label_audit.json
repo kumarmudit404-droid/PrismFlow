@@ -1,0 +1,20 @@
+{
+  "note": "computer_window is the primary reading: a (computer, window) cell is attack if a red-team event in that window names that computer as source or destination. window_only is the alternative reading in configs/data/lanl.yaml label.also_report, under which every computer in an attacked window would be attack; it is counted here and NOT scored anywhere.",
+  "per_block": {
+    "train": {
+      "computer_window_attack_cells_named_by_redteam": 440,
+      "window_only_attacked_windows": 150,
+      "distinct_computers_named": 198
+    },
+    "gap": {
+      "computer_window_attack_cells_named_by_redteam": 0,
+      "window_only_attacked_windows": 0,
+      "distinct_computers_named": 0
+    },
+    "test": {
+      "computer_window_attack_cells_named_by_redteam": 410,
+      "window_only_attacked_windows": 141,
+      "distinct_computers_named": 139
+    }
+  }
+}
