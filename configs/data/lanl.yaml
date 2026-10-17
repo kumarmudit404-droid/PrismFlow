@@ -149,6 +149,39 @@ label:
   attribute_to: [source, destination]
   keep_duplicate_rows: true
 
+# ---------------------------------------------------------------------------
+# Case-control sampling of the (computer, window) cells
+# ---------------------------------------------------------------------------
+# WHY THIS EXISTS. At 300 s, this capture occupies roughly 1.5 million occupied
+# (computer, window) cells PER DAY -- measured by the day-1 sizing probe, and
+# recorded exactly for the full range in results/lanl/population.json. Days
+# 1-16 are therefore on the order of 2e7 samples, against 440 attack cells in
+# the train block and 410 in the test block: a prevalence near 2e-5. Two facts
+# follow, and they are measurements, not preferences:
+#
+#   * 40 epochs over 2e7 samples is not reachable in this Part's time budget;
+#   * a uniform subsample that IS reachable leaves single-digit attack cells,
+#     which trips this Part's own stop condition of >= 10 attack windows per
+#     split.
+#
+# So the sample set is a declared case-control sample: every attack cell is
+# kept, and a benign cell is kept iff
+#
+#     crc32(computer | window) % control_divisor == 0
+#
+# This is a DETERMINISTIC HASH of the cell identity, not a draw from a random
+# generator. It needs no prior knowledge of the cell universe (one streaming
+# pass suffices), it is identical on every rerun AND on every experiment seed
+# -- so a seed still varies only initialisation and batch order, exactly as in
+# Part 28 -- and it reads neither a label nor a feature value.
+#
+# WHAT IT COSTS, stated here and repeated in the README: sample prevalence is
+# an artefact of control_divisor and is NOT population prevalence. Accuracy and
+# every other prevalence-dependent figure then describes the sample, not the
+# network. Balanced accuracy, ROC AUC and per-class recall are the figures that
+# survive the reweighting.
+control_divisor: 512
+
 # Unlike AIT, this dataset ships no "label-covered file" notion, so there is no
 # label_known mask to filter on: every window inside the read range is labelled
 # either attack or benign. What that costs is stated in the README - "benign"
