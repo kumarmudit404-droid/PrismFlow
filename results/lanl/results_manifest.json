@@ -16,5 +16,21 @@
       3,
       4
     ]
+  },
+  "samples": {
+    "file": "results/lanl/samples.npz",
+    "sha256": "9035c237f7a794b62d9a6d2b81491f0d2f7907f6972c3e64581b9805d0bc49fb",
+    "bytes": 777190,
+    "n_samples": 61641,
+    "n_views": 4,
+    "feature_dim": 8,
+    "sources": [
+      "auth",
+      "proc",
+      "flows",
+      "dns"
+    ],
+    "scan_seconds": 233.59278392791748,
+    "built_at_utc": "2026-10-17T12:31:55.618300+00:00"
   }
 }

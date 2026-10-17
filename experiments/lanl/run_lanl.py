@@ -30,6 +30,8 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import datetime as dt
+import hashlib
 import json
 import math
 import multiprocessing as mp
@@ -43,6 +45,7 @@ import yaml
 
 from experiments.ait_clean.run_ait_clean import (
     LOWER_IS_BETTER,
+    roc_auc_binary,
     contiguous_blocks,
     majority_baseline,
     metric_row,
@@ -52,6 +55,9 @@ from experiments.ait_clean.run_ait_clean import (
 )
 from prismflow.data.lanl_cyber1 import (
     CLASS_ATTACK,
+    CLASS_BENIGN,
+    load_samples,
+    save_samples,
     FEATURES,
     LABEL_MEANING,
     LANLMultiViewDataset,
@@ -990,10 +996,109 @@ def write_readme(results: dict, path: Path) -> None:
       f"{results['config']['seeds']}. Not re-tuned for LANL.")
     A("")
     A("Every row is `prismflow.evaluation.protocol.compute_metrics` plus Part "
-      "28's `part28_extras`, called through Part 28's imported `metric_row`, "
-      "and cross-checked against `prismflow.evaluation.evaluate`'s own per-seed "
-      "rows (`run_lanl.py::cross_check`; a mismatch above 1e-9 raises).")
+      "28's `part28_extras`, called through Part 28's imported `metric_row`.")
     A("")
+
+    # -- execution mode ----------------------------------------------------
+    mode = results.get("execution_mode") or {}
+    if "decision" in mode:
+        A("**Execution mode, disclosed.** Units of work - one "
+          "`(arm, system, seed)` each - were run as "
+          f"**{mode['decision']}** processes, "
+          f"{mode['max_concurrent_processes']} at a time, with "
+          f"**{mode['threads_per_process']} torch thread per process**. "
+          "Hyperparameters and seeds 0-4 are unchanged; parallelism is across "
+          "units only, and no unit shares state with another beyond the "
+          "read-only sample table.")
+        A("")
+        A("| torch threads | ms/step (200 real steps, idle machine) | "
+          "projected naive model |")
+        A("|---:|---:|---:|")
+        for row in mode.get("benchmark_idle_machine", []):
+            A(f"| {row['threads']} | {row['ms_per_step']:.2f} | "
+              f"{row['projected_naive_model_seconds']:.0f} s |")
+        A("")
+        A(mode.get("benchmark_note", ""))
+        A("")
+
+    # -- arms summary ------------------------------------------------------
+    A("### 4.1 All arms, side by side")
+    A("")
+    A("Paired within seed: the same 5 seeds, the same rows, the same split. "
+      "Prevalence-dependent metrics are flagged - the sample is case-control "
+      "at about 2% attack prevalence against about 2e-5 in the population, so "
+      "ECE here describes the sample.")
+    A("")
+    A("| arm | views | system | balanced accuracy | ROC AUC | "
+      "ECE *(sample prevalence)* | attack recall |")
+    A("|---|---|---|---|---|---|---|")
+    for name, configuration in configurations.items():
+        for system in ("naive", "prismflow"):
+            summary = dig(configuration, "systems", system, "summary")
+            if not summary:
+                continue
+            A(f"| {name} | {', '.join(configuration['views'])} | {system} | "
+              f"{fmt(dig(summary, 'balanced_accuracy'))} | "
+              f"{fmt(dig(summary, 'roc_auc'))} | "
+              f"{fmt(dig(summary, 'prob_ece'))} | "
+              f"{fmt(dig(summary, 'attack_recall'))} |")
+    A("")
+    A("Paired difference, PrismFlow minus naive, within seed:")
+    A("")
+    A("| arm | balanced accuracy | ROC AUC | ECE | attack recall |")
+    A("|---|---|---|---|---|")
+    for name, configuration in configurations.items():
+        paired = configuration.get("paired_prismflow_minus_naive") or {}
+        if not paired:
+            A(f"| {name} | not measured - only one system finished | | | |")
+            continue
+        A(f"| {name} | {signed(paired.get('balanced_accuracy'))} | "
+          f"{signed(paired.get('roc_auc'))} | "
+          f"{signed(paired.get('prob_ece'))} | "
+          f"{signed(paired.get('attack_recall'))} |")
+    A("")
+    A("A seed count of 5/5 means every seed moved the same way; it does NOT "
+      "mean the effect is larger than test-set sampling noise. Section 7.4's "
+      "bootstrap interval is the number to read for that.")
+    A("")
+
+    # -- coverage ----------------------------------------------------------
+    coverage = dig(results, "phase3_diagnostics", "arm_coverage")
+    if coverage:
+        A("### 4.2 Samples an arm cannot predict by construction")
+        A("")
+        A(coverage.get("note", ""))
+        A("")
+        A("| arm | train: attack with no present view | "
+          "test: attack with no present view | test: benign with none |")
+        A("|---|---:|---:|---:|")
+        for name in configurations:
+            entry = dig(coverage, "per_arm", name)
+            if not entry:
+                continue
+            A(f"| {name} | {entry['train']['n_attack_empty']} of "
+              f"{entry['train']['n_attack_samples']} | "
+              f"**{entry['test']['n_attack_empty']} of "
+              f"{entry['test']['n_attack_samples']}** "
+              f"({entry['test']['attack_empty_share']:.1%}) | "
+              f"{entry['test']['n_benign_empty']:,} |")
+        A("")
+        worst = max(
+            ((n, dig(coverage, "per_arm", n, "test", "n_attack_empty") or 0)
+             for n in configurations),
+            key=lambda kv: kv[1], default=(None, 0),
+        )
+        if worst[1] > 0:
+            A(f"This is a ceiling, not a tuning problem. In **{worst[0]}**, "
+              f"{worst[1]} test attack samples have an all-zero feature "
+              "tensor and an all-False view mask, so every model - and every "
+              "future model - must give them the same score as each other and "
+              "as the equally empty benign samples. The arm's attainable "
+              "attack recall is capped below 1 before training starts, and "
+              "its AUC carries a block of tied scores. Read that arm's "
+              "numbers as a floor on what the remaining views can do, not as "
+              "a measurement of what the views cannot.")
+            A("")
     for name, configuration in configurations.items():
         A(f"### {configuration['label']}")
         A("")
@@ -1084,6 +1189,38 @@ def write_readme(results: dict, path: Path) -> None:
         A("")
 
     # -- test A ------------------------------------------------------------
+    # -- replicate ---------------------------------------------------------
+    replicate = results.get("replicate_run1_vs_run2") or {}
+    if "per_metric" in replicate:
+        A("### 4.3 Run 1 as a replicate of with_auth")
+        A("")
+        A(replicate.get("note", ""))
+        A("")
+        A("Run 1's record is `results/lanl/results.run1.json.gz`; its sha256 "
+          "is in `results/lanl/results_manifest.json` and was "
+          + ("**verified** on reading."
+             if replicate.get("run1_sha256_verified") else
+             "**NOT verified** - the digest did not match, so treat the run-1 "
+             "column with suspicion.")
+          + f" Run 1 was commit `{replicate.get('run1_commit', 'unknown')}`.")
+        A("")
+        A("| metric | system | run 1 | run 2 | run 2 - run 1 |")
+        A("|---|---|---:|---:|---:|")
+        for key, systems in (replicate.get("per_metric") or {}).items():
+            for system, row in systems.items():
+                A(f"| {key} | {system} | {row['run1_mean']:.4f} | "
+                  f"{row['run2_mean']:.4f} | "
+                  f"{row['difference_run2_minus_run1']:+.4f} |")
+        A("")
+        A("These two runs are **replicates, not reproductions**. Same seeds "
+          "and same hyperparameters, but a different torch thread count "
+          "changes the order of floating-point reductions, so the trained "
+          "weights differ and a seed does not reproduce bit-exactly across "
+          "modes. Where a run-1-to-run-2 difference is comparable to or "
+          "larger than that metric's per-seed std, the seed std is "
+          "understating the spread an independent re-run would show.")
+        A("")
+
     A("## 5. Part 29 test A - ENIV on real attack vs real benign windows")
     A("")
     first = next(iter(configurations.values()))["part29_test_a_natural_attack_windows"]
@@ -1190,7 +1327,127 @@ def write_readme(results: dict, path: Path) -> None:
     A("")
 
     # -- cross-dataset -----------------------------------------------------
-    A("## 7. Cross-dataset table (part30.md step 5)")
+    # -- Phase 3 diagnostics ----------------------------------------------
+    phase3 = results.get("phase3_diagnostics") or {}
+    A("## 7. Diagnostics (no new training)")
+    A("")
+    if not phase3:
+        A("not measured - no diagnostics block in `results/lanl/results.json`.")
+        A("")
+    else:
+        A("### 7.1 Trivial baselines: what a single scalar already achieves")
+        A("")
+        tb = phase3.get("trivial_baselines", {})
+        A(tb.get("note", ""))
+        A("")
+        A("| scalar | orientation (fixed on train) | train AUC | **test AUC** |")
+        A("|---|---|---:|---:|")
+        for name, row in (tb.get("baselines") or {}).items():
+            A(f"| `{name}` | {row['orientation_fixed_on_train']} | "
+              f"{fmt(row['train_auc_as_measured'])} | **{fmt(row['test_auc'])}** |")
+        A("")
+        # Compare the best trivial scalar against the best model AUC, plainly.
+        best_trivial = max(
+            ((n, r["test_auc"]) for n, r in (tb.get("baselines") or {}).items()
+             if isinstance(r.get("test_auc"), (int, float))
+             and math.isfinite(r["test_auc"])),
+            key=lambda kv: kv[1], default=(None, None),
+        )
+        model_aucs = [
+            (f"{arm} / {system}", dig(conf, "systems", system, "summary", "roc_auc", "mean"))
+            for arm, conf in configurations.items()
+            for system in ("naive", "prismflow")
+        ]
+        model_aucs = [(k, v) for k, v in model_aucs if isinstance(v, (int, float))]
+        if best_trivial[0] and model_aucs:
+            best_model = max(model_aucs, key=lambda kv: kv[1])
+            gap = best_model[1] - best_trivial[1]
+            A(f"**Read this before any model number below.** The best single "
+              f"scalar is `{best_trivial[0]}` at test AUC "
+              f"{best_trivial[1]:.4f}; the best model is {best_model[0]} at "
+              f"{best_model[1]:.4f}, a difference of {gap:+.4f}. "
+              + ("**A single untrained scalar matches the models**, so the "
+                 "ROC AUC figures in this Part are not evidence that the "
+                 "fusion learned anything beyond how much this computer "
+                 "logged in this window."
+                 if gap < 0.05 else
+                 "The models are ahead of every trivial scalar by more than "
+                 "0.05 AUC, so the ranking is not reducible to one of these "
+                 "scalars."))
+            A("")
+
+        A("### 7.2 Host audit: how concentrated the attack labels are")
+        A("")
+        ha = phase3.get("host_audit", {})
+        A("| block | attack samples | attack computers | top-1 share | "
+          "top-4 share |")
+        A("|---|---:|---:|---:|---:|")
+        for name in ("train", "test"):
+            row = dig(ha, "per_split", name) or {}
+            A(f"| {name} | {row.get('n_attack_samples', 0):,} | "
+              f"{row.get('n_attack_computers', 0)} | "
+              f"{fmt(row.get('top1_share'))} | {fmt(row.get('top4_share'))} |")
+        A("")
+        A(f"Attack computers appearing in BOTH blocks: "
+          f"**{ha.get('attack_computers_shared_train_test', 'not measured')}**; "
+          f"test-only attack computers: "
+          f"{ha.get('attack_computers_test_only', 'not measured')}. "
+          + (ha.get("note") or ""))
+        A("")
+
+        A("### 7.3 Seen vs unseen computers")
+        A("")
+        su = phase3.get("seen_unseen", {})
+        A(su.get("note", ""))
+        A("")
+        A("| arm | system | seen AUC | unseen AUC | n seen | n unseen |")
+        A("|---|---|---|---|---:|---:|")
+        for arm, per_system in (su.get("per_arm") or {}).items():
+            for system, row in per_system.items():
+                if not isinstance(row, dict) or "seen" not in row:
+                    continue
+                seen, unseen = row["seen"], row["unseen"]
+                A(f"| {arm} | {system} | "
+                  f"{fmt({'mean': seen['auc_mean'], 'std': seen['auc_std']})} | "
+                  f"{fmt({'mean': unseen['auc_mean'], 'std': unseen['auc_std']})} | "
+                  f"{seen['n_attack_samples']} | {unseen['n_attack_samples']} |")
+        A("")
+
+        A("### 7.4 Paired cluster bootstrap over test computers")
+        A("")
+        cb = phase3.get("cluster_bootstrap", {})
+        A(cb.get("note", ""))
+        A("")
+        A("| arm | mean paired AUC difference (PrismFlow - naive) | 95% CI | "
+          "test computers |")
+        A("|---|---:|---|---:|")
+        for arm, row in (cb.get("per_arm") or {}).items():
+            if "not_measured" in row:
+                A(f"| {arm} | not measured | {row['not_measured']} | - |")
+                continue
+            lo, hi = row["ci95_low"], row["ci95_high"]
+            crosses = (isinstance(lo, (int, float)) and isinstance(hi, (int, float))
+                       and lo <= 0.0 <= hi)
+            A(f"| {arm} | "
+              f"{row['observed_mean_paired_auc_difference']:+.4f} | "
+              f"[{lo:+.4f}, {hi:+.4f}]"
+              + (" **includes 0**" if crosses else " excludes 0")
+              + f" | {row['n_test_computers']:,} |")
+        A("")
+        A("A per-seed std and this interval answer different questions. The "
+          "std says how much the answer moves when the initialisation and "
+          "batch order change on THIS test set; the interval says how much it "
+          "would move if the test computers had been a different draw. An "
+          "interval that includes 0 means the sign of the difference is not "
+          "established by this test set, whatever the seed counts say.")
+        A("")
+
+        A("### 7.5 How a missing view enters dependence and ENIV")
+        A("")
+        A(phase3.get("missing_view_handling", "not measured"))
+        A("")
+
+    A("## 8. Cross-dataset table (part30.md step 5)")
     A("")
     A("synthetic vs AIT vs LANL, for the DETECTION claim and the "
       "honest-duplication false positive. Every cell cites a `results/` file "
@@ -1287,7 +1544,7 @@ def write_readme(results: dict, path: Path) -> None:
     A("")
 
     # -- not run -----------------------------------------------------------
-    A("## 8. What was not run, and why")
+    A("## 9. What was not run, and why")
     A("")
     A("part30.md step 4 asks for Part 28's metrics **and Part 29's tests "
       "A-D**. Part 28's metrics and test A ran. B, C and D did not, and no "
@@ -1303,7 +1560,7 @@ def write_readme(results: dict, path: Path) -> None:
     A("")
 
     # -- what the design cannot show ---------------------------------------
-    A("## 9. What this design cannot show")
+    A("## 10. What this design cannot show")
     A("")
     A("- **No population-level operating point.** The case-control sample "
       "fixes prevalence by construction, so no threshold, alert rate or "
@@ -1323,29 +1580,74 @@ def write_readme(results: dict, path: Path) -> None:
     A("")
 
     # -- proposed limitations ----------------------------------------------
-    A("## 10. Proposed limitations (NOT applied)")
+    A("## 11. Proposed limitations (NOT applied)")
     A("")
     A("`docs/KNOWN_LIMITATIONS.md` and `docs/CONTRACT.md` are unchanged by "
       "this Part. The following text is proposed for the user to approve or "
       "reject; it has not been written to either file.")
     A("")
-    A("> **L23 (proposed).** On LANL cyber1 the `(computer, window)` sample "
-      "space is ~2e7 cells at 300 s over days 1-16 against ~850 red-team "
-      "cells, a prevalence near 2e-5. Part 30 therefore reports a declared "
-      "case-control sample (all cases, deterministic 1/512 hash of controls), "
-      "so its accuracy, Brier and ECE describe that sample and not the "
-      "network. No population operating point has been measured on LANL.")
+    # L23-L25 are generated from the data, so the figures inside them cannot
+    # drift from the tables above.
+    lower = dig(population, "estimated_population_cells_union", "lower_bound")
+    upper = dig(population, "estimated_population_cells_union", "upper_bound")
+    train_attack = dig(split, "per_split", "train", "n_attack_samples")
+    test_attack = dig(split, "per_split", "test", "n_attack_samples")
+    test_prevalence = dig(split, "per_split", "test", "attack_prevalence_in_sample")
+    A(f"> **L23 (proposed).** On LANL cyber1 at {window} s the "
+      f"`(computer, window)` sample space is between {lower:,} and "
+      f"{upper:,} occupied cells over days 1-16 "
+      "(`results/lanl/population.json`), against "
+      f"{train_attack} train and {test_attack} test attack cells - a "
+      "population prevalence near 2e-5. Part 30 therefore reports a declared "
+      f"case-control sample (all cases, deterministic "
+      f"1/{population.get('control_divisor')} hash of controls) whose test "
+      f"prevalence is {test_prevalence:.4f}, about "
+      f"{test_prevalence / 2e-5:.0f}x the population rate. Its accuracy, "
+      "Brier and ECE therefore describe that sample and not the network, and "
+      "no population operating point has been measured on LANL.")
     A("")
+    auth_arms = [n for n in configurations if n != "without_auth"]
+    without = dig(coverage or {}, "per_arm", "without_auth", "test")
     A("> **L24 (proposed).** LANL's red-team labels are derived from "
       "authentication records, so the `auth` view is label-adjacent. "
-      + ("Part 30 reports WITH-auth and WITHOUT-auth separately; only the "
-         "WITHOUT-auth arm bears on detection from independent evidence."
+      + ("Part 30 measures both arms, so the WITHOUT-auth arm is the one that "
+         "bears on detection from evidence independent of the label source."
          if "without_auth" in configurations else
-         "**Part 30 measured only the WITH-auth arm**, so every LANL number "
-         "it reports is label-adjacent and none of them bears on detection "
-         "from evidence independent of the label source. The WITHOUT-auth "
-         "arm part30.md step 2 requires is not measured."))
+         "**Part 30 measured only auth-bearing arms**, so every LANL number "
+         "it reports is label-adjacent. The WITHOUT-auth arm part30.md step 2 "
+         "requires is not measured.")
+      + (f" That arm is itself limited: {without['n_attack_empty']} of "
+         f"{without['n_attack_samples']} of its test attack samples "
+         f"({without['attack_empty_share']:.1%}) have no record in any "
+         "remaining view, so they are unpredictable by construction and cap "
+         "the arm's attainable recall before training."
+         if without and without.get("n_attack_empty") else ""))
     A("")
+    best_trivial_name = None
+    tb_block = dig(results, "phase3_diagnostics", "trivial_baselines", "baselines") or {}
+    finite = [(n, r["test_auc"]) for n, r in tb_block.items()
+              if isinstance(r.get("test_auc"), (int, float)) and math.isfinite(r["test_auc"])]
+    if finite:
+        best_trivial_name, best_trivial_auc = max(finite, key=lambda kv: kv[1])
+        model_best = max(
+            [v for arm, conf in configurations.items() for system in ("naive", "prismflow")
+             for v in [dig(conf, "systems", system, "summary", "roc_auc", "mean")]
+             if isinstance(v, (int, float))] or [float("nan")]
+        )
+        A(f"> **L26 (proposed).** On LANL cyber1 a single untrained scalar - "
+          f"`{best_trivial_name}`, oriented on train only - reaches test ROC "
+          f"AUC {best_trivial_auc:.4f}, against {model_best:.4f} for the best "
+          "trained arm (`results/lanl/results.json`, "
+          "`phase3_diagnostics.trivial_baselines`). "
+          + ("The ROC AUC figures on this dataset are therefore not evidence "
+             "that fusion learned structure beyond per-window log volume, and "
+             "no AUC-based claim should be made for LANL without reporting "
+             "this scalar beside it."
+             if math.isfinite(model_best) and model_best - best_trivial_auc < 0.05
+             else "The trained arms are ahead of this scalar by more than "
+                  "0.05 AUC.")
+          )
+        A("")
     A("> **L25 (proposed).** Part 28's `fit_scaler`, `apply_scaler` and "
       "`train_ait` are not reusable across datasets: each resolves native view "
       "widths through `ait_lds.FEATURES`, keyed by AIT source names. Part 30 "
@@ -1354,7 +1656,7 @@ def write_readme(results: dict, path: Path) -> None:
     A("")
 
     # -- files -------------------------------------------------------------
-    A("## 11. Files")
+    A("## 12. Files")
     A("")
     A("| path | what it holds |")
     A("|---|---|")
@@ -1372,6 +1674,16 @@ def write_readme(results: dict, path: Path) -> None:
       "counts, attack blocks |")
     A("| `results/lanl/label_audit.json` | both label readings per block, from "
       "`redteam.txt.gz` alone |")
+    A("| `results/lanl/samples.npz` | the whole 61,641-row sample table, built "
+      "once; every arm reads it so all arms share identical rows |")
+    A("| `results/lanl/units/*.json` | one file per (arm, system, seed): "
+      "metrics, diagnostics, test-A populations, timing |")
+    A("| `results/lanl/scores/*.npz` | per-sample TEST scores keyed by "
+      "(computer, window_start), per arm, system and seed |")
+    A("| `results/lanl/execution_mode.json` | the thread benchmark and the "
+      "parallel-vs-sequential decision |")
+    A("| `results/lanl/results.run1.json.gz` | run 1, immutable, with its "
+      "sha256 in `results_manifest.json` |")
     A("| `results/lanl/results.json` | every metric, diagnostic, pair table "
       "and paired difference |")
     A("")
@@ -1385,6 +1697,706 @@ def write_readme(results: dict, path: Path) -> None:
     A("")
 
     path.write_text("\n".join(L), encoding="utf-8")
+
+
+# ---------------------------------------------------------------------------
+# One (arm, system, seed) unit: the parallel granularity
+# ---------------------------------------------------------------------------
+
+UNITS_DIR = RESULTS_DIR / "units"
+SCORES_DIR = RESULTS_DIR / "scores"
+
+
+def arm_dataset(cfg: dict, data_cfg, arm: dict):
+    """The shared sample table, subset to this arm's views, scaled on train only.
+
+    Deterministic given the arm: the scaler is fitted on the train block of the
+    same rows every time, so two units of one arm see byte-identical inputs and
+    differ only by seed.
+    """
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    full = LANLMultiViewDataset(samples)
+    data = subset(full, tuple(arm["views"]))
+    indices = split_indices(data)
+    scaler = fit_scaler(data, indices["train"], cfg)
+    return apply_scaler(data, scaler), indices, scaler
+
+
+@torch.no_grad()
+def per_sample_scores(model, dataset, test_idx, batch_size: int) -> dict:
+    """Test-set scores keyed by the sample's own identity, for later diagnostics.
+
+    Keyed by (computer, window_start) rather than row index, so a score file
+    stays meaningful even if the sample table is ever rebuilt in a different
+    order.
+    """
+    collected = collect_predictions(
+        model, iter_batches(dataset, test_idx, batch_size, shuffle=False)
+    )
+    return {
+        "computer": np.asarray(
+            [dataset.samples.computer[i] for i in test_idx], dtype=object),
+        "window_start": dataset.window_start.numpy()[test_idx],
+        "label": np.asarray(collected["labels"], dtype=np.int64),
+        "prob_attack": np.asarray(collected["probs"], dtype=np.float64)[:, CLASS_ATTACK],
+        "vacuity": np.asarray(collected["vacuity_confidence"], dtype=np.float64),
+    }, collected
+
+
+def benchmark_steps(n_steps: int, threads: int) -> dict:
+    """Time `n_steps` real training steps of a with_auth naive model.
+
+    Real data and real batches from the train block, not synthetic tensors, so
+    the number reflects what an arm will actually cost. The first 10 steps are
+    discarded as warm-up.
+    """
+    torch.set_num_threads(max(1, threads))
+    cfg = yaml.safe_load(CONFIG_PATH.read_text())
+    data_cfg = load_lanl_config(cfg["data"]["config"])
+    arm = next(a for a in cfg["view_configurations"] if a["name"] == "with_auth")
+    scaled, indices, _ = arm_dataset(cfg, data_cfg, arm)
+    train_idx = indices["train"]
+
+    set_seed(0)
+    model = PrismFlow(
+        view_configs(
+            scaled.sources,
+            hidden_dims=cfg["model"]["hidden_dims"],
+            feature_dim=cfg["model"]["feature_dim"],
+            dropout=cfg["model"]["dropout"],
+        ),
+        n_classes=scaled.n_classes,
+        use_discount=False,
+    )
+    optimiser = torch.optim.Adam(model.parameters(), lr=cfg["training"]["lr"])
+    model.train()
+
+    def steps(limit):
+        done = 0
+        while done < limit:
+            for batch in iter_batches(
+                scaled, train_idx, cfg["training"]["batch_size"],
+                shuffle=True, seed=done,
+            ):
+                targets = torch.nn.functional.one_hot(
+                    batch.labels, num_classes=scaled.n_classes
+                ).to(batch.views.dtype)
+                loss = compute_loss(
+                    model(batch.views, batch.view_mask), targets,
+                    epoch=0, anneal_epochs=cfg["training"]["anneal_epochs"],
+                    per_view_loss_weight=cfg["training"]["per_view_loss_weight"],
+                )
+                optimiser.zero_grad()
+                loss.backward()
+                optimiser.step()
+                done += 1
+                if done >= limit:
+                    return
+
+    steps(10)
+    started = time.time()
+    steps(n_steps)
+    elapsed = time.time() - started
+    batches_per_epoch = int(np.ceil(train_idx.size / cfg["training"]["batch_size"]))
+    ms = elapsed / n_steps * 1000.0
+    return {
+        "threads": max(1, threads),
+        "n_steps": n_steps,
+        "ms_per_step": ms,
+        "batches_per_epoch": batches_per_epoch,
+        "epochs": cfg["training"]["epochs"],
+        "projected_naive_model_seconds": ms / 1000.0 * batches_per_epoch * cfg["training"]["epochs"],
+    }
+
+
+def run_unit(arm_name: str, system_name: str, seed: int, threads: int) -> dict:
+    """Train and score ONE (arm, system, seed) and write its own two files.
+
+    Writing per unit is what makes the run restartable and what lets arms be
+    run as separate processes: nothing is shared between units except the
+    read-only sample table.
+    """
+    torch.set_num_threads(max(1, threads))
+    cfg = yaml.safe_load(CONFIG_PATH.read_text())
+    data_cfg = load_lanl_config(cfg["data"]["config"])
+    arm = next(a for a in cfg["view_configurations"] if a["name"] == arm_name)
+    system = next(s for s in cfg["systems"] if s["name"] == system_name)
+
+    started = time.time()
+    scaled, indices, scaler = arm_dataset(cfg, data_cfg, arm)
+    train_idx, test_idx = indices["train"], indices["test"]
+    model = train_lanl(scaled, train_idx, seed, system["use_discount"], cfg)
+    scores, collected = per_sample_scores(
+        model, scaled, test_idx, cfg["evaluation"]["batch_size"])
+
+    row = {"seed": seed}
+    row.update(metric_row(
+        collected["labels"], collected["probs"], collected["vacuity_confidence"], cfg))
+    diagnostics = {"seed": seed}
+    diagnostics.update(dependence_and_eniv(model, scaled, test_idx, cfg))
+
+    # Part 29 test A on this unit: ENIV and dependence on real attack vs real
+    # benign test windows, never pooled.
+    labels = scaled.labels.numpy()[test_idx]
+    natural = {}
+    for name, idx in (("attack_windows", test_idx[labels == CLASS_ATTACK]),
+                      ("benign_windows", test_idx[labels == CLASS_BENIGN])):
+        if idx.size < 2:
+            natural[name] = {"not_measured": f"only {idx.size} windows"}
+            continue
+        record = dependence_and_eniv(model, scaled, idx, cfg)
+        natural[name] = {k: v for k, v in record.items() if isinstance(v, (int, float))}
+
+    SCORES_DIR.mkdir(parents=True, exist_ok=True)
+    UNITS_DIR.mkdir(parents=True, exist_ok=True)
+    tag = f"{arm_name}_{system_name}_seed{seed}"
+    score_path = SCORES_DIR / f"{tag}.npz"
+    np.savez_compressed(score_path, **scores)
+
+    unit = {
+        "arm": arm_name, "system": system_name, "seed": seed,
+        "views": list(arm["views"]),
+        "use_discount": system["use_discount"],
+        "threads": max(1, threads),
+        "seconds": time.time() - started,
+        "n_train": int(train_idx.size), "n_test": int(test_idx.size),
+        "scaler": {
+            "fit_rows": scaler["fit_rows"],
+            "present_rows_per_view": scaler["present_rows_per_view"],
+            "fitted_on": "train block only",
+        },
+        "metrics": row,
+        "diagnostics": diagnostics,
+        "natural_windows": natural,
+        "scores_file": str(score_path).replace("\\", "/"),
+        "scores_sha256": hashlib.sha256(score_path.read_bytes()).hexdigest(),
+    }
+    (UNITS_DIR / f"{tag}.json").write_text(json.dumps(json_safe(unit), indent=2))
+    LOGGER.info(
+        "unit %s done in %.1fs (bal_acc=%.4f roc_auc=%.4f)",
+        tag, unit["seconds"], row["balanced_accuracy"], row["roc_auc"],
+    )
+    return unit
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 diagnostics. No training: everything reads samples.npz and scores/.
+# ---------------------------------------------------------------------------
+
+#: How missing views enter dependence/ENIV. Stated as a constant so the README
+#: cannot drift from the code it describes.
+MISSING_VIEW_HANDLING = (
+    "A missing view is carried as a BOOLEAN MASK, not as a zero-filled "
+    "observation. `prismflow/statistics/dependence.py::feature_dependence_matrix` "
+    "receives `view_mask` and `prismflow/statistics/dependence.py::available_views` "
+    "reduces it to the per-view availability vector that "
+    "`prismflow/eniv/eniv.py::compute_eniv` is given, so an absent view is "
+    "excluded from the pair statistics rather than contributing a zero row. "
+    "The feature row of an absent view IS zero in the tensor "
+    "(`run_lanl.py::apply_scaler` leaves `views[~rows, v] = 0.0`), but the "
+    "encoder never consumes it because `MultiViewEncoder` gates on the mask. "
+    "Consequence for the pair table: a dns pair is computed over the samples "
+    "where BOTH views of the pair are present, not over all samples, so the "
+    "dns pairs rest on the ~2% of samples that have a dns record."
+)
+
+
+def arm_coverage(data_cfg, indices: dict, cfg: dict) -> dict:
+    """Per arm: samples left with NO present view once that arm's views are dropped.
+
+    All arms share one sample table, so dropping a view cannot remove a row -
+    it can only empty it. A row whose every remaining view is absent carries
+    an all-zero feature tensor and an all-False mask, so it is
+    UNPREDICTABLE BY CONSTRUCTION: every model must give it the same score,
+    whatever its label. Counting them is the honest way to say how much of an
+    arm's attack class is unreachable before any training happens.
+    """
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    labels = samples.labels
+    sources = list(samples.sources)
+    out = {
+        "note": (
+            "Shared sample table: all arms use the SAME rows, labels and "
+            "split. An arm drops a view's feature columns and encoder, never "
+            "a row. A row with no present view among the arm's views is "
+            "unpredictable by construction - all models score it identically."
+        ),
+        "n_samples_total": int(labels.size),
+        "per_arm": {},
+    }
+    for arm in cfg["view_configurations"]:
+        keep = [sources.index(v) for v in arm["views"]]
+        present_any = samples.view_mask[:, keep].any(axis=1)
+        entry = {}
+        for split_name in ("train", "test"):
+            idx = indices[split_name]
+            empty = ~present_any[idx]
+            attack = labels[idx] == CLASS_ATTACK
+            entry[split_name] = {
+                "n_samples": int(idx.size),
+                "n_empty_all_views_absent": int(empty.sum()),
+                "n_attack_samples": int(attack.sum()),
+                "n_attack_empty": int((empty & attack).sum()),
+                "n_benign_empty": int((empty & ~attack).sum()),
+                "attack_empty_share": (
+                    float((empty & attack).sum() / attack.sum())
+                    if attack.sum() else float("nan")
+                ),
+            }
+        out["per_arm"][arm["name"]] = entry
+    return out
+
+
+def trivial_baselines(data_cfg, indices: dict) -> dict:
+    """Scalars a model must beat: record volume, auth presence, views present.
+
+    Orientation is fixed on the TRAIN block only - if a scalar ranks attacks
+    below benigns on train, its sign is flipped, and that decision is made
+    without ever looking at test. The test AUC that follows is then honest
+    about direction.
+    """
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    views = samples.views
+    mask = samples.view_mask
+    labels = samples.labels
+    sources = list(samples.sources)
+
+    # Feature 0 of every view is log1p(n_events) for that view, so the summed
+    # expm1 is the total record count across views for that sample.
+    totals = np.zeros(views.shape[0], dtype=np.float64)
+    for v in range(views.shape[1]):
+        totals += np.expm1(views[:, v, 0].astype(np.float64)) * mask[:, v]
+
+    candidates = {
+        "total_records_across_views": totals,
+        "auth_present_indicator": mask[:, sources.index("auth")].astype(np.float64),
+        "n_views_present": mask.sum(axis=1).astype(np.float64),
+    }
+    out = {
+        "note": (
+            "Each row is a SINGLE SCALAR, no training. Orientation (sign) is "
+            "chosen on the train block only and then applied unchanged to "
+            "test."
+        ),
+        "baselines": {},
+    }
+    for name, score in candidates.items():
+        tr, te = indices["train"], indices["test"]
+        train_auc = roc_auc_binary(labels[tr], score[tr])
+        sign = 1.0 if not math.isfinite(train_auc) or train_auc >= 0.5 else -1.0
+        out["baselines"][name] = {
+            "train_auc_as_measured": _safe(train_auc),
+            "orientation_fixed_on_train": "as-is" if sign > 0 else "negated",
+            "test_auc": _safe(roc_auc_binary(labels[te], sign * score[te])),
+            "n_test": int(te.size),
+        }
+    return out
+
+
+def host_audit(data_cfg, indices: dict) -> dict:
+    """Attack samples per computer, and how concentrated they are."""
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    labels = samples.labels
+    computers = np.asarray(samples.computer, dtype=object)
+    out = {"per_split": {}}
+    attack_sets = {}
+    for name in ("train", "test"):
+        idx = indices[name]
+        attack_idx = idx[labels[idx] == CLASS_ATTACK]
+        hosts, counts = np.unique(computers[attack_idx], return_counts=True)
+        order = np.argsort(-counts)
+        counts = counts[order]
+        hosts = hosts[order]
+        total = int(counts.sum())
+        attack_sets[name] = set(hosts.tolist())
+        out["per_split"][name] = {
+            "n_attack_samples": total,
+            "n_attack_computers": int(hosts.size),
+            "top1_computer": str(hosts[0]) if hosts.size else None,
+            "top1_share": float(counts[0] / total) if total else float("nan"),
+            "top4_share": float(counts[:4].sum() / total) if total else float("nan"),
+            "top10": [
+                {"computer": str(h), "attack_samples": int(c)}
+                for h, c in zip(hosts[:10], counts[:10])
+            ],
+        }
+    shared = attack_sets["train"] & attack_sets["test"]
+    out["attack_computers_shared_train_test"] = len(shared)
+    out["attack_computers_test_only"] = len(attack_sets["test"] - attack_sets["train"])
+    out["note"] = (
+        "A computer with attack samples in BOTH blocks lets a model recognise "
+        "the host rather than the behaviour, which is why the seen/unseen "
+        "split below is reported."
+    )
+    return out
+
+
+def _load_scores(arm: str, system: str, seeds) -> list[dict]:
+    rows = []
+    for seed in seeds:
+        path = SCORES_DIR / f"{arm}_{system}_seed{seed}.npz"
+        if not path.exists():
+            continue
+        with np.load(path, allow_pickle=True) as handle:
+            rows.append({
+                "seed": seed,
+                "computer": np.asarray([str(c) for c in handle["computer"]], dtype=object),
+                "label": handle["label"],
+                "prob_attack": handle["prob_attack"],
+            })
+    return rows
+
+
+def seen_unseen_auc(data_cfg, indices: dict, cfg: dict, arms: list[str]) -> dict:
+    """Test AUC on attack samples whose computer is also attacked in train, vs not.
+
+    Each group is scored against ALL benign test samples, so the two AUCs are
+    comparable to each other and to the arm's overall AUC. Descriptive only:
+    the groups are different sizes and are not a randomised comparison.
+    """
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    labels = samples.labels
+    computers = np.asarray(samples.computer, dtype=object)
+    train_attack_hosts = set(
+        computers[indices["train"][labels[indices["train"]] == CLASS_ATTACK]].tolist()
+    )
+    out = {
+        "note": (
+            "'seen' = the attack sample's computer also has at least one "
+            "attack sample in the train block. Each group is scored against "
+            "all benign test samples. Descriptive, not a controlled "
+            "comparison."
+        ),
+        "per_arm": {},
+    }
+    for arm in arms:
+        per_system = {}
+        for system in ("naive", "prismflow"):
+            rows = _load_scores(arm, system, cfg["seeds"])
+            if not rows:
+                continue
+            groups = {"seen": [], "unseen": []}
+            counts = {}
+            for row in rows:
+                is_attack = row["label"] == CLASS_ATTACK
+                seen_flag = np.asarray(
+                    [c in train_attack_hosts for c in row["computer"]], dtype=bool)
+                benign = ~is_attack
+                for key, selector in (("seen", is_attack & seen_flag),
+                                      ("unseen", is_attack & ~seen_flag)):
+                    counts[key] = int(selector.sum())
+                    keep = selector | benign
+                    if selector.sum() == 0:
+                        groups[key].append(float("nan"))
+                        continue
+                    groups[key].append(
+                        roc_auc_binary(row["label"][keep], row["prob_attack"][keep]))
+            per_system[system] = {
+                key: {
+                    "auc_mean": _safe(float(np.nanmean(values))) if values else float("nan"),
+                    "auc_std": _safe(float(np.nanstd(values, ddof=1))) if len(values) > 1 else float("nan"),
+                    "n_attack_samples": counts.get(key, 0),
+                    "n_seeds": int(np.sum(np.isfinite(values))),
+                }
+                for key, values in groups.items()
+            }
+            per_system[system]["n_benign_test_samples"] = int((rows[0]["label"] == CLASS_BENIGN).sum())
+        out["per_arm"][arm] = per_system
+    return out
+
+
+def cluster_bootstrap(cfg: dict, arms: list[str], replicates: int = 2000,
+                      seed: int = 12345) -> dict:
+    """Paired cluster bootstrap over test COMPUTERS for AUC(prismflow) - AUC(naive).
+
+    Clusters are computers, because samples from one computer are not
+    independent: the same host contributes many windows. Resampling rows would
+    understate the interval. The statistic is the mean over seeds of the paired
+    difference, recomputed on each resampled set of computers.
+
+    This interval is about TEST-SET SAMPLING. It is a different quantity from
+    the per-seed std, which is training randomness on a fixed test set.
+    """
+    out = {
+        "note": (
+            "2000 replicates, fixed seed 12345, clusters = test computers, "
+            "paired (same resampled computers for both systems, every seed). "
+            "Measures test-set sampling variability; the per-seed std "
+            "measures training randomness. They are not interchangeable."
+        ),
+        "replicates": replicates,
+        "bootstrap_seed": seed,
+        "per_arm": {},
+    }
+    for arm in arms:
+        naive = _load_scores(arm, "naive", cfg["seeds"])
+        prism = _load_scores(arm, "prismflow", cfg["seeds"])
+        if not naive or not prism or len(naive) != len(prism):
+            out["per_arm"][arm] = {"not_measured": "scores missing for one system"}
+            continue
+        computers = naive[0]["computer"]
+        hosts = np.unique(computers)
+        index_by_host = {h: np.flatnonzero(computers == h) for h in hosts}
+
+        def paired_mean(rows_a, rows_b, rows_idx):
+            diffs = []
+            for a, b in zip(rows_a, rows_b):
+                auc_a = roc_auc_binary(a["label"][rows_idx], a["prob_attack"][rows_idx])
+                auc_b = roc_auc_binary(b["label"][rows_idx], b["prob_attack"][rows_idx])
+                if math.isfinite(auc_a) and math.isfinite(auc_b):
+                    diffs.append(auc_a - auc_b)
+            return float(np.mean(diffs)) if diffs else float("nan")
+
+        all_rows = np.arange(computers.size)
+        observed = paired_mean(prism, naive, all_rows)
+        rng = np.random.default_rng(seed)
+        draws = []
+        for _ in range(replicates):
+            picked = rng.choice(hosts, size=hosts.size, replace=True)
+            rows_idx = np.concatenate([index_by_host[h] for h in picked])
+            value = paired_mean(prism, naive, rows_idx)
+            if math.isfinite(value):
+                draws.append(value)
+        draws = np.asarray(draws, dtype=np.float64)
+        out["per_arm"][arm] = {
+            "observed_mean_paired_auc_difference": _safe(observed),
+            "ci95_low": _safe(float(np.percentile(draws, 2.5))) if draws.size else float("nan"),
+            "ci95_high": _safe(float(np.percentile(draws, 97.5))) if draws.size else float("nan"),
+            "n_replicates_used": int(draws.size),
+            "n_test_computers": int(hosts.size),
+        }
+    return out
+
+
+def replicate_table(configurations: dict) -> dict:
+    """Run 1 vs run 2 of with_auth, per metric. Run 1 is never replaced.
+
+    Run 1 was executed sequentially at torch's default thread count; run 2 in
+    whatever mode this Part chose. A difference here is execution-mode plus
+    floating-point reduction order, NOT a different experiment: same seeds,
+    same hyperparameters, same sample table rule.
+    """
+    gz = RESULTS_DIR / "results.run1.json.gz"
+    if not gz.exists() or "with_auth" not in configurations:
+        return {"not_measured": "run 1 record or with_auth arm absent"}
+    import gzip as _gzip
+    run1 = json.loads(_gzip.decompress(gz.read_bytes()))
+    manifest = json.loads((RESULTS_DIR / "results_manifest.json").read_text())
+    digest = hashlib.sha256(
+        _gzip.decompress(gz.read_bytes())).hexdigest()
+    out = {
+        "note": (
+            "Same seeds, same hyperparameters, same sample rule; run 1 ran "
+            "sequentially at torch's default thread count, run 2 in this "
+            "Part's chosen mode. Differences are execution mode and "
+            "floating-point reduction order, not a different experiment."
+        ),
+        "run1_sha256_verified": digest == manifest["run1"]["decompressed_sha256"],
+        "run1_commit": run1.get("git_commit"),
+        "per_metric": {},
+    }
+    for system in ("naive", "prismflow"):
+        old = dig(run1, "configurations", "with_auth", "systems", system, "summary")
+        new = dig(configurations, "with_auth", "systems", system, "summary")
+        if not old or not new:
+            continue
+        for key in ("balanced_accuracy", "roc_auc", "prob_ece", "attack_recall"):
+            a, b = dig(old, key, "mean"), dig(new, key, "mean")
+            if a is None or b is None:
+                continue
+            out["per_metric"].setdefault(key, {})[system] = {
+                "run1_mean": float(a),
+                "run2_mean": float(b),
+                "difference_run2_minus_run1": float(b) - float(a),
+            }
+    return out
+
+
+def aggregate(mode: dict | None = None) -> dict:
+    """Combine results/lanl/units/*.json into results.json and the README.
+
+    Reads only files. An arm with no units simply does not appear, which is
+    what lets the README's status line say truthfully which arms exist.
+    """
+    started = time.time()
+    cfg = yaml.safe_load(CONFIG_PATH.read_text())
+    data_cfg = load_lanl_config(cfg["data"]["config"])
+    units = [json.loads(p.read_text()) for p in sorted(UNITS_DIR.glob("*.json"))]
+    if not units:
+        raise RuntimeError("no units in results/lanl/units/")
+
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    full = LANLMultiViewDataset(samples)
+    indices = split_indices(full)
+    report = json.loads((RESULTS_DIR / "split.json").read_text())
+    population = json.loads((RESULTS_DIR / "population.json").read_text())
+
+    configurations = {}
+    for arm in cfg["view_configurations"]:
+        name = arm["name"]
+        arm_units = [u for u in units if u["arm"] == name]
+        if not arm_units:
+            continue
+        data = subset(full, tuple(arm["views"]))
+        systems = {}
+        for system in cfg["systems"]:
+            mine = sorted(
+                (u for u in arm_units if u["system"] == system["name"]),
+                key=lambda u: u["seed"],
+            )
+            if not mine:
+                continue
+            rows = [u["metrics"] | {"seed": u["seed"]} for u in mine]
+            diagnostics = [u["diagnostics"] for u in mine]
+            systems[system["name"]] = {
+                "system": system["name"],
+                "label": system["label"],
+                "use_discount": system["use_discount"],
+                "experiment_id": f"lanl/{name}/{system['name']}",
+                "protocol_output": "not written in unit mode; per-unit files "
+                                   "are results/lanl/units/*.json",
+                "per_seed": rows,
+                "summary": summarise(rows),
+                "diagnostics_per_seed": diagnostics,
+                "diagnostics_summary": summarise(
+                    [{k: v for k, v in d.items() if isinstance(v, float)}
+                     for d in diagnostics]),
+                "pair_table": pair_table(diagnostics, list(arm["views"])),
+                "seconds_per_unit": [u["seconds"] for u in mine],
+                "scores_files": [
+                    {"seed": u["seed"], "file": u["scores_file"],
+                     "sha256": u["scores_sha256"]} for u in mine
+                ],
+            }
+        if len(systems) < 2:
+            # A half-finished arm: one system only. Keep it, but it cannot be
+            # paired, and the README's status check will catch the seed count.
+            LOGGER.warning("arm %s has only %s", name, list(systems))
+
+        natural = {"note": (
+            "ENIV and mean pairwise dependence on real attack vs real benign "
+            "test windows. No synthetic perturbation. LANL's red-team file "
+            "has no attack-step taxonomy, so unlike Part 29 on AIT there is "
+            "no dnsteal-only/multi-step split; this is one attack "
+            "population, not two pooled."
+        ), "n": {}, "per_system": {}}
+        labels_test = full.labels.numpy()[indices["test"]]
+        natural["n"] = {
+            "attack_windows": int((labels_test == CLASS_ATTACK).sum()),
+            "benign_windows": int((labels_test == CLASS_BENIGN).sum()),
+        }
+        for system_name in systems:
+            mine = sorted((u for u in arm_units if u["system"] == system_name),
+                          key=lambda u: u["seed"])
+            populations = {}
+            for pop in ("attack_windows", "benign_windows"):
+                rows = [
+                    u["natural_windows"][pop] | {"seed": u["seed"]}
+                    for u in mine
+                    if isinstance(u["natural_windows"].get(pop), dict)
+                    and "not_measured" not in u["natural_windows"][pop]
+                ]
+                populations[pop] = (
+                    {"per_seed": rows, "summary": summarise(rows)} if rows
+                    else {"not_measured": "no unit reported this population"}
+                )
+            paired = (
+                paired_difference(populations["attack_windows"]["per_seed"],
+                                  populations["benign_windows"]["per_seed"],
+                                  LOWER_IS_BETTER)
+                if all("per_seed" in populations[p] for p in populations) else {}
+            )
+            natural["per_system"][system_name] = {
+                "populations": populations,
+                "paired_attack_minus_benign": paired,
+            }
+
+        labels = data.labels.numpy()[indices["test"]]
+        first_unit = arm_units[0]
+        configurations[name] = {
+            "name": name,
+            "label": arm["label"],
+            "views": list(arm["views"]),
+            "scaler": first_unit["scaler"],
+            "missingness": {
+                "train": missingness(data, indices["train"]),
+                "test": missingness(data, indices["test"]),
+                "threshold": cfg["missingness"]["threshold"],
+                "over_threshold_train": [
+                    v for v, frac in missingness(data, indices["train"]).items()
+                    if frac > cfg["missingness"]["threshold"]],
+                "over_threshold_test": [
+                    v for v, frac in missingness(data, indices["test"]).items()
+                    if frac > cfg["missingness"]["threshold"]],
+            },
+            "majority_baseline": majority_baseline(labels, cfg),
+            "systems": systems,
+            "paired_prismflow_minus_naive": (
+                paired_difference(systems["prismflow"]["per_seed"],
+                                  systems["naive"]["per_seed"], LOWER_IS_BETTER)
+                if len(systems) == 2 else {}
+            ),
+            "part29_test_a_natural_attack_windows": natural,
+            "part29_tests_not_run": {
+                "B_chorus_attack": (
+                    "NOT RUN. Part 29's grid is k in {1,2,3} x Part 09's "
+                    "epsilon and beta grid, retrained per cell, which does "
+                    "not fit this Part's time budget. No partial grid is "
+                    "reported, because a subset of the cells is not the test."
+                ),
+                "C_honest_duplication": (
+                    "PARTIALLY RUN. The strict same-sensor pair does not "
+                    "exist here: LANL cyber1 ships no sensor-group "
+                    "definition, so there is no within-group pair to score "
+                    "and the answer is NO EVIDENCE. The 'different sensors, "
+                    "naturally dependent' half needs the most/least "
+                    "dependent pairs, which ARE written to "
+                    "systems.<name>.pair_table; scoring the detector on them "
+                    "was not run."
+                ),
+                "D_missingness": (
+                    "NOT RUN as a detector-AUC test. Per-view missing "
+                    "fractions on train and test ARE measured above, and "
+                    "whole arms without flows and without dns ARE run, which "
+                    "is a stronger answer than masking at 30%/50%; but Part "
+                    "10's masked detector AUC itself was not computed."
+                ),
+            },
+        }
+
+    arms_present = list(configurations)
+    diagnostics = {
+        "missing_view_handling": MISSING_VIEW_HANDLING,
+        "arm_coverage": arm_coverage(data_cfg, indices, cfg),
+        "trivial_baselines": trivial_baselines(data_cfg, indices),
+        "host_audit": host_audit(data_cfg, indices),
+        "seen_unseen": seen_unseen_auc(data_cfg, indices, cfg, arms_present),
+        "cluster_bootstrap": cluster_bootstrap(cfg, arms_present),
+    }
+
+    payload = json_safe({
+        "experiment": cfg["experiment"],
+        "smoke": False,
+        "git_commit": git_commit(),
+        "config": cfg,
+        "data_config": cfg["data"]["config"],
+        "window_seconds": data_cfg.window_seconds,
+        "day_seconds": data_cfg.day_seconds,
+        "split": data_cfg.split,
+        "label_meaning": LABEL_MEANING,
+        "split_report": report,
+        "population": population,
+        "execution_mode": mode or {"not_recorded": True},
+        "configurations": configurations,
+        "phase3_diagnostics": diagnostics,
+        "replicate_run1_vs_run2": replicate_table(configurations),
+        "n_units": len(units),
+        "elapsed_seconds": time.time() - started,
+    })
+    (RESULTS_DIR / "results.json").write_text(json.dumps(payload, indent=2))
+    write_readme(payload, Path(__file__).with_name("README.md"))
+    LOGGER.info("aggregated %d units over arms %s", len(units), arms_present)
+    return payload
 
 
 def git_commit() -> str | None:
@@ -1420,6 +2432,18 @@ def main() -> None:
     parser.add_argument("--readme-only", action="store_true",
                         help="regenerate README.md from the committed "
                              "results/lanl/results.json without rerunning")
+    parser.add_argument("--unit", default=None,
+                        help="run ONE unit, as arm:system:seed")
+    parser.add_argument("--threads", type=int, default=1,
+                        help="torch intra-op threads for this process")
+    parser.add_argument("--benchmark", type=int, default=None,
+                        help="time N training steps and exit")
+    parser.add_argument("--aggregate", action="store_true",
+                        help="combine results/lanl/units/*.json into "
+                             "results.json and regenerate the README")
+    parser.add_argument("--build-samples", action="store_true",
+                        help="the ONE scan: stream all four views and "
+                             "write results/lanl/samples.npz plus its sha256")
     parser.add_argument("--label-audit", action="store_true",
                         help="write results/lanl/label_audit.json from "
                              "redteam.txt.gz alone; reads no view stream")
@@ -1429,6 +2453,79 @@ def main() -> None:
         results = json.loads((RESULTS_DIR / "results.json").read_text())
         write_readme(results, Path(__file__).with_name("README.md"))
         LOGGER.info("README regenerated from results/lanl/results.json")
+        return
+
+    if args.aggregate:
+        mode_path = RESULTS_DIR / "execution_mode.json"
+        mode = json.loads(mode_path.read_text()) if mode_path.exists() else None
+        aggregate(mode)
+        return
+
+    if args.benchmark:
+        record = benchmark_steps(args.benchmark, args.threads)
+        print(json.dumps(record))
+        return
+
+    if args.unit:
+        arm_name, system_name, seed = args.unit.split(":")
+        run_unit(arm_name, system_name, int(seed), args.threads)
+        return
+
+    if args.build_samples:
+        # The ONE scan of this Part. Every arm afterwards reads samples.npz, so
+        # the four view streams are read once and all arms share identical rows.
+        started = time.time()
+        data_cfg = load_lanl_config(yaml.safe_load(
+            CONFIG_PATH.read_text())["data"]["config"])
+        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+        dataset, redteam, timing = load_dataset(data_cfg, args.workers)
+        indices = split_indices(dataset)
+        report = split_report(dataset, redteam, indices, data_cfg)
+        population = dict(dataset.samples.population)
+        population.update({
+            "scan_seconds": timing["scan_seconds"],
+            "workers": timing["workers"],
+            "read_until": data_cfg.read_until,
+            "smoke": False,
+            "kept_samples_total": len(dataset),
+            "estimated_population_cells_union": {
+                "value": None,
+                "method": (
+                    "Not directly counted. The union over views of occupied "
+                    "cells cannot be derived from per-view counts, and "
+                    "counting it exactly would need a cross-view per-window "
+                    "set this loader does not keep. The exact per-view counts "
+                    "are in per_view; the union is bounded below by their "
+                    "maximum and above by their sum."
+                ),
+                "lower_bound": max(
+                    v["population_cells"] for v in population["per_view"].values()),
+                "upper_bound": sum(
+                    v["population_cells"] for v in population["per_view"].values()),
+            },
+        })
+        dataset.samples.population = population
+        (RESULTS_DIR / "population.json").write_text(
+            json.dumps(json_safe(population), indent=2))
+        (RESULTS_DIR / "split.json").write_text(json.dumps(json_safe(report), indent=2))
+        (RESULTS_DIR / "label_audit.json").write_text(
+            json.dumps(json_safe(label_audit(data_cfg, redteam)), indent=2))
+
+        record = save_samples(dataset.samples, RESULTS_DIR / "samples.npz")
+        record["scan_seconds"] = timing["scan_seconds"]
+        record["built_at_utc"] = dt.datetime.now(dt.timezone.utc).isoformat()
+        manifest_path = RESULTS_DIR / "results_manifest.json"
+        manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+        manifest["samples"] = record
+        manifest_path.write_text(json.dumps(manifest, indent=2))
+
+        check_stop_conditions(
+            report,
+            yaml.safe_load(CONFIG_PATH.read_text())
+            ["stop_conditions"]["min_attack_windows_per_split"],
+        )
+        LOGGER.info("samples.npz written: %s", record)
+        LOGGER.info("build-samples done in %.1fs", time.time() - started)
         return
 
     if args.label_audit:

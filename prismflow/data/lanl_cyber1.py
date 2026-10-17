@@ -57,6 +57,8 @@ transformed. No feature reads the label file, and no feature combines views.
 from __future__ import annotations
 
 import dataclasses
+import hashlib
+import json
 import subprocess
 import zlib
 from collections import defaultdict
@@ -489,6 +491,90 @@ def load_lanl(cfg: LANLConfig, scan=None) -> LANLSamples:
     runner = scan or (lambda view: scan_view(view, cfg, redteam["cells"]))
     scans = {view: runner(view) for view in cfg.views}
     return build_lanl_samples(cfg, scans, redteam)
+
+
+def save_samples(samples: LANLSamples, path: Path) -> dict:
+    """Write the whole sample table to a compressed .npz and return its sha256.
+
+    Saved so that every later arm reads the SAME rows without rescanning 515M
+    records. The four view streams are read exactly once per Part; an arm that
+    drops a view drops feature columns from this table and nothing else, which
+    is what makes the arms paired rather than merely similar.
+
+    `config` is stored as the JSON of the pre-registered yaml path plus the
+    resolved values, not as a pickle, so the file stays readable without this
+    module.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    meta = {
+        "sources": list(samples.sources),
+        "window_seconds": samples.config.window_seconds,
+        "day_seconds": samples.config.day_seconds,
+        "read_until": samples.config.read_until,
+        "control_divisor": samples.config.control_divisor,
+        "split": samples.config.split,
+        "features": {v: list(FEATURES[v]) for v in samples.sources},
+        "population": samples.population,
+    }
+    np.savez_compressed(
+        path,
+        views=samples.views,
+        view_mask=samples.view_mask,
+        labels=samples.labels,
+        label_known=samples.label_known,
+        window_start=samples.window_start,
+        computer=np.asarray(samples.computer, dtype=object),
+        block=np.asarray(samples.block, dtype=object),
+        meta=np.asarray([json.dumps(meta)], dtype=object),
+    )
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    return {
+        "file": str(path).replace("\\", "/"),
+        "sha256": digest,
+        "bytes": path.stat().st_size,
+        "n_samples": int(samples.views.shape[0]),
+        "n_views": int(samples.views.shape[1]),
+        "feature_dim": int(samples.views.shape[2]),
+        "sources": list(samples.sources),
+    }
+
+
+def load_samples(path: Path, cfg: LANLConfig) -> LANLSamples:
+    """Read the sample table back. Fails loudly if it disagrees with the config.
+
+    The checks matter: an arm that silently trained on a table built under a
+    different window length or control divisor would be comparing against the
+    other arms on different data.
+    """
+    with np.load(path, allow_pickle=True) as handle:
+        meta = json.loads(handle["meta"][0])
+        if tuple(meta["sources"]) != tuple(cfg.views):
+            raise ValueError(
+                f"{path.name} holds views {meta['sources']}, config says "
+                f"{list(cfg.views)}"
+            )
+        for key, value in (
+            ("window_seconds", cfg.window_seconds),
+            ("control_divisor", cfg.control_divisor),
+            ("read_until", cfg.read_until),
+        ):
+            if meta[key] != value:
+                raise ValueError(
+                    f"{path.name} was built with {key}={meta[key]}, config "
+                    f"says {value}"
+                )
+        return LANLSamples(
+            views=handle["views"],
+            view_mask=handle["view_mask"],
+            labels=handle["labels"],
+            label_known=handle["label_known"],
+            window_start=handle["window_start"],
+            computer=[str(c) for c in handle["computer"]],
+            block=[str(b) for b in handle["block"]],
+            sources=tuple(meta["sources"]),
+            config=cfg,
+            population=meta["population"],
+        )
 
 
 class LANLMultiViewDataset:

@@ -1,0 +1,33 @@
+{
+  "decision": "parallel",
+  "rule": "Fixed before measuring: use parallel units if parallel throughput >= 2x run 1's sequential throughput, else sequential. Parallelism is across (arm, system, seed) units only; hyperparameters and seeds 0-4 are unchanged.",
+  "threads_per_process": 1,
+  "max_concurrent_processes": 11,
+  "benchmark_idle_machine": [
+    {
+      "threads": 1,
+      "ms_per_step": 3.9391136169433594,
+      "projected_naive_model_seconds": 105.72580947875977
+    },
+    {
+      "threads": 2,
+      "ms_per_step": 4.000864028930664,
+      "projected_naive_model_seconds": 107.38319053649903
+    },
+    {
+      "threads": 4,
+      "ms_per_step": 4.970909357070923,
+      "projected_naive_model_seconds": 133.41920714378358
+    },
+    {
+      "threads": 12,
+      "ms_per_step": 9.24908995628357,
+      "projected_naive_model_seconds": 248.24557442665105
+    }
+  ],
+  "benchmark_note": "200 real training steps of a with_auth naive model on the real train block, 10 warm-up steps discarded. torch's default thread count (12) is 2.35x slower per step than 1 thread: tiny batches of a 4-view MLP spend more time in thread synchronisation than in arithmetic. Run 1 ran at the default and its measured 253 s/naive model matches this benchmark's 248 s projection at 12 threads, which is the check that the benchmark reflects reality.",
+  "sequential_run1_seconds_per_unit": 335.5,
+  "projected_parallel_seconds_per_unit": 140.20161691748578,
+  "projected_throughput_speedup_vs_run1": 26.322806263867882,
+  "prismflow_to_naive_cost_ratio_run1": 1.6521739130434783
+}

@@ -30,13 +30,38 @@ data:
 # part30.md step 2. The red-team events are drawn from auth data, so the auth
 # view is label-adjacent and every experiment runs both ways. The two
 # configurations are paired within seed; neither is "the" result.
+# PRIORITY ORDER. Run 1 finished only with_auth, which is the label-adjacent
+# arm and so the least informative one. The order below puts the arms the brief
+# owes first, so a run that is cut short loses the least important arm rather
+# than the most important.
+#
+# All four arms share ONE sample table (results/lanl/samples.npz): the same
+# rows, labels and split, built from all four views. An arm drops a view's
+# FEATURE COLUMNS and its encoder; it never rebuilds or re-filters the sample
+# set. That is what makes the arms paired within seed rather than merely
+# similar, and it is why a sample whose only present view is the dropped one
+# survives as a row with an all-False view mask.
 view_configurations:
-  - name: with_auth
-    label: "WITH auth (auth, proc, flows, dns)"
-    views: [auth, proc, flows, dns]
+  # 1. part30.md step 2: the red-team labels are drawn from auth data, so the
+  #    auth view is label-adjacent and the brief requires the arm without it.
   - name: without_auth
     label: "WITHOUT auth (proc, flows, dns)"
     views: [proc, flows, dns]
+  # 2-3. Part 28 step 5: a view missing in more than 50% of train samples gets
+  #    a configuration without it. Measured in run 1: flows missing 0.5640,
+  #    dns missing 0.9839 (results/lanl/results.run1.json.gz,
+  #    configurations.with_auth.missingness.train).
+  - name: without_flows
+    label: "WITHOUT flows (auth, proc, dns)"
+    views: [auth, proc, dns]
+  - name: without_dns
+    label: "WITHOUT dns (auth, proc, flows)"
+    views: [auth, proc, flows]
+  # 4. Re-run so every arm shares one execution mode and thread setting. Run 1
+  #    is kept and reported as a replicate, not replaced.
+  - name: with_auth
+    label: "WITH auth (auth, proc, flows, dns)"
+    views: [auth, proc, flows, dns]
 
 systems:
   - {name: naive, label: naive fusion, use_discount: false}
