@@ -993,7 +993,22 @@ def write_readme(results: dict, path: Path) -> None:
         naive = configuration["systems"]["naive"]
         prism = configuration["systems"]["prismflow"]
         baseline = configuration["majority_baseline"]
-        paired = configuration["paired_prismflow_minus_naive"]
+        paired = dict(configuration["paired_prismflow_minus_naive"])
+        # The diagnostics (ENIV, mean dependence) live in their own per-seed
+        # list, so their paired difference is not in the metric pairing above.
+        # Pair them here with the same imported function, after dropping the
+        # non-scalar entries (`matrix`, `views`, `available`) it cannot read.
+        def scalars(rows):
+            return [
+                {k: v for k, v in row.items() if isinstance(v, (int, float))}
+                for row in rows
+            ]
+        for key, value in paired_difference(
+            scalars(prism["diagnostics_per_seed"]),
+            scalars(naive["diagnostics_per_seed"]),
+            LOWER_IS_BETTER,
+        ).items():
+            paired.setdefault(key, value)
         for key, label, prevalence_dependent in HEADLINE:
             source_n = naive["summary"].get(key) or naive["diagnostics_summary"].get(key)
             source_p = prism["summary"].get(key) or prism["diagnostics_summary"].get(key)
@@ -1001,6 +1016,21 @@ def write_readme(results: dict, path: Path) -> None:
             mark = " *(sample prevalence)*" if prevalence_dependent else ""
             A(f"| {label}{mark} | {fmt(source_n)} | {fmt(source_p)} | "
               f"{fmt(base)} | {signed(paired.get(key))} |")
+        A("")
+        seed_counts = {
+            system: dig(configuration, "systems", system, "summary",
+                        "balanced_accuracy", "n_seeds")
+            for system in ("naive", "prismflow")
+        }
+        A(f"Seeds reported: naive {seed_counts['naive']}, PrismFlow "
+          f"{seed_counts['prismflow']}, of "
+          f"{len(results['config']['seeds'])} configured. "
+          + ("Mean +/- std over 5 seeds, so these are findings under the "
+             "5-seed rule - subject to every caveat in section 3."
+             if all(c == len(results["config"]["seeds"])
+                    for c in seed_counts.values())
+             else "**Fewer than the configured seeds completed, so these are "
+                  "NOT findings under the 5-seed rule.**"))
         A("")
         A("Majority-class baseline predicts the test set's majority class for "
           "every window with a constant probability vector, so its accuracy IS "
@@ -1115,34 +1145,38 @@ def write_readme(results: dict, path: Path) -> None:
     A("")
     A("| dataset | condition | mean dependence | ENIV | source |")
     A("|---|---|---|---|---|")
-    for cell, label in (("clean|prismflow", "clean"),
-                        ("chorus_k2_eps1.0|prismflow", "chorus k=2, eps 1.0")):
+    for cell, label, key in (
+        # On clean synthetic data there is no compromised SET, so
+        # `dependence_compromised` has no value to report and the all-pairs
+        # mean is the comparable quantity. The key used is named in the row.
+        ("clean|prismflow", "clean", "dependence_all_pairs"),
+        ("chorus_k2_eps1.0|prismflow", "chorus k=2, eps 1.0", "dependence_compromised"),
+    ):
         block = dig(chorus, "summary", cell)
-        A(f"| synthetic | {label} | "
-          f"{fmt(dig(block, 'dependence_compromised'))} | "
+        A(f"| synthetic | {label} | {fmt(dig(block, key))} (`{key}`) | "
           f"{fmt(dig(block, 'eniv_measured'))} | "
           f"`results/chorus/attack_metrics.json`, `summary.{cell}` |")
     for direction in ("A_rm_to_santos", "B_santos_to_rm"):
-        for population, label in (("dnsteal_only", "attack (dnsteal-only)"),
-                                  ("benign", "benign")):
+        for pop_key, label in (("dnsteal_only", "attack (dnsteal-only)"),
+                               ("benign", "benign")):
             block = dig(ait, "directions", direction, "systems", "prismflow",
-                        "natural_windows", population, "summary")
+                        "natural_windows", pop_key, "summary")
             A(f"| AIT ({direction.split('_')[0]}) | {label} | "
               f"{fmt(dig(block, 'mean_dependence_eigen'))} | "
               f"{fmt(dig(block, 'eniv_eigen'))} | "
               f"`results/ait_attack/results.json`, `directions.{direction}."
-              f"systems.prismflow.natural_windows.{population}.summary` |")
+              f"systems.prismflow.natural_windows.{pop_key}.summary` |")
     for name, configuration in configurations.items():
         block = configuration["part29_test_a_natural_attack_windows"]["per_system"]
-        for population, label in (("attack_windows", "attack"),
-                                  ("benign_windows", "benign")):
-            summary = dig(block, "prismflow", "populations", population, "summary")
+        for pop_key, label in (("attack_windows", "attack"),
+                               ("benign_windows", "benign")):
+            summary = dig(block, "prismflow", "populations", pop_key, "summary")
             A(f"| LANL ({name}) | {label} | "
               f"{fmt(dig(summary, 'mean_dependence_eigen'))} | "
               f"{fmt(dig(summary, 'eniv_eigen'))} | "
               f"`results/lanl/results.json`, `configurations.{name}."
               f"part29_test_a_natural_attack_windows.per_system.prismflow."
-              f"populations.{population}.summary` |")
+              f"populations.{pop_key}.summary` |")
     A("")
     A("AIT's attack population is dnsteal-only, which Part 29 forbids pooling "
       "with its multi-step windows; LANL's red-team file has no step taxonomy, "
@@ -1155,14 +1189,30 @@ def write_readme(results: dict, path: Path) -> None:
     A("| dataset | quantity | value | source |")
     A("|---|---|---|---|")
     clone_rows = (clone or {}).get("summary") or []
+    # That file carries TWO rows per k, one per base correlation rho. Picking
+    # silently would make the cell ambiguous, so rho is pinned and named in
+    # the citation: rho = 0 is duplication with no underlying correlation.
+    CLONE_RHO = 0.0
     for k in (0, 2):
         row = next((r for r in clone_rows
-                    if r.get("k") == k and r.get("system") == "prismflow"), None)
-        A(f"| synthetic | exact duplication, k={k}: mean dependence on clone "
-          f"pairs | "
-          f"{fmt({'mean': row.get('dependence_clone_pairs_mean'), 'std': row.get('dependence_clone_pairs_std')}) if row else 'not measured'}"
-          f" | `results/clone/summary.json`, `summary[]` where k={k}, "
-          "system=prismflow |")
+                    if r.get("k") == k and r.get("system") == "prismflow"
+                    and r.get("rho") == CLONE_RHO), None)
+        # At k=0 there are no clone pairs, so dependence_clone_pairs has
+        # nothing to report; the all-pairs mean is what exists at both k.
+        overall = (
+            fmt({"mean": row.get("mean_dependence_mean"),
+                 "std": row.get("mean_dependence_std")}) if row else "not measured"
+        )
+        clone_pairs = (
+            fmt({"mean": row.get("dependence_clone_pairs_mean"),
+                 "std": row.get("dependence_clone_pairs_std")}) if row else "not measured"
+        )
+        if k == 0:
+            clone_pairs += " (no clone pairs exist at k=0)"
+        A(f"| synthetic | exact duplication, k={k}: mean dependence, all pairs "
+          f"/ clone pairs | {overall} / {clone_pairs} | "
+          f"`results/clone/summary.json`, `summary[]` where k={k}, "
+          f"rho={CLONE_RHO:g}, system=prismflow |")
     A("| synthetic | Part 10 clone_k2 detector AUC | not measured in this Part "
       "| not re-run here; Part 10's own results file holds it |")
     A(f"| AIT | strict same-sensor pair | "
