@@ -1,0 +1,20 @@
+{
+  "note": "Run 1 of Part 30 (with_auth only, 2026-10-17, commit 452bc1f). Immutable record: this file is never overwritten. Later runs write results.json afresh; run 1 is read from the gzip copy and reported as a replicate. sha256 is of the DECOMPRESSED bytes, so it can be checked after `gzip -dc`.",
+  "run1": {
+    "file": "results/lanl/results.run1.json.gz",
+    "decompressed_sha256": "ace7c1866b28572ad39a15bfc5667d23623b96cd23ee576829cc0a085357e583",
+    "decompressed_bytes": 158653,
+    "gzip_bytes": 19753,
+    "git_commit": "0086b7981f6b3a12e7f74f92fce768cd2e30885f",
+    "configurations": [
+      "with_auth"
+    ],
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+}
