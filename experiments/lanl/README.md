@@ -580,9 +580,9 @@ These are **INCOMPLETE**, not negative results. Nothing below should be read as 
 
 > **L24 (proposed).** LANL's red-team labels are derived from authentication records, so the `auth` view is label-adjacent. Part 30 measures both arms, so the WITHOUT-auth arm is the one that bears on detection from evidence independent of the label source. That arm is itself limited: 139 of 410 of its test attack samples (33.9%) have no record in any remaining view, so they are unpredictable by construction and cap the arm's attainable recall before training.
 
-> **L26 (proposed).** On LANL cyber1 a single untrained scalar - `total_records_across_views`, oriented on train only - reaches test ROC AUC 0.6843, against 0.8389 for the best trained arm (`results/lanl/results.json`, `phase3_diagnostics.trivial_baselines`). The trained arms are ahead of this scalar by more than 0.05 AUC.
-
 > **L25 (proposed).** Part 28's `fit_scaler`, `apply_scaler` and `train_ait` are not reusable across datasets: each resolves native view widths through `ait_lds.FEATURES`, keyed by AIT source names. Part 30 mirrored them rather than patching Part 28. Any future Part on a third dataset will hit the same wall.
+
+> **L26 (proposed).** On LANL cyber1 a single untrained scalar - `total_records_across_views`, oriented on train only - reaches test ROC AUC 0.6843, against 0.8389 for the best trained arm (`results/lanl/results.json`, `phase3_diagnostics.trivial_baselines`). The trained arms are ahead of this scalar by more than 0.05 AUC.
 
 ## 12. Files
 

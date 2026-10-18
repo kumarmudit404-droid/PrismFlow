@@ -1703,6 +1703,13 @@ def write_readme(results: dict, path: Path) -> None:
          if without and without.get("n_attack_empty") else ""))
     A("")
     best_trivial_name = None
+    A("> **L25 (proposed).** Part 28's `fit_scaler`, `apply_scaler` and "
+      "`train_ait` are not reusable across datasets: each resolves native view "
+      "widths through `ait_lds.FEATURES`, keyed by AIT source names. Part 30 "
+      "mirrored them rather than patching Part 28. Any future Part on a third "
+      "dataset will hit the same wall.")
+    A("")
+
     tb_block = dig(results, "phase3_diagnostics", "trivial_baselines", "baselines") or {}
     finite = [(n, r["test_auc"]) for n, r in tb_block.items()
               if isinstance(r.get("test_auc"), (int, float)) and math.isfinite(r["test_auc"])]
@@ -1727,12 +1734,6 @@ def write_readme(results: dict, path: Path) -> None:
                   "0.05 AUC.")
           )
         A("")
-    A("> **L25 (proposed).** Part 28's `fit_scaler`, `apply_scaler` and "
-      "`train_ait` are not reusable across datasets: each resolves native view "
-      "widths through `ait_lds.FEATURES`, keyed by AIT source names. Part 30 "
-      "mirrored them rather than patching Part 28. Any future Part on a third "
-      "dataset will hit the same wall.")
-    A("")
 
     # -- files -------------------------------------------------------------
     A("## 12. Files")
