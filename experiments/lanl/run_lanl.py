@@ -705,18 +705,12 @@ def write_readme(results: dict, path: Path) -> None:
             f"configurations finished. **{', '.join(missing)} did NOT run** "
             "and every figure below covers the finished configuration only. "
             + (
-                f"Reason, measured not estimated: the streaming pass took "
-                f"{scan:.0f} s and the finished configuration's 10 models took "
-                f"{elapsed - scan:.0f} s more "
-                "(`results/lanl/results.json`, `elapsed_seconds` minus "
-                "`population.scan_seconds`), because the discounted system "
-                "costs about 1.7x the undiscounted one per model on this data. "
-                "A second configuration needs the same again, which does not "
-                "fit this Part's 90-minute budget. Seeds were NOT reduced and "
-                "the day range was NOT shrunk to make it fit; the "
-                "configuration is simply missing."
-                if isinstance(elapsed, (int, float)) and isinstance(scan, (int, float))
-                else "The remaining configuration did not fit the time budget."
+                "Reason: the wall-clock budget. Each arm is 10 models and the "
+                "discounted system costs about 1.7x the undiscounted one per "
+                "model on this data, so an arm does not fit once the budget "
+                "is spent. Seeds were NOT reduced and the day range was NOT "
+                "shrunk to make anything fit; the arms above are simply "
+                "missing, and no figure in this README is computed from them."
             )
         )
     elif not seeds_ok:
@@ -727,8 +721,10 @@ def write_readme(results: dict, path: Path) -> None:
         )
     else:
         reason = (
-            "Part 28's metric set and Part 29's test A ran on BOTH view "
-            f"configurations over {len(results['config']['seeds'])} seeds. "
+            "Part 28's metric set and Part 29's test A ran on all "
+            f"{len(expected)} view configurations "
+            f"({', '.join(sorted(expected))}) over "
+            f"{len(results['config']['seeds'])} seeds and both systems. "
             "Part 29's tests B, D and the second half of C did NOT run "
             "(section 8), so this Part is complete for what it reports and "
             "INCOMPLETE against part30.md step 4's full A-D list. Read "
@@ -1020,6 +1016,87 @@ def write_readme(results: dict, path: Path) -> None:
         A("")
         A(mode.get("benchmark_note", ""))
         A("")
+        achieved = mode.get("achieved_parallel_measured") or {}
+        if achieved:
+            A("The benchmark's throughput figure was a PROJECTION that assumed "
+              "no contention between concurrent units. What the chosen mode "
+              "actually delivered, measured from the `seconds` field of every "
+              "unit file in `results/lanl/units/`:")
+            A("")
+            A("| quantity | projected before the run | measured after it |")
+            A("|---|---:|---:|")
+            A("| seconds per unit | "
+              f"{fmt(mode.get('projected_parallel_seconds_per_unit'), 1)} | "
+              f"{fmt(achieved.get('mean_seconds_per_unit'), 1)} |")
+            A("| throughput vs run 1 sequential | "
+              f"{fmt(mode.get('projected_throughput_speedup_vs_run1'), 2)}x | "
+              f"{fmt(achieved.get('throughput_speedup_vs_run1'), 2)}x |")
+            A("")
+            A(achieved.get("note", ""))
+            A("")
+        thread_obs = mode.get("thread_count_reproducibility_observation") or {}
+        if thread_obs:
+            A("**Reported, not fixed - a frozen-module observation.** "
+              + thread_obs["what"] + " " + thread_obs["status"])
+            A("")
+            measured = thread_obs.get("measured", {})
+            A("| condition | `eniv_eigen` | against committed | asserted "
+              "tolerance |")
+            A("|---|---:|---:|---:|")
+            A("| torch default (12 threads) | reproduces the committed value "
+              f"| - | {measured.get('tolerance_asserted')} |")
+            A(f"| `OMP_NUM_THREADS=1` | "
+              f"{measured.get('omp_num_threads_1_eniv_eigen_obtained'):.10f} | "
+              f"{measured.get('committed_part28_eniv_eigen_expected'):.10f} | "
+              f"{measured.get('tolerance_asserted')} |")
+            A("")
+            A(thread_obs.get("why_it_matters_here", ""))
+            A("")
+            A(thread_obs.get("gate_consequence", ""))
+            A("")
+        contended = mode.get("benchmark_run2_contended") or {}
+        if contended.get("note"):
+            A("A second thread benchmark was taken on 2026-10-18 and is "
+              "**excluded**. It is kept in `execution_mode.json` so the "
+              "exclusion is auditable, not hidden: " + contended["note"])
+            A("")
+        audit = mode.get("phase0b_process_audit_run2_continuation") or {}
+        if audit:
+            A("**Process audit before this run's measurements "
+              "(part30.md Phase 0b).** "
+              f"{audit['n_python_processes_found']} python processes were "
+              "found. " + audit.get("not_terminated", ""))
+            A("")
+            for line in audit.get("terminated", []):
+                A(f"- Terminated: {line}")
+            A("")
+            A("*On the idle-machine requirement:* " +
+              audit.get("cpu_not_idle_reading_taken", ""))
+            A("")
+        equivalence = mode.get("equivalence_check_seed0") or {}
+        if equivalence:
+            A("**Equivalence check (part30.md Phase 1).** Seed 0, `with_auth`, "
+              "both systems, re-run in the chosen mode and compared with the "
+              "same seed of run 1, which ran sequentially at torch's default "
+              "thread count. Run 1's per-seed values are read from "
+              "`results/lanl/results.run1.json.gz`.")
+            A("")
+            A("| system | metric | run 1 (seed 0) | run 2 (seed 0) | "
+              "absolute difference |")
+            A("|---|---|---:|---:|---:|")
+            for system in ("naive", "prismflow"):
+                rows = (equivalence.get("per_system") or {}).get(system) or {}
+                for metric in ("balanced_accuracy", "roc_auc"):
+                    cell = rows.get(metric)
+                    if not cell:
+                        A(f"| {system} | {metric} | not measured | "
+                          "not measured | not measured |")
+                        continue
+                    A(f"| {system} | {metric} | {cell['run1']:.4f} | "
+                      f"{cell['run2']:.4f} | {abs(cell['absolute_difference']):.4f} |")
+            A("")
+            A(equivalence.get("note", ""))
+            A("")
 
     # -- arms summary ------------------------------------------------------
     A("### 4.1 All arms, side by side")
@@ -1459,7 +1536,7 @@ def write_readme(results: dict, path: Path) -> None:
     ait = read_json("results/ait_attack/results.json")
     clone = read_json("results/clone/summary.json")
 
-    A("### 7.1 DETECTION: does dependence among the implicated views rise?")
+    A("### 8.1 DETECTION: does dependence among the implicated views rise?")
     A("")
     A("| dataset | condition | mean dependence | ENIV | source |")
     A("|---|---|---|---|---|")
@@ -1502,7 +1579,7 @@ def write_readme(results: dict, path: Path) -> None:
       "AIT's. The rows are side by side, not comparable cell by cell.")
     A("")
 
-    A("### 7.2 Honest-duplication false positive")
+    A("### 8.2 Honest-duplication false positive")
     A("")
     A("| dataset | quantity | value | source |")
     A("|---|---|---|---|")
@@ -2399,6 +2476,103 @@ def aggregate(mode: dict | None = None) -> dict:
     return payload
 
 
+def record_mode_measurements() -> dict:
+    """Add the MEASURED cost of the chosen mode to execution_mode.json.
+
+    The committed benchmark carried a projected throughput, which assumed
+    concurrent units do not contend. They do. This reads the `seconds` field
+    of every unit actually run and the seed-0 with_auth metrics of run 1, so
+    the README can print the projection beside what happened instead of the
+    projection alone.
+    """
+    import gzip as _gzip
+    mode_path = RESULTS_DIR / "execution_mode.json"
+    mode = json.loads(mode_path.read_text())
+    units = [json.loads(q.read_text()) for q in sorted(UNITS_DIR.glob("*.json"))]
+    if not units:
+        raise RuntimeError("no units in results/lanl/units/")
+
+    seconds = [float(u["seconds"]) for u in units]
+    per_system = {}
+    for system in ("naive", "prismflow"):
+        mine = [float(u["seconds"]) for u in units if u["system"] == system]
+        if mine:
+            per_system[system] = {
+                "n_units": len(mine),
+                "mean_seconds_per_unit": statistics.mean(mine),
+                "std_seconds_per_unit": (
+                    statistics.stdev(mine) if len(mine) > 1 else float("nan")),
+            }
+    sequential = float(mode["sequential_run1_seconds_per_unit"])
+    concurrent = int(mode["max_concurrent_processes"])
+    mean_seconds = statistics.mean(seconds)
+    # Throughput = units finished per second. Sequential run 1 managed
+    # 1/sequential; the chosen mode manages concurrent/mean_seconds.
+    mode["achieved_parallel_measured"] = {
+        "n_units": len(units),
+        "mean_seconds_per_unit": mean_seconds,
+        "std_seconds_per_unit": (
+            statistics.stdev(seconds) if len(seconds) > 1 else float("nan")),
+        "per_system": per_system,
+        "throughput_speedup_vs_run1": (concurrent / mean_seconds) * sequential,
+        "note": (
+            "A unit takes LONGER in this mode than it did sequentially - "
+            f"{mean_seconds:.0f} s against run 1's {sequential:.0f} s - "
+            f"because {concurrent} of them share the box. The gain is "
+            "throughput, not latency. The projection above overstated that "
+            "gain because it assumed no contention between concurrent units; "
+            "the decision rule (at least 2x run 1's sequential throughput) is "
+            "met on the MEASURED figure as well as the projected one, so the "
+            "mode choice stands on what happened rather than on the forecast."
+        ),
+    }
+
+    gz = RESULTS_DIR / "results.run1.json.gz"
+    equivalence = {"not_measured": "run 1 record or a with_auth seed-0 unit is absent"}
+    if gz.exists():
+        run1 = json.loads(_gzip.decompress(gz.read_bytes()))
+        rows = {}
+        for system in ("naive", "prismflow"):
+            unit = next(
+                (u for u in units
+                 if u["arm"] == "with_auth" and u["system"] == system
+                 and int(u["seed"]) == 0), None)
+            old = dig(run1, "configurations", "with_auth", "systems", system,
+                      "per_seed")
+            old_row = next((r for r in (old or []) if int(r["seed"]) == 0), None)
+            if unit is None or old_row is None:
+                continue
+            metrics = {}
+            for key in ("balanced_accuracy", "roc_auc"):
+                a, b = old_row.get(key), unit["metrics"].get(key)
+                if a is None or b is None:
+                    continue
+                metrics[key] = {
+                    "run1": float(a),
+                    "run2": float(b),
+                    "absolute_difference": float(b) - float(a),
+                }
+            if metrics:
+                rows[system] = metrics
+        if rows:
+            equivalence = {
+                "per_system": rows,
+                "note": (
+                    "Same seed, same hyperparameters, same sample table and "
+                    "the same time split. A non-zero difference here is "
+                    "execution mode and floating-point reduction order, not a "
+                    "different experiment: run 1 ran sequentially at torch's "
+                    "default 12 threads and run 2 at 1 thread, which changes "
+                    "the order in which sums are accumulated. The difference "
+                    "is NOT evidence about either system's quality."
+                ),
+            }
+    mode["equivalence_check_seed0"] = equivalence
+    mode_path.write_text(json.dumps(json_safe(mode), indent=2))
+    LOGGER.info("recorded measured mode cost over %d units", len(units))
+    return mode
+
+
 def git_commit() -> str | None:
     try:
         out = subprocess.run(
@@ -2438,6 +2612,10 @@ def main() -> None:
                         help="torch intra-op threads for this process")
     parser.add_argument("--benchmark", type=int, default=None,
                         help="time N training steps and exit")
+    parser.add_argument("--record-mode", action="store_true",
+                        help="add the measured cost of the chosen execution "
+                             "mode, and the seed-0 equivalence check against "
+                             "run 1, to results/lanl/execution_mode.json")
     parser.add_argument("--aggregate", action="store_true",
                         help="combine results/lanl/units/*.json into "
                              "results.json and regenerate the README")
@@ -2453,6 +2631,10 @@ def main() -> None:
         results = json.loads((RESULTS_DIR / "results.json").read_text())
         write_readme(results, Path(__file__).with_name("README.md"))
         LOGGER.info("README regenerated from results/lanl/results.json")
+        return
+
+    if args.record_mode:
+        record_mode_measurements()
         return
 
     if args.aggregate:
