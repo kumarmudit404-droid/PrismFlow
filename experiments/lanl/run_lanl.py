@@ -674,6 +674,30 @@ def signed(entry, places: int = 4) -> str:
     return f"{mean:+.{places}f}{spread}{tail}"
 
 
+def raised(entry, places: int = 4) -> str:
+    """A paired difference with the count of seeds whose difference is > 0.
+
+    Used for test A, where the question is whether the quantity is HIGHER on
+    attack windows than on benign ones. `signed()`'s favouring count is
+    read through `LOWER_IS_BETTER` and answers a different question, so it is
+    not shown here - a count of positive differences is.
+    """
+    if not isinstance(entry, dict) or entry.get("mean") is None:
+        return "not measured"
+    mean, std = float(entry["mean"]), entry.get("std")
+    spread = (
+        f" +/- {float(std):.{places}f}"
+        if std is not None and math.isfinite(float(std)) else ""
+    )
+    per_seed = entry.get("per_seed") or []
+    n = entry.get("n_seeds") or len(per_seed)
+    tail = (
+        f" ({sum(1 for d in per_seed if float(d) > 0)}/{n} seeds > 0)"
+        if per_seed else ""
+    )
+    return f"{mean:+.{places}f}{spread}{tail}"
+
+
 def write_readme(results: dict, path: Path) -> None:
     split = results["split_report"]
     population = results["population"]
@@ -728,9 +752,9 @@ def write_readme(results: dict, path: Path) -> None:
             f"({', '.join(sorted(expected))}) over "
             f"{len(results['config']['seeds'])} seeds and both systems. "
             "Part 29's tests B, D and the second half of C did NOT run "
-            "(section 8), so this Part is complete for what it reports and "
+            "(section 9), so this Part is complete for what it reports and "
             "INCOMPLETE against part30.md step 4's full A-D list. Read "
-            "section 8 before citing anything here as a Part 29 repeat."
+            "section 9 before citing anything here as a Part 29 repeat."
         )
 
     L: list[str] = []
@@ -1141,6 +1165,91 @@ def write_readme(results: dict, path: Path) -> None:
       "bootstrap interval is the number to read for that.")
     A("")
 
+    # -- Brier against the constant forecast -------------------------------
+    A("Brier against the majority baseline, which predicts the test block's "
+      "class prevalence for every window. Its Brier is the score of a "
+      "CONSTANT forecast, so a trained model above it is worse than that "
+      "constant:")
+    A("")
+    A("| arm | system | Brier *(sample prevalence)* | constant-prevalence "
+      "baseline | above the baseline |")
+    A("|---|---|---:|---:|---|")
+    above = []
+    for name, configuration in configurations.items():
+        base = dig(configuration, "majority_baseline", "brier")
+        for system in ("naive", "prismflow"):
+            value = dig(configuration, "systems", system, "summary", "brier",
+                        "mean")
+            flag = (
+                isinstance(value, (int, float)) and isinstance(base, (int, float))
+                and math.isfinite(float(value)) and math.isfinite(float(base))
+                and float(value) > float(base)
+            )
+            if flag and name not in above:
+                above.append(name)
+            A(f"| {name} | {system} | "
+              f"{fmt(dig(configuration, 'systems', system, 'summary', 'brier'))} | "
+              f"{fmt(base)} | {'**YES**' if flag else 'no'} |")
+    A("")
+    if above:
+        A("**Flagged: "
+          + ", ".join(f"`{n}`" for n in above)
+          + " "
+          + ("is" if len(above) == 1 else "are")
+          + " above the constant-prevalence baseline on Brier**, for both "
+            "systems in each flagged arm. A probability forecast worse than a "
+            "constant is a calibration failure, not a ranking failure - the "
+            "same arms' ROC AUC is well above 0.5. **The cause is not "
+            "diagnosed here.** Nothing in this Part isolates whether it comes "
+            "from the empty-tensor rows of section 4.2, from the absence of a "
+            "validation split, or from the case-control prevalence the "
+            "forecast is trained against.")
+        A("")
+
+    # -- Part 28 step 5 drop-view configurations ---------------------------
+    widest = max(configurations.values(), key=lambda c: len(c["views"]),
+                 default=None)
+    threshold = dig(widest, "missingness", "threshold")
+    required = sorted({
+        view
+        for configuration in configurations.values()
+        for view in configuration["missingness"]["over_threshold_train"]
+    })
+    if required and widest is not None:
+        fractions = ", ".join(
+            f"`{view}` {dig(widest, 'missingness', 'train', view):.1%}"
+            for view in required
+            if isinstance(dig(widest, "missingness", "train", view), (int, float))
+        )
+        ran = [view for view in required if f"without_{view}" in configurations]
+        missing = [view for view in required if f"without_{view}" not in configurations]
+        both = [
+            name for name, configuration in configurations.items()
+            if not set(required) & set(configuration["views"])
+        ]
+        A("**Part 28 step 5 drop-view configurations.** Step 5 asks for a "
+          f"second configuration without any view missing in more than "
+          f"{threshold:.0%} of train windows. On this sample table that is "
+          f"{len(required)} view{'s' if len(required) != 1 else ''} - "
+          f"{fractions} of train windows missing. "
+          + (f"Configuration{'s' if len(ran) != 1 else ''} "
+             + ", ".join(f"`without_{v}`" for v in ran)
+             + (" ran" if len(ran) != 1 else " ran")
+             + f", over all {len(results['config']['seeds'])} seeds and both "
+               "systems; they are in the table above. "
+             if ran else "No single-view-drop configuration ran. ")
+          + (f"Still owed: {', '.join(f'`without_{v}`' for v in missing)}. "
+             if missing else "")
+          + ("**No configuration dropping ALL of "
+             + ", ".join(f"`{v}`" for v in required)
+             + " at once was run**, so the arms above each drop one of them "
+               "and never both; this Part does not know what the remaining "
+               "views do with both absent."
+             if not both else
+             "A configuration dropping all of them at once is "
+             + ", ".join(f"`{n}`" for n in both) + "."))
+        A("")
+
     # -- coverage ----------------------------------------------------------
     coverage = dig(results, "phase3_diagnostics", "arm_coverage")
     if coverage:
@@ -1256,15 +1365,9 @@ def write_readme(results: dict, path: Path) -> None:
           f"{', '.join(over) if over else 'none'}.")
         if over:
             A("")
-            A("**Not run, and it is in the brief.** Part 28's step 5 says that "
-              "when a view is missing in more than half the windows, a second "
-              "configuration WITHOUT that view should also be run. That "
-              f"applies here to {', '.join(over)} and was **not run** - the "
-              "time budget did not reach it (see the status line). So this "
-              "Part does not know whether the result above survives dropping "
-              f"{' or '.join(over)}. `dns` in particular is present in under "
-              "2% of windows, so its encoder sees almost nothing and its "
-              "contribution to the fusion is close to untested here.")
+            A("Part 28's step 5 drop-view configurations for "
+              f"{', '.join(f'`{v}`' for v in over)} are stated once in "
+              "section 4, above, rather than repeated per arm.")
         A("")
 
     # -- test A ------------------------------------------------------------
@@ -1291,6 +1394,35 @@ def write_readme(results: dict, path: Path) -> None:
                   f"{row['run2_mean']:.4f} | "
                   f"{row['difference_run2_minus_run1']:+.4f} |")
         A("")
+        within = replicate.get("paired_within_run") or {}
+        if within.get("per_metric"):
+            A("PrismFlow minus naive, paired within seed, in each run "
+              "separately:")
+            A("")
+            A("| metric | run 1 paired difference | run 2 paired difference | "
+              "sign differs between runs |")
+            A("|---|---:|---:|---|")
+            for key, row in within["per_metric"].items():
+                def cell(prefix):
+                    mean = row.get(f"{prefix}_paired_mean")
+                    std = row.get(f"{prefix}_paired_std")
+                    favouring = row.get(f"{prefix}_n_seeds_favouring_prismflow")
+                    text = f"{float(mean):+.4f}"
+                    if isinstance(std, (int, float)) and math.isfinite(float(std)):
+                        text += f" +/- {float(std):.4f}"
+                    if favouring is not None and row.get("n_seeds"):
+                        text += f" ({favouring}/{row['n_seeds']})"
+                    return text
+                A(f"| {key} | {cell('run1')} | {cell('run2')} | "
+                  + ("**YES**" if row["sign_differs_between_runs"] else "no")
+                  + " |")
+            A("")
+            flips = within.get("sign_differs_between_runs") or []
+            A("Metrics whose paired sign differs between the two runs: "
+              + (", ".join(f"`{k}`" for k in flips) if flips
+                 else "none of those listed")
+              + ". " + within.get("note", ""))
+            A("")
         A("These two runs are **replicates, not reproductions**. Same seeds "
           "and same hyperparameters, but a different torch thread count "
           "changes the order of floating-point reductions, so the trained "
@@ -1324,17 +1456,89 @@ def write_readme(results: dict, path: Path) -> None:
             ):
                 A(f"| {system} | {label} | {fmt(dig(attack, key))} | "
                   f"{fmt(dig(benign, key))} | "
-                  f"{signed(dig(block, 'paired_attack_minus_benign', key))} |")
+                  f"{raised(dig(block, 'paired_attack_minus_benign', key))} |")
         A("")
     A("Read the WITHOUT-auth block for a detection claim: with auth present, "
       "the views contain the records the labels came from (caveat iii).")
     A("")
-    A("Sign convention: `paired_difference` marks a *fall* in mean dependence "
-      "as favouring PrismFlow, because `LOWER_IS_BETTER` contains "
-      "`mean_dependence_eigen`. For test A the quantity of interest is whether "
-      "dependence is HIGHER on attack windows than benign ones, so read the "
-      "signed mean, not the favouring count, in that row.")
+    A("Sign convention: the last column is attack minus benign, and the count "
+      "beside it is the number of seeds whose own difference is above zero. "
+      "`paired_difference`'s own favouring count is NOT shown here: it reads "
+      "a fall in `mean_dependence_eigen` as favouring PrismFlow, because that "
+      "key is in `LOWER_IS_BETTER`, which answers a different question from "
+      "the one test A asks.")
     A("")
+
+    # -- test A: the signs, and how many rows can carry a pair -------------
+    signs = []
+    for name, configuration in configurations.items():
+        record = configuration["part29_test_a_natural_attack_windows"]
+        for system, block in record["per_system"].items():
+            row = {"arm": name, "system": system}
+            for key, short in (("eniv_eigen", "eniv"),
+                               ("mean_dependence_eigen", "dependence")):
+                mean = dig(block, "paired_attack_minus_benign", key, "mean")
+                row[short] = (
+                    None if not isinstance(mean, (int, float))
+                    or not math.isfinite(float(mean))
+                    else ("+" if float(mean) > 0 else
+                          "-" if float(mean) < 0 else "0")
+                )
+            signs.append(row)
+    if signs:
+        A("**Signs of the attack-minus-benign differences, per arm and "
+          "system.** A `+` means the quantity is higher on attack windows:")
+        A("")
+        A("| arm | system | ENIV (eigen) | mean pairwise dependence |")
+        A("|---|---|:--:|:--:|")
+        for row in signs:
+            A(f"| {row['arm']} | {row['system']} | "
+              f"{row['eniv'] or 'not measured'} | "
+              f"{row['dependence'] or 'not measured'} |")
+        A("")
+        patterns = {}
+        for row in signs:
+            patterns.setdefault(row["arm"], set()).add(
+                (row["eniv"] or "?", row["dependence"] or "?"))
+        majority = {}
+        for arm, pairs in patterns.items():
+            for pair in pairs:
+                majority[pair] = majority.get(pair, 0) + 1
+        if majority:
+            common = max(majority.items(), key=lambda kv: kv[1])[0]
+            odd = [arm for arm, pairs in patterns.items() if common not in pairs]
+            A("The most common pattern over the arms is ENIV "
+              f"`{common[0]}` with dependence `{common[1]}`"
+              + (", on every arm." if not odd else
+                 ", and "
+                 + ", ".join(f"`{a}`" for a in odd)
+                 + (" is" if len(odd) == 1 else " are")
+                 + " opposite to it. An arm that reverses sign while the "
+                   "others agree is not explained by this Part.")
+              )
+            A("")
+    shares = dig(results, "phase4_closeout", "views_present_shares")
+    if shares:
+        A("Dependence and ENIV are PAIR statistics, so only a test row with "
+          "at least two of the arm's views present contributes anything to "
+          "them. How many rows that is, per class:")
+        A("")
+        A("| arm | attack rows with >= 2 views | share of attack | "
+          "benign rows with >= 2 views | share of benign |")
+        A("|---|---:|---:|---:|---:|")
+        for name in configurations:
+            row = dig(shares, "per_arm", name)
+            if not row:
+                continue
+            A(f"| {name} | {row['n_attack_two_or_more_views']:,} of "
+              f"{row['n_attack_test']:,} | "
+              f"{row['attack_share_two_or_more_views']:.1%} | "
+              f"{row['n_benign_two_or_more_views']:,} of "
+              f"{row['n_benign_test']:,} | "
+              f"{row['benign_share_two_or_more_views']:.1%} |")
+        A("")
+        A(shares.get("note", ""))
+        A("")
 
     # -- pair table --------------------------------------------------------
     A("## 6. View-pair dependence (Part 29 test C, first half)")
@@ -1400,7 +1604,7 @@ def write_readme(results: dict, path: Path) -> None:
                       "Part 29 test C requires."))
         A("")
     A("Scoring the suspicion detector on the most and least dependent of these "
-      "pairs was **not run** (see section 8), so this Part states no verdict "
+      "pairs was **not run** (see section 9), so this Part states no verdict "
       "on whether natural dependence raises the detector the way Part 10's "
       "exact clone did.")
     A("")
@@ -1526,6 +1730,108 @@ def write_readme(results: dict, path: Path) -> None:
         A(phase3.get("missing_view_handling", "not measured"))
         A("")
 
+    closeout = results.get("phase4_closeout") or {}
+    if closeout:
+        A(closeout.get("note", ""))
+        A("")
+        top = closeout.get("top_attack_computers") or {}
+        if top.get("per_computer"):
+            A(f"### 7.6 The {top.get('k')} most-attacked computers, as sampled")
+            A("")
+            A("| computer | train attack | train benign | test attack | "
+              "test benign | attack train+test |")
+            A("|---|---:|---:|---:|---:|---:|")
+            for row in top["per_computer"]:
+                A(f"| `{row['computer']}` | {row['train']['attack_samples']:,} | "
+                  f"{row['train']['benign_samples']:,} | "
+                  f"{row['test']['attack_samples']:,} | "
+                  f"{row['test']['benign_samples']:,} | "
+                  f"{row['attack_samples_train_plus_test']:,} |")
+            A("")
+            A(f"Attack computers in the sample table: "
+              f"{top.get('n_attack_computers_total')}. "
+              + top.get("note", ""))
+            A("")
+
+        tsu = closeout.get("trivial_scalar_seen_unseen") or {}
+        if tsu.get("baselines"):
+            A("### 7.7 The 7.1 scalars inside the 7.3 seen/unseen groups")
+            A("")
+            A(tsu.get("note", ""))
+            A("")
+            A("| scalar | orientation (fixed on train) | seen test AUC | "
+              "unseen test AUC |")
+            A("|---|---|---:|---:|")
+            for name, row in tsu["baselines"].items():
+                A(f"| `{name}` | {row['orientation_fixed_on_train']} | "
+                  f"{fmt(row.get('seen_test_auc'))} | "
+                  f"{fmt(row.get('unseen_test_auc'))} |")
+            A("")
+            counts = tsu.get("per_group_n_attack") or {}
+            n_benign = tsu.get("n_benign_test_samples")
+            A(f"n = {counts.get('seen', 'not measured')} seen attack rows, "
+              f"{counts.get('unseen', 'not measured')} unseen attack rows, "
+              "each against all "
+              + (f"{n_benign:,}" if isinstance(n_benign, int) else "not measured")
+              + " benign test rows - the same comparison sets as 7.3.")
+            A("")
+
+        pvo = closeout.get("without_auth_present_view_only") or {}
+        if pvo.get("per_system"):
+            A(f"### 7.8 `{pvo.get('arm')}` over its predictable test rows only")
+            A("")
+            A(pvo.get("note", ""))
+            A("")
+            A(f"Rows kept: {pvo['n_test_with_a_present_view']:,} of "
+              f"{pvo['n_test_all_rows']:,} test rows "
+              f"({pvo['n_attack_with_a_present_view']:,} attack, "
+              f"{pvo['n_benign_with_a_present_view']:,} benign). Rows "
+              f"excluded: {pvo['n_test_excluded']:,}, of which "
+              f"{pvo['n_attack_excluded']:,} are attack rows.")
+            A("")
+            A("| system | ROC AUC (rows with a present view) | "
+              "attack recall (same rows) |")
+            A("|---|---|---|")
+            for system in ("naive", "prismflow"):
+                row = (pvo.get("per_system") or {}).get(system)
+                if not row:
+                    A(f"| {system} | not measured | not measured |")
+                    continue
+                A(f"| {system} | {fmt(row['roc_auc'])} | "
+                  f"{fmt(row['attack_recall'])} |")
+            A("")
+            A("Beside these, the same arm over ALL test rows is in section "
+              "4.1.")
+            A("")
+
+        drop = closeout.get("drop_top_test_computer") or {}
+        if drop.get("per_arm"):
+            A("### 7.9 Test AUC with the most-attacked test computer removed")
+            A("")
+            A(drop.get("note", ""))
+            A("")
+            A(f"Removed: every test row of `{drop['computer_removed']}` - "
+              f"{drop['n_test_rows_removed']:,} rows "
+              f"({drop['n_attack_rows_removed']:,} attack, "
+              f"{drop['n_benign_rows_removed']:,} benign), leaving "
+              f"{drop['n_test_rows_kept']:,} test rows of which "
+              f"{drop['n_attack_rows_kept']:,} are attack rows.")
+            A("")
+            A("| arm | system | ROC AUC, that computer removed | "
+              "ROC AUC, all test rows (4.1) |")
+            A("|---|---|---|---|")
+            for arm, per_system in drop["per_arm"].items():
+                for system in ("naive", "prismflow"):
+                    row = per_system.get(system)
+                    full = dig(configurations, arm, "systems", system,
+                               "summary", "roc_auc")
+                    if not row:
+                        A(f"| {arm} | {system} | not measured | {fmt(full)} |")
+                        continue
+                    A(f"| {arm} | {system} | {fmt(row['roc_auc'])} | "
+                      f"{fmt(full)} |")
+            A("")
+
     A("## 8. Cross-dataset table (part30.md step 5)")
     A("")
     A("synthetic vs AIT vs LANL, for the DETECTION claim and the "
@@ -1619,7 +1925,7 @@ def write_readme(results: dict, path: Path) -> None:
       "sensor-group definition, so no within-group pair exists | "
       "`configs/data/lanl.yaml`; section 6 above |")
     A("| LANL | detector AUC on naturally dependent pairs | not measured | "
-      "detector not scored (section 8) |")
+      "detector not scored (section 9) |")
     A("")
 
     # -- not run -----------------------------------------------------------
@@ -1767,10 +2073,35 @@ def write_readme(results: dict, path: Path) -> None:
     A("| `results/lanl/results.json` | every metric, diagnostic, pair table "
       "and paired difference |")
     A("")
-    A(f"Run: {results.get('elapsed_seconds', float('nan')):.0f} s wall, scan "
-      f"{population.get('scan_seconds', float('nan')):.0f} s on "
-      f"{population.get('workers')} worker processes. Commit "
-      f"`{results.get('git_commit') or 'not recorded'}`.")
+    wall = results.get("unit_wallclock") or {}
+    A("**Wall-clock, and what each number measures.** "
+      f"`results/lanl/results.json` `elapsed_seconds` = "
+      f"{results.get('elapsed_seconds', float('nan')):.0f} s. "
+      + (wall.get("elapsed_seconds_measures") or "")
+      + f" The sample-table scan was {population.get('scan_seconds', float('nan')):.0f} s "
+        f"on {population.get('workers')} worker processes, once, before any "
+        "arm ran.")
+    A("")
+    if wall.get("n_units"):
+        A("Training wall-clock, from the unit files only:")
+        A("")
+        A("| quantity | value |")
+        A("|---|---|")
+        A(f"| units | {wall['n_units']} |")
+        A(f"| first unit start | {wall['first_unit_start']} |")
+        A(f"| last unit end | {wall['last_unit_end']} |")
+        A(f"| total wall-clock | {wall['total_wall_clock_seconds']} |")
+        A(f"| sum of unit seconds | {wall['sum_of_unit_seconds']:,.0f} s "
+          f"({wall['sum_of_unit_seconds'] / 3600:.1f} process-hours) |")
+        A(f"| longest single unit | {wall['max_unit_seconds']:,.0f} s |")
+        A(f"| shortest single unit | {wall['min_unit_seconds']:,.0f} s |")
+        A(f"| concurrency limit | {wall['concurrency_limit']} |")
+        A(f"| waves (ceiling of units over concurrency) | "
+          f"{wall['waves_ceiling']} |")
+        A("")
+        A(wall.get("note", ""))
+        A("")
+    A(f"Commit `{results.get('git_commit') or 'not recorded'}`.")
     A("")
     A("`data/raw/` was read only. Nothing in it was extracted, renamed, moved "
       "or deleted, and `auth.txt.gz` was not modified.")
@@ -1981,6 +2312,27 @@ MISSING_VIEW_HANDLING = (
 )
 
 
+def trivial_scalar_values(samples) -> dict:
+    """The three untrained scalars of section 7.1, as raw arrays.
+
+    One definition, used by `trivial_baselines` and by the close-out
+    seen/unseen reading, so the two cannot drift apart.
+    """
+    views = samples.views
+    mask = samples.view_mask
+    sources = list(samples.sources)
+    # Feature 0 of every view is log1p(n_events) for that view, so the summed
+    # expm1 is the total record count across views for that sample.
+    totals = np.zeros(views.shape[0], dtype=np.float64)
+    for v in range(views.shape[1]):
+        totals += np.expm1(views[:, v, 0].astype(np.float64)) * mask[:, v]
+    return {
+        "total_records_across_views": totals,
+        "auth_present_indicator": mask[:, sources.index("auth")].astype(np.float64),
+        "n_views_present": mask.sum(axis=1).astype(np.float64),
+    }
+
+
 def arm_coverage(data_cfg, indices: dict, cfg: dict) -> dict:
     """Per arm: samples left with NO present view once that arm's views are dropped.
 
@@ -2036,22 +2388,8 @@ def trivial_baselines(data_cfg, indices: dict) -> dict:
     about direction.
     """
     samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
-    views = samples.views
-    mask = samples.view_mask
     labels = samples.labels
-    sources = list(samples.sources)
-
-    # Feature 0 of every view is log1p(n_events) for that view, so the summed
-    # expm1 is the total record count across views for that sample.
-    totals = np.zeros(views.shape[0], dtype=np.float64)
-    for v in range(views.shape[1]):
-        totals += np.expm1(views[:, v, 0].astype(np.float64)) * mask[:, v]
-
-    candidates = {
-        "total_records_across_views": totals,
-        "auth_present_indicator": mask[:, sources.index("auth")].astype(np.float64),
-        "n_views_present": mask.sum(axis=1).astype(np.float64),
-    }
+    candidates = trivial_scalar_values(samples)
     out = {
         "note": (
             "Each row is a SINGLE SCALAR, no training. Orientation (sign) is "
@@ -2289,7 +2627,366 @@ def replicate_table(configurations: dict) -> dict:
                 "run2_mean": float(b),
                 "difference_run2_minus_run1": float(b) - float(a),
             }
+
+    # The PrismFlow-minus-naive paired difference WITHIN each run. Both runs
+    # pair the same seeds, so each column is a paired reading; what the two
+    # columns together can show is whether the SIGN of that pairing survives a
+    # change of execution mode.
+    paired_old = dig(run1, "configurations", "with_auth",
+                     "paired_prismflow_minus_naive") or {}
+    paired_new = dig(configurations, "with_auth",
+                     "paired_prismflow_minus_naive") or {}
+    within = {
+        "note": (
+            "PrismFlow minus naive, paired within seed, in each run "
+            "separately. A seed count inside ONE run shares that run's "
+            "execution mode for both systems, so it is evidence about the "
+            "two systems under that mode and NOT independent evidence about "
+            "mode effects. Only the two columns side by side speak to the "
+            "mode, and with one run each they do so without a spread."
+        ),
+        "per_metric": {},
+        "sign_differs_between_runs": [],
+    }
+    for key in ("balanced_accuracy", "roc_auc", "prob_ece", "attack_recall",
+                "brier", "benign_recall", "accuracy"):
+        a, b = dig(paired_old, key, "mean"), dig(paired_new, key, "mean")
+        if a is None or b is None:
+            continue
+        a, b = float(a), float(b)
+        flips = (a > 0 > b) or (a < 0 < b)
+        within["per_metric"][key] = {
+            "run1_paired_mean": a,
+            "run1_paired_std": dig(paired_old, key, "std"),
+            "run1_n_seeds_favouring_prismflow": dig(
+                paired_old, key, "n_seeds_favouring_prismflow"),
+            "run2_paired_mean": b,
+            "run2_paired_std": dig(paired_new, key, "std"),
+            "run2_n_seeds_favouring_prismflow": dig(
+                paired_new, key, "n_seeds_favouring_prismflow"),
+            "n_seeds": dig(paired_new, key, "n_seeds"),
+            "lower_is_better": key in LOWER_IS_BETTER,
+            "sign_differs_between_runs": bool(flips),
+        }
+        if flips:
+            within["sign_differs_between_runs"].append(key)
+    out["paired_within_run"] = within
     return out
+
+
+# ---------------------------------------------------------------------------
+# Phase 4 close-out diagnostics. Read-only, no training: every figure comes
+# from results/lanl/samples.npz and results/lanl/scores/*.npz.
+# ---------------------------------------------------------------------------
+
+#: Threshold used wherever a close-out figure needs a hard class decision.
+#: Two classes, so this is the argmax of the probability vector.
+DECISION_THRESHOLD = 0.5
+
+
+def _align_test_rows(samples, indices: dict, row: dict) -> None:
+    """Verify a score file's rows are the test block in order, or raise.
+
+    The score files are written in `indices['test']` order, so positional
+    alignment is correct - but it is CHECKED rather than assumed, because a
+    silent misalignment would corrupt every figure below.
+    """
+    test_idx = indices["test"]
+    if row["prob_attack"].size != test_idx.size:
+        raise RuntimeError("score file length does not match the test block")
+    if not np.array_equal(row["label"], samples.labels[test_idx]):
+        raise RuntimeError("score file labels do not match the test block")
+    expected = np.asarray(
+        [str(samples.computer[i]) for i in test_idx], dtype=object)
+    if not np.array_equal(row["computer"], expected):
+        raise RuntimeError("score file computers do not match the test block")
+
+
+def _mean_std(values: list[float]) -> dict:
+    """mean, sample std and n over seeds, NaN excluded, in summarise()'s shape."""
+    kept = [float(v) for v in values if v is not None and math.isfinite(float(v))]
+    return {
+        "mean": float(np.mean(kept)) if kept else float("nan"),
+        "std": float(np.std(kept, ddof=1)) if len(kept) > 1 else float("nan"),
+        "n_seeds": len(kept),
+    }
+
+
+def top_attack_computer_table(data_cfg, indices: dict, k: int = 4) -> dict:
+    """The k computers with the most attack samples (train+test), as sampled.
+
+    Counts are of rows in the sample table, which is case-control: the benign
+    counts are of KEPT controls (1/512 deterministic hash), not of the
+    computer's benign windows on the network.
+    """
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    labels = samples.labels
+    computers = np.asarray([str(c) for c in samples.computer], dtype=object)
+    attack_all = labels == CLASS_ATTACK
+    hosts, counts = np.unique(computers[attack_all], return_counts=True)
+    order = np.argsort(-counts)
+    top = [str(h) for h in hosts[order][:k]]
+    rows = []
+    for host in top:
+        is_host = computers == host
+        entry = {"computer": host}
+        total_attack = 0
+        for split_name in ("train", "test"):
+            idx = indices[split_name]
+            sel = is_host[idx]
+            lab = labels[idx]
+            entry[split_name] = {
+                "attack_samples": int((sel & (lab == CLASS_ATTACK)).sum()),
+                "benign_samples": int((sel & (lab == CLASS_BENIGN)).sum()),
+            }
+            total_attack += entry[split_name]["attack_samples"]
+        entry["attack_samples_train_plus_test"] = total_attack
+        rows.append(entry)
+    return {
+        "note": (
+            "Counts are rows of the shared sample table, which is "
+            "case-control: every attack cell is kept and a benign cell is "
+            "kept iff crc32(computer|window) % 512 == 0, so the benign "
+            "column is kept controls and not the computer's benign windows "
+            "on the network."
+        ),
+        "k": k,
+        "n_attack_computers_total": int(hosts.size),
+        "per_computer": rows,
+    }
+
+
+def trivial_scalar_seen_unseen(data_cfg, indices: dict) -> dict:
+    """7.1's scalars, split by 7.3's seen/unseen attack groups.
+
+    Orientation is fixed on the whole train block exactly as in 7.1, then
+    each attack group is scored against ALL benign test samples, exactly as
+    in 7.3, so the two sections can be read side by side.
+    """
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    labels = samples.labels
+    computers = np.asarray([str(c) for c in samples.computer], dtype=object)
+    train_idx, test_idx = indices["train"], indices["test"]
+    train_attack_hosts = set(
+        computers[train_idx[labels[train_idx] == CLASS_ATTACK]].tolist())
+    is_attack = labels[test_idx] == CLASS_ATTACK
+    seen_flag = np.asarray(
+        [c in train_attack_hosts for c in computers[test_idx]], dtype=bool)
+    benign = ~is_attack
+    groups = {"seen": is_attack & seen_flag, "unseen": is_attack & ~seen_flag}
+    out = {
+        "note": (
+            "Same scalars and same train-only orientation as 7.1; same "
+            "seen/unseen definition and same all-benign comparison set as "
+            "7.3. Untrained, so there is no seed and no std."
+        ),
+        "n_benign_test_samples": int(benign.sum()),
+        "per_group_n_attack": {k: int(v.sum()) for k, v in groups.items()},
+        "baselines": {},
+    }
+    for name, score in trivial_scalar_values(samples).items():
+        train_auc = roc_auc_binary(labels[train_idx], score[train_idx])
+        sign = 1.0 if not math.isfinite(train_auc) or train_auc >= 0.5 else -1.0
+        oriented = sign * score[test_idx]
+        entry = {"orientation_fixed_on_train": "as-is" if sign > 0 else "negated"}
+        for key, selector in groups.items():
+            keep = selector | benign
+            entry[f"{key}_test_auc"] = (
+                _safe(roc_auc_binary(labels[test_idx][keep], oriented[keep]))
+                if selector.sum() else float("nan")
+            )
+        out["baselines"][name] = entry
+    return out
+
+
+def present_view_only(data_cfg, indices: dict, cfg: dict, arm_name: str) -> dict:
+    """One arm's test figures over its PREDICTABLE test rows only.
+
+    Rows whose every view in this arm is absent carry an all-zero tensor and
+    an all-False mask (see `arm_coverage`), so no model can separate them.
+    Restricting to rows with at least one present view says what the arm does
+    where it has any evidence at all.
+    """
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    arm = next((a for a in cfg["view_configurations"]
+                if a["name"] == arm_name), None)
+    if arm is None:
+        return {"not_measured": f"no arm named {arm_name} in the config"}
+    sources = list(samples.sources)
+    keep_views = [sources.index(v) for v in arm["views"]]
+    test_idx = indices["test"]
+    present = samples.view_mask[:, keep_views].any(axis=1)[test_idx]
+    labels_test = samples.labels[test_idx]
+    out = {
+        "note": (
+            "Test rows with at least one of this arm's views present. The "
+            "excluded rows are unpredictable by construction, not misclassified. "
+            f"Attack recall is at a {DECISION_THRESHOLD} probability "
+            "threshold, which for two classes is the argmax."
+        ),
+        "arm": arm_name,
+        "views": list(arm["views"]),
+        "n_test_all_rows": int(test_idx.size),
+        "n_test_with_a_present_view": int(present.sum()),
+        "n_test_excluded": int((~present).sum()),
+        "n_attack_with_a_present_view": int(
+            (present & (labels_test == CLASS_ATTACK)).sum()),
+        "n_attack_excluded": int(
+            (~present & (labels_test == CLASS_ATTACK)).sum()),
+        "n_benign_with_a_present_view": int(
+            (present & (labels_test == CLASS_BENIGN)).sum()),
+        "per_system": {},
+    }
+    for system in ("naive", "prismflow"):
+        rows = _load_scores(arm_name, system, cfg["seeds"])
+        if not rows:
+            continue
+        aucs, recalls = [], []
+        for row in rows:
+            _align_test_rows(samples, indices, row)
+            lab = row["label"][present]
+            prob = row["prob_attack"][present]
+            aucs.append(roc_auc_binary(lab, prob))
+            attack = lab == CLASS_ATTACK
+            recalls.append(
+                float((prob[attack] >= DECISION_THRESHOLD).mean())
+                if attack.any() else float("nan"))
+        out["per_system"][system] = {
+            "roc_auc": _mean_std(aucs),
+            "attack_recall": _mean_std(recalls),
+        }
+    return out
+
+
+def drop_top_computer(data_cfg, indices: dict, cfg: dict, arms: list[str]) -> dict:
+    """Test AUC per arm and system with the single most-attacked test computer removed.
+
+    Every row of that computer goes, attack and benign alike, so the removal
+    does not itself move the class balance in that computer's favour.
+    """
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    labels = samples.labels
+    computers = np.asarray([str(c) for c in samples.computer], dtype=object)
+    test_idx = indices["test"]
+    attack_test = test_idx[labels[test_idx] == CLASS_ATTACK]
+    if attack_test.size == 0:
+        return {"not_measured": "no attack samples in the test block"}
+    hosts, counts = np.unique(computers[attack_test], return_counts=True)
+    top = str(hosts[int(np.argmax(counts))])
+    keep = computers[test_idx] != top
+    labels_test = labels[test_idx]
+    out = {
+        "note": (
+            "All test rows of one computer removed, attack and benign "
+            "together. Descriptive: one host is not a resample, so this is "
+            "not an interval."
+        ),
+        "computer_removed": top,
+        "n_test_rows_removed": int((~keep).sum()),
+        "n_attack_rows_removed": int(
+            (~keep & (labels_test == CLASS_ATTACK)).sum()),
+        "n_benign_rows_removed": int(
+            (~keep & (labels_test == CLASS_BENIGN)).sum()),
+        "n_test_rows_kept": int(keep.sum()),
+        "n_attack_rows_kept": int((keep & (labels_test == CLASS_ATTACK)).sum()),
+        "per_arm": {},
+    }
+    for arm in arms:
+        per_system = {}
+        for system in ("naive", "prismflow"):
+            rows = _load_scores(arm, system, cfg["seeds"])
+            if not rows:
+                continue
+            aucs = []
+            for row in rows:
+                _align_test_rows(samples, indices, row)
+                aucs.append(roc_auc_binary(
+                    row["label"][keep], row["prob_attack"][keep]))
+            per_system[system] = {"roc_auc": _mean_std(aucs)}
+        out["per_arm"][arm] = per_system
+    return out
+
+
+def views_present_shares(data_cfg, indices: dict, cfg: dict) -> dict:
+    """Per arm: share of attack and of benign TEST rows with >= 2 views present.
+
+    Dependence and ENIV are pair statistics, so a row with fewer than two
+    present views contributes no pair at all. This is how many rows can carry
+    a pair in each class.
+    """
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    sources = list(samples.sources)
+    test_idx = indices["test"]
+    labels_test = samples.labels[test_idx]
+    attack = labels_test == CLASS_ATTACK
+    out = {
+        "note": (
+            "A pair statistic needs two present views in the same row, so a "
+            "row with 0 or 1 present view contributes nothing to dependence "
+            "or ENIV."
+        ),
+        "per_arm": {},
+    }
+    for arm in cfg["view_configurations"]:
+        keep_views = [sources.index(v) for v in arm["views"]]
+        n_present = samples.view_mask[:, keep_views].sum(axis=1)[test_idx]
+        two_plus = n_present >= 2
+        out["per_arm"][arm["name"]] = {
+            "n_attack_test": int(attack.sum()),
+            "n_attack_two_or_more_views": int((two_plus & attack).sum()),
+            "attack_share_two_or_more_views": (
+                float((two_plus & attack).sum() / attack.sum())
+                if attack.any() else float("nan")),
+            "n_benign_test": int((~attack).sum()),
+            "n_benign_two_or_more_views": int((two_plus & ~attack).sum()),
+            "benign_share_two_or_more_views": (
+                float((two_plus & ~attack).sum() / (~attack).sum())
+                if (~attack).any() else float("nan")),
+        }
+    return out
+
+
+def unit_wallclock(units: list[dict], mode: dict | None) -> dict:
+    """Wall-clock as the unit files record it, and what they do NOT record.
+
+    A unit file carries its own `seconds` but no start or end timestamp, so
+    the first start, the last end and the true span cannot be recovered from
+    `results/lanl/` and are reported as not recorded rather than estimated.
+    """
+    seconds = [float(u["seconds"]) for u in units if "seconds" in u]
+    concurrency = (mode or {}).get("max_concurrent_processes")
+    waves = (
+        int(math.ceil(len(seconds) / concurrency))
+        if isinstance(concurrency, int) and concurrency > 0 and seconds else None
+    )
+    return {
+        "note": (
+            "Read from the `seconds` field of every file in "
+            "results/lanl/units/. Unit files carry no start or end "
+            "timestamp, so first unit start, last unit end and total "
+            "wall-clock are NOT RECORDED in results/lanl/ and are not "
+            "estimated here. The wave count is the arithmetic ceiling of "
+            "units over the concurrency limit, not an observed schedule: "
+            "units have unequal lengths, so waves overlap in practice."
+        ),
+        "n_units": len(seconds),
+        "first_unit_start": "not recorded in unit files",
+        "last_unit_end": "not recorded in unit files",
+        "total_wall_clock_seconds": "not recorded in unit files",
+        "sum_of_unit_seconds": float(sum(seconds)) if seconds else float("nan"),
+        "max_unit_seconds": float(max(seconds)) if seconds else float("nan"),
+        "min_unit_seconds": float(min(seconds)) if seconds else float("nan"),
+        "concurrency_limit": concurrency,
+        "waves_ceiling": waves,
+        "elapsed_seconds_measures": (
+            "results.json `elapsed_seconds` times the AGGREGATE step only - "
+            "`run_lanl.py --aggregate`: reading the 40 unit files, "
+            "samples.npz and scores/*.npz, computing the Phase 3 and Phase 4 "
+            "diagnostics including the 2000-replicate cluster bootstrap, and "
+            "writing results.json and this README. It does NOT include any "
+            "training."
+        ),
+    }
 
 
 def aggregate(mode: dict | None = None) -> dict:
@@ -2453,6 +3150,21 @@ def aggregate(mode: dict | None = None) -> dict:
         "seen_unseen": seen_unseen_auc(data_cfg, indices, cfg, arms_present),
         "cluster_bootstrap": cluster_bootstrap(cfg, arms_present),
     }
+    closeout = {
+        "note": (
+            "Part 30 close-out, read-only: every figure is computed from "
+            "results/lanl/samples.npz and results/lanl/scores/*.npz. No "
+            "model was trained and no view was rescanned. Results only - no "
+            "interpretation is offered in this block."
+        ),
+        "top_attack_computers": top_attack_computer_table(data_cfg, indices, 4),
+        "trivial_scalar_seen_unseen": trivial_scalar_seen_unseen(data_cfg, indices),
+        "without_auth_present_view_only": present_view_only(
+            data_cfg, indices, cfg, "without_auth"),
+        "drop_top_test_computer": drop_top_computer(
+            data_cfg, indices, cfg, arms_present),
+        "views_present_shares": views_present_shares(data_cfg, indices, cfg),
+    }
 
     payload = json_safe({
         "experiment": cfg["experiment"],
@@ -2469,6 +3181,8 @@ def aggregate(mode: dict | None = None) -> dict:
         "execution_mode": mode or {"not_recorded": True},
         "configurations": configurations,
         "phase3_diagnostics": diagnostics,
+        "phase4_closeout": closeout,
+        "unit_wallclock": unit_wallclock(units, mode),
         "replicate_run1_vs_run2": replicate_table(configurations),
         "n_units": len(units),
         "elapsed_seconds": time.time() - started,
@@ -2794,7 +3508,7 @@ def main() -> None:
             "status_reason": (
                 "Part 28's metrics and Part 29's test A ran on both view "
                 "configurations over 5 seeds. Part 29's tests B, C (second "
-                "half) and D did NOT run - see section 8. This Part is "
+                "half) and D did NOT run - see section 9. This Part is "
                 "therefore complete for what it reports and INCOMPLETE "
                 "against part30.md step 4's full test list."
                 if done and not smoke else

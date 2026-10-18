@@ -1,6 +1,6 @@
 # Part 30 - PrismFlow on LANL cyber1 (days 1-16)
 
-**STATUS: COMPLETE (for what it reports).** Part 28's metric set and Part 29's test A ran on all 4 view configurations (with_auth, without_auth, without_dns, without_flows) over 5 seeds and both systems. Part 29's tests B, D and the second half of C did NOT run (section 8), so this Part is complete for what it reports and INCOMPLETE against part30.md step 4's full A-D list. Read section 8 before citing anything here as a Part 29 repeat.
+**STATUS: COMPLETE (for what it reports).** Part 28's metric set and Part 29's test A ran on all 4 view configurations (with_auth, without_auth, without_dns, without_flows) over 5 seeds and both systems. Part 29's tests B, D and the second half of C did NOT run (section 9), so this Part is complete for what it reports and INCOMPLETE against part30.md step 4's full A-D list. Read section 9 before citing anything here as a Part 29 repeat.
 
 Every number below is generated from a file under `results/lanl/` by `experiments/lanl/run_lanl.py --readme-only`. None is typed by hand. Figures that were not produced say `not measured` and never 0 or blank.
 
@@ -202,6 +202,23 @@ Paired difference, PrismFlow minus naive, within seed:
 
 A seed count of 5/5 means every seed moved the same way; it does NOT mean the effect is larger than test-set sampling noise. Section 7.4's bootstrap interval is the number to read for that.
 
+Brier against the majority baseline, which predicts the test block's class prevalence for every window. Its Brier is the score of a CONSTANT forecast, so a trained model above it is worse than that constant:
+
+| arm | system | Brier *(sample prevalence)* | constant-prevalence baseline | above the baseline |
+|---|---|---:|---:|---|
+| without_auth | naive | 0.1218 +/- 0.0006 | 0.0428 | **YES** |
+| without_auth | prismflow | 0.1219 +/- 0.0005 | 0.0428 | **YES** |
+| without_flows | naive | 0.0628 +/- 0.0004 | 0.0428 | **YES** |
+| without_flows | prismflow | 0.0630 +/- 0.0006 | 0.0428 | **YES** |
+| without_dns | naive | 0.0386 +/- 0.0007 | 0.0428 | no |
+| without_dns | prismflow | 0.0386 +/- 0.0002 | 0.0428 | no |
+| with_auth | naive | 0.0370 +/- 0.0005 | 0.0428 | no |
+| with_auth | prismflow | 0.0366 +/- 0.0002 | 0.0428 | no |
+
+**Flagged: `without_auth`, `without_flows` are above the constant-prevalence baseline on Brier**, for both systems in each flagged arm. A probability forecast worse than a constant is a calibration failure, not a ranking failure - the same arms' ROC AUC is well above 0.5. **The cause is not diagnosed here.** Nothing in this Part isolates whether it comes from the empty-tensor rows of section 4.2, from the absence of a validation split, or from the case-control prevalence the forecast is trained against.
+
+**Part 28 step 5 drop-view configurations.** Step 5 asks for a second configuration without any view missing in more than 50% of train windows. On this sample table that is 2 views - `dns` 98.4%, `flows` 56.4% of train windows missing. Configurations `without_dns`, `without_flows` ran, over all 5 seeds and both systems; they are in the table above. **No configuration dropping ALL of `dns`, `flows` at once was run**, so the arms above each drop one of them and never both; this Part does not know what the remaining views do with both absent.
+
 ### 4.2 Samples an arm cannot predict by construction
 
 Shared sample table: all arms use the SAME rows, labels and split. An arm drops a view's feature columns and encoder, never a row. A row with no present view among the arm's views is unpredictable by construction - all models score it identically.
@@ -244,7 +261,7 @@ Per-view missing fraction (`results/lanl/results.json`, `configurations.without_
 
 Views missing in more than 50% of train windows: flows, dns.
 
-**Not run, and it is in the brief.** Part 28's step 5 says that when a view is missing in more than half the windows, a second configuration WITHOUT that view should also be run. That applies here to flows, dns and was **not run** - the time budget did not reach it (see the status line). So this Part does not know whether the result above survives dropping flows or dns. `dns` in particular is present in under 2% of windows, so its encoder sees almost nothing and its contribution to the fusion is close to untested here.
+Part 28's step 5 drop-view configurations for `flows`, `dns` are stated once in section 4, above, rather than repeated per arm.
 
 ### WITHOUT flows (auth, proc, dns)
 
@@ -275,7 +292,7 @@ Per-view missing fraction (`results/lanl/results.json`, `configurations.without_
 
 Views missing in more than 50% of train windows: dns.
 
-**Not run, and it is in the brief.** Part 28's step 5 says that when a view is missing in more than half the windows, a second configuration WITHOUT that view should also be run. That applies here to dns and was **not run** - the time budget did not reach it (see the status line). So this Part does not know whether the result above survives dropping dns. `dns` in particular is present in under 2% of windows, so its encoder sees almost nothing and its contribution to the fusion is close to untested here.
+Part 28's step 5 drop-view configurations for `dns` are stated once in section 4, above, rather than repeated per arm.
 
 ### WITHOUT dns (auth, proc, flows)
 
@@ -306,7 +323,7 @@ Per-view missing fraction (`results/lanl/results.json`, `configurations.without_
 
 Views missing in more than 50% of train windows: flows.
 
-**Not run, and it is in the brief.** Part 28's step 5 says that when a view is missing in more than half the windows, a second configuration WITHOUT that view should also be run. That applies here to flows and was **not run** - the time budget did not reach it (see the status line). So this Part does not know whether the result above survives dropping flows. `dns` in particular is present in under 2% of windows, so its encoder sees almost nothing and its contribution to the fusion is close to untested here.
+Part 28's step 5 drop-view configurations for `flows` are stated once in section 4, above, rather than repeated per arm.
 
 ### WITH auth (auth, proc, flows, dns)
 
@@ -338,7 +355,7 @@ Per-view missing fraction (`results/lanl/results.json`, `configurations.with_aut
 
 Views missing in more than 50% of train windows: flows, dns.
 
-**Not run, and it is in the brief.** Part 28's step 5 says that when a view is missing in more than half the windows, a second configuration WITHOUT that view should also be run. That applies here to flows, dns and was **not run** - the time budget did not reach it (see the status line). So this Part does not know whether the result above survives dropping flows or dns. `dns` in particular is present in under 2% of windows, so its encoder sees almost nothing and its contribution to the fusion is close to untested here.
+Part 28's step 5 drop-view configurations for `flows`, `dns` are stated once in section 4, above, rather than repeated per arm.
 
 ### 4.3 Run 1 as a replicate of with_auth
 
@@ -357,6 +374,20 @@ Run 1's record is `results/lanl/results.run1.json.gz`; its sha256 is in `results
 | attack_recall | naive | 0.1176 | 0.1180 | +0.0005 |
 | attack_recall | prismflow | 0.1166 | 0.1356 | +0.0190 |
 
+PrismFlow minus naive, paired within seed, in each run separately:
+
+| metric | run 1 paired difference | run 2 paired difference | sign differs between runs |
+|---|---:|---:|---|
+| balanced_accuracy | -0.0004 +/- 0.0098 (2/5) | +0.0088 +/- 0.0046 (5/5) | **YES** |
+| roc_auc | +0.0069 +/- 0.0040 (5/5) | +0.0097 +/- 0.0063 (5/5) | no |
+| prob_ece | -0.0013 +/- 0.0006 (5/5) | -0.0008 +/- 0.0016 (4/5) | no |
+| attack_recall | -0.0010 +/- 0.0196 (2/5) | +0.0176 +/- 0.0095 (5/5) | **YES** |
+| brier | +0.0000 +/- 0.0003 (3/5) | -0.0004 +/- 0.0003 (5/5) | **YES** |
+| benign_recall | +0.0001 +/- 0.0001 (4/5) | +0.0001 +/- 0.0002 (2/5) | no |
+| accuracy | +0.0001 +/- 0.0004 (2/5) | +0.0005 +/- 0.0001 (5/5) | no |
+
+Metrics whose paired sign differs between the two runs: `balanced_accuracy`, `attack_recall`, `brier`. PrismFlow minus naive, paired within seed, in each run separately. A seed count inside ONE run shares that run's execution mode for both systems, so it is evidence about the two systems under that mode and NOT independent evidence about mode effects. Only the two columns side by side speak to the mode, and with one run each they do so without a spread.
+
 These two runs are **replicates, not reproductions**. Same seeds and same hyperparameters, but a different torch thread count changes the order of floating-point reductions, so the trained weights differ and a seed does not reproduce bit-exactly across modes. Where a run-1-to-run-2 difference is comparable to or larger than that metric's per-seed std, the seed std is understating the spread an independent re-run would show.
 
 ## 5. Part 29 test A - ENIV on real attack vs real benign windows
@@ -369,10 +400,10 @@ n = 410 attack windows, 18,319 benign windows, **never pooled**.
 
 | system | quantity | attack windows | benign windows | paired attack - benign |
 |---|---|---|---|---|
-| naive | ENIV (eigen) | 2.7369 +/- 0.1115 | 2.8649 +/- 0.0460 | -0.1279 +/- 0.1202 (1/5 seeds favour PrismFlow) |
-| naive | mean pairwise dependence | 0.1315 +/- 0.0558 | 0.0527 +/- 0.0184 | +0.0789 +/- 0.0626 (1/5 seeds favour PrismFlow) |
-| prismflow | ENIV (eigen) | 2.7649 +/- 0.1341 | 2.8752 +/- 0.0454 | -0.1103 +/- 0.1224 (1/5 seeds favour PrismFlow) |
-| prismflow | mean pairwise dependence | 0.1175 +/- 0.0671 | 0.0573 +/- 0.0201 | +0.0602 +/- 0.0601 (1/5 seeds favour PrismFlow) |
+| naive | ENIV (eigen) | 2.7369 +/- 0.1115 | 2.8649 +/- 0.0460 | -0.1279 +/- 0.1202 (1/5 seeds > 0) |
+| naive | mean pairwise dependence | 0.1315 +/- 0.0558 | 0.0527 +/- 0.0184 | +0.0789 +/- 0.0626 (4/5 seeds > 0) |
+| prismflow | ENIV (eigen) | 2.7649 +/- 0.1341 | 2.8752 +/- 0.0454 | -0.1103 +/- 0.1224 (1/5 seeds > 0) |
+| prismflow | mean pairwise dependence | 0.1175 +/- 0.0671 | 0.0573 +/- 0.0201 | +0.0602 +/- 0.0601 (4/5 seeds > 0) |
 
 ### WITHOUT flows (auth, proc, dns)
 
@@ -380,10 +411,10 @@ n = 410 attack windows, 18,319 benign windows, **never pooled**.
 
 | system | quantity | attack windows | benign windows | paired attack - benign |
 |---|---|---|---|---|
-| naive | ENIV (eigen) | 2.8562 +/- 0.0927 | 2.5926 +/- 0.0584 | +0.2636 +/- 0.0923 (5/5 seeds favour PrismFlow) |
-| naive | mean pairwise dependence | 0.0717 +/- 0.0461 | 0.1956 +/- 0.0277 | -0.1238 +/- 0.0469 (5/5 seeds favour PrismFlow) |
-| prismflow | ENIV (eigen) | 2.8216 +/- 0.1872 | 2.6100 +/- 0.0845 | +0.2116 +/- 0.1611 (5/5 seeds favour PrismFlow) |
-| prismflow | mean pairwise dependence | 0.0789 +/- 0.1045 | 0.1882 +/- 0.0419 | -0.1092 +/- 0.0932 (5/5 seeds favour PrismFlow) |
+| naive | ENIV (eigen) | 2.8562 +/- 0.0927 | 2.5926 +/- 0.0584 | +0.2636 +/- 0.0923 (5/5 seeds > 0) |
+| naive | mean pairwise dependence | 0.0717 +/- 0.0461 | 0.1956 +/- 0.0277 | -0.1238 +/- 0.0469 (0/5 seeds > 0) |
+| prismflow | ENIV (eigen) | 2.8216 +/- 0.1872 | 2.6100 +/- 0.0845 | +0.2116 +/- 0.1611 (5/5 seeds > 0) |
+| prismflow | mean pairwise dependence | 0.0789 +/- 0.1045 | 0.1882 +/- 0.0419 | -0.1092 +/- 0.0932 (0/5 seeds > 0) |
 
 ### WITHOUT dns (auth, proc, flows)
 
@@ -391,10 +422,10 @@ n = 410 attack windows, 18,319 benign windows, **never pooled**.
 
 | system | quantity | attack windows | benign windows | paired attack - benign |
 |---|---|---|---|---|
-| naive | ENIV (eigen) | 2.5849 +/- 0.0518 | 2.7294 +/- 0.0148 | -0.1444 +/- 0.0558 (0/5 seeds favour PrismFlow) |
-| naive | mean pairwise dependence | 0.1634 +/- 0.0440 | 0.1304 +/- 0.0070 | +0.0330 +/- 0.0441 (0/5 seeds favour PrismFlow) |
-| prismflow | ENIV (eigen) | 2.5993 +/- 0.0790 | 2.7491 +/- 0.0132 | -0.1498 +/- 0.0702 (0/5 seeds favour PrismFlow) |
-| prismflow | mean pairwise dependence | 0.1495 +/- 0.0493 | 0.1189 +/- 0.0074 | +0.0306 +/- 0.0492 (2/5 seeds favour PrismFlow) |
+| naive | ENIV (eigen) | 2.5849 +/- 0.0518 | 2.7294 +/- 0.0148 | -0.1444 +/- 0.0558 (0/5 seeds > 0) |
+| naive | mean pairwise dependence | 0.1634 +/- 0.0440 | 0.1304 +/- 0.0070 | +0.0330 +/- 0.0441 (5/5 seeds > 0) |
+| prismflow | ENIV (eigen) | 2.5993 +/- 0.0790 | 2.7491 +/- 0.0132 | -0.1498 +/- 0.0702 (0/5 seeds > 0) |
+| prismflow | mean pairwise dependence | 0.1495 +/- 0.0493 | 0.1189 +/- 0.0074 | +0.0306 +/- 0.0492 (3/5 seeds > 0) |
 
 ### WITH auth (auth, proc, flows, dns)
 
@@ -402,14 +433,40 @@ n = 410 attack windows, 18,319 benign windows, **never pooled**.
 
 | system | quantity | attack windows | benign windows | paired attack - benign |
 |---|---|---|---|---|
-| naive | ENIV (eigen) | 3.2664 +/- 0.2609 | 3.5612 +/- 0.0742 | -0.2948 +/- 0.2598 (1/5 seeds favour PrismFlow) |
-| naive | mean pairwise dependence | 0.1337 +/- 0.1376 | 0.1276 +/- 0.0231 | +0.0061 +/- 0.1374 (3/5 seeds favour PrismFlow) |
-| prismflow | ENIV (eigen) | 3.1816 +/- 0.1844 | 3.5619 +/- 0.0355 | -0.3803 +/- 0.2005 (0/5 seeds favour PrismFlow) |
-| prismflow | mean pairwise dependence | 0.1731 +/- 0.1486 | 0.1258 +/- 0.0148 | +0.0473 +/- 0.1533 (1/5 seeds favour PrismFlow) |
+| naive | ENIV (eigen) | 3.2664 +/- 0.2609 | 3.5612 +/- 0.0742 | -0.2948 +/- 0.2598 (1/5 seeds > 0) |
+| naive | mean pairwise dependence | 0.1337 +/- 0.1376 | 0.1276 +/- 0.0231 | +0.0061 +/- 0.1374 (2/5 seeds > 0) |
+| prismflow | ENIV (eigen) | 3.1816 +/- 0.1844 | 3.5619 +/- 0.0355 | -0.3803 +/- 0.2005 (0/5 seeds > 0) |
+| prismflow | mean pairwise dependence | 0.1731 +/- 0.1486 | 0.1258 +/- 0.0148 | +0.0473 +/- 0.1533 (4/5 seeds > 0) |
 
 Read the WITHOUT-auth block for a detection claim: with auth present, the views contain the records the labels came from (caveat iii).
 
-Sign convention: `paired_difference` marks a *fall* in mean dependence as favouring PrismFlow, because `LOWER_IS_BETTER` contains `mean_dependence_eigen`. For test A the quantity of interest is whether dependence is HIGHER on attack windows than benign ones, so read the signed mean, not the favouring count, in that row.
+Sign convention: the last column is attack minus benign, and the count beside it is the number of seeds whose own difference is above zero. `paired_difference`'s own favouring count is NOT shown here: it reads a fall in `mean_dependence_eigen` as favouring PrismFlow, because that key is in `LOWER_IS_BETTER`, which answers a different question from the one test A asks.
+
+**Signs of the attack-minus-benign differences, per arm and system.** A `+` means the quantity is higher on attack windows:
+
+| arm | system | ENIV (eigen) | mean pairwise dependence |
+|---|---|:--:|:--:|
+| without_auth | naive | - | + |
+| without_auth | prismflow | - | + |
+| without_flows | naive | + | - |
+| without_flows | prismflow | + | - |
+| without_dns | naive | - | + |
+| without_dns | prismflow | - | + |
+| with_auth | naive | - | + |
+| with_auth | prismflow | - | + |
+
+The most common pattern over the arms is ENIV `-` with dependence `+`, and `without_flows` is opposite to it. An arm that reverses sign while the others agree is not explained by this Part.
+
+Dependence and ENIV are PAIR statistics, so only a test row with at least two of the arm's views present contributes anything to them. How many rows that is, per class:
+
+| arm | attack rows with >= 2 views | share of attack | benign rows with >= 2 views | share of benign |
+|---|---:|---:|---:|---:|
+| without_auth | 67 of 410 | 16.3% | 3,315 of 18,319 | 18.1% |
+| without_flows | 208 of 410 | 50.7% | 8,022 of 18,319 | 43.8% |
+| without_dns | 270 of 410 | 65.9% | 9,857 of 18,319 | 53.8% |
+| with_auth | 271 of 410 | 66.1% | 9,942 of 18,319 | 54.3% |
+
+A pair statistic needs two present views in the same row, so a row with 0 or 1 present view contributes nothing to dependence or ENIV.
 
 ## 6. View-pair dependence (Part 29 test C, first half)
 
@@ -460,7 +517,7 @@ Most dependent pair: **auth-proc** (naive), **auth-proc** (PrismFlow). Least dep
 
 Most dependent pair: **auth-dns** (naive), **auth-dns** (PrismFlow). Least dependent: **flows-dns** (naive), **flows-dns** (PrismFlow). The two systems agree on both ends.
 
-Scoring the suspicion detector on the most and least dependent of these pairs was **not run** (see section 8), so this Part states no verdict on whether natural dependence raises the detector the way Part 10's exact clone did.
+Scoring the suspicion detector on the most and least dependent of these pairs was **not run** (see section 9), so this Part states no verdict on whether natural dependence raises the detector the way Part 10's exact clone did.
 
 ## 7. Diagnostics (no new training)
 
@@ -517,6 +574,61 @@ A per-seed std and this interval answer different questions. The std says how mu
 
 A missing view is carried as a BOOLEAN MASK, not as a zero-filled observation. `prismflow/statistics/dependence.py::feature_dependence_matrix` receives `view_mask` and `prismflow/statistics/dependence.py::available_views` reduces it to the per-view availability vector that `prismflow/eniv/eniv.py::compute_eniv` is given, so an absent view is excluded from the pair statistics rather than contributing a zero row. The feature row of an absent view IS zero in the tensor (`run_lanl.py::apply_scaler` leaves `views[~rows, v] = 0.0`), but the encoder never consumes it because `MultiViewEncoder` gates on the mask. Consequence for the pair table: a dns pair is computed over the samples where BOTH views of the pair are present, not over all samples, so the dns pairs rest on the ~2% of samples that have a dns record.
 
+Part 30 close-out, read-only: every figure is computed from results/lanl/samples.npz and results/lanl/scores/*.npz. No model was trained and no view was rescanned. Results only - no interpretation is offered in this block.
+
+### 7.6 The 4 most-attacked computers, as sampled
+
+| computer | train attack | train benign | test attack | test benign | attack train+test |
+|---|---:|---:|---:|---:|---:|
+| `C17693` | 142 | 1 | 137 | 1 | 279 |
+| `C1015` | 1 | 6 | 12 | 1 | 13 |
+| `C2388` | 3 | 4 | 10 | 3 | 13 |
+| `C395` | 5 | 4 | 7 | 0 | 12 |
+
+Attack computers in the sample table: 302. Counts are rows of the shared sample table, which is case-control: every attack cell is kept and a benign cell is kept iff crc32(computer|window) % 512 == 0, so the benign column is kept controls and not the computer's benign windows on the network.
+
+### 7.7 The 7.1 scalars inside the 7.3 seen/unseen groups
+
+Same scalars and same train-only orientation as 7.1; same seen/unseen definition and same all-benign comparison set as 7.3. Untrained, so there is no seed and no std.
+
+| scalar | orientation (fixed on train) | seen test AUC | unseen test AUC |
+|---|---|---:|---:|
+| `total_records_across_views` | as-is | 0.6405 | 0.7563 |
+| `auth_present_indicator` | as-is | 0.6637 | 0.6637 |
+| `n_views_present` | as-is | 0.4895 | 0.6824 |
+
+n = 255 seen attack rows, 155 unseen attack rows, each against all 18,319 benign test rows - the same comparison sets as 7.3.
+
+### 7.8 `without_auth` over its predictable test rows only
+
+Test rows with at least one of this arm's views present. The excluded rows are unpredictable by construction, not misclassified. Attack recall is at a 0.5 probability threshold, which for two classes is the argmax.
+
+Rows kept: 15,129 of 18,729 test rows (271 attack, 14,858 benign). Rows excluded: 3,600, of which 139 are attack rows.
+
+| system | ROC AUC (rows with a present view) | attack recall (same rows) |
+|---|---|---|
+| naive | 0.8556 +/- 0.0050 | 0.0790 +/- 0.0020 |
+| prismflow | 0.8594 +/- 0.0053 | 0.0782 +/- 0.0048 |
+
+Beside these, the same arm over ALL test rows is in section 4.1.
+
+### 7.9 Test AUC with the most-attacked test computer removed
+
+All test rows of one computer removed, attack and benign together. Descriptive: one host is not a resample, so this is not an interval.
+
+Removed: every test row of `C17693` - 138 rows (137 attack, 1 benign), leaving 18,591 test rows of which 273 are attack rows.
+
+| arm | system | ROC AUC, that computer removed | ROC AUC, all test rows (4.1) |
+|---|---|---|---|
+| without_auth | naive | 0.7237 +/- 0.0037 | 0.7755 +/- 0.0025 |
+| without_auth | prismflow | 0.7267 +/- 0.0047 | 0.7775 +/- 0.0030 |
+| without_flows | naive | 0.7702 +/- 0.0042 | 0.8137 +/- 0.0022 |
+| without_flows | prismflow | 0.7800 +/- 0.0042 | 0.8233 +/- 0.0031 |
+| without_dns | naive | 0.7976 +/- 0.0036 | 0.8336 +/- 0.0029 |
+| without_dns | prismflow | 0.8021 +/- 0.0092 | 0.8389 +/- 0.0058 |
+| with_auth | naive | 0.7899 +/- 0.0044 | 0.8278 +/- 0.0033 |
+| with_auth | prismflow | 0.7974 +/- 0.0064 | 0.8375 +/- 0.0043 |
+
 ## 8. Cross-dataset table (part30.md step 5)
 
 synthetic vs AIT vs LANL, for the DETECTION claim and the honest-duplication false positive. Every cell cites a `results/` file or says `not measured`. Nothing is pooled across datasets and nothing is averaged across AIT's two directions.
@@ -551,7 +663,7 @@ AIT's attack population is dnsteal-only, which Part 29 forbids pooling with its 
 | synthetic | Part 10 clone_k2 detector AUC | not measured in this Part | not re-run here; Part 10's own results file holds it |
 | AIT | strict same-sensor pair | NO EVIDENCE | `results/ait_attack/results.json`, `sensor_group_check.verdict` |
 | LANL | strict same-sensor pair | NO EVIDENCE - cyber1 ships no sensor-group definition, so no within-group pair exists | `configs/data/lanl.yaml`; section 6 above |
-| LANL | detector AUC on naturally dependent pairs | not measured | detector not scored (section 8) |
+| LANL | detector AUC on naturally dependent pairs | not measured | detector not scored (section 9) |
 
 ## 9. What was not run, and why
 
@@ -603,6 +715,24 @@ These are **INCOMPLETE**, not negative results. Nothing below should be read as 
 | `results/lanl/results.run1.json.gz` | run 1, immutable, with its sha256 in `results_manifest.json` |
 | `results/lanl/results.json` | every metric, diagnostic, pair table and paired difference |
 
-Run: 611 s wall, scan 234 s on 4 worker processes. Commit `219a4dd1443f7a63eb0dd6536ec3c5df17fa506a`.
+**Wall-clock, and what each number measures.** `results/lanl/results.json` `elapsed_seconds` = 753 s. results.json `elapsed_seconds` times the AGGREGATE step only - `run_lanl.py --aggregate`: reading the 40 unit files, samples.npz and scores/*.npz, computing the Phase 3 and Phase 4 diagnostics including the 2000-replicate cluster bootstrap, and writing results.json and this README. It does NOT include any training. The sample-table scan was 234 s on 4 worker processes, once, before any arm ran.
+
+Training wall-clock, from the unit files only:
+
+| quantity | value |
+|---|---|
+| units | 40 |
+| first unit start | not recorded in unit files |
+| last unit end | not recorded in unit files |
+| total wall-clock | not recorded in unit files |
+| sum of unit seconds | 70,753 s (19.7 process-hours) |
+| longest single unit | 4,597 s |
+| shortest single unit | 472 s |
+| concurrency limit | 11 |
+| waves (ceiling of units over concurrency) | 4 |
+
+Read from the `seconds` field of every file in results/lanl/units/. Unit files carry no start or end timestamp, so first unit start, last unit end and total wall-clock are NOT RECORDED in results/lanl/ and are not estimated here. The wave count is the arithmetic ceiling of units over the concurrency limit, not an observed schedule: units have unequal lengths, so waves overlap in practice.
+
+Commit `c96e4dfde138ccad66b9acb71d57f84c2e546689`.
 
 `data/raw/` was read only. Nothing in it was extracted, renamed, moved or deleted, and `auth.txt.gz` was not modified.

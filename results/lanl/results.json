@@ -4,7 +4,7 @@
     "description": "Part 30. Naive fusion and V1 PrismFlow on LANL cyber1, at 300 s (computer, window) samples, days 1-16, split by TIME with a two-day gap. Run twice: WITH the auth view and WITHOUT it, because the red-team labels are drawn from auth data.\n"
   },
   "smoke": 0,
-  "git_commit": "219a4dd1443f7a63eb0dd6536ec3c5df17fa506a",
+  "git_commit": "c96e4dfde138ccad66b9acb71d57f84c2e546689",
   "config": {
     "experiment": {
       "id": "lanl",
@@ -12795,6 +12795,255 @@
       }
     }
   },
+  "phase4_closeout": {
+    "note": "Part 30 close-out, read-only: every figure is computed from results/lanl/samples.npz and results/lanl/scores/*.npz. No model was trained and no view was rescanned. Results only - no interpretation is offered in this block.",
+    "top_attack_computers": {
+      "note": "Counts are rows of the shared sample table, which is case-control: every attack cell is kept and a benign cell is kept iff crc32(computer|window) % 512 == 0, so the benign column is kept controls and not the computer's benign windows on the network.",
+      "k": 4,
+      "n_attack_computers_total": 302,
+      "per_computer": [
+        {
+          "computer": "C17693",
+          "train": {
+            "attack_samples": 142,
+            "benign_samples": 1
+          },
+          "test": {
+            "attack_samples": 137,
+            "benign_samples": 1
+          },
+          "attack_samples_train_plus_test": 279
+        },
+        {
+          "computer": "C1015",
+          "train": {
+            "attack_samples": 1,
+            "benign_samples": 6
+          },
+          "test": {
+            "attack_samples": 12,
+            "benign_samples": 1
+          },
+          "attack_samples_train_plus_test": 13
+        },
+        {
+          "computer": "C2388",
+          "train": {
+            "attack_samples": 3,
+            "benign_samples": 4
+          },
+          "test": {
+            "attack_samples": 10,
+            "benign_samples": 3
+          },
+          "attack_samples_train_plus_test": 13
+        },
+        {
+          "computer": "C395",
+          "train": {
+            "attack_samples": 5,
+            "benign_samples": 4
+          },
+          "test": {
+            "attack_samples": 7,
+            "benign_samples": 0
+          },
+          "attack_samples_train_plus_test": 12
+        }
+      ]
+    },
+    "trivial_scalar_seen_unseen": {
+      "note": "Same scalars and same train-only orientation as 7.1; same seen/unseen definition and same all-benign comparison set as 7.3. Untrained, so there is no seed and no std.",
+      "n_benign_test_samples": 18319,
+      "per_group_n_attack": {
+        "seen": 255,
+        "unseen": 155
+      },
+      "baselines": {
+        "total_records_across_views": {
+          "orientation_fixed_on_train": "as-is",
+          "seen_test_auc": 0.6405158471489475,
+          "unseen_test_auc": 0.7562759623799722
+        },
+        "auth_present_indicator": {
+          "orientation_fixed_on_train": "as-is",
+          "seen_test_auc": 0.6636552213548774,
+          "unseen_test_auc": 0.6636552213548774
+        },
+        "n_views_present": {
+          "orientation_fixed_on_train": "as-is",
+          "seen_test_auc": 0.4895414489831087,
+          "unseen_test_auc": 0.6824080057898638
+        }
+      }
+    },
+    "without_auth_present_view_only": {
+      "note": "Test rows with at least one of this arm's views present. The excluded rows are unpredictable by construction, not misclassified. Attack recall is at a 0.5 probability threshold, which for two classes is the argmax.",
+      "arm": "without_auth",
+      "views": [
+        "proc",
+        "flows",
+        "dns"
+      ],
+      "n_test_all_rows": 18729,
+      "n_test_with_a_present_view": 15129,
+      "n_test_excluded": 3600,
+      "n_attack_with_a_present_view": 271,
+      "n_attack_excluded": 139,
+      "n_benign_with_a_present_view": 14858,
+      "per_system": {
+        "naive": {
+          "roc_auc": {
+            "mean": 0.8556408787940348,
+            "std": 0.004972955728660648,
+            "n_seeds": 5
+          },
+          "attack_recall": {
+            "mean": 0.07896678966789669,
+            "std": 0.002021116448358542,
+            "n_seeds": 5
+          }
+        },
+        "prismflow": {
+          "roc_auc": {
+            "mean": 0.8593841130227158,
+            "std": 0.005309536023811487,
+            "n_seeds": 5
+          },
+          "attack_recall": {
+            "mean": 0.07822878228782289,
+            "std": 0.0048112194872344275,
+            "n_seeds": 5
+          }
+        }
+      }
+    },
+    "drop_top_test_computer": {
+      "note": "All test rows of one computer removed, attack and benign together. Descriptive: one host is not a resample, so this is not an interval.",
+      "computer_removed": "C17693",
+      "n_test_rows_removed": 138,
+      "n_attack_rows_removed": 137,
+      "n_benign_rows_removed": 1,
+      "n_test_rows_kept": 18591,
+      "n_attack_rows_kept": 273,
+      "per_arm": {
+        "without_auth": {
+          "naive": {
+            "roc_auc": {
+              "mean": 0.7236513495602915,
+              "std": 0.003653896088789378,
+              "n_seeds": 5
+            }
+          },
+          "prismflow": {
+            "roc_auc": {
+              "mean": 0.7266524609793524,
+              "std": 0.004724425513802655,
+              "n_seeds": 5
+            }
+          }
+        },
+        "without_flows": {
+          "naive": {
+            "roc_auc": {
+              "mean": 0.7702190283421858,
+              "std": 0.004230056636560096,
+              "n_seeds": 5
+            }
+          },
+          "prismflow": {
+            "roc_auc": {
+              "mean": 0.7799611223292848,
+              "std": 0.004187182862404786,
+              "n_seeds": 5
+            }
+          }
+        },
+        "without_dns": {
+          "naive": {
+            "roc_auc": {
+              "mean": 0.7976030302266791,
+              "std": 0.0036007907497361455,
+              "n_seeds": 5
+            }
+          },
+          "prismflow": {
+            "roc_auc": {
+              "mean": 0.802110376430717,
+              "std": 0.009225473257545776,
+              "n_seeds": 5
+            }
+          }
+        },
+        "with_auth": {
+          "naive": {
+            "roc_auc": {
+              "mean": 0.7899205009424465,
+              "std": 0.004427021706188676,
+              "n_seeds": 5
+            }
+          },
+          "prismflow": {
+            "roc_auc": {
+              "mean": 0.7974267989171363,
+              "std": 0.006432751456990521,
+              "n_seeds": 5
+            }
+          }
+        }
+      }
+    },
+    "views_present_shares": {
+      "note": "A pair statistic needs two present views in the same row, so a row with 0 or 1 present view contributes nothing to dependence or ENIV.",
+      "per_arm": {
+        "without_auth": {
+          "n_attack_test": 410,
+          "n_attack_two_or_more_views": 67,
+          "attack_share_two_or_more_views": 0.16341463414634147,
+          "n_benign_test": 18319,
+          "n_benign_two_or_more_views": 3315,
+          "benign_share_two_or_more_views": 0.18095965937005296
+        },
+        "without_flows": {
+          "n_attack_test": 410,
+          "n_attack_two_or_more_views": 208,
+          "attack_share_two_or_more_views": 0.5073170731707317,
+          "n_benign_test": 18319,
+          "n_benign_two_or_more_views": 8022,
+          "benign_share_two_or_more_views": 0.4379059992357661
+        },
+        "without_dns": {
+          "n_attack_test": 410,
+          "n_attack_two_or_more_views": 270,
+          "attack_share_two_or_more_views": 0.6585365853658537,
+          "n_benign_test": 18319,
+          "n_benign_two_or_more_views": 9857,
+          "benign_share_two_or_more_views": 0.5380752224466401
+        },
+        "with_auth": {
+          "n_attack_test": 410,
+          "n_attack_two_or_more_views": 271,
+          "attack_share_two_or_more_views": 0.6609756097560976,
+          "n_benign_test": 18319,
+          "n_benign_two_or_more_views": 9942,
+          "benign_share_two_or_more_views": 0.542715213712539
+        }
+      }
+    }
+  },
+  "unit_wallclock": {
+    "note": "Read from the `seconds` field of every file in results/lanl/units/. Unit files carry no start or end timestamp, so first unit start, last unit end and total wall-clock are NOT RECORDED in results/lanl/ and are not estimated here. The wave count is the arithmetic ceiling of units over the concurrency limit, not an observed schedule: units have unequal lengths, so waves overlap in practice.",
+    "n_units": 40,
+    "first_unit_start": "not recorded in unit files",
+    "last_unit_end": "not recorded in unit files",
+    "total_wall_clock_seconds": "not recorded in unit files",
+    "sum_of_unit_seconds": 70753.00533294678,
+    "max_unit_seconds": 4597.400192975998,
+    "min_unit_seconds": 472.33600306510925,
+    "concurrency_limit": 11,
+    "waves_ceiling": 4,
+    "elapsed_seconds_measures": "results.json `elapsed_seconds` times the AGGREGATE step only - `run_lanl.py --aggregate`: reading the 40 unit files, samples.npz and scores/*.npz, computing the Phase 3 and Phase 4 diagnostics including the 2000-replicate cluster bootstrap, and writing results.json and this README. It does NOT include any training."
+  },
   "replicate_run1_vs_run2": {
     "note": "Same seeds, same hyperparameters, same sample rule; run 1 ran sequentially at torch's default thread count, run 2 in this Part's chosen mode. Differences are execution mode and floating-point reduction order, not a different experiment.",
     "run1_sha256_verified": 1,
@@ -12848,8 +13097,95 @@
           "difference_run2_minus_run1": 0.019024390243902456
         }
       }
+    },
+    "paired_within_run": {
+      "note": "PrismFlow minus naive, paired within seed, in each run separately. A seed count inside ONE run shares that run's execution mode for both systems, so it is evidence about the two systems under that mode and NOT independent evidence about mode effects. Only the two columns side by side speak to the mode, and with one run each they do so without a spread.",
+      "per_metric": {
+        "balanced_accuracy": {
+          "run1_paired_mean": -0.00043321674550877987,
+          "run1_paired_std": 0.00978158439122363,
+          "run1_n_seeds_favouring_prismflow": 2,
+          "run2_paired_mean": 0.008818699497656035,
+          "run2_paired_std": 0.004649006273694169,
+          "run2_n_seeds_favouring_prismflow": 5,
+          "n_seeds": 5,
+          "lower_is_better": 0,
+          "sign_differs_between_runs": 1
+        },
+        "roc_auc": {
+          "run1_paired_mean": 0.006947444942542647,
+          "run1_paired_std": 0.0039797118268543406,
+          "run1_n_seeds_favouring_prismflow": 5,
+          "run2_paired_mean": 0.009709657705780583,
+          "run2_paired_std": 0.0063388517452646,
+          "run2_n_seeds_favouring_prismflow": 5,
+          "n_seeds": 5,
+          "lower_is_better": 0,
+          "sign_differs_between_runs": 0
+        },
+        "prob_ece": {
+          "run1_paired_mean": -0.0013097531224310615,
+          "run1_paired_std": 0.0005884244556559943,
+          "run1_n_seeds_favouring_prismflow": 5,
+          "run2_paired_mean": -0.0007893984128994813,
+          "run2_paired_std": 0.001568738993543409,
+          "run2_n_seeds_favouring_prismflow": 4,
+          "n_seeds": 5,
+          "lower_is_better": 1,
+          "sign_differs_between_runs": 0
+        },
+        "attack_recall": {
+          "run1_paired_mean": -0.0009756097560975647,
+          "run1_paired_std": 0.01955787336266288,
+          "run1_n_seeds_favouring_prismflow": 2,
+          "run2_paired_mean": 0.017560975609756092,
+          "run2_paired_std": 0.009509067653472156,
+          "run2_n_seeds_favouring_prismflow": 5,
+          "n_seeds": 5,
+          "lower_is_better": 0,
+          "sign_differs_between_runs": 1
+        },
+        "brier": {
+          "run1_paired_mean": 1.277152133580539e-05,
+          "run1_paired_std": 0.0003350094084123322,
+          "run1_n_seeds_favouring_prismflow": 3,
+          "run2_paired_mean": -0.000403154061423211,
+          "run2_paired_std": 0.00034342860576575793,
+          "run2_n_seeds_favouring_prismflow": 5,
+          "n_seeds": 5,
+          "lower_is_better": 1,
+          "sign_differs_between_runs": 1
+        },
+        "benign_recall": {
+          "run1_paired_mean": 0.00010917626508000211,
+          "run1_paired_std": 8.631141602077795e-05,
+          "run1_n_seeds_favouring_prismflow": 4,
+          "run2_paired_mean": 7.642338555597927e-05,
+          "run2_paired_std": 0.00022704988638121292,
+          "run2_n_seeds_favouring_prismflow": 2,
+          "n_seeds": 5,
+          "lower_is_better": 0,
+          "sign_differs_between_runs": 0
+        },
+        "accuracy": {
+          "run1_paired_mean": 8.542901382884161e-05,
+          "run1_paired_std": 0.000441261220810382,
+          "run1_n_seeds_favouring_prismflow": 2,
+          "run2_paired_mean": 0.00045918094932988484,
+          "run2_paired_std": 8.097469639654206e-05,
+          "run2_n_seeds_favouring_prismflow": 5,
+          "n_seeds": 5,
+          "lower_is_better": 0,
+          "sign_differs_between_runs": 0
+        }
+      },
+      "sign_differs_between_runs": [
+        "balanced_accuracy",
+        "attack_recall",
+        "brier"
+      ]
     }
   },
   "n_units": 40,
-  "elapsed_seconds": 611.2977550029755
+  "elapsed_seconds": 753.4533920288086
 }
