@@ -10,7 +10,7 @@
   ],
   "use_discount": 1,
   "threads": 1,
-  "seconds": 574.3071684837341,
+  "seconds": 4597.400192975998,
   "n_train": 42912,
   "n_test": 18729,
   "scaler": {

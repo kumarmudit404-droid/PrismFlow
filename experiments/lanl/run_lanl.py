@@ -701,8 +701,10 @@ def write_readme(results: dict, path: Path) -> None:
         missing = sorted(expected - finished)
         scan = dig(results, "population", "scan_seconds")
         reason = (
-            f"Only {sorted(finished)} of {sorted(expected)} view "
-            f"configurations finished. **{', '.join(missing)} did NOT run** "
+            f"Only {len(finished)} of {len(expected)} view configurations "
+            f"finished ({', '.join(sorted(finished))} of "
+            f"{', '.join(sorted(expected))}). "
+            f"**{', '.join(missing)} did NOT run** "
             "and every figure below covers the finished configuration only. "
             + (
                 "Reason: the wall-clock budget. Each arm is 10 models and the "
@@ -2499,20 +2501,22 @@ def record_mode_measurements() -> dict:
         if mine:
             per_system[system] = {
                 "n_units": len(mine),
-                "mean_seconds_per_unit": statistics.mean(mine),
+                "mean_seconds_per_unit": float(np.mean(mine)),
                 "std_seconds_per_unit": (
-                    statistics.stdev(mine) if len(mine) > 1 else float("nan")),
+                    float(np.std(mine, ddof=1)) if len(mine) > 1
+                    else float("nan")),
             }
     sequential = float(mode["sequential_run1_seconds_per_unit"])
     concurrent = int(mode["max_concurrent_processes"])
-    mean_seconds = statistics.mean(seconds)
+    mean_seconds = float(np.mean(seconds))
     # Throughput = units finished per second. Sequential run 1 managed
     # 1/sequential; the chosen mode manages concurrent/mean_seconds.
     mode["achieved_parallel_measured"] = {
         "n_units": len(units),
         "mean_seconds_per_unit": mean_seconds,
         "std_seconds_per_unit": (
-            statistics.stdev(seconds) if len(seconds) > 1 else float("nan")),
+            float(np.std(seconds, ddof=1)) if len(seconds) > 1
+            else float("nan")),
         "per_system": per_system,
         "throughput_speedup_vs_run1": (concurrent / mean_seconds) * sequential,
         "note": (

@@ -121,5 +121,53 @@
     },
     "why_it_matters_here": "Part 30 run 1 ran at torch's default 12 threads and run 2 at 1 thread. The thread count changes the order in which sums are accumulated during training, so it changes the fitted weights and then every diagnostic computed from them. The difference is about 0.3% of ENIV on AIT - four orders of magnitude above the 1e-6 tolerance that test asserts - which is the scale to keep in mind when reading this Part's run-1-vs-run-2 replicate table and its seed-0 equivalence check. It is arithmetic, not a quality difference between the systems.",
     "gate_consequence": "The Part 30 gate test suite is therefore run at the DEFAULT thread count, which is the count the committed values were produced at. Under OMP_NUM_THREADS=1 that one test fails; that is the test detecting a thread change, not a defect introduced by Part 30."
+  },
+  "achieved_parallel_measured": {
+    "n_units": 40,
+    "mean_seconds_per_unit": 1768.8251333236694,
+    "std_seconds_per_unit": 1258.5698610420327,
+    "per_system": {
+      "naive": {
+        "n_units": 20,
+        "mean_seconds_per_unit": 1270.7914036154748,
+        "std_seconds_per_unit": 756.3668352279844
+      },
+      "prismflow": {
+        "n_units": 20,
+        "mean_seconds_per_unit": 2266.858863031864,
+        "std_seconds_per_unit": 1468.7032747059159
+      }
+    },
+    "throughput_speedup_vs_run1": 2.0864131397010697,
+    "note": "A unit takes LONGER in this mode than it did sequentially - 1769 s against run 1's 336 s - because 11 of them share the box. The gain is throughput, not latency. The projection above overstated that gain because it assumed no contention between concurrent units; the decision rule (at least 2x run 1's sequential throughput) is met on the MEASURED figure as well as the projected one, so the mode choice stands on what happened rather than on the forecast."
+  },
+  "equivalence_check_seed0": {
+    "per_system": {
+      "naive": {
+        "balanced_accuracy": {
+          "run1": 0.5642793234799535,
+          "run2": 0.5582090565706138,
+          "absolute_difference": -0.00607026690933965
+        },
+        "roc_auc": {
+          "run1": 0.8374738875670868,
+          "run2": 0.8234802863613548,
+          "absolute_difference": -0.01399360120573201
+        }
+      },
+      "prismflow": {
+        "balanced_accuracy": {
+          "run1": 0.5618402990897096,
+          "run2": 0.5715691025844152,
+          "absolute_difference": 0.009728803494705618
+        },
+        "roc_auc": {
+          "run1": 0.8412721564575764,
+          "run2": 0.8402092190035935,
+          "absolute_difference": -0.0010629374539828929
+        }
+      }
+    },
+    "note": "Same seed, same hyperparameters, same sample table and the same time split. A non-zero difference here is execution mode and floating-point reduction order, not a different experiment: run 1 ran sequentially at torch's default 12 threads and run 2 at 1 thread, which changes the order in which sums are accumulated. The difference is NOT evidence about either system's quality."
   }
 }
