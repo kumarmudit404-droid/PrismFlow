@@ -1,0 +1,78 @@
+{
+  "note": "Shared sample table: all arms use the SAME rows, labels and split. An arm drops a view's feature columns and encoder, never a row. A row with no present view among the arm's views is unpredictable by construction - all models score it identically.",
+  "n_samples_total": 61641,
+  "per_arm": {
+    "without_auth": {
+      "train": {
+        "n_samples": 42912,
+        "n_empty_all_views_absent": 7061,
+        "n_attack_samples": 439,
+        "n_attack_empty": 49,
+        "n_benign_empty": 7012,
+        "attack_empty_share": 0.11161731207289294
+      },
+      "test": {
+        "n_samples": 18729,
+        "n_empty_all_views_absent": 3600,
+        "n_attack_samples": 410,
+        "n_attack_empty": 139,
+        "n_benign_empty": 3461,
+        "attack_empty_share": 0.33902439024390246
+      }
+    },
+    "without_flows": {
+      "train": {
+        "n_samples": 42912,
+        "n_empty_all_views_absent": 3750,
+        "n_attack_samples": 439,
+        "n_attack_empty": 0,
+        "n_benign_empty": 3750,
+        "attack_empty_share": 0.0
+      },
+      "test": {
+        "n_samples": 18729,
+        "n_empty_all_views_absent": 998,
+        "n_attack_samples": 410,
+        "n_attack_empty": 0,
+        "n_benign_empty": 998,
+        "attack_empty_share": 0.0
+      }
+    },
+    "without_dns": {
+      "train": {
+        "n_samples": 42912,
+        "n_empty_all_views_absent": 112,
+        "n_attack_samples": 439,
+        "n_attack_empty": 0,
+        "n_benign_empty": 112,
+        "attack_empty_share": 0.0
+      },
+      "test": {
+        "n_samples": 18729,
+        "n_empty_all_views_absent": 73,
+        "n_attack_samples": 410,
+        "n_attack_empty": 0,
+        "n_benign_empty": 73,
+        "attack_empty_share": 0.0
+      }
+    },
+    "with_auth": {
+      "train": {
+        "n_samples": 42912,
+        "n_empty_all_views_absent": 0,
+        "n_attack_samples": 439,
+        "n_attack_empty": 0,
+        "n_benign_empty": 0,
+        "attack_empty_share": 0.0
+      },
+      "test": {
+        "n_samples": 18729,
+        "n_empty_all_views_absent": 0,
+        "n_attack_samples": 410,
+        "n_attack_empty": 0,
+        "n_benign_empty": 0,
+        "attack_empty_share": 0.0
+      }
+    }
+  }
+}

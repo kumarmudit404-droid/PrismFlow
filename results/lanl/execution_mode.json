@@ -29,5 +29,71 @@
   "sequential_run1_seconds_per_unit": 335.5,
   "projected_parallel_seconds_per_unit": 140.20161691748578,
   "projected_throughput_speedup_vs_run1": 26.322806263867882,
-  "prismflow_to_naive_cost_ratio_run1": 1.6521739130434783
+  "prismflow_to_naive_cost_ratio_run1": 1.6521739130434783,
+  "benchmark_run2_contended": {
+    "when_local": "2026-10-18 15:20-15:22 IST",
+    "n_steps": 200,
+    "repeats": 3,
+    "background_load_percent_observed": [
+      36,
+      30,
+      24,
+      24,
+      4,
+      23,
+      33,
+      23,
+      20,
+      32,
+      22
+    ],
+    "per_threads": [
+      {
+        "threads": 1,
+        "ms_per_step_repeats": [
+          8.374993801116943,
+          9.861400127410889,
+          10.225800275802612
+        ],
+        "ms_per_step_mean": 9.487398068110148,
+        "ms_per_step_std": 0.980448523358312
+      },
+      {
+        "threads": 2,
+        "ms_per_step_repeats": [
+          10.759068727493286,
+          9.688899517059326,
+          11.277531385421753
+        ],
+        "ms_per_step_mean": 10.575166543324789,
+        "ms_per_step_std": 0.8101251837220169
+      },
+      {
+        "threads": 4,
+        "ms_per_step_repeats": [
+          6.599847078323364,
+          11.153439283370972,
+          10.916212797164917
+        ],
+        "ms_per_step_mean": 9.556499719619751,
+        "ms_per_step_std": 2.563282121110178
+      },
+      {
+        "threads": 12,
+        "ms_per_step_repeats": [
+          11.079216003417969,
+          32.2856605052948,
+          35.74023365974426
+        ],
+        "ms_per_step_mean": 26.368370056152344,
+        "ms_per_step_std": 13.352984410087645
+      }
+    ],
+    "note": "CONTAMINATED, not a clean benchmark. No PrismFlow process was running (all 22 orphans had been terminated), but this box carried 20-33% load from unrelated desktop applications throughout. The readings are non-monotonic in thread count and 12 threads alone spans 11.1-35.7 ms/step across three identical repeats, so this run cannot discriminate 1 from 2 from 4 threads. The one signal it reproduces is that 12 threads (torch's default here) is never faster and is sometimes 3x slower. The thread choice below was therefore taken from the 2026-10-17 idle-machine benchmark, which is the only clean one, and was fixed before this run's units were launched."
+  },
+  "orphans_terminated_before_benchmark": {
+    "n_run_lanl_processes": 22,
+    "n_supervisor_shells": 25,
+    "detail": "A Phase 2 scheduler from the earlier stopped session (scratchpad e346cb63, phase2.sh) was still live and had launched 11 units at 15:12:18, 4 minutes before this run began. Its 22 run_lanl.py processes were 11 units x (launcher stub + interpreter). The brief says to terminate processes whose command line shows run_lanl.py; the bash phase2.sh supervisors do not name run_lanl.py but hold an 11-slot queue over the remaining 29 units and would have relaunched every process killed, so they were stopped first. Nothing else was touched. No unit file from that scheduler had been written, so no result was discarded."
+  }
 }

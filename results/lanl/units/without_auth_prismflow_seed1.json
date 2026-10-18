@@ -1,0 +1,120 @@
+{
+  "arm": "without_auth",
+  "system": "prismflow",
+  "seed": 1,
+  "views": [
+    "proc",
+    "flows",
+    "dns"
+  ],
+  "use_discount": 1,
+  "threads": 1,
+  "seconds": 956.4759063720703,
+  "n_train": 42912,
+  "n_test": 18729,
+  "scaler": {
+    "fit_rows": 42912,
+    "present_rows_per_view": [
+      28629,
+      18709,
+      692
+    ],
+    "fitted_on": "train block only"
+  },
+  "metrics": {
+    "seed": 1,
+    "n_samples": 18729.0,
+    "accuracy": 0.9790698916119387,
+    "macro_precision": 0.944121549055531,
+    "macro_recall": 0.524335655769899,
+    "macro_f1": 0.5410027188102055,
+    "brier": 0.12155690119813047,
+    "brier_reliability": 0.08222410635687127,
+    "brier_resolution": 0.0032130500907317297,
+    "brier_uncertainty": 0.04282392164393284,
+    "brier_within_bin": -0.00027807671194194207,
+    "prob_mean_confidence": 0.8909852078787267,
+    "prob_ece": 0.09356962459519803,
+    "prob_mce": 0.4594982805871224,
+    "prob_aurc": 0.006787107750077672,
+    "prob_selective_risk@1.00": 0.020930108388058203,
+    "prob_selective_risk@0.90": 0.018966601411874732,
+    "prob_selective_risk@0.80": 0.01501601708489042,
+    "prob_selective_risk@0.50": 0.0025627335824879873,
+    "vacuity_mean_confidence": 0.7820827599502079,
+    "vacuity_ece": 0.19698713166173076,
+    "vacuity_mce": 0.9599882923965147,
+    "vacuity_aurc": 0.006800745903547844,
+    "vacuity_selective_risk@1.00": 0.020930108388058203,
+    "vacuity_selective_risk@0.90": 0.018966601411874732,
+    "vacuity_selective_risk@0.80": 0.01501601708489042,
+    "vacuity_selective_risk@0.50": 0.0025627335824879873,
+    "balanced_accuracy": 0.524335655769899,
+    "roc_auc": 0.7743585561572085,
+    "attack_recall": 0.04878048780487805,
+    "benign_recall": 0.99989082373492,
+    "n_test": 18729.0,
+    "n_attack": 410.0,
+    "n_benign": 18319.0,
+    "attack_prevalence": 0.021891184793635537
+  },
+  "diagnostics": {
+    "seed": 1,
+    "matrix": [
+      [
+        1.0,
+        0.08580586025600513,
+        0.049290902534751574
+      ],
+      [
+        0.08580586025600513,
+        1.0,
+        0.0014491099769830098
+      ],
+      [
+        0.049290902534751574,
+        0.0014491099769830098,
+        1.0
+      ]
+    ],
+    "views": [
+      "proc",
+      "flows",
+      "dns"
+    ],
+    "available": [
+      1,
+      1,
+      1
+    ],
+    "null_permutations": 12,
+    "eniv_eigen": 2.900413722812477,
+    "mean_dependence_eigen": 0.04551529092257991,
+    "efficiency_ratio_eigen": 0.9668045742708257,
+    "eniv_design_effect": 2.7496937757018465,
+    "mean_dependence_design_effect": 0.04551529092257991,
+    "efficiency_ratio_design_effect": 0.9165645919006155
+  },
+  "natural_windows": {
+    "attack_windows": {
+      "null_permutations": 12,
+      "eniv_eigen": 2.8025659257520252,
+      "mean_dependence_eigen": 0.09871703712398734,
+      "efficiency_ratio_eigen": 0.9341886419173417,
+      "eniv_design_effect": 2.505357133656057,
+      "mean_dependence_design_effect": 0.09871703712398734,
+      "efficiency_ratio_design_effect": 0.835119044552019
+    },
+    "benign_windows": {
+      "null_permutations": 12,
+      "eniv_eigen": 2.903631160165304,
+      "mean_dependence_eigen": 0.04370577812646162,
+      "efficiency_ratio_eigen": 0.9678770533884347,
+      "eniv_design_effect": 2.758845059857194,
+      "mean_dependence_design_effect": 0.04370577812646162,
+      "efficiency_ratio_design_effect": 0.9196150199523979
+    }
+  },
+  "scores_file": "results/lanl/scores/without_auth_prismflow_seed1.npz",
+  "scores_sha256": "68f9b631830c239794db8d7184cbf0d01ea4594882c24ee23890451a676daea7"
+}
