@@ -531,7 +531,22 @@ Each row is a SINGLE SCALAR, no training. Orientation (sign) is chosen on the tr
 | `auth_present_indicator` | as-is | 0.6750 | **0.6637** |
 | `n_views_present` | as-is | 0.6281 | **0.5625** |
 
-**Read this before any model number below.** The best single scalar is `total_records_across_views` at test AUC 0.6843; the best model is without_dns / prismflow at 0.8389, a difference of +0.1546. The models are ahead of every trivial scalar by more than 0.05 AUC, so the ranking is not reducible to one of these scalars.
+**Read this before any model number below.** The best single scalar is `total_records_across_views` at test AUC 0.6843; the best model is without_dns / prismflow at 0.8389, a difference of +0.1546.
+
+That difference is an all-test figure. Split by whether the attack sample's computer also has attack samples in train (section 7.3's definition), `total_records_across_views` reaches 0.6405 on the 255 seen attack samples and 0.7563 on the 155 unseen ones (section 7.7), while the models reach 0.8153 to 0.8875 on seen and 0.7102 to 0.7614 on unseen (section 7.3). Against the scalar's unseen AUC of 0.7563, of the 8 arm-and-system pairs 0 are above by more than 0.01 AUC, 5 are within 0.01 of it and 3 are below it by more than 0.01. The all-test ranking of models over this scalar therefore does not hold inside the unseen group.
+
+| arm | system | all-test AUC | seen AUC | unseen AUC | unseen - scalar unseen | model unseen vs scalar unseen |
+|---|---|---:|---:|---:|---:|---|
+| without_auth | naive | 0.7755 | 0.8153 | 0.7102 | -0.0461 | below |
+| without_auth | prismflow | 0.7775 | 0.8168 | 0.7126 | -0.0436 | below |
+| without_flows | naive | 0.8137 | 0.8563 | 0.7435 | -0.0127 | below |
+| without_flows | prismflow | 0.8233 | 0.8674 | 0.7508 | -0.0055 | within 0.01 of |
+| without_dns | naive | 0.8336 | 0.8793 | 0.7584 | +0.0021 | within 0.01 of |
+| without_dns | prismflow | 0.8389 | 0.8875 | 0.7589 | +0.0026 | within 0.01 of |
+| with_auth | naive | 0.8278 | 0.8686 | 0.7606 | +0.0043 | within 0.01 of |
+| with_auth | prismflow | 0.8375 | 0.8837 | 0.7614 | +0.0052 | within 0.01 of |
+
+Scalar row for comparison: `total_records_across_views` reaches 0.6843 over all 410 test attack samples, 0.6405 seen and 0.7563 unseen. It is untrained, so it has no seed and no std; the model columns are 5-seed means whose stds are in sections 4.1 and 7.3. One fixed split, no interval.
 
 ### 7.2 Host audit: how concentrated the attack labels are
 
@@ -694,7 +709,15 @@ These are **INCOMPLETE**, not negative results. Nothing below should be read as 
 
 > **L25 (proposed).** Part 28's `fit_scaler`, `apply_scaler` and `train_ait` are not reusable across datasets: each resolves native view widths through `ait_lds.FEATURES`, keyed by AIT source names. Part 30 mirrored them rather than patching Part 28. Any future Part on a third dataset will hit the same wall.
 
-> **L26 (proposed).** On LANL cyber1 a single untrained scalar - `total_records_across_views`, oriented on train only - reaches test ROC AUC 0.6843, against 0.8389 for the best trained arm (`results/lanl/results.json`, `phase3_diagnostics.trivial_baselines`). The trained arms are ahead of this scalar by more than 0.05 AUC.
+> **L26 (proposed).** Seen and unseen attack computers. On LANL cyber1 the trained models' ranking advantage over a single untrained scalar is confined to attack computers already seen as attacked in train. `total_records_across_views`, oriented on train only, reaches test ROC AUC 0.6843 over all 410 test attack samples, against 0.7755 to 0.8389 for the trained arms. Split by whether the attack computer also has attack samples in train, the scalar reaches 0.6405 on the 255 seen samples and 0.7563 on the 155 unseen ones, while the models reach 0.8153 to 0.8875 on seen and 0.7102 to 0.7614 on unseen (sections 7.3 and 7.7). On unseen computers `without_auth` naive, `without_auth` prismflow, `without_flows` naive are below it; `without_flows` prismflow, `without_dns` naive, `without_dns` prismflow, `with_auth` naive, `with_auth` prismflow are within 0.01 of it. The verdict is not uniform within `without_flows`, so these are stated per arm and system, not per arm. One fixed split, no interval. (`results/lanl/results.json`, `phase3_diagnostics.seen_unseen` and `phase4_closeout.trivial_scalar_seen_unseen`.)
+
+> **L27 (proposed).** Host concentration and no within-host benign contrast. One computer, `C17693`, accounts for 279 of the 849 attack samples (142 of 439 in train, 137 of 410 in test) and has 1 benign sample in train and 1 in test, because benign cells are kept at 1/512 by hash. A model can therefore learn that host's activity profile as the attack class without learning attack behaviour. Removing every test row of `C17693` lowers test ROC AUC by 0.036 to 0.052 depending on arm and system (section 7.9). 35 attack computers appear in both blocks and 104 are test-only. A design that keeps all or a stated share of the benign cells of attack hosts would be needed to separate host from behaviour.
+
+> **L28 (proposed).** Execution mode and replicate spread. The torch thread count changes the fitted weights. Runs 1 (12 threads, sequential) and 2 (1 thread, 11 concurrent) of the with_auth arm agree in the sign of the PrismFlow-minus-naive difference for `roc_auc`, `prob_ece`, `benign_recall`, `accuracy` (`roc_auc` +0.0069, +0.0097; `prob_ece` -0.0013, -0.0008), but disagree for `balanced_accuracy` (-0.0004, +0.0088), `attack_recall` (-0.0010, +0.0176), `brier` (+0.0000, -0.0004). The same seed differs by up to 0.0140 in AUC across modes (naive seed 0: 0.8375 and 0.8235), about 4 per-seed standard deviations of that same arm and system (0.0033). A seed count such as 5/5 inside one run shares one execution mode and is not independent evidence about mode effects. Differences of order 0.01 in `balanced_accuracy`, `attack_recall`, `brier` are not established, and the per-seed std understates replicate spread. Related: Part 28's committed ENIV is reproducible only at the thread count that produced it (`results/lanl/results.json`, `execution_mode.thread_count_reproducibility_observation`).
+
+> **L29 (proposed).** Probabilities worse than a constant. In `without_auth` (0.1218 and 0.1219) and `without_flows` (0.0628 and 0.0630) the Brier score of both systems is above the constant-prevalence baseline of 0.0428, while ROC AUC is 0.7755 to 0.8233. Cause not diagnosed. Candidates, none tested: rows with an all-False view mask, no validation split, and the shift in sample prevalence from train (1.0%) to test (2.2%). Probability outputs of those arms should not be used.
+
+> **L30 (proposed).** What Part 30 does not establish. Part 29 tests B (chorus attack), D (masked-view detector AUC) and the detector half of C were not run on LANL (section 9); no robustness claim in L1-L22 has been tested on this dataset, and Part 30 is clean-data evidence only. Part 29 test A is not a stable signal: ENIV is lower and mean pairwise dependence higher on attack windows in `without_auth`, `without_dns`, `with_auth`, and both reverse in `without_flows` for both systems (ENIV +0.2636 naive, 5/5 seeds and +0.2116 prismflow, 5/5 seeds). The two classes also differ in how many rows can carry a pair at all (`with_auth`: 66.1% of attack rows against 54.3% of benign rows have two or more views).
 
 ## 12. Files
 

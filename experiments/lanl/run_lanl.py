@@ -698,6 +698,68 @@ def raised(entry, places: int = 4) -> str:
     return f"{mean:+.{places}f}{spread}{tail}"
 
 
+def scalar_vs_model_seen_unseen(results: dict) -> dict:
+    """The best all-test trivial scalar beside every arm/system seen and unseen
+    model AUC, with each unseen comparison classified at a 0.01 band.
+
+    Shared by section 7.1 and the proposed L26 so the two cannot drift apart.
+    Returns {} when any block it needs is absent.
+    """
+    configurations = results.get("configurations") or {}
+    tb = dig(results, "phase3_diagnostics", "trivial_baselines", "baselines") or {}
+    tsu = dig(results, "phase4_closeout", "trivial_scalar_seen_unseen") or {}
+    seen_unseen = dig(results, "phase3_diagnostics", "seen_unseen", "per_arm") or {}
+    finite = [(n, r["test_auc"]) for n, r in tb.items()
+              if isinstance(r.get("test_auc"), (int, float))
+              and math.isfinite(r["test_auc"])]
+    if not (finite and tsu and seen_unseen and configurations):
+        return {}
+    name, all_test_auc = max(finite, key=lambda kv: kv[1])
+    scalar = dig(tsu, "baselines", name) or {}
+    scalar_seen = scalar.get("seen_test_auc")
+    scalar_unseen = scalar.get("unseen_test_auc")
+    if not isinstance(scalar_seen, (int, float)) or not isinstance(scalar_unseen, (int, float)):
+        return {}
+
+    band = 0.01
+    rows, model_all, model_seen, model_unseen = [], [], [], []
+    for arm, conf in configurations.items():
+        for system in ("naive", "prismflow"):
+            all_auc = dig(conf, "systems", system, "summary", "roc_auc", "mean")
+            seen = dig(seen_unseen, arm, system, "seen", "auc_mean")
+            unseen = dig(seen_unseen, arm, system, "unseen", "auc_mean")
+            if not all(isinstance(v, (int, float)) for v in (all_auc, seen, unseen)):
+                continue
+            delta = unseen - scalar_unseen
+            verdict = ("within 0.01 of" if abs(delta) <= band
+                       else "above" if delta > 0 else "below")
+            rows.append({"arm": arm, "system": system, "all_test_auc": all_auc,
+                         "seen_auc": seen, "unseen_auc": unseen,
+                         "unseen_minus_scalar": delta, "verdict": verdict})
+            model_all.append(all_auc)
+            model_seen.append(seen)
+            model_unseen.append(unseen)
+    if not rows:
+        return {}
+    return {
+        "scalar_name": name,
+        "scalar_all_test_auc": all_test_auc,
+        "scalar_seen_auc": scalar_seen,
+        "scalar_unseen_auc": scalar_unseen,
+        "band": band,
+        "n_attack_test": dig(results, "split_report", "per_split", "test",
+                             "n_attack_samples"),
+        "n_seen": dig(tsu, "per_group_n_attack", "seen"),
+        "n_unseen": dig(tsu, "per_group_n_attack", "unseen"),
+        "model_all_test_min": min(model_all), "model_all_test_max": max(model_all),
+        "model_seen_min": min(model_seen), "model_seen_max": max(model_seen),
+        "model_unseen_min": min(model_unseen), "model_unseen_max": max(model_unseen),
+        "rows": rows,
+        "counts": {v: sum(1 for r in rows if r["verdict"] == v)
+                   for v in ("above", "within 0.01 of", "below")},
+    }
+
+
 def write_readme(results: dict, path: Path) -> None:
     split = results["split_report"]
     population = results["population"]
@@ -1648,15 +1710,51 @@ def write_readme(results: dict, path: Path) -> None:
             A(f"**Read this before any model number below.** The best single "
               f"scalar is `{best_trivial[0]}` at test AUC "
               f"{best_trivial[1]:.4f}; the best model is {best_model[0]} at "
-              f"{best_model[1]:.4f}, a difference of {gap:+.4f}. "
-              + ("**A single untrained scalar matches the models**, so the "
-                 "ROC AUC figures in this Part are not evidence that the "
-                 "fusion learned anything beyond how much this computer "
-                 "logged in this window."
-                 if gap < 0.05 else
-                 "The models are ahead of every trivial scalar by more than "
-                 "0.05 AUC, so the ranking is not reducible to one of these "
-                 "scalars."))
+              f"{best_model[1]:.4f}, a difference of {gap:+.4f}.")
+            A("")
+        # The all-test gap above does not hold inside the 7.3 seen/unseen
+        # groups, so the same scalar is stated there too (7.7) rather than
+        # left to the all-test figure. Every number here is generated.
+        cmpr = scalar_vs_model_seen_unseen(results)
+        if cmpr:
+            counts = cmpr["counts"]
+            A(f"That difference is an all-test figure. Split by whether the "
+              f"attack sample's computer also has attack samples in train "
+              f"(section 7.3's definition), `{cmpr['scalar_name']}` reaches "
+              f"{cmpr['scalar_seen_auc']:.4f} on the {cmpr['n_seen']} seen "
+              f"attack samples and {cmpr['scalar_unseen_auc']:.4f} on the "
+              f"{cmpr['n_unseen']} unseen ones (section 7.7), while the "
+              f"models reach {cmpr['model_seen_min']:.4f} to "
+              f"{cmpr['model_seen_max']:.4f} on seen and "
+              f"{cmpr['model_unseen_min']:.4f} to "
+              f"{cmpr['model_unseen_max']:.4f} on unseen (section 7.3). "
+              f"Against the scalar's unseen AUC of "
+              f"{cmpr['scalar_unseen_auc']:.4f}, of the {len(cmpr['rows'])} "
+              f"arm-and-system pairs {counts['above']} are above by more "
+              f"than {cmpr['band']:.2f} AUC, "
+              f"{counts['within 0.01 of']} are within "
+              f"{cmpr['band']:.2f} of it and {counts['below']} are below it "
+              f"by more than {cmpr['band']:.2f}. The all-test ranking of "
+              f"models over this scalar therefore does not hold inside the "
+              f"unseen group.")
+            A("")
+            A(f"| arm | system | all-test AUC | seen AUC | unseen AUC | "
+              f"unseen - scalar unseen | model unseen vs scalar unseen |")
+            A("|---|---|---:|---:|---:|---:|---|")
+            for row in cmpr["rows"]:
+                A(f"| {row['arm']} | {row['system']} | "
+                  f"{row['all_test_auc']:.4f} | {row['seen_auc']:.4f} | "
+                  f"{row['unseen_auc']:.4f} | "
+                  f"{row['unseen_minus_scalar']:+.4f} | {row['verdict']} |")
+            A("")
+            A(f"Scalar row for comparison: `{cmpr['scalar_name']}` reaches "
+              f"{cmpr['scalar_all_test_auc']:.4f} over all "
+              f"{cmpr['n_attack_test']} test attack samples, "
+              f"{cmpr['scalar_seen_auc']:.4f} seen and "
+              f"{cmpr['scalar_unseen_auc']:.4f} unseen. It is untrained, so "
+              "it has no seed and no std; the model columns are 5-seed means "
+              "whose stds are in sections 4.1 and 7.3. One fixed split, no "
+              "interval.")
             A("")
 
         A("### 7.2 Host audit: how concentrated the attack labels are")
@@ -2008,7 +2106,6 @@ def write_readme(results: dict, path: Path) -> None:
          "the arm's attainable recall before training."
          if without and without.get("n_attack_empty") else ""))
     A("")
-    best_trivial_name = None
     A("> **L25 (proposed).** Part 28's `fit_scaler`, `apply_scaler` and "
       "`train_ait` are not reusable across datasets: each resolves native view "
       "widths through `ait_lds.FEATURES`, keyed by AIT source names. Part 30 "
@@ -2016,29 +2113,226 @@ def write_readme(results: dict, path: Path) -> None:
       "dataset will hit the same wall.")
     A("")
 
-    tb_block = dig(results, "phase3_diagnostics", "trivial_baselines", "baselines") or {}
-    finite = [(n, r["test_auc"]) for n, r in tb_block.items()
-              if isinstance(r.get("test_auc"), (int, float)) and math.isfinite(r["test_auc"])]
-    if finite:
-        best_trivial_name, best_trivial_auc = max(finite, key=lambda kv: kv[1])
-        model_best = max(
-            [v for arm, conf in configurations.items() for system in ("naive", "prismflow")
-             for v in [dig(conf, "systems", system, "summary", "roc_auc", "mean")]
-             if isinstance(v, (int, float))] or [float("nan")]
-        )
-        A(f"> **L26 (proposed).** On LANL cyber1 a single untrained scalar - "
-          f"`{best_trivial_name}`, oriented on train only - reaches test ROC "
-          f"AUC {best_trivial_auc:.4f}, against {model_best:.4f} for the best "
-          "trained arm (`results/lanl/results.json`, "
-          "`phase3_diagnostics.trivial_baselines`). "
-          + ("The ROC AUC figures on this dataset are therefore not evidence "
-             "that fusion learned structure beyond per-window log volume, and "
-             "no AUC-based claim should be made for LANL without reporting "
-             "this scalar beside it."
-             if math.isfinite(model_best) and model_best - best_trivial_auc < 0.05
-             else "The trained arms are ahead of this scalar by more than "
-                  "0.05 AUC.")
-          )
+    # L26-L30: every figure below is read out of the results blocks, so none
+    # can drift from the tables above.
+    cmpr = scalar_vs_model_seen_unseen(results)
+    if cmpr:
+        clauses = []
+        for verdict in ("below", "within 0.01 of", "above"):
+            members = [f"`{r['arm']}` {r['system']}" for r in cmpr["rows"]
+                       if r["verdict"] == verdict]
+            if members:
+                clauses.append(", ".join(members)
+                               + (" is " if len(members) == 1 else " are ")
+                               + verdict + " it")
+        by_arm = {}
+        for row in cmpr["rows"]:
+            by_arm.setdefault(row["arm"], set()).add(row["verdict"])
+        split_arms = sorted(a for a, v in by_arm.items() if len(v) > 1)
+        A(f"> **L26 (proposed).** Seen and unseen attack computers. On LANL "
+          f"cyber1 the trained models' ranking advantage over a single "
+          f"untrained scalar is confined to attack computers already seen as "
+          f"attacked in train. `{cmpr['scalar_name']}`, oriented on train "
+          f"only, reaches test ROC AUC {cmpr['scalar_all_test_auc']:.4f} over "
+          f"all {cmpr['n_attack_test']} test attack samples, against "
+          f"{cmpr['model_all_test_min']:.4f} to "
+          f"{cmpr['model_all_test_max']:.4f} for the trained arms. Split by "
+          f"whether the attack computer also has attack samples in train, the "
+          f"scalar reaches {cmpr['scalar_seen_auc']:.4f} on the "
+          f"{cmpr['n_seen']} seen samples and "
+          f"{cmpr['scalar_unseen_auc']:.4f} on the {cmpr['n_unseen']} unseen "
+          f"ones, while the models reach {cmpr['model_seen_min']:.4f} to "
+          f"{cmpr['model_seen_max']:.4f} on seen and "
+          f"{cmpr['model_unseen_min']:.4f} to "
+          f"{cmpr['model_unseen_max']:.4f} on unseen (sections 7.3 and 7.7). "
+          f"On unseen computers " + "; ".join(clauses) + ". "
+          + ("The verdict is not uniform within "
+             + ", ".join(f"`{a}`" for a in split_arms)
+             + ", so these are stated per arm and system, not per arm. "
+             if split_arms else "")
+          + "One fixed split, no interval. "
+          "(`results/lanl/results.json`, `phase3_diagnostics.seen_unseen` "
+          "and `phase4_closeout.trivial_scalar_seen_unseen`.)")
+        A("")
+
+    top = dig(results, "phase4_closeout", "top_attack_computers", "per_computer") or []
+    drop = dig(results, "phase4_closeout", "drop_top_test_computer") or {}
+    ha_block = dig(results, "phase3_diagnostics", "host_audit") or {}
+    if top and drop.get("per_arm"):
+        first_host = top[0]
+        train_attack_total = dig(split, "per_split", "train", "n_attack_samples")
+        test_attack_total = dig(split, "per_split", "test", "n_attack_samples")
+        drops = []
+        for arm, conf in configurations.items():
+            for system in ("naive", "prismflow"):
+                full = dig(conf, "systems", system, "summary", "roc_auc", "mean")
+                kept = dig(drop, "per_arm", arm, system, "roc_auc", "mean")
+                if isinstance(full, (int, float)) and isinstance(kept, (int, float)):
+                    drops.append(full - kept)
+        A(f"> **L27 (proposed).** Host concentration and no within-host benign "
+          f"contrast. One computer, `{first_host['computer']}`, accounts for "
+          f"{first_host['attack_samples_train_plus_test']} of the "
+          f"{train_attack_total + test_attack_total} attack samples "
+          f"({dig(first_host, 'train', 'attack_samples')} of "
+          f"{train_attack_total} in train, "
+          f"{dig(first_host, 'test', 'attack_samples')} of "
+          f"{test_attack_total} in test) and has "
+          f"{dig(first_host, 'train', 'benign_samples')} benign sample in "
+          f"train and {dig(first_host, 'test', 'benign_samples')} in test, "
+          f"because benign cells are kept at "
+          f"1/{population.get('control_divisor')} by hash. A model can "
+          f"therefore learn that host's activity profile as the attack class "
+          f"without learning attack behaviour. Removing every test row of "
+          f"`{drop.get('computer_removed')}` lowers test ROC AUC by "
+          + (f"{min(drops):.3f} to {max(drops):.3f} depending on arm and "
+             f"system (section 7.9). " if drops else "not measured. ")
+          + f"{ha_block.get('attack_computers_shared_train_test', 'not measured')} "
+          f"attack computers appear in both blocks and "
+          f"{ha_block.get('attack_computers_test_only', 'not measured')} are "
+          "test-only. A design that keeps all or a stated share of the benign "
+          "cells of attack hosts would be needed to separate host from "
+          "behaviour.")
+        A("")
+
+    paired = dig(results, "replicate_run1_vs_run2", "paired_within_run",
+                 "per_metric") or {}
+    eq0 = dig(mode, "equivalence_check_seed0", "per_system") or {}
+    if paired and eq0:
+        run1_threads = max(
+            (b["threads"] for b in (mode.get("benchmark_idle_machine") or [])
+             if isinstance(b.get("threads"), int)), default=None)
+        agree = [k for k, r in paired.items() if not r.get("sign_differs_between_runs")]
+        differ = [k for k, r in paired.items() if r.get("sign_differs_between_runs")]
+
+        def pair_cell(key):
+            row = paired.get(key) or {}
+            return (f"{row.get('run1_paired_mean', float('nan')):+.4f}, "
+                    f"{row.get('run2_paired_mean', float('nan')):+.4f}")
+
+        # The largest same-seed cross-mode AUC gap, beside that same arm and
+        # system's own per-seed std, so the ratio is computed and not asserted.
+        worst_gap, worst_system = max(
+            ((abs(dig(eq0, s, "roc_auc", "absolute_difference") or 0.0), s)
+             for s in eq0), default=(None, None))
+        worst_run1 = dig(eq0, worst_system, "roc_auc", "run1")
+        worst_run2 = dig(eq0, worst_system, "roc_auc", "run2")
+        worst_std = dig(configurations, "with_auth", "systems", worst_system,
+                        "summary", "roc_auc", "std")
+        ratio = (worst_gap / worst_std
+                 if isinstance(worst_std, (int, float)) and worst_std
+                 and worst_gap is not None else None)
+        A(f"> **L28 (proposed).** Execution mode and replicate spread. The "
+          f"torch thread count changes the fitted weights. Runs 1 ("
+          + (f"{run1_threads} threads, sequential" if run1_threads
+             else "torch's default thread count, sequential")
+          + f") and 2 ({mode.get('threads_per_process')} thread, "
+          f"{mode.get('max_concurrent_processes')} concurrent) of the "
+          f"with_auth arm agree in the sign of the PrismFlow-minus-naive "
+          f"difference for " + ", ".join(f"`{k}`" for k in agree)
+          + (" (" + "; ".join(f"`{k}` {pair_cell(k)}" for k in agree
+                              if k in ("roc_auc", "prob_ece")) + ")"
+             if agree else "")
+          + ", but disagree for "
+          + ", ".join(f"`{k}` ({pair_cell(k)})" for k in differ)
+          + ". The same seed differs by up to "
+          + (f"{worst_gap:.4f} in AUC across modes ({worst_system} seed 0: "
+             f"{worst_run1:.4f} and {worst_run2:.4f})"
+             if worst_gap is not None else "not measured")
+          + (f", about {ratio:.0f} per-seed standard deviations of that same "
+             f"arm and system ({worst_std:.4f})" if ratio else "")
+          + ". A seed count such as 5/5 inside one run shares one execution "
+          "mode and is not independent evidence about mode effects. "
+          "Differences of order 0.01 in "
+          + ", ".join(f"`{k}`" for k in differ)
+          + " are not established, and the per-seed std understates replicate "
+          "spread. Related: Part 28's committed ENIV is reproducible only at "
+          "the thread count that produced it (`results/lanl/results.json`, "
+          "`execution_mode.thread_count_reproducibility_observation`).")
+        A("")
+
+    baseline_brier = dig(next(iter(configurations.values())),
+                         "majority_baseline", "brier")
+    train_prev = dig(split, "per_split", "train", "attack_prevalence_in_sample")
+    test_prev = dig(split, "per_split", "test", "attack_prevalence_in_sample")
+    if isinstance(baseline_brier, (int, float)):
+        worse = []
+        for arm, conf in configurations.items():
+            briers, aucs = [], []
+            for system in ("naive", "prismflow"):
+                b = dig(conf, "systems", system, "summary", "brier", "mean")
+                a = dig(conf, "systems", system, "summary", "roc_auc", "mean")
+                if isinstance(b, (int, float)):
+                    briers.append(b)
+                if isinstance(a, (int, float)):
+                    aucs.append(a)
+            if briers and min(briers) > baseline_brier:
+                worse.append((arm, briers, aucs))
+        if worse:
+            auc_span = [v for _, _, aucs in worse for v in aucs]
+            A("> **L29 (proposed).** Probabilities worse than a constant. In "
+              + " and ".join(
+                  f"`{arm}` (" + " and ".join(f"{b:.4f}" for b in briers) + ")"
+                  for arm, briers, _ in worse)
+              + f" the Brier score of both systems is above the "
+              f"constant-prevalence baseline of {baseline_brier:.4f}, while "
+              f"ROC AUC is {min(auc_span):.4f} to {max(auc_span):.4f}. Cause "
+              "not diagnosed. Candidates, none tested: rows with an all-False "
+              "view mask, no validation split, and the shift in sample "
+              "prevalence from train "
+              + (f"({train_prev:.1%})" if isinstance(train_prev, float)
+                 else "(not measured)")
+              + " to test "
+              + (f"({test_prev:.1%})" if isinstance(test_prev, float)
+                 else "(not measured)")
+              + ". Probability outputs of those arms should not be used.")
+            A("")
+
+    shares = dig(results, "phase4_closeout", "views_present_shares", "per_arm") or {}
+    if signs and shares:
+        def arms_where(eniv_sign, dep_sign):
+            # Configuration order, and only arms where BOTH systems agree.
+            return [a for a in configurations
+                    if [o for o in signs if o["arm"] == a]
+                    and all(o.get("eniv") == eniv_sign
+                            and o.get("dependence") == dep_sign
+                            for o in signs if o["arm"] == a)]
+
+        majority = arms_where("-", "+")
+        reversed_arms = arms_where("+", "-")
+        rev_text = "not measured"
+        if reversed_arms:
+            block = dig(configurations, reversed_arms[0],
+                        "part29_test_a_natural_attack_windows", "per_system") or {}
+            parts = []
+            for system, entry in block.items():
+                diff = dig(entry, "paired_attack_minus_benign", "eniv_eigen") or {}
+                if isinstance(diff.get("mean"), (int, float)):
+                    per_seed = diff.get("per_seed") or []
+                    n = diff.get("n_seeds") or len(per_seed)
+                    above = sum(1 for d in per_seed if float(d) > 0)
+                    parts.append(f"{diff['mean']:+.4f} {system}"
+                                 + (f", {above}/{n} seeds" if per_seed else ""))
+            if parts:
+                rev_text = " and ".join(parts)
+        widest_arm, widest = max(
+            ((arm, shares[arm]) for arm in configurations if arm in shares),
+            key=lambda kv: len(dig(configurations, kv[0], "views") or []))
+        A("> **L30 (proposed).** What Part 30 does not establish. Part 29 "
+          "tests B (chorus attack), D (masked-view detector AUC) and the "
+          "detector half of C were not run on LANL (section 9); no robustness "
+          "claim in L1-L22 has been tested on this dataset, and Part 30 is "
+          "clean-data evidence only. Part 29 test A is not a stable signal: "
+          "ENIV is lower and mean pairwise dependence higher on attack "
+          "windows in " + ", ".join(f"`{a}`" for a in majority)
+          + ", and both reverse in "
+          + (", ".join(f"`{a}`" for a in reversed_arms)
+             if reversed_arms else "no arm")
+          + f" for both systems (ENIV {rev_text}). The two classes also "
+          "differ in how many rows can carry a pair at all ("
+          f"`{widest_arm}`: "
+          f"{widest['attack_share_two_or_more_views']:.1%} of attack rows "
+          f"against {widest['benign_share_two_or_more_views']:.1%} of benign "
+          "rows have two or more views).")
         A("")
 
     # -- files -------------------------------------------------------------
