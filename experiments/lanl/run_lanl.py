@@ -760,11 +760,42 @@ def scalar_vs_model_seen_unseen(results: dict) -> dict:
     }
 
 
+def auth_presence_by_class(data_cfg) -> dict:
+    """Per block: how many attack and benign samples carry an `auth` record.
+
+    The `auth_present_indicator` scalar of section 7.1 is exactly this mask,
+    so its AUC is fully determined by these four counts. Read straight from
+    `results/lanl/samples.npz`; the auth view is located by name in the
+    stored sources list, not by position.
+    """
+    samples = load_samples(RESULTS_DIR / "samples.npz", data_cfg)
+    present = samples.view_mask[:, list(samples.sources).index("auth")].astype(bool)
+    blocks = np.asarray(samples.block)
+    labels = np.asarray(samples.labels)
+    out = {}
+    for block in ("train", "test"):
+        in_block = blocks == block
+        row = {}
+        for name, label in (("attack", CLASS_ATTACK), ("benign", CLASS_BENIGN)):
+            cls = in_block & (labels == label)
+            n = int(cls.sum())
+            with_auth = int((cls & present).sum())
+            row[name] = {
+                "n": n,
+                "n_with_auth": with_auth,
+                "share_with_auth": float(with_auth / n) if n else float("nan"),
+            }
+        out[block] = row
+    return out
+
+
 def write_readme(results: dict, path: Path) -> None:
     split = results["split_report"]
     population = results["population"]
     configurations = results["configurations"]
     data_cfg = results["split"]
+    auth_presence = auth_presence_by_class(
+        load_lanl_config(results["config"]["data"]["config"]))
     day = results["day_seconds"]
     window = results["window_seconds"]
 
@@ -1691,6 +1722,25 @@ def write_readme(results: dict, path: Path) -> None:
             A(f"| `{name}` | {row['orientation_fixed_on_train']} | "
               f"{fmt(row['train_auc_as_measured'])} | **{fmt(row['test_auc'])}** |")
         A("")
+        ap_auc = dig(tb, "baselines", "auth_present_indicator", "test_auc")
+        A("Every attack sample in both blocks has an `auth` record, while "
+          "about a third of benign samples have none: "
+          + "; ".join(
+              f"{b} {auth_presence[b]['attack']['n_with_auth']} of "
+              f"{auth_presence[b]['attack']['n']} attack "
+              f"({auth_presence[b]['attack']['share_with_auth']:.1%}) against "
+              f"{auth_presence[b]['benign']['n_with_auth']} of "
+              f"{auth_presence[b]['benign']['n']} benign "
+              f"({auth_presence[b]['benign']['share_with_auth']:.1%})"
+              for b in ("train", "test"))
+          + ". Counted from `results/lanl/samples.npz`, locating the `auth` "
+            "view by name in the stored sources list. That single split is "
+            "the whole of `auth_present_indicator`, which is why its test AUC"
+          + (f" ({fmt(ap_auc)})" if ap_auc is not None else "")
+          + " is identical in the all-test, seen and unseen groups of "
+            "section 7.7: the scalar is constant across the attack class, so "
+            "subsetting the attacks cannot move it.")
+        A("")
         # Compare the best trivial scalar against the best model AUC, plainly.
         best_trivial = max(
             ((n, r["test_auc"]) for n, r in (tb.get("baselines") or {}).items()
@@ -2104,7 +2154,18 @@ def write_readme(results: dict, path: Path) -> None:
          f"({without['attack_empty_share']:.1%}) have no record in any "
          "remaining view, so they are unpredictable by construction and cap "
          "the arm's attainable recall before training."
-         if without and without.get("n_attack_empty") else ""))
+         if without and without.get("n_attack_empty") else "")
+      + (" Every attack sample has an `auth` record while about a third of "
+         "benign samples do not "
+         f"({auth_presence['test']['attack']['n_with_auth']} of "
+         f"{auth_presence['test']['attack']['n']} attack against "
+         f"{auth_presence['test']['benign']['n_with_auth']} of "
+         f"{auth_presence['test']['benign']['n']} benign in the test block), "
+         "so auth presence alone reaches test AUC "
+         + fmt(dig(phase3, "trivial_baselines", "baselines",
+                   "auth_present_indicator", "test_auc"))
+         + ", and the WITHOUT-auth arm removes the auth features but not "
+           "this selection, because cells were chosen from all four views."))
     A("")
     A("> **L25 (proposed).** Part 28's `fit_scaler`, `apply_scaler` and "
       "`train_ait` are not reusable across datasets: each resolves native view "
@@ -2401,7 +2462,7 @@ def write_readme(results: dict, path: Path) -> None:
       "or deleted, and `auth.txt.gz` was not modified.")
     A("")
 
-    path.write_text("\n".join(L), encoding="utf-8")
+    path.write_text("\n".join(L), encoding="utf-8", newline="\n")
 
 
 # ---------------------------------------------------------------------------
