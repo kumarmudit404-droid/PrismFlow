@@ -67,6 +67,7 @@
       <li><a class="site-nav__link" href="#ch4">4 · Results</a></li>
       <li><a class="site-nav__link" href="#ch5">5 · Explore</a></li>
       <li><a class="site-nav__link" href="#real">Real data</a></li>
+      <li><a class="site-nav__link" href="#try">Try it</a></li>
       <li><a class="site-nav__link" href="scores.html">Scores</a></li>
       <li><a class="site-nav__link site-nav__link--limits" href="#limits">Known limitations</a></li>
     </ul>
@@ -533,6 +534,51 @@
   <a class="limits-link" href="#limits" aria-label="Known limitations, from the real-data section">Known limitations →</a>
 </section>
 
+<!-- ========================= TRY IT (Part 32) ========================= -->
+<section class="chapter wrap" id="try" aria-labelledby="try-h">
+  <p class="chapter__num">Live diagnostic</p>
+  <h2 class="chapter__title" id="try-h">Try it on your own views</h2>
+  <p class="chapter__lede">
+    Upload an array and see the dependence between its views, the effective
+    number of independent views that implies, and the discount that follows.
+    This is a <em>diagnostic</em>, not a classifier: it is uncalibrated on
+    your data and the defence it demonstrates is not validated. Both
+    sentences come back with every result and are printed above the numbers.
+  </p>
+
+  <p class="axis-note" id="try-status">Checking the scoring service…</p>
+
+  <div class="panel" id="try-controls">
+    <h4>Send an array</h4>
+    <p>
+      <code>.npz</code>, <code>.npy</code>, <code>.csv</code> or
+      <code>.parquet</code>, shaped <code>[samples, views, features]</code>.
+      Two or more views, no NaN, no constant view. Add an
+      <code>evidence</code> array to an <code>.npz</code> to get fusion and
+      the suspicion score as well; without one they come back as
+      <span class="pill pill--notmeasured">not measured</span> rather than
+      invented from the features.
+    </p>
+    <p>
+      <label for="try-file">Your file</label>
+      <input type="file" id="try-file" accept=".npz,.npy,.csv,.parquet">
+      <button type="button" id="try-sample" class="picker__btn">Use sample data</button>
+    </p>
+    <p class="pass-note">
+      The upload is read in memory, measured, and forgotten: it is never
+      written to disk, and neither its contents nor its name is logged. The
+      sample is 400 windows of aggregate counts derived from the AIT Log
+      Data Set V2.0 — no raw logs — and carries CC BY-NC-SA 4.0. Its
+      attribution and provenance are in
+      <code>web/data/sample_ait_views.LICENCE.md</code>.
+    </p>
+  </div>
+
+  <div id="try-result"></div>
+
+  <a class="limits-link" href="#limits" aria-label="Known limitations, from the live diagnostic">Known limitations →</a>
+</section>
+
 <!-- ============================ LIMITS ============================ -->
 <section class="chapter wrap" id="limits" aria-labelledby="limits-h">
   <p class="chapter__num">First-class section</p>
@@ -578,6 +624,7 @@
 <script src="assets/js/v2_dataset.js"></script>
 <script src="assets/js/limits.js"></script>
 <script src="assets/js/real_data.js"></script>
+<script src="assets/js/try_it.js"></script>
 <script type="module" src="assets/js/motion.js"></script>
 </body>
 </html>
