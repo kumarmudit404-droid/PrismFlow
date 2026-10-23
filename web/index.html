@@ -66,6 +66,7 @@
       <li><a class="site-nav__link" href="#ch3">3 · V2</a></li>
       <li><a class="site-nav__link" href="#ch4">4 · Results</a></li>
       <li><a class="site-nav__link" href="#ch5">5 · Explore</a></li>
+      <li><a class="site-nav__link" href="#real">Real data</a></li>
       <li><a class="site-nav__link" href="scores.html">Scores</a></li>
       <li><a class="site-nav__link site-nav__link--limits" href="#limits">Known limitations</a></li>
     </ul>
@@ -484,6 +485,48 @@
   <a class="limits-link" href="#limits" aria-label="Known limitations, from Chapter 5: Interactive exploration">Known limitations →</a>
 </section>
 
+<!-- ========================= REAL DATA (Part 31) ========================= -->
+<section class="chapter wrap" id="real" aria-labelledby="real-h">
+  <p class="chapter__num">Real-data validation</p>
+  <h2 class="chapter__title" id="real-h">What two real datasets say</h2>
+  <p class="chapter__lede">
+    Everything above this point is synthetic, where <code>rho</code> is a
+    number we set and ENIV has something to be checked against. These two
+    datasets have no such number, so what follows is a measurement taken with
+    an instrument validated elsewhere — never a test of the instrument.
+  </p>
+
+  <h3>AIT Log Data Set V2.0 — clean split and attack grid</h3>
+  <p>
+    Two scenarios, two directions, and they are never pooled: Part 29's own
+    rule, because each direction trains on one scenario and tests on the
+    other. One view, <code>dns</code>, solves this label on its own, which is
+    why the attack grid below is split by whether that view was compromised
+    rather than reported as a single “k views” row.
+  </p>
+  <div class="placeholder" id="real-ait">loading committed data…</div>
+
+  <h3>LANL cyber1 — four view configurations, days 1–16</h3>
+  <p>
+    Clean data only. Part 29's chorus attack, its missingness test and the
+    detector half of its duplication test were not run here, so this dataset
+    carries no attack or detector number at all.
+  </p>
+  <div class="placeholder" id="real-lanl">loading committed data…</div>
+
+  <h3>Claim by dataset</h3>
+  <p>
+    Three claims, three datasets. Each cell carries the written rule its
+    verdict had to satisfy and the file that had to satisfy it, so a verdict
+    can be checked rather than taken. Where a rule is not met the cell says
+    <span class="pill pill--notmeasured">NO EVIDENCE</span> — not a quieter
+    version of the claim.
+  </p>
+  <div class="placeholder" id="real-claims">loading committed data…</div>
+
+  <a class="limits-link" href="#limits" aria-label="Known limitations, from the real-data section">Known limitations →</a>
+</section>
+
 <!-- ============================ LIMITS ============================ -->
 <section class="chapter wrap" id="limits" aria-labelledby="limits-h">
   <p class="chapter__num">First-class section</p>
@@ -500,6 +543,9 @@
 
   <h3>V1 — standing limitations of the project as a whole</h3>
   <div class="placeholder" id="limits-v1-standing">loading committed data…</div>
+
+  <h3>V1 — real-data findings (Parts 28–30)</h3>
+  <div class="placeholder" id="limits-v1-realdata">loading committed data…</div>
 
   <h3>V2 — retrieval coverage blocks the evaluation</h3>
   <div class="placeholder" id="limits-v2">loading committed data…</div>
@@ -525,6 +571,7 @@
 <script src="assets/js/v1_failures.js"></script>
 <script src="assets/js/v2_dataset.js"></script>
 <script src="assets/js/limits.js"></script>
+<script src="assets/js/real_data.js"></script>
 <script type="module" src="assets/js/motion.js"></script>
 </body>
 </html>

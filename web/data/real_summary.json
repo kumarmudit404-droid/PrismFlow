@@ -109,7 +109,7 @@
   ],
   "limitations_source": "docs/KNOWN_LIMITATIONS.md",
   "provenance": {
-    "generated_utc": "2026-10-23T04:23:18Z",
+    "generated_utc": "2026-10-23T04:43:49Z",
     "sources": [
       {
         "path": "results/chorus/attack_metrics.json",

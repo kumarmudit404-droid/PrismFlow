@@ -2312,7 +2312,7 @@
   ],
   "gz_note": "results/ait_attack/results.json is committed as gzip only. This build decompressed it and checked its sha256 against results/ait_attack/results_manifest.json before reading a number from it.",
   "provenance": {
-    "generated_utc": "2026-10-23T04:23:18Z",
+    "generated_utc": "2026-10-23T04:43:48Z",
     "sources": [
       {
         "path": "results/ait_clean/results.json",

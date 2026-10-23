@@ -8,9 +8,10 @@
     "attribution": null,
     "attribution_absent_note": "No licence text, DOI, source link or required-attribution paragraph for LANL cyber1 exists anywhere in this repository. configs/data/lanl.yaml and experiments/lanl/README.md name the dataset and stop there. None is shown here rather than one being written for the occasion, and no download link is published.",
     "views": [
-      "proc",
+      "auth",
+      "dns",
       "flows",
-      "dns"
+      "proc"
     ],
     "label_method": "A sample is (computer, 300 s window). attack = 1 means a redteam.txt.gz event in that window names that computer as its source or its destination. benign = 0 means NO KNOWN red-team event does, which is not the same as verified clean: the red-team file covers only the activity LANL's red team recorded, so an unlabelled compromise inside the capture is counted as benign here.",
     "window_seconds": 300,
@@ -188,7 +189,7 @@
     4
   ],
   "provenance": {
-    "generated_utc": "2026-10-23T04:23:18Z",
+    "generated_utc": "2026-10-23T04:43:48Z",
     "sources": [
       {
         "path": "results/lanl/results.json",

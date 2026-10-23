@@ -1309,8 +1309,8 @@ def build_real_lanl() -> dict:
                 "experiments/lanl/README.md name the dataset and stop there. "
                 "None is shown here rather than one being written for the "
                 "occasion, and no download link is published."),
-            "views": raw["config"]["view_configurations"][0]["views"]
-                     if raw["config"].get("view_configurations") else None,
+            "views": sorted({v for arm in raw["config"].get("view_configurations") or []
+                             for v in arm["views"]}) or None,
             "label_method": raw.get("label_meaning"),
             "window_seconds": clean(raw.get("window_seconds")),
             "days_train": dig(split, "train", "days"),
