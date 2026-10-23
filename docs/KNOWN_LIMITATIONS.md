@@ -1167,12 +1167,15 @@ windows, days 1-16), and every threshold metric computed on it.
 section 11.
 
 - **The sample space is far larger than the sample.** On LANL cyber1 at 300 s
-  the `(computer, window)` sample space is between **23,627,216** and
-  **60,634,229** occupied cells over days 1-16, against **439** train and
-  **410** test attack cells -- a population prevalence near **2e-5**.
-- **The sample is declared case-control.** All cases, plus a deterministic
-  1/512 hash of controls. Its test prevalence is **0.0219**, about **1095x**
-  the population rate.
+  the `(computer, window)` sample space over days 1-16 is between
+  **23,627,216** and **60,634,229** occupied cells, against **849** attack
+  cells (**439** train, **410** test): a population prevalence between
+  **1.4e-5** and **3.6e-5**.
+- **The sample is declared case-control**: all cases plus a deterministic
+  1/512 hash of controls. Its test prevalence is **0.0219**. Over the test
+  days (13-16) alone the occupied cells are between **6,554,950** and
+  **15,730,712**, so the matching population rate is **2.6e-5** to **6.3e-5**
+  and the sample prevalence is about **350x** to **840x** higher.
 
 **What this means.** The accuracy, Brier and ECE Part 30 reports describe that
 sample and not the network, and no population operating point has been
@@ -1328,7 +1331,9 @@ execution modes, so the reported std covers mode as well as seed.
 
 - **Brier above the constant-prevalence baseline of 0.0428.** In
   `without_auth` **0.1218** and **0.1219**, in `without_flows` **0.0628** and
-  **0.0630**, for both systems.
+  **0.0630**, for both systems. Brier here is the two-class form,
+  twice the binary form; the constant-prevalence baseline is
+  **2*pi*(1-pi) = 0.0428** at test prevalence **0.0219**.
 - **Ranking is unaffected.** ROC AUC is **0.7755 to 0.8233**.
 - **Cause not diagnosed.** Candidates, none tested: rows with an all-False
   view mask, no validation split, and the shift in sample prevalence from

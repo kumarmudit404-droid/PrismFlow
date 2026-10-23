@@ -2126,18 +2126,37 @@ def write_readme(results: dict, path: Path) -> None:
     train_attack = dig(split, "per_split", "train", "n_attack_samples")
     test_attack = dig(split, "per_split", "test", "n_attack_samples")
     test_prevalence = dig(split, "per_split", "test", "attack_prevalence_in_sample")
+    # The union over views is only bounded, so a prevalence is a RANGE: the
+    # sum of per-view cells is the loosest upper bound on the union and the
+    # largest single view the tightest lower bound. Same arithmetic over the
+    # test days alone, because that is the block the 0.0219 describes.
+    test_days = dig(split, "per_split", "test", "days")
+    per_view = population["per_view"]
+    day_cells = {
+        name: sum(view["population_cells_per_day"][str(d)]
+                  for d in range(test_days[0], test_days[1] + 1))
+        for name, view in per_view.items()
+    }
+    test_lower, test_upper = max(day_cells.values()), sum(day_cells.values())
+    sci = lambda x: f"{x:.1e}".replace("e-0", "e-")
+    attack = train_attack + test_attack
     A(f"> **L23 (proposed).** On LANL cyber1 at {window} s the "
-      f"`(computer, window)` sample space is between {lower:,} and "
-      f"{upper:,} occupied cells over days 1-16 "
+      f"`(computer, window)` sample space over days 1-16 is between "
+      f"{lower:,} and {upper:,} occupied cells "
       "(`results/lanl/population.json`), against "
-      f"{train_attack} train and {test_attack} test attack cells - a "
-      "population prevalence near 2e-5. Part 30 therefore reports a declared "
-      f"case-control sample (all cases, deterministic "
-      f"1/{population.get('control_divisor')} hash of controls) whose test "
-      f"prevalence is {test_prevalence:.4f}, about "
-      f"{test_prevalence / 2e-5:.0f}x the population rate. Its accuracy, "
-      "Brier and ECE therefore describe that sample and not the network, and "
-      "no population operating point has been measured on LANL.")
+      f"{attack} attack cells ({train_attack} train, {test_attack} test): a "
+      f"population prevalence between {sci(attack / upper)} and "
+      f"{sci(attack / lower)}. The sample is declared case-control: all cases "
+      f"plus a deterministic 1/{population.get('control_divisor')} hash of "
+      f"controls. Its test prevalence is {test_prevalence:.4f}. Over the test "
+      f"days ({test_days[0]}-{test_days[1]}) alone the occupied cells are "
+      f"between {test_lower:,} and {test_upper:,}, so the matching population "
+      f"rate is {sci(test_attack / test_upper)} to {sci(test_attack / test_lower)} "
+      f"and the sample prevalence is about "
+      f"{test_prevalence / (test_attack / test_lower):.0f}x to "
+      f"{test_prevalence / (test_attack / test_upper):.0f}x higher. Its "
+      "accuracy, Brier and ECE therefore describe that sample and not the "
+      "network, and no population operating point has been measured on LANL.")
     A("")
     auth_arms = [n for n in configurations if n != "without_auth"]
     without = dig(coverage or {}, "per_arm", "without_auth", "test")
@@ -2336,7 +2355,13 @@ def write_readme(results: dict, path: Path) -> None:
                   for arm, briers, _ in worse)
               + f" the Brier score of both systems is above the "
               f"constant-prevalence baseline of {baseline_brier:.4f}, while "
-              f"ROC AUC is {min(auc_span):.4f} to {max(auc_span):.4f}. Cause "
+              f"ROC AUC is {min(auc_span):.4f} to {max(auc_span):.4f}. Brier "
+              "here is the two-class form, twice the binary form; the "
+              f"constant-prevalence baseline is 2*pi*(1-pi) = "
+              f"{baseline_brier:.4f} at test prevalence "
+              + (f"{test_prev:.4f}" if isinstance(test_prev, float)
+                 else "not measured")
+              + ". Cause "
               "not diagnosed. Candidates, none tested: rows with an all-False "
               "view mask, no validation split, and the shift in sample "
               "prevalence from train "
