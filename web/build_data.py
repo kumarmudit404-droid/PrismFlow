@@ -684,7 +684,8 @@ LIMIT_HEADING = re.compile(r"^##\s+((?:V2-)?L\d+)\.\s+(.*?)\s*$")
 STATUS_MARKER = re.compile(r"^(RESOLVED\s+[\d-]+|CLOSED\s+[\d-]+|NEW)\b[.,:]?\s*(.*)$")
 
 
-def read_limitations(path: Path, group_at: int | None = None) -> list:
+def read_limitations(path: Path, group_at: int | None = None,
+                     real_data_at: int | None = None) -> list:
     """Every `## Lx. title` heading in a limitations doc, verbatim.
 
     THE HEADINGS ARE READ, NOT RETYPED, and that is the whole point of this
@@ -717,7 +718,15 @@ def read_limitations(path: Path, group_at: int | None = None) -> list:
             "n": n,
             "title": title,
             "status": status,
-            "group": ("standing" if group_at is not None and n >= group_at
+            # Three groups, checked most-specific first. L16-L30 came out of
+            # Parts 28-30 on real datasets; they are NOT standing limitations
+            # of the project as a whole, and calling them that would widen
+            # fifteen dataset-specific findings into claims about everything.
+            # L1-L15 keep exactly the grouping they had.
+            "group": ("real_data"
+                      if real_data_at is not None and n >= real_data_at
+                      else "standing"
+                      if group_at is not None and n >= group_at
                       else "per_part"),
         })
     return out
@@ -728,7 +737,7 @@ def build_limitations() -> dict:
     v1_src = ROOT / "docs/KNOWN_LIMITATIONS.md"
     v2_src = ROOT / "docs/v2-known-limitations.md"
 
-    v1 = read_limitations(v1_src, group_at=9)
+    v1 = read_limitations(v1_src, group_at=9, real_data_at=16)
     v2 = read_limitations(v2_src)
 
     def counts(rows):
@@ -759,6 +768,7 @@ def build_limitations() -> dict:
             "group_labels": {
                 "per_part": "discovered as each Part ran",
                 "standing": "standing limitations of the project as a whole",
+                "real_data": "real-data findings (Parts 28-30)",
             },
         },
         "v2": {
@@ -1012,6 +1022,587 @@ def build_v2_reverify() -> dict:
     }
 
 
+# --------------------------------------------------------------------------
+# 7. Part 31 -- the real datasets (AIT Log Data Set V2.0, LANL cyber1)
+# --------------------------------------------------------------------------
+#
+# Three rules this block adds to the ones above.
+#
+# GZIPPED RESULTS ARE VERIFIED BEFORE USE. Part 29's results.json is committed
+# only as gzip, and its digest is pinned in results_manifest.json against the
+# DECOMPRESSED bytes. read_gz_checked() recomputes that digest and raises on a
+# mismatch, so a corrupted or re-gzipped archive fails the build instead of
+# quietly shipping different numbers to the page.
+#
+# EVERY CLAIM CELL CARRIES ITS OWN RULE. The claim table's verdict words are
+# the strongest thing on the page, so a cell is not a word: it is
+# {verdict, rule, source_file, sha256}. The rule is the written test the cited
+# file had to satisfy for that word, so a reader can check the verdict against
+# the evidence instead of trusting it. Where the rule is not satisfied, or
+# where a limitation says the measurement cannot bear the claim, the cell is
+# NO EVIDENCE -- never a softened CONFIRMS.
+#
+# NO LANL CITATION TEXT EXISTS IN THIS REPOSITORY. configs/data/lanl.yaml and
+# experiments/lanl/README.md name the dataset and nothing else: no licence, no
+# DOI, no required-attribution paragraph. The card therefore prints the name
+# the repo uses and says the citation text is absent, rather than inventing
+# one. AIT's attribution IS in the repo and is quoted verbatim.
+
+AIT_DATACARD = "docs/part27-ait-datacard.md"
+
+
+def dig(obj, *path):
+    """Nested get that returns None rather than raising on a missing key.
+
+    A result file that loses a field should render "not measured", not crash
+    the build -- the same policy clean() applies to NaN.
+    """
+    for key in path:
+        if not isinstance(obj, dict):
+            return None
+        obj = obj.get(key)
+    return obj
+
+
+def read_gz_checked(gz_path: Path, manifest_path: Path, key: str) -> dict:
+    """Decompress a committed .gz result and verify its pinned sha256.
+
+    The manifest records the digest of the decompressed json, because a gzip
+    stream's own digest is not stable across implementations. A mismatch is a
+    build failure, not a warning: the alternative is a page of numbers from a
+    file nobody can identify.
+    """
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    entry = manifest["files"][key]
+    import gzip
+    raw = gzip.decompress(gz_path.read_bytes())
+    digest = hashlib.sha256(raw).hexdigest()
+    expected = entry["sha256_decompressed_json"]
+    if digest != expected:
+        raise SystemExit(
+            "ABORT: %s decompresses to sha256 %s, but %s pins %s. Nothing "
+            "written." % (gz_path.name, digest, manifest_path.name, expected))
+    if len(raw) != entry["raw_bytes"]:
+        raise SystemExit(
+            "ABORT: %s decompresses to %d bytes, manifest says %d."
+            % (gz_path.name, len(raw), entry["raw_bytes"]))
+    return json.loads(raw)
+
+
+def summary_pair(summary: dict, field: str) -> dict:
+    """mean / std / n_seeds for one metric, or nulls where it does not exist."""
+    block = (summary or {}).get(field) or {}
+    return {
+        "mean": clean(block.get("mean")),
+        "std": clean(block.get("std")),
+        "n_seeds": clean(block.get("n_seeds")),
+    }
+
+
+def quote_block(path: Path, start: str, stop: str) -> str:
+    """The blockquote lines between two markers, verbatim.
+
+    Attribution text is a licence obligation, so it is read from the document
+    that records it rather than retyped here, exactly as the limitations
+    headings are. If the markers cannot be found the build fails.
+    """
+    lines = path.read_text(encoding="utf-8").splitlines()
+    out, collecting = [], False
+    for line in lines:
+        if not collecting:
+            if line.strip().startswith(start):
+                collecting = True
+            continue
+        if line.strip().startswith(stop):
+            break
+        if line.startswith(">"):
+            out.append(line.lstrip("> ").rstrip())
+        elif out and not line.strip():
+            break
+    if not out:
+        raise SystemExit("ABORT: no quote found in %s after %r" % (path, start))
+    return " ".join(out)
+
+
+def build_real_ait() -> dict:
+    """AIT Log Data Set V2.0 -- the clean split and the attack grid.
+
+    Both directions are kept apart everywhere. Part 29's own rule is that the
+    two scenarios are never pooled and never averaged, and the page follows it:
+    there is no row anywhere below that mixes A and B.
+    """
+    clean_src = ROOT / "results/ait_clean/results.json"
+    gz_src = ROOT / "results/ait_attack/results.json.gz"
+    manifest_src = ROOT / "results/ait_attack/results_manifest.json"
+    card_src = ROOT / AIT_DATACARD
+
+    attack = read_gz_checked(gz_src, manifest_src, "results.json")
+
+    directions = []
+    for name, direction in attack["directions"].items():
+        reference = direction["systems"]["prismflow"]
+
+        # Dependence heatmap: the committed Part 28 pair values, read through
+        # Part 29's reference block which records where it got them.
+        pairs = reference["pairs"]
+        heat = []
+        for system, block in pairs["per_system"].items():
+            for pair, value in block["values"].items():
+                heat.append({
+                    "system": system,
+                    "pair": pair,
+                    "mean": clean(value.get("mean")),
+                    "std": clean(value.get("std")),
+                })
+
+        # Detector AUC and ENIV by k, split by whether `dns` was compromised.
+        # L17 requires that split: `dns` alone solves this label, so a row
+        # that does not say which side it is on is uninterpretable.
+        by_k = []
+        for key, cell in reference["by_dns_side"].items():
+            s = cell["summary"]
+            by_k.append({
+                "cell": key,
+                "kind": cell.get("kind"),
+                "k": clean(cell.get("k")),
+                "epsilon": clean(cell.get("epsilon")),
+                "beta": clean(cell.get("beta")),
+                "dns_compromised": cell.get("dns_compromised"),
+                "detector_auc": summary_pair(s, "detector_auc"),
+                "eniv_eigen": summary_pair(s, "eniv_eigen"),
+                "attack_success": summary_pair(s, "attack_success"),
+            })
+        by_k.sort(key=lambda r: (r["kind"] or "", r["k"] or 0,
+                                 r["epsilon"] or 0, bool(r["dns_compromised"])))
+
+        clean_summary = reference["clean"]["summary"]
+        directions.append({
+            "id": name,
+            "label": direction.get("label"),
+            "train_scenario": direction.get("train_scenario"),
+            "test_scenario": direction.get("test_scenario"),
+            "n_train": clean(direction.get("n_train")),
+            "n_test": clean(direction.get("n_test")),
+            "label_meaning": direction.get("label_meaning"),
+            "views": reference.get("sources"),
+            "clean": {
+                "eniv_eigen": summary_pair(clean_summary, "eniv_eigen"),
+                "detector_auc": summary_pair(clean_summary, "detector_auc"),
+                "roc_auc": summary_pair(clean_summary, "roc_auc"),
+            },
+            "dependence": {
+                "label": pairs.get("label"),
+                "source": pairs.get("source"),
+                "systems_agree_on_ordering": pairs.get("systems_agree_on_ordering"),
+                "most_dependent": pairs.get("most_dependent"),
+                "least_dependent": pairs.get("least_dependent"),
+                "caveat": pairs.get("caveat"),
+                "cells": heat,
+            },
+            "attack_by_k": by_k,
+        })
+
+    # Test C. The committed verdict word is read, not decided here.
+    sensor = attack["sensor_group_check"]
+
+    return {
+        "title": "AIT Log Data Set V2.0",
+        "dataset": {
+            "name": "AIT Log Data Set V2.0",
+            "licence": "CC BY-NC-SA 4.0",
+            "licence_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+            "source_url": "https://zenodo.org/records/5789064",
+            "doi": "10.5281/zenodo.5789064",
+            "attribution": quote_block(card_src, "> AIT Log Data Set V2.0",
+                                       "**The record asks"),
+            "attribution_source": AIT_DATACARD,
+            "scenarios": sorted({d["test_scenario"] for d in directions}),
+            "views": directions[0]["views"] if directions else None,
+            "label_method": directions[0]["label_meaning"] if directions else None,
+        },
+        "directions": directions,
+        "honest_duplication": {
+            "verdict": sensor["verdict"],
+            "reason": sensor["reason"],
+            "requested_group": sensor.get("requested_group"),
+            "n_members": clean(sensor.get("n_members")),
+        },
+        "seeds": attack.get("seeds"),
+        "gz_note": (
+            "results/ait_attack/results.json is committed as gzip only. This "
+            "build decompressed it and checked its sha256 against "
+            "results/ait_attack/results_manifest.json before reading a number "
+            "from it."),
+        "provenance": provenance(clean_src, gz_src, manifest_src, card_src),
+    }
+
+
+def build_real_lanl() -> dict:
+    """LANL cyber1 -- per arm, naive against PrismFlow, with what bounds it.
+
+    The card carries three things the AUCs cannot be read without: the
+    case-control prevalence (L23), the untrained scalar that reaches 0.6843 on
+    the same test block, and the seen/unseen split that removes the models'
+    lead on computers not already seen attacked (L26).
+    """
+    src = ROOT / "results/lanl/results.json"
+    manifest_src = ROOT / "results/lanl/results_manifest.json"
+    raw = json.loads(src.read_text(encoding="utf-8"))
+
+    # samples.npz and the run-1 gzip are pinned in the same manifest. Nothing
+    # here reads them, but the digests are emitted so the page can state that
+    # the arrays every diagnostic below was computed from are the committed
+    # ones.
+    manifest = json.loads(manifest_src.read_text(encoding="utf-8"))
+
+    bootstrap = dig(raw, "phase3_diagnostics", "cluster_bootstrap") or {}
+    trivial = dig(raw, "phase3_diagnostics", "trivial_baselines") or {}
+    seen_unseen = dig(raw, "phase3_diagnostics", "seen_unseen") or {}
+    split = raw["split_report"]["per_split"]
+
+    arms = []
+    for name, arm in raw["configurations"].items():
+        ci = (bootstrap.get("per_arm") or {}).get(name) or {}
+        paired = (arm.get("paired_prismflow_minus_naive") or {}).get("roc_auc") or {}
+        arms.append({
+            "arm": name,
+            "label": arm.get("label"),
+            "views": arm.get("views"),
+            "naive_roc_auc": summary_pair(
+                dig(arm, "systems", "naive", "summary"), "roc_auc"),
+            "prismflow_roc_auc": summary_pair(
+                dig(arm, "systems", "prismflow", "summary"), "roc_auc"),
+            "paired_difference": {
+                "mean": clean(paired.get("mean")),
+                "std": clean(paired.get("std")),
+                "n_seeds": clean(paired.get("n_seeds")),
+                "n_seeds_favouring_prismflow": clean(
+                    paired.get("n_seeds_favouring_prismflow")),
+            },
+            "bootstrap_ci95": {
+                "observed": clean(ci.get("observed_mean_paired_auc_difference")),
+                "low": clean(ci.get("ci95_low")),
+                "high": clean(ci.get("ci95_high")),
+                "replicates": clean(ci.get("n_replicates_used")),
+                "n_test_computers": clean(ci.get("n_test_computers")),
+            },
+        })
+    arms.sort(key=lambda r: r["arm"])
+
+    scalar = (trivial.get("baselines") or {}).get("total_records_across_views") or {}
+
+    return {
+        "title": "LANL cyber1 (days 1-16)",
+        "dataset": {
+            # The repository names the dataset and nothing else. See the
+            # module comment: no citation text is invented here.
+            "name": raw.get("data_config") and "LANL Comprehensive Multi-Source "
+                    "Cyber-Security Events (cyber1)",
+            "name_source": "configs/data/lanl.yaml",
+            "licence": None,
+            "source_url": None,
+            "attribution": None,
+            "attribution_absent_note": (
+                "No licence text, DOI, source link or required-attribution "
+                "paragraph for LANL cyber1 exists anywhere in this "
+                "repository. configs/data/lanl.yaml and "
+                "experiments/lanl/README.md name the dataset and stop there. "
+                "None is shown here rather than one being written for the "
+                "occasion, and no download link is published."),
+            "views": raw["config"]["view_configurations"][0]["views"]
+                     if raw["config"].get("view_configurations") else None,
+            "label_method": raw.get("label_meaning"),
+            "window_seconds": clean(raw.get("window_seconds")),
+            "days_train": dig(split, "train", "days"),
+            "days_test": dig(split, "test", "days"),
+        },
+        "sample": {
+            "design": "declared case-control: all cases, deterministic 1/%s "
+                      "hash of controls" % dig(raw, "population", "control_divisor"),
+            "n_test": clean(dig(split, "test", "n_samples")),
+            "n_test_attack": clean(dig(split, "test", "n_attack_samples")),
+            "test_prevalence": clean(dig(split, "test", "attack_prevalence_in_sample")),
+            "limitation": "L23",
+            "limitation_note": (
+                "The reported prevalence is a property of the sample, not of "
+                "the network: accuracy, Brier and ECE describe this sample "
+                "only and no population operating point has been measured "
+                "(docs/KNOWN_LIMITATIONS.md L23)."),
+        },
+        "arms": arms,
+        "trivial_scalar": {
+            "name": "total_records_across_views",
+            "test_auc": clean(scalar.get("test_auc")),
+            "train_auc": clean(scalar.get("train_auc_as_measured")),
+            "orientation": scalar.get("orientation_fixed_on_train"),
+            "note": trivial.get("note"),
+        },
+        "seen_unseen": {
+            "limitation": "L26",
+            "note": seen_unseen.get("note"),
+            "limitation_note": (
+                "The models' ranking advantage over that scalar is confined "
+                "to attack computers already seen as attacked in train. On "
+                "unseen computers the scalar reaches 0.7563 and no arm "
+                "clears it by more than 0.01 "
+                "(docs/KNOWN_LIMITATIONS.md L26)."),
+        },
+        "bootstrap_note": bootstrap.get("note"),
+        "evidence_digests": {
+            "samples_npz": dig(manifest, "samples", "sha256"),
+            "scores_n_files": dig(manifest, "scores", "n_files"),
+            "run1_decompressed": dig(manifest, "run1", "decompressed_sha256"),
+        },
+        "seeds": raw["config"].get("seeds"),
+        "provenance": provenance(src, manifest_src),
+    }
+
+
+# --------------------------------------------------------------------------
+# 7c. The claim table
+# --------------------------------------------------------------------------
+#
+# THE VERDICT WORD IS EARNED, NOT ASSIGNED. Each cell carries the written rule
+# the cited file had to satisfy. Where a rule is testable from a committed
+# file, this function tests it and derives the word; where a limitation says
+# the measurement cannot bear the claim at all, the word is NO EVIDENCE and
+# the rule says which limitation and why. A cell is never softened from
+# CONTRADICTS to "needs more data", and never hardened from NO EVIDENCE to
+# CONFIRMS because a number happens to point the right way.
+
+VERDICTS = ("CONFIRMS", "CONTRADICTS", "NO EVIDENCE", "needs more data")
+
+
+def cell(verdict: str, rule: str, source_file: Path | None, detail: str = "") -> dict:
+    if verdict not in VERDICTS:
+        raise SystemExit("ABORT: %r is not one of %s" % (verdict, VERDICTS))
+    return {
+        "verdict": verdict,
+        "rule": rule,
+        "detail": detail,
+        "source_file": (str(source_file.relative_to(ROOT)).replace("\\", "/")
+                        if source_file else None),
+        "sha256": sha256(source_file) if source_file else None,
+    }
+
+
+def build_real_summary() -> dict:
+    chorus_src = ROOT / "results/chorus/attack_metrics.json"
+    detector_src = ROOT / "results/comparison/detector.json"
+    gz_src = ROOT / "results/ait_attack/results.json.gz"
+    manifest_src = ROOT / "results/ait_attack/results_manifest.json"
+    lanl_src = ROOT / "results/lanl/results.json"
+    limits_src = ROOT / "docs/KNOWN_LIMITATIONS.md"
+
+    chorus = json.loads(chorus_src.read_text(encoding="utf-8"))["summary"]
+    detector = json.loads(detector_src.read_text(encoding="utf-8"))["summary"]
+    attack = read_gz_checked(gz_src, manifest_src, "results.json")
+    lanl = json.loads(lanl_src.read_text(encoding="utf-8"))
+
+    # ---- detection, synthetic: measured, not asserted --------------------
+    base = chorus["clean|prismflow"]["dependence_all_pairs"]
+    comp = chorus["chorus_k2_eps1.0|prismflow"]["dependence_compromised"]
+    margin = (base.get("std") or 0) + (comp.get("std") or 0)
+    rose = (comp["mean"] - base["mean"]) > margin
+    det_syn = cell(
+        "CONFIRMS" if rose else "NO EVIDENCE",
+        "CONFIRMS only if mean dependence among the compromised views under "
+        "chorus k=2 eps=1.0 exceeds clean all-pairs dependence by more than "
+        "the two 5-seed standard deviations combined.",
+        chorus_src,
+        "%.4f +/- %.4f compromised against %.4f +/- %.4f clean: a rise of "
+        "%.4f against a combined std of %.4f, over 5 seeds."
+        % (comp["mean"], comp["std"], base["mean"], base["std"],
+           comp["mean"] - base["mean"], margin))
+
+    # ---- detection, AIT: both directions, never pooled -------------------
+    signs = {}
+    for name, direction in attack["directions"].items():
+        nat = direction["systems"]["prismflow"]["natural_windows"]
+        atk = nat["dnsteal_only"]["summary"]["mean_dependence_eigen"]
+        ben = nat["benign"]["summary"]["mean_dependence_eigen"]
+        signs[name] = (atk["mean"] - ben["mean"], atk, ben)
+    agree = len({d > 0 for d, _, _ in signs.values()}) == 1
+    det_ait = cell(
+        "CONFIRMS" if agree and all(d > 0 for d, _, _ in signs.values())
+        else "NO EVIDENCE",
+        "CONFIRMS only if attack-window dependence exceeds benign-window "
+        "dependence in BOTH directions, reported separately (Part 29 forbids "
+        "pooling the two scenarios), AND the comparison is informative about "
+        "fusion at all. L17 says it is not: one view (`dns`) solves this "
+        "label, so no AIT comparison between fused systems is evidence about "
+        "fusion.",
+        gz_src,
+        "; ".join(
+            "%s: attack %.4f +/- %.4f against benign %.4f +/- %.4f (%s)"
+            % (name, atk["mean"], atk["std"], ben["mean"], ben["std"],
+               "rises" if d > 0 else "falls")
+            for name, (d, atk, ben) in sorted(signs.items()))
+        + ". The two directions disagree, and L17 conditions both.")
+
+    # ---- detection, LANL: L30 ------------------------------------------
+    lanl_signs = []
+    for name, arm in sorted(lanl["configurations"].items()):
+        pops = dig(arm, "part29_test_a_natural_attack_windows", "per_system",
+                   "prismflow", "populations") or {}
+        atk = dig(pops, "attack_windows", "summary", "mean_dependence_eigen")
+        ben = dig(pops, "benign_windows", "summary", "mean_dependence_eigen")
+        if atk and ben and atk.get("mean") is not None:
+            lanl_signs.append((name, atk["mean"] - ben["mean"]))
+    reversing = [n for n, d in lanl_signs if d <= 0]
+    det_lanl = cell(
+        "NO EVIDENCE",
+        "CONFIRMS only if Part 29's test A holds its sign across all four "
+        "view configurations. It does not: docs/KNOWN_LIMITATIONS.md L30 "
+        "records test A as not a stable signal on LANL, and tests B, D and "
+        "the detector half of C were not run at all, so there is no "
+        "detector-AUC measurement on this dataset.",
+        lanl_src,
+        "Attack-minus-benign mean dependence per arm: "
+        + ", ".join("%s %+.4f" % (n, d) for n, d in lanl_signs)
+        + ". %s reverse%s the sign."
+        % (", ".join(reversing) or "No arm", "" if len(reversing) != 1 else "s"))
+
+    # ---- defence, synthetic: mechanical over every non-clean condition ---
+    worse = []
+    for key, fields in chorus.items():
+        condition, _, system = key.partition("|")
+        if condition == "clean" or system != "prismflow":
+            continue
+        naive = chorus.get(condition + "|naive")
+        if not naive:
+            continue
+        diff = (fields["success_rate"]["mean"]
+                - naive["success_rate"]["mean"])
+        worse.append((condition, diff))
+    all_worse = worse and all(d > 0 for _, d in worse)
+    def_syn = cell(
+        "CONTRADICTS" if all_worse else "NO EVIDENCE",
+        "CONFIRMS if PrismFlow's mean attack success is below naive's in "
+        "every non-clean condition; CONTRADICTS if it is at or above naive's "
+        "in every one of them; otherwise NO EVIDENCE.",
+        chorus_src,
+        "PrismFlow is above naive in %d of %d non-clean conditions "
+        "(range %+.4f to %+.4f), 5 seeds each."
+        % (sum(1 for _, d in worse if d > 0), len(worse),
+           min(d for _, d in worse), max(d for _, d in worse)))
+
+    # ---- defence, AIT: paired within seed, by direction ------------------
+    per_direction = {}
+    for name, direction in attack["directions"].items():
+        below = above = 0
+        for _, paired in direction["paired_prismflow_minus_naive"].items():
+            if paired.get("kind") not in ("chorus", "pgd"):
+                continue
+            mean = dig(paired, "diff", "attack_success", "mean")
+            if mean is None:
+                continue
+            if mean < 0:
+                below += 1
+            elif mean > 0:
+                above += 1
+        per_direction[name] = (below, above)
+    def_ait = cell(
+        "NO EVIDENCE",
+        "CONFIRMS only if PrismFlow's paired attack success is below naive's "
+        "in every cell of both directions, with the compromised set named "
+        "(L17: a cell that does not say whether `dns` was compromised is "
+        "uninterpretable). Mixed signs in either direction fail the rule.",
+        gz_src,
+        "; ".join("%s: PrismFlow below naive in %d cells, above in %d"
+                  % (name, below, above)
+                  for name, (below, above) in sorted(per_direction.items()))
+        + ". Signs are mixed in both directions.")
+
+    # ---- defence, LANL: the chorus grid was never run --------------------
+    not_run = dig(lanl, "configurations", "with_auth", "part29_tests_not_run")
+    def_lanl = cell(
+        "NO EVIDENCE",
+        "CONFIRMS or CONTRADICTS requires an attack-success measurement. "
+        "Part 29's chorus grid was not run on LANL, so no cell exists to "
+        "test either way.",
+        lanl_src,
+        (not_run or {}).get("B_chorus_attack", ""))
+
+    # ---- honest duplication, synthetic: L22 blocks the figure ------------
+    clone = detector["clone_k2"]["auc"]
+    best_chorus = max(detector[k]["auc"]["mean"] for k in detector
+                      if k.startswith("chorus"))
+    dup_syn = cell(
+        "needs more data",
+        "CONFIRMS only if the clone condition and its clean reference run the "
+        "SAME number of views, so the detector's score can be attributed to "
+        "duplication rather than to width. docs/KNOWN_LIMITATIONS.md L22 "
+        "records that they do not: `clone_k2` runs 6 views against a 4-view "
+        "reference, and the suspicion score is a maximum over off-diagonal "
+        "entries, which grows with width. The figure therefore cannot be "
+        "differenced against any fixed-width result.",
+        detector_src,
+        "clone_k2 detector AUC %.4f +/- %.4f over 5 seeds, above every "
+        "chorus condition (best %.4f) -- but at 6 views against 4, so part "
+        "of the gap is the width change itself (L22)."
+        % (clone["mean"], clone["std"], best_chorus))
+
+    # ---- honest duplication, AIT: the committed verdict word -------------
+    sensor = attack["sensor_group_check"]
+    dup_ait = cell(
+        sensor["verdict"] if sensor["verdict"] in VERDICTS else "NO EVIDENCE",
+        "CONFIRMS requires a within-sensor-group PAIR to score the detector "
+        "on. The verdict word here is read from the run, not decided by this "
+        "build: Part 29 recorded it in `sensor_group_check.verdict`.",
+        gz_src,
+        sensor["reason"])
+
+    # ---- honest duplication, LANL: half-run, and the half that ran is NO
+    # EVIDENCE by LANL's own record ---------------------------------------
+    dup_lanl = cell(
+        "NO EVIDENCE",
+        "CONFIRMS requires a detector AUC on a duplicated-but-honest "
+        "condition. LANL ships no sensor-group definition, so no strict "
+        "same-sensor pair exists, and the detector was not scored on the "
+        "naturally-dependent pairs either.",
+        lanl_src,
+        (not_run or {}).get("C_honest_duplication", ""))
+
+    return {
+        "title": "What each dataset says about each claim",
+        "note": (
+            "Columns are datasets, rows are claims. A cell is a verdict plus "
+            "the written RULE that verdict had to satisfy, plus the file it "
+            "was read from and that file's sha256. Nothing is pooled across "
+            "datasets, nothing is averaged across AIT's two directions, and "
+            "where a rule is not satisfied the cell says NO EVIDENCE rather "
+            "than a weaker version of the claim."),
+        "verdict_vocabulary": list(VERDICTS),
+        "columns": [
+            {"id": "synthetic", "label": "synthetic",
+             "note": "rho is set, so dependence has a ground truth"},
+            {"id": "ait", "label": "AIT Log Data Set V2.0",
+             "note": "two directions, never pooled"},
+            {"id": "lanl", "label": "LANL cyber1",
+             "note": "clean data only; Part 29's tests B, D and half of C "
+                     "were not run"},
+        ],
+        "rows": [
+            {"id": "detection",
+             "claim": "Detection: under attack, dependence among the "
+                      "implicated views rises above its clean reference.",
+             "cells": {"synthetic": det_syn, "ait": det_ait, "lanl": det_lanl}},
+            {"id": "defence",
+             "claim": "Defence: the dependence discount lowers attack "
+                      "success relative to the undiscounted baseline.",
+             "cells": {"synthetic": def_syn, "ait": def_ait, "lanl": def_lanl}},
+            {"id": "honest_duplication",
+             "claim": "Honest-duplication false positive: the detector fires "
+                      "on redundancy that no attacker created.",
+             "cells": {"synthetic": dup_syn, "ait": dup_ait, "lanl": dup_lanl}},
+        ],
+        "limitations_source": str(limits_src.relative_to(ROOT)).replace("\\", "/"),
+        "provenance": provenance(chorus_src, detector_src, gz_src,
+                                 manifest_src, lanl_src, limits_src),
+    }
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     artifacts = {
@@ -1023,6 +1614,9 @@ def main() -> int:
         "v2_dataset.json": build_v2_dataset,
         "v1_figures.json": build_figures,
         "limitations.json": build_limitations,
+        "real_ait.json": build_real_ait,
+        "real_lanl.json": build_real_lanl,
+        "real_summary.json": build_real_summary,
     }
     reverify = build_v2_reverify()
     if reverify is not None:

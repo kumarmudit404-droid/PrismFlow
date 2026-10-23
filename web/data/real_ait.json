@@ -1,0 +1,2339 @@
+{
+  "title": "AIT Log Data Set V2.0",
+  "dataset": {
+    "name": "AIT Log Data Set V2.0",
+    "licence": "CC BY-NC-SA 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "source_url": "https://zenodo.org/records/5789064",
+    "doi": "10.5281/zenodo.5789064",
+    "attribution": "Wolfgang Hotwagner, Markus Wurzenberger, Andreas Rauber. Zenodo, 2022. doi:10.5281/zenodo.5789064. Licensed CC BY-NC-SA 4.0.",
+    "attribution_source": "docs/part27-ait-datacard.md",
+    "scenarios": [
+      "russellmitchell",
+      "santos"
+    ],
+    "views": [
+      "apache",
+      "auth",
+      "dns",
+      "audit",
+      "suricata"
+    ],
+    "label_method": "A window is attack=1 if ANY officially labelled line falls in it, and on both scenarios that label is dominated by one continuously-running DNS exfiltration tool (1,026 of 1,031 attack windows on russellmitchell and 663 of 667 on santos carry only dnsteal-family steps, docs/part26-ait-loader.md sections 0 and 12), so the task is 'was the exfiltration tool running in this window', NOT 'detect an APT' and not 'detect a multi-step intrusion'."
+  },
+  "directions": [
+    {
+      "id": "A_rm_to_santos",
+      "label": "A: train russellmitchell -> test santos",
+      "train_scenario": "russellmitchell",
+      "test_scenario": "santos",
+      "n_train": 1145,
+      "n_test": 1108,
+      "label_meaning": "A window is attack=1 if ANY officially labelled line falls in it, and on both scenarios that label is dominated by one continuously-running DNS exfiltration tool (1,026 of 1,031 attack windows on russellmitchell and 663 of 667 on santos carry only dnsteal-family steps, docs/part26-ait-loader.md sections 0 and 12), so the task is 'was the exfiltration tool running in this window', NOT 'detect an APT' and not 'detect a multi-step intrusion'.",
+      "views": [
+        "apache",
+        "auth",
+        "dns",
+        "audit",
+        "suricata"
+      ],
+      "clean": {
+        "eniv_eigen": {
+          "mean": 3.4958335772633107,
+          "std": 0.1015310049879572,
+          "n_seeds": 5
+        },
+        "detector_auc": {
+          "mean": 0.5,
+          "std": 0.0,
+          "n_seeds": 5
+        },
+        "roc_auc": {
+          "mean": 0.996454833807586,
+          "std": 0.0005929528737709632,
+          "n_seeds": 5
+        }
+      },
+      "dependence": {
+        "label": "different sensors, naturally dependent",
+        "source": "results/ait_clean/results.json",
+        "systems_agree_on_ordering": true,
+        "most_dependent": [
+          "dns-suricata",
+          "auth-audit"
+        ],
+        "least_dependent": [
+          "auth-dns",
+          "apache-dns"
+        ],
+        "caveat": "These views sit on DIFFERENT physical sensors. The dependence is a property of the scenario, not of shared hardware. This is NOT a same-sensor result and must not be read as one.",
+        "cells": [
+          {
+            "system": "naive",
+            "pair": "dns-suricata",
+            "mean": 0.7784475103109286,
+            "std": 0.006254972179132485
+          },
+          {
+            "system": "naive",
+            "pair": "auth-audit",
+            "mean": 0.6460222459760536,
+            "std": 0.08038509574298101
+          },
+          {
+            "system": "naive",
+            "pair": "audit-suricata",
+            "mean": 0.4551214578890889,
+            "std": 0.008422977647787296
+          },
+          {
+            "system": "naive",
+            "pair": "apache-suricata",
+            "mean": 0.20768169665192301,
+            "std": 0.08265590593645296
+          },
+          {
+            "system": "naive",
+            "pair": "dns-audit",
+            "mean": 0.17898115337007306,
+            "std": 0.06350238018641795
+          },
+          {
+            "system": "naive",
+            "pair": "apache-auth",
+            "mean": 0.13093213224612693,
+            "std": 0.05886294602150159
+          },
+          {
+            "system": "naive",
+            "pair": "auth-suricata",
+            "mean": 0.12446187886772653,
+            "std": 0.011141229183942196
+          },
+          {
+            "system": "naive",
+            "pair": "apache-audit",
+            "mean": 0.10560614235035487,
+            "std": 0.061569979858918045
+          },
+          {
+            "system": "naive",
+            "pair": "apache-dns",
+            "mean": 0.04575712702916763,
+            "std": 0.02200370320916034
+          },
+          {
+            "system": "naive",
+            "pair": "auth-dns",
+            "mean": 0.041090637638841986,
+            "std": 0.015636695219119746
+          },
+          {
+            "system": "prismflow",
+            "pair": "dns-suricata",
+            "mean": 0.7788880950466364,
+            "std": 0.0064393284477299115
+          },
+          {
+            "system": "prismflow",
+            "pair": "auth-audit",
+            "mean": 0.5995687333687246,
+            "std": 0.0806073450946163
+          },
+          {
+            "system": "prismflow",
+            "pair": "audit-suricata",
+            "mean": 0.41354354675730154,
+            "std": 0.02599270124908599
+          },
+          {
+            "system": "prismflow",
+            "pair": "apache-suricata",
+            "mean": 0.22547530276867309,
+            "std": 0.10889903682314
+          },
+          {
+            "system": "prismflow",
+            "pair": "dns-audit",
+            "mean": 0.13010679783636347,
+            "std": 0.039572906461993546
+          },
+          {
+            "system": "prismflow",
+            "pair": "apache-audit",
+            "mean": 0.11420199857576037,
+            "std": 0.06466055657192306
+          },
+          {
+            "system": "prismflow",
+            "pair": "auth-suricata",
+            "mean": 0.10596805653424715,
+            "std": 0.009687903913006942
+          },
+          {
+            "system": "prismflow",
+            "pair": "apache-auth",
+            "mean": 0.09846660875837593,
+            "std": 0.07158444738321205
+          },
+          {
+            "system": "prismflow",
+            "pair": "apache-dns",
+            "mean": 0.0451261387328197,
+            "std": 0.04882951108265389
+          },
+          {
+            "system": "prismflow",
+            "pair": "auth-dns",
+            "mean": 0.03637583114862644,
+            "std": 0.010536545532104919
+          }
+        ]
+      },
+      "attack_by_k": [
+        {
+          "cell": "chorus_k1_eps0.2_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.49459558967274436,
+            "std": 0.07655309677408806,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.5088446836779013,
+            "std": 0.11021589978647375,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.005054151624548736,
+            "std": 0.003976297730601758,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k1_eps0.2_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5920861082511175,
+            "std": 0.009328420857142698,
+            "n_seeds": 5
+          },
+          "eniv_eigen": {
+            "mean": 3.507047786498802,
+            "std": 0.09653939051857223,
+            "n_seeds": 5
+          },
+          "attack_success": {
+            "mean": 0.03303249097472924,
+            "std": 0.005475000320614839,
+            "n_seeds": 5
+          }
+        },
+        {
+          "cell": "chorus_k1_eps0.5_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.48512654928384313,
+            "std": 0.08251324459567912,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.5034396972661055,
+            "std": 0.1593887065703148,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.019268953068592058,
+            "std": 0.016401166268460898,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k1_eps0.5_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5922354976605977,
+            "std": 0.06895536120428034,
+            "n_seeds": 5
+          },
+          "eniv_eigen": {
+            "mean": 3.50782165342862,
+            "std": 0.09794069727177022,
+            "n_seeds": 5
+          },
+          "attack_success": {
+            "mean": 0.05036101083032491,
+            "std": 0.008829095380069025,
+            "n_seeds": 5
+          }
+        },
+        {
+          "cell": "chorus_k1_eps1.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.5102444968655919,
+            "std": 0.09073617517035316,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.4905674049050393,
+            "std": 0.19879717261110486,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.05338447653429603,
+            "std": 0.04767752958235454,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k1_eps1.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5879390452110675,
+            "std": 0.07639468333404349,
+            "n_seeds": 5
+          },
+          "eniv_eigen": {
+            "mean": 3.5369182590429986,
+            "std": 0.09996863085574875,
+            "n_seeds": 5
+          },
+          "attack_success": {
+            "mean": 0.05180505415162455,
+            "std": 0.009774830733980005,
+            "n_seeds": 5
+          }
+        },
+        {
+          "cell": "chorus_k1_eps2.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.48964504945978704,
+            "std": 0.06927574434980688,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.465657676630531,
+            "std": 0.23103807307686305,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.09918772563176896,
+            "std": 0.08319904360851493,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k1_eps2.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5857070012641895,
+            "std": 0.07295474913141956,
+            "n_seeds": 5
+          },
+          "eniv_eigen": {
+            "mean": 3.5998917354980096,
+            "std": 0.10479976261104768,
+            "n_seeds": 5
+          },
+          "attack_success": {
+            "mean": 0.05288808664259928,
+            "std": 0.00910613592464219,
+            "n_seeds": 5
+          }
+        },
+        {
+          "cell": "chorus_k2_eps0.2_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.49456754182469037,
+            "std": 0.06997797303292966,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.4966553243087266,
+            "std": 0.10621720040432743,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.01230445246690734,
+            "std": 0.010569080752511876,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps0.2_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.4251074805484237,
+            "std": 0.041667849568256046,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.5027254209125736,
+            "std": 0.10588313934417044,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.030595667870036102,
+            "std": 0.005445950856016884,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k2_eps0.5_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.48573732986658674,
+            "std": 0.07149927361020571,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.401262051652148,
+            "std": 0.13658768914926528,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.06501203369434416,
+            "std": 0.07376410385955177,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps0.5_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.37744830833192144,
+            "std": 0.04928993576277076,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.500526153699646,
+            "std": 0.11598558094510858,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.10609205776173285,
+            "std": 0.024373464438277218,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.5268239246786308,
+            "std": 0.11588899427302084,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.3468878526981776,
+            "std": 0.18557426651501463,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.12376654632972323,
+            "std": 0.10344668668714826,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta0.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 0.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.47853753144182776,
+            "std": 0.06874035691365495,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.4244585717521656,
+            "std": 0.2020809376756554,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.1487063778580024,
+            "std": 0.06849029783441775,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta5.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 5.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.5462495438491314,
+            "std": 0.10340464270200367,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.281021125321416,
+            "std": 0.15723312825821933,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.04969915764139591,
+            "std": 0.0358707745596544,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.3588222428938211,
+            "std": 0.025520814354561466,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.4168046262549123,
+            "std": 0.1826330185193898,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.28379963898916966,
+            "std": 0.0997168176537277,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta0.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 0.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5412373825411513,
+            "std": 0.08601593793648907,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.5509403056291524,
+            "std": 0.18543827051888026,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.09562274368231047,
+            "std": 0.04321773654990106,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta5.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 5.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.2960484709171239,
+            "std": 0.03779158857113572,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.4412084805230947,
+            "std": 0.18940760900161369,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.2269404332129964,
+            "std": 0.03888809263098865,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k2_eps2.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.5539666933840747,
+            "std": 0.1094827666363673,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.2529023044312417,
+            "std": 0.21551541304327326,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.1776173285198556,
+            "std": 0.09044309559066882,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps2.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.37482564447601296,
+            "std": 0.047244890160152375,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.4016713942040764,
+            "std": 0.16806948529934757,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.39557761732851987,
+            "std": 0.1542497721857944,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps0.2_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.4925400598209282,
+            "std": 0.06797535468390478,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.471199574194906,
+            "std": 0.10979701917817625,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.011958483754512635,
+            "std": 0.004292312981710726,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps0.2_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.43856717581792193,
+            "std": 0.054449277026262864,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.5027357437960824,
+            "std": 0.10765279722890184,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.031167268351383875,
+            "std": 0.005031947217403369,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k3_eps0.5_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.4944870502026613,
+            "std": 0.07085211653287113,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.301593297640903,
+            "std": 0.1418791895621531,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.059521660649819494,
+            "std": 0.03570161254024296,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps0.5_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.40638125198208414,
+            "std": 0.06968653104367115,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.437421862414142,
+            "std": 0.11976504577454915,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.11371841155234658,
+            "std": 0.02282248603296152,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.5652317327868212,
+            "std": 0.1096853853730273,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.1751057858372436,
+            "std": 0.22196293709741072,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.1292418772563177,
+            "std": 0.05776217817612868,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta0.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 0.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.4399432173624053,
+            "std": 0.0776980070340408,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.2831575037565437,
+            "std": 0.17613907417513444,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.2095216606498195,
+            "std": 0.041841568974531895,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta5.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 5.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.5766499628562864,
+            "std": 0.09946591951918043,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.16362667009476,
+            "std": 0.1515547770484943,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.04305054151624549,
+            "std": 0.01940151498049148,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.4184732956248615,
+            "std": 0.10026495558563082,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.3115660600142407,
+            "std": 0.2140172394122001,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.35574608904933813,
+            "std": 0.1334728411574221,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta0.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 0.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5111834888590581,
+            "std": 0.0830027235235813,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.449436659788593,
+            "std": 0.1995103695217413,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.18038507821901323,
+            "std": 0.06547531380521887,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta5.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 5.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.33325790552898293,
+            "std": 0.09724252027093466,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.4048932396272713,
+            "std": 0.17991231449395892,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.2856197352587244,
+            "std": 0.08686558836326588,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k3_eps2.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.5500591367018989,
+            "std": 0.11192973294653034,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 2.976895749583547,
+            "std": 0.237834070345019,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.1903880866425993,
+            "std": 0.05831167153593278,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps2.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.3388889522431762,
+            "std": 0.055667799488147235,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.09412568776745,
+            "std": 0.22549774598352842,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.6293020457280385,
+            "std": 0.3217543340351241,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "pgd_k1_eps1.0__dns_not_compromised",
+          "kind": "pgd",
+          "k": 1,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.5102444968655919,
+            "std": 0.09073617517035316,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.4905674049050393,
+            "std": 0.19879717261110486,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.05338447653429603,
+            "std": 0.04767752958235454,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "pgd_k1_eps1.0__dns_compromised",
+          "kind": "pgd",
+          "k": 1,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5879390452110675,
+            "std": 0.07639468333404349,
+            "n_seeds": 5
+          },
+          "eniv_eigen": {
+            "mean": 3.5369182590429986,
+            "std": 0.09996863085574875,
+            "n_seeds": 5
+          },
+          "attack_success": {
+            "mean": 0.05180505415162455,
+            "std": 0.009774830733980005,
+            "n_seeds": 5
+          }
+        },
+        {
+          "cell": "pgd_k2_eps1.0__dns_not_compromised",
+          "kind": "pgd",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.4808644710604856,
+            "std": 0.06431058929454472,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.418997947885937,
+            "std": 0.20233741214530457,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.148676293622142,
+            "std": 0.06966390384554283,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "pgd_k2_eps1.0__dns_compromised",
+          "kind": "pgd",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5480199386802904,
+            "std": 0.0843022279458289,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.551088070809684,
+            "std": 0.18640716972701554,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.09566787003610108,
+            "std": 0.04326782753512224,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "pgd_k2_eps2.0__dns_not_compromised",
+          "kind": "pgd",
+          "k": 2,
+          "epsilon": 2.0,
+          "beta": null,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.4631912314770165,
+            "std": 0.06550816858391341,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.3496884311517516,
+            "std": 0.23660107072322092,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.18438628158844766,
+            "std": 0.0610856558844815,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "pgd_k2_eps2.0__dns_compromised",
+          "kind": "pgd",
+          "k": 2,
+          "epsilon": 2.0,
+          "beta": null,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5293532269415736,
+            "std": 0.07568156428575325,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.6203389205810232,
+            "std": 0.2085534399878261,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.1404783393501805,
+            "std": 0.0783459141865382,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "pgd_k3_eps1.0__dns_not_compromised",
+          "kind": "pgd",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.44262013058947725,
+            "std": 0.07265308702784859,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.268285400916106,
+            "std": 0.1779438771255887,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.20929602888086643,
+            "std": 0.042748384853345894,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "pgd_k3_eps1.0__dns_compromised",
+          "kind": "pgd",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5118234848188646,
+            "std": 0.08460852759862647,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.446213419640147,
+            "std": 0.20173120904111025,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.18020457280385077,
+            "std": 0.06629919208917402,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "pgd_k3_eps2.0__dns_not_compromised",
+          "kind": "pgd",
+          "k": 3,
+          "epsilon": 2.0,
+          "beta": null,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.41399808905368246,
+            "std": 0.06862389724142269,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.0189564546384706,
+            "std": 0.1769973898827872,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.23136281588447655,
+            "std": 0.01810336892502408,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "pgd_k3_eps2.0__dns_compromised",
+          "kind": "pgd",
+          "k": 3,
+          "epsilon": 2.0,
+          "beta": null,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.47400483085491363,
+            "std": 0.06246576591930711,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.4606861507657998,
+            "std": 0.23762887190467719,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.21756919374247893,
+            "std": 0.05888000687012278,
+            "n_seeds": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "B_santos_to_rm",
+      "label": "B: train santos -> test russellmitchell",
+      "train_scenario": "santos",
+      "test_scenario": "russellmitchell",
+      "n_train": 1108,
+      "n_test": 1145,
+      "label_meaning": "A window is attack=1 if ANY officially labelled line falls in it, and on both scenarios that label is dominated by one continuously-running DNS exfiltration tool (1,026 of 1,031 attack windows on russellmitchell and 663 of 667 on santos carry only dnsteal-family steps, docs/part26-ait-loader.md sections 0 and 12), so the task is 'was the exfiltration tool running in this window', NOT 'detect an APT' and not 'detect a multi-step intrusion'.",
+      "views": [
+        "apache",
+        "auth",
+        "dns",
+        "audit",
+        "suricata"
+      ],
+      "clean": {
+        "eniv_eigen": {
+          "mean": 3.0271943056922526,
+          "std": 0.0376202537841091,
+          "n_seeds": 5
+        },
+        "detector_auc": {
+          "mean": 0.5,
+          "std": 0.0,
+          "n_seeds": 5
+        },
+        "roc_auc": {
+          "mean": 0.9999251280480542,
+          "std": 0.00016741877415895283,
+          "n_seeds": 5
+        }
+      },
+      "dependence": {
+        "label": "different sensors, naturally dependent",
+        "source": "results/ait_clean/results.json",
+        "systems_agree_on_ordering": true,
+        "most_dependent": [
+          "auth-audit",
+          "apache-suricata"
+        ],
+        "least_dependent": [
+          "auth-dns",
+          "auth-suricata"
+        ],
+        "caveat": "These views sit on DIFFERENT physical sensors. The dependence is a property of the scenario, not of shared hardware. This is NOT a same-sensor result and must not be read as one.",
+        "cells": [
+          {
+            "system": "naive",
+            "pair": "auth-audit",
+            "mean": 0.8835554613349981,
+            "std": 0.016859206114744025
+          },
+          {
+            "system": "naive",
+            "pair": "apache-suricata",
+            "mean": 0.6574750756351143,
+            "std": 0.035323415566048205
+          },
+          {
+            "system": "naive",
+            "pair": "dns-suricata",
+            "mean": 0.5838220041844313,
+            "std": 0.06947021167862304
+          },
+          {
+            "system": "naive",
+            "pair": "apache-auth",
+            "mean": 0.43350874168410225,
+            "std": 0.056865032616843184
+          },
+          {
+            "system": "naive",
+            "pair": "apache-dns",
+            "mean": 0.36063422571761894,
+            "std": 0.08620843167409499
+          },
+          {
+            "system": "naive",
+            "pair": "apache-audit",
+            "mean": 0.31445763580727915,
+            "std": 0.029296691635900624
+          },
+          {
+            "system": "naive",
+            "pair": "audit-suricata",
+            "mean": 0.28283513797364923,
+            "std": 0.02530293558123826
+          },
+          {
+            "system": "naive",
+            "pair": "dns-audit",
+            "mean": 0.13894150328264268,
+            "std": 0.06317454268371502
+          },
+          {
+            "system": "naive",
+            "pair": "auth-suricata",
+            "mean": 0.09500287067268429,
+            "std": 0.04092607568212201
+          },
+          {
+            "system": "naive",
+            "pair": "auth-dns",
+            "mean": 0.011246604303836814,
+            "std": 0.023739428268980598
+          },
+          {
+            "system": "prismflow",
+            "pair": "auth-audit",
+            "mean": 0.8705456830952549,
+            "std": 0.01543853157839462
+          },
+          {
+            "system": "prismflow",
+            "pair": "apache-suricata",
+            "mean": 0.6575237752533468,
+            "std": 0.018864634960925226
+          },
+          {
+            "system": "prismflow",
+            "pair": "dns-suricata",
+            "mean": 0.5515734905549298,
+            "std": 0.06735618928019127
+          },
+          {
+            "system": "prismflow",
+            "pair": "apache-auth",
+            "mean": 0.4162704156826978,
+            "std": 0.03749830992181796
+          },
+          {
+            "system": "prismflow",
+            "pair": "apache-audit",
+            "mean": 0.30994321365114624,
+            "std": 0.008773768984880274
+          },
+          {
+            "system": "prismflow",
+            "pair": "audit-suricata",
+            "mean": 0.2822108004601118,
+            "std": 0.023414666488542294
+          },
+          {
+            "system": "prismflow",
+            "pair": "apache-dns",
+            "mean": 0.26116484345165286,
+            "std": 0.03203800503522882
+          },
+          {
+            "system": "prismflow",
+            "pair": "dns-audit",
+            "mean": 0.08493467527047692,
+            "std": 0.02213531279253805
+          },
+          {
+            "system": "prismflow",
+            "pair": "auth-suricata",
+            "mean": 0.06966983817111624,
+            "std": 0.057541085131021165
+          },
+          {
+            "system": "prismflow",
+            "pair": "auth-dns",
+            "mean": -0.02804786241345241,
+            "std": 0.018961807405168778
+          }
+        ]
+      },
+      "attack_by_k": [
+        {
+          "cell": "chorus_k1_eps0.2_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.46535935622890484,
+            "std": 0.09225113396751658,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.063536038343752,
+            "std": 0.07061460673584569,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.01462882096069869,
+            "std": 0.04429327283279084,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k1_eps0.2_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5590210712991743,
+            "std": 0.11287881418842613,
+            "n_seeds": 5
+          },
+          "eniv_eigen": {
+            "mean": 3.027605087671175,
+            "std": 0.034536935705138966,
+            "n_seeds": 5
+          },
+          "attack_success": {
+            "mean": 0.03074235807860262,
+            "std": 0.017482526070254936,
+            "n_seeds": 5
+          }
+        },
+        {
+          "cell": "chorus_k1_eps0.5_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.4282900783737915,
+            "std": 0.09538984700667566,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.047379646900374,
+            "std": 0.11013037627748111,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.06506550218340612,
+            "std": 0.13926877669967436,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k1_eps0.5_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.6178358154878816,
+            "std": 0.1091595582320334,
+            "n_seeds": 5
+          },
+          "eniv_eigen": {
+            "mean": 3.0363086560277956,
+            "std": 0.027177639485657698,
+            "n_seeds": 5
+          },
+          "attack_success": {
+            "mean": 0.0359825327510917,
+            "std": 0.023656678778528,
+            "n_seeds": 5
+          }
+        },
+        {
+          "cell": "chorus_k1_eps1.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.42395732346827864,
+            "std": 0.0920357483039951,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.106740100709883,
+            "std": 0.20175709532974498,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.16362445414847163,
+            "std": 0.2719078826362569,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k1_eps1.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.6219536622108656,
+            "std": 0.10489938201463417,
+            "n_seeds": 5
+          },
+          "eniv_eigen": {
+            "mean": 3.0898431704021827,
+            "std": 0.045308382273424534,
+            "n_seeds": 5
+          },
+          "attack_success": {
+            "mean": 0.03563318777292576,
+            "std": 0.02310204631963115,
+            "n_seeds": 5
+          }
+        },
+        {
+          "cell": "chorus_k1_eps2.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.42367395739974445,
+            "std": 0.09405008999893247,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.1677576458437944,
+            "std": 0.21063160794174796,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.23611353711790392,
+            "std": 0.3569119881873347,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k1_eps2.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 1,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.572616082835949,
+            "std": 0.14514565738690255,
+            "n_seeds": 5
+          },
+          "eniv_eigen": {
+            "mean": 3.1755337962964867,
+            "std": 0.09416483182170836,
+            "n_seeds": 5
+          },
+          "attack_success": {
+            "mean": 0.03441048034934498,
+            "std": 0.02127314437260022,
+            "n_seeds": 5
+          }
+        },
+        {
+          "cell": "chorus_k2_eps0.2_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.4726404657933042,
+            "std": 0.11496966079266946,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.003447743894331,
+            "std": 0.06936649177317977,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.011499272197962155,
+            "std": 0.014394881581039172,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps0.2_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.4973762132682443,
+            "std": 0.1271444265714355,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.0220185835784417,
+            "std": 0.11421336550806656,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.09624454148471616,
+            "std": 0.0920107783122286,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k2_eps0.5_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.3882313711281885,
+            "std": 0.09705062612126616,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.0151735773773947,
+            "std": 0.0917925255812194,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.019068413391557498,
+            "std": 0.016512187364606093,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps0.5_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5474324288247745,
+            "std": 0.12484846488607786,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 2.9186733015228317,
+            "std": 0.09093138574635659,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.7782532751091703,
+            "std": 0.08943823059895901,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.33921150753545254,
+            "std": 0.1082688585110054,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 2.9910461200920415,
+            "std": 0.17041051172195612,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.039272197962154295,
+            "std": 0.04088816248286157,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta0.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 0.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.34695000730980213,
+            "std": 0.10035041570587484,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.140286781341958,
+            "std": 0.20007084968431707,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.38905385735080056,
+            "std": 0.35240802424533013,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta5.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 5.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.3647983066684464,
+            "std": 0.12574639006978328,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.0018589553031663,
+            "std": 0.18519944940132316,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.035429403202328964,
+            "std": 0.0399617800789206,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.2756928738963788,
+            "std": 0.11655387395069357,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 2.862457103344224,
+            "std": 0.13885659383479618,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.8634497816593887,
+            "std": 0.02724536481978126,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta0.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 0.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5076072920043477,
+            "std": 0.1272067468551661,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.1799869992763954,
+            "std": 0.20339309992118387,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.1873362445414847,
+            "std": 0.267795215413681,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k2_eps1.0_beta5.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": 5.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.2539059133121031,
+            "std": 0.11423902745686992,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 2.8063968647619078,
+            "std": 0.12583487041618907,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.8446724890829694,
+            "std": 0.02418055408355955,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k2_eps2.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.3619098033981045,
+            "std": 0.13325523480999982,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.087005991376295,
+            "std": 0.20634503843771757,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.06250363901018922,
+            "std": 0.07401943127412389,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k2_eps2.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 2,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.3180008390381572,
+            "std": 0.1387093425942973,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.0031256821152654,
+            "std": 0.18555935429892242,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.8747161572052402,
+            "std": 0.03175419909063923,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps0.2_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.4801479376823478,
+            "std": 0.12908907319203272,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 2.9907683117384654,
+            "std": 0.06024516182794807,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.01668122270742358,
+            "std": 0.014777779399774583,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps0.2_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 0.2,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5272112787068642,
+            "std": 0.1422839818282162,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.0396220747882885,
+            "std": 0.07718156913015989,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.07662299854439593,
+            "std": 0.07870525960511021,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k3_eps0.5_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.3438196067962091,
+            "std": 0.0673274040662743,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.005223451983597,
+            "std": 0.08600423839143838,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.023406113537117905,
+            "std": 0.016988615832931608,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps0.5_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 0.5,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5024757981986105,
+            "std": 0.13306965274931046,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 2.931411629794446,
+            "std": 0.05950522104191161,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.7172052401746725,
+            "std": 0.11380122872506575,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.3402778741824145,
+            "std": 0.15409836023705797,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 2.9471754224902025,
+            "std": 0.15473840136438097,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.04034934497816594,
+            "std": 0.04887019561949813,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta0.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 0.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.26795827692072993,
+            "std": 0.08806135799160936,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.0613091343976095,
+            "std": 0.1795381669014042,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.6100436681222707,
+            "std": 0.31729232906321614,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta5.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 5.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.28914551591312143,
+            "std": 0.09567515726355362,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 2.9622751782847163,
+            "std": 0.1545583059230341,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.04179039301310044,
+            "std": 0.05241574546794589,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.22654312465437348,
+            "std": 0.06119819782034746,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 2.799216307810769,
+            "std": 0.13727829360918326,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.9184570596797671,
+            "std": 0.07720808932683282,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta0.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 0.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.42421344622210355,
+            "std": 0.13161300573076645,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.2185230501590265,
+            "std": 0.2138614837745934,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.3922852983988355,
+            "std": 0.33849854431873455,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k3_eps1.0_beta5.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": 5.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.20306355714040542,
+            "std": 0.07263118816817409,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 2.827873230146361,
+            "std": 0.13220808195067202,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.8482387190684134,
+            "std": 0.13579043999097284,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "chorus_k3_eps2.0_beta1.0__dns_not_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.3312644686409489,
+            "std": 0.13236948584397323,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.049503221140318,
+            "std": 0.1484941907618946,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.05991266375545851,
+            "std": 0.08900334881045883,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "chorus_k3_eps2.0_beta1.0__dns_compromised",
+          "kind": "chorus",
+          "k": 3,
+          "epsilon": 2.0,
+          "beta": 1.0,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.24753527456252422,
+            "std": 0.0658968188954984,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 2.8642028529270713,
+            "std": 0.19648605313386033,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.9181077147016011,
+            "std": 0.07829439251648206,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "pgd_k1_eps1.0__dns_not_compromised",
+          "kind": "pgd",
+          "k": 1,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.42395732346827864,
+            "std": 0.0920357483039951,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.106740100709883,
+            "std": 0.20175709532974498,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.16362445414847163,
+            "std": 0.2719078826362569,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "pgd_k1_eps1.0__dns_compromised",
+          "kind": "pgd",
+          "k": 1,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.6219536622108656,
+            "std": 0.10489938201463417,
+            "n_seeds": 5
+          },
+          "eniv_eigen": {
+            "mean": 3.0898431704021827,
+            "std": 0.045308382273424534,
+            "n_seeds": 5
+          },
+          "attack_success": {
+            "mean": 0.03563318777292576,
+            "std": 0.02310204631963115,
+            "n_seeds": 5
+          }
+        },
+        {
+          "cell": "pgd_k2_eps1.0__dns_not_compromised",
+          "kind": "pgd",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.34661866351391724,
+            "std": 0.102925337629065,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.13839716052536,
+            "std": 0.1941266386098122,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.39097525473071326,
+            "std": 0.35386396092685746,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "pgd_k2_eps1.0__dns_compromised",
+          "kind": "pgd",
+          "k": 2,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5077560305867547,
+            "std": 0.1273106128732724,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.1795115018554396,
+            "std": 0.20512910101828125,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.18759825327510918,
+            "std": 0.2682477282870267,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "pgd_k2_eps2.0__dns_not_compromised",
+          "kind": "pgd",
+          "k": 2,
+          "epsilon": 2.0,
+          "beta": null,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.3487122925446375,
+            "std": 0.10276915962969152,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.221059133425958,
+            "std": 0.21097405542703504,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.46983988355167394,
+            "std": 0.38708463241955576,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "pgd_k2_eps2.0__dns_compromised",
+          "kind": "pgd",
+          "k": 2,
+          "epsilon": 2.0,
+          "beta": null,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.5132769779371102,
+            "std": 0.14676470533878036,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.30824466106575,
+            "std": 0.23195131181585202,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.2593449781659389,
+            "std": 0.3564328628517503,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "pgd_k3_eps1.0__dns_not_compromised",
+          "kind": "pgd",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.27619339829522704,
+            "std": 0.08613219959307258,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.0507356303022637,
+            "std": 0.16822213814579481,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.61117903930131,
+            "std": 0.3183349648082918,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "pgd_k3_eps1.0__dns_compromised",
+          "kind": "pgd",
+          "k": 3,
+          "epsilon": 1.0,
+          "beta": null,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.4279091804758363,
+            "std": 0.13713526501560225,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.2139747112011348,
+            "std": 0.2150696964767699,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.3988355167394469,
+            "std": 0.3445591727684491,
+            "n_seeds": 30
+          }
+        },
+        {
+          "cell": "pgd_k3_eps2.0__dns_not_compromised",
+          "kind": "pgd",
+          "k": 3,
+          "epsilon": 2.0,
+          "beta": null,
+          "dns_compromised": false,
+          "detector_auc": {
+            "mean": 0.28468362540760095,
+            "std": 0.1050686469742784,
+            "n_seeds": 20
+          },
+          "eniv_eigen": {
+            "mean": 3.03846992703345,
+            "std": 0.16083237921530896,
+            "n_seeds": 20
+          },
+          "attack_success": {
+            "mean": 0.6802620087336244,
+            "std": 0.3130395941483345,
+            "n_seeds": 20
+          }
+        },
+        {
+          "cell": "pgd_k3_eps2.0__dns_compromised",
+          "kind": "pgd",
+          "k": 3,
+          "epsilon": 2.0,
+          "beta": null,
+          "dns_compromised": true,
+          "detector_auc": {
+            "mean": 0.43491247942131794,
+            "std": 0.151926483562749,
+            "n_seeds": 30
+          },
+          "eniv_eigen": {
+            "mean": 3.3083053591584477,
+            "std": 0.2508374535620898,
+            "n_seeds": 30
+          },
+          "attack_success": {
+            "mean": 0.48841339155749636,
+            "std": 0.38760431328722067,
+            "n_seeds": 30
+          }
+        }
+      ]
+    }
+  ],
+  "honest_duplication": {
+    "verdict": "NO EVIDENCE",
+    "reason": "sensor_groups() returns {'network': [4]} -- one member, suricata -- so no within-group PAIR exists and the strict same-sensor comparison has no value to report. There is no packet-capture view yet (docs/part27-ait-datacard.md section 9, limitation 9). Nothing was substituted under this name; see natural_dependence for a DIFFERENT and separately labelled quantity.",
+    "requested_group": "network",
+    "n_members": 1
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "gz_note": "results/ait_attack/results.json is committed as gzip only. This build decompressed it and checked its sha256 against results/ait_attack/results_manifest.json before reading a number from it.",
+  "provenance": {
+    "generated_utc": "2026-10-23T04:23:18Z",
+    "sources": [
+      {
+        "path": "results/ait_clean/results.json",
+        "sha256": "637252dbf6cf7d9fce86c367aff1c68ad5a3f76a6e1505f50c4ff40f3bcad5e5",
+        "bytes": 180420
+      },
+      {
+        "path": "results/ait_attack/results.json.gz",
+        "sha256": "fd5c6446affd5146398ee20a6f42eddff67621b48e3c5981ff0f6c829588b485",
+        "bytes": 2832261
+      },
+      {
+        "path": "results/ait_attack/results_manifest.json",
+        "sha256": "88c0de26474069a4b4db2e4f41a67f730a740e28d5f0d5775203fcbfef23e9cd",
+        "bytes": 1097
+      },
+      {
+        "path": "docs/part27-ait-datacard.md",
+        "sha256": "28a4f309fbebf5bae9ffea78ff0e2d05f223ac5c2bd077c612323ef3941098b2",
+        "bytes": 17689
+      }
+    ]
+  }
+}

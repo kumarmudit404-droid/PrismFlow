@@ -103,9 +103,9 @@
       "missing": null
     }
   ],
-  "not_shown": "results/ holds 141 reliability diagrams and 26 other figures. One figure per claim is shown, not all of them.",
+  "not_shown": "results/ holds 151 reliability diagrams and 26 other figures. One figure per claim is shown, not all of them.",
   "provenance": {
-    "generated_utc": "2026-09-28T07:15:36Z",
+    "generated_utc": "2026-10-23T04:23:18Z",
     "sources": [
       {
         "path": "results/clone_eigen/eniv_vs_duplicates.png",
