@@ -347,7 +347,12 @@ def reveal_matrix(path: str = "/") -> int:
 #   4. every claim cell carries a verdict word from the allowed vocabulary
 #      AND the rule and the source file beside it. A verdict shown on its own
 #      is exactly the failure this section exists to prevent, so it is gated
-#      rather than trusted.
+#      rather than trusted. Both negative words are accepted, because they
+#      say different things: NO EVIDENCE is measured-but-inconclusive, and
+#      "needs more data" is not-run-or-not-measurable. Which one a given cell
+#      should carry is the builder's decision and is argued in its rule; this
+#      check only enforces that the word is one of the four and that the rule
+#      is there to be read.
 #
 # The error collector is installed through addScriptToEvaluateOnNewDocument,
 # so it is in place before the page's own scripts run. A hook the page itself
@@ -397,6 +402,15 @@ REAL_CHECKS = """
     else { out.claims.ok += 1; }
   }
   out.claims.total = cells.length;
+  // Both negative words must survive on the page. They were one word once,
+  // and collapsing them again would report an experiment that was never run
+  // as a negative finding -- which is the thing this vocabulary exists to
+  // stop, so it is gated rather than left to review.
+  out.claims.words = Array.from(new Set(
+    Array.from(cells).map(function (td) {
+      var p = td.querySelector(".pill");
+      return p ? p.textContent.trim() : "";
+    }))).sort();
   out.errors = (window.__pfErrors || []).slice(0, 10);
   // Per SECTION, not per document. The page as a whole already scrolls
   // sideways at phone width -- scores.html does it too, with nothing from
@@ -446,6 +460,16 @@ def real_section(path: str = "/") -> int:
             print("  %-14s %-22s %d of %d with verdict+rule+source %s"
                   % (label, "claim cells", claims.get("ok", 0),
                      claims.get("total", 0), "FAIL" if bad else ""))
+
+            words = claims.get("words") or []
+            missing = [w for w in ("NO EVIDENCE", "needs more data")
+                       if w not in words]
+            if missing:
+                failures.append("%s verdict vocabulary collapsed: %s absent"
+                                % (label, ", ".join(missing)))
+            print("  %-14s %-22s %s %s"
+                  % (label, "verdict vocabulary", ", ".join(words),
+                     "FAIL" if missing else ""))
 
             sections = info.get("sections") or {}
             mine = sections.get("real")

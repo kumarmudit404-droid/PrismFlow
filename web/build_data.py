@@ -1372,6 +1372,26 @@ def build_real_lanl() -> dict:
 
 VERDICTS = ("CONFIRMS", "CONTRADICTS", "NO EVIDENCE", "needs more data")
 
+# The two negative words are NOT interchangeable, and collapsing them would
+# lose the only distinction a reader needs to decide what to do next:
+#
+#   NO EVIDENCE       the quantity WAS measured and the rule is not satisfied
+#                     by the measured values. More of the same measurement
+#                     will not settle it; the design has to change.
+#   needs more data   the quantity was not run, or cannot be measured on this
+#                     dataset at all. There is nothing to be inconclusive
+#                     about yet.
+#
+# A cell that was never run must never read NO EVIDENCE: that would report an
+# absent experiment as a negative finding.
+VERDICT_MEANING = {
+    "CONFIRMS": "the cited file satisfies the rule",
+    "CONTRADICTS": "the cited file satisfies the rule's opposite",
+    "NO EVIDENCE": ("measured, but the rule is not satisfied by the measured "
+                    "values"),
+    "needs more data": "not run on this dataset, or not measurable on it",
+}
+
 
 def cell(verdict: str, rule: str, source_file: Path | None, detail: str = "") -> dict:
     if verdict not in VERDICTS:
@@ -1431,7 +1451,9 @@ def build_real_summary() -> dict:
         "pooling the two scenarios), AND the comparison is informative about "
         "fusion at all. L17 says it is not: one view (`dns`) solves this "
         "label, so no AIT comparison between fused systems is evidence about "
-        "fusion.",
+        "fusion. NO EVIDENCE rather than `needs more data`: both directions "
+        "WERE measured over 5 seeds and they disagree, so more runs of the "
+        "same design will not settle it.",
         gz_src,
         "; ".join(
             "%s: attack %.4f +/- %.4f against benign %.4f +/- %.4f (%s)"
@@ -1453,10 +1475,12 @@ def build_real_summary() -> dict:
     det_lanl = cell(
         "NO EVIDENCE",
         "CONFIRMS only if Part 29's test A holds its sign across all four "
-        "view configurations. It does not: docs/KNOWN_LIMITATIONS.md L30 "
-        "records test A as not a stable signal on LANL, and tests B, D and "
-        "the detector half of C were not run at all, so there is no "
-        "detector-AUC measurement on this dataset.",
+        "view configurations. NO EVIDENCE rather than `needs more data`: "
+        "test A WAS run on all four arms over 5 seeds, and it does not hold "
+        "its sign -- docs/KNOWN_LIMITATIONS.md L30 records it as not a "
+        "stable signal on LANL. (Tests B, D and the detector half of C were "
+        "not run, which is why the other two LANL cells read `needs more "
+        "data` instead.)",
         lanl_src,
         "Attack-minus-benign mean dependence per arm: "
         + ", ".join("%s %+.4f" % (n, d) for n, d in lanl_signs)
@@ -1507,7 +1531,9 @@ def build_real_summary() -> dict:
         "CONFIRMS only if PrismFlow's paired attack success is below naive's "
         "in every cell of both directions, with the compromised set named "
         "(L17: a cell that does not say whether `dns` was compromised is "
-        "uninterpretable). Mixed signs in either direction fail the rule.",
+        "uninterpretable). Mixed signs in either direction fail the rule. "
+        "NO EVIDENCE rather than `needs more data`: all 185 cells per "
+        "direction WERE measured, and their signs are mixed.",
         gz_src,
         "; ".join("%s: PrismFlow below naive in %d cells, above in %d"
                   % (name, below, above)
@@ -1517,12 +1543,15 @@ def build_real_summary() -> dict:
     # ---- defence, LANL: the chorus grid was never run --------------------
     not_run = dig(lanl, "configurations", "with_auth", "part29_tests_not_run")
     def_lanl = cell(
-        "NO EVIDENCE",
+        "needs more data",
         "CONFIRMS or CONTRADICTS requires an attack-success measurement. "
         "Part 29's chorus grid was not run on LANL, so no cell exists to "
-        "test either way.",
+        "test either way. Not NO EVIDENCE: nothing was measured and found "
+        "inconclusive here, so there is no negative result to report -- the "
+        "experiment is simply absent.",
         lanl_src,
-        (not_run or {}).get("B_chorus_attack", ""))
+        "Part 29's chorus grid was not run on LANL, and no partial grid is "
+        "reported.")
 
     # ---- honest duplication, synthetic: L22 blocks the figure ------------
     clone = detector["clone_k2"]["auc"]
@@ -1546,21 +1575,26 @@ def build_real_summary() -> dict:
     # ---- honest duplication, AIT: the committed verdict word -------------
     sensor = attack["sensor_group_check"]
     dup_ait = cell(
-        sensor["verdict"] if sensor["verdict"] in VERDICTS else "NO EVIDENCE",
+        "needs more data",
         "CONFIRMS requires a within-sensor-group PAIR to score the detector "
-        "on. The verdict word here is read from the run, not decided by this "
-        "build: Part 29 recorded it in `sensor_group_check.verdict`.",
+        "on, and on these five views no such pair exists, so the quantity is "
+        "not measurable here rather than measured and inconclusive. Part 29 "
+        "recorded the word `%s` in `sensor_group_check.verdict`; under this "
+        "page's vocabulary an unmeasurable quantity is `needs more data`, and "
+        "the run's own word is quoted below unchanged."
+        % sensor["verdict"],
         gz_src,
         sensor["reason"])
 
     # ---- honest duplication, LANL: half-run, and the half that ran is NO
     # EVIDENCE by LANL's own record ---------------------------------------
     dup_lanl = cell(
-        "NO EVIDENCE",
+        "needs more data",
         "CONFIRMS requires a detector AUC on a duplicated-but-honest "
         "condition. LANL ships no sensor-group definition, so no strict "
-        "same-sensor pair exists, and the detector was not scored on the "
-        "naturally-dependent pairs either.",
+        "same-sensor pair exists to score, and the detector was not scored "
+        "on the naturally-dependent pairs either. Nothing was measured and "
+        "found inconclusive, so this is not NO EVIDENCE.",
         lanl_src,
         (not_run or {}).get("C_honest_duplication", ""))
 
@@ -1572,8 +1606,13 @@ def build_real_summary() -> dict:
             "was read from and that file's sha256. Nothing is pooled across "
             "datasets, nothing is averaged across AIT's two directions, and "
             "where a rule is not satisfied the cell says NO EVIDENCE rather "
-            "than a weaker version of the claim."),
+            "than a weaker version of the claim. NO EVIDENCE and needs more "
+            "data are different findings: the first means the quantity was "
+            "measured and the rule is not satisfied by the measured values, "
+            "the second that it was not run or cannot be measured on that "
+            "dataset at all."),
         "verdict_vocabulary": list(VERDICTS),
+        "verdict_meaning": VERDICT_MEANING,
         "columns": [
             {"id": "synthetic", "label": "synthetic",
              "note": "rho is set, so dependence has a ground truth"},

@@ -518,9 +518,15 @@
   <p>
     Three claims, three datasets. Each cell carries the written rule its
     verdict had to satisfy and the file that had to satisfy it, so a verdict
-    can be checked rather than taken. Where a rule is not met the cell says
-    <span class="pill pill--notmeasured">NO EVIDENCE</span> — not a quieter
-    version of the claim.
+    can be checked rather than taken — and the two negative words are
+    different findings, not two shades of one.
+    <span class="pill pill--notmeasured">NO EVIDENCE</span> means the
+    quantity <em>was</em> measured and the rule is not satisfied by the
+    measured values: more runs of the same design will not settle it.
+    <span class="pill pill--notmeasured">needs more data</span> means it was
+    never run on that dataset, or cannot be measured on it at all — there is
+    nothing yet to be inconclusive about. Neither is a quieter version of the
+    claim.
   </p>
   <div class="placeholder" id="real-claims">loading committed data…</div>
 
