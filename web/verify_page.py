@@ -563,9 +563,10 @@ def main() -> int:
                 box = b.js(
                     "(() => { const e = document.querySelector(" +
                     json.dumps(selector) + "); if (!e) return null;"
-                    " const r = e.getBoundingClientRect();"
-                    " return JSON.stringify({x: r.left + scrollX, y: r.top + scrollY,"
-                    " w: Math.ceil(r.width), h: Math.ceil(r.height)}); })()")
+                    " const r = e.getBoundingClientRect(), pad = 2;"
+                    " return JSON.stringify({x: Math.max(0, r.left + scrollX - pad),"
+                    " y: r.top + scrollY, w: Math.ceil(r.width) + pad * 2,"
+                    " h: Math.ceil(r.height)}); })()")
                 if not box:
                     raise SystemExit("selector not found: %s" % selector)
                 rect = json.loads(box)
@@ -573,6 +574,17 @@ def main() -> int:
                     "width": width, "height": min(int(rect["h"]) + 40, 16000),
                     "deviceScaleFactor": 1, "mobile": width < 700})
                 time.sleep(0.6)
+                # The resize re-flowed the page: the rect above describes the
+                # OLD layout. Measuring again is the only way the clip lands
+                # on the element the caller asked for.
+                box = b.js(
+                    "(() => { const e = document.querySelector(" +
+                    json.dumps(selector) + "); if (!e) return null;"
+                    " const r = e.getBoundingClientRect(), pad = 2;"
+                    " return JSON.stringify({x: Math.max(0, r.left + scrollX - pad),"
+                    " y: r.top + scrollY, w: Math.ceil(r.width) + pad * 2,"
+                    " h: Math.ceil(r.height)}); })()")
+                rect = json.loads(box)
                 data = b.ws.call("Page.captureScreenshot", {
                     "format": "png", "captureBeyondViewport": True,
                     "clip": {"x": rect["x"], "y": rect["y"], "width": rect["w"],
@@ -615,9 +627,10 @@ def main() -> int:
                 box = b.js(
                     "(() => { const e = document.querySelector(" +
                     json.dumps(selector) + "); if (!e) return null;"
-                    " const r = e.getBoundingClientRect();"
-                    " return JSON.stringify({x: r.left + scrollX, y: r.top + scrollY,"
-                    " w: Math.ceil(r.width), h: Math.ceil(r.height)}); })()")
+                    " const r = e.getBoundingClientRect(), pad = 2;"
+                    " return JSON.stringify({x: Math.max(0, r.left + scrollX - pad),"
+                    " y: r.top + scrollY, w: Math.ceil(r.width) + pad * 2,"
+                    " h: Math.ceil(r.height)}); })()")
                 if not box:
                     raise SystemExit("selector not found: %s" % selector)
                 rect = json.loads(box)

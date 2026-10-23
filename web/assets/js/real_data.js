@@ -312,8 +312,9 @@
       t.push('<tr><th scope="row">' + esc(row.claim) + "</th>");
       data.columns.forEach(function (col) {
         var c = row.cells[col.id];
-        if (!c) { t.push("<td>" + NOT_MEASURED + "</td>"); return; }
-        t.push("<td>" +
+        var head = ' data-dataset="' + esc(col.label) + '"';
+        if (!c) { t.push("<td" + head + ">" + NOT_MEASURED + "</td>"); return; }
+        t.push("<td" + head + ">" +
           '<p><span class="' + verdictClass(c.verdict) + '">' +
           esc(c.verdict) + "</span></p>" +
           '<p class="claims__rule"><strong>Rule.</strong> ' + esc(c.rule) + "</p>" +

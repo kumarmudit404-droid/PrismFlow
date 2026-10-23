@@ -1095,7 +1095,7 @@ pre::before,
 .claims td { vertical-align: top; min-width: 10rem; }
 .claims th[scope="row"] { min-width: 7rem; }
 .claims__rule, .claims__detail { font-size: var(--step--1); color: var(--text-secondary); max-width: none; overflow-wrap: anywhere; margin: var(--sp-1) 0 0; }
-.claims .src { overflow-wrap: anywhere; }
+.claims .src, .claims .src code, .claims .src .mono { overflow-wrap: anywhere; word-break: break-all; }
 .claims__detail { color: var(--text-muted); }
 
 /* A phone has no room for three claim columns side by side, so each cell
@@ -1103,5 +1103,19 @@ pre::before,
 @media (max-width: 40rem) {
   .kv { grid-template-columns: 1fr; gap: 0 0; }
   .kv dt { margin-top: var(--sp-2); }
-  .claims td { min-width: 0; }
+  /* Three dataset columns cannot share 250px, and a side-scroll would hide
+   * two thirds of the comparison behind a gesture. The table becomes one
+   * block per claim instead, each cell carrying its own dataset name from
+   * data-dataset -- the header row is gone, so the cell has to say it. */
+  .claims, .claims thead, .claims tbody, .claims tr, .claims th, .claims td { display: block; }
+  .claims thead { display: none; }
+  .claims td { min-width: 0; border-bottom: 0; padding-left: 0; padding-right: 0; }
+  .claims tr { border-bottom: 1px solid var(--hairline); padding-bottom: var(--sp-3); margin-bottom: var(--sp-3); }
+  .claims th[scope="row"] { min-width: 0; padding-left: 0; padding-right: 0; border-bottom: 0; }
+  .claims td[data-dataset]::before {
+    content: attr(data-dataset);
+    display: block; margin-top: var(--sp-2);
+    font-family: var(--font-mono); font-size: var(--step--1);
+    color: var(--text-secondary);
+  }
 }
