@@ -1,0 +1,152 @@
+{
+  "title": "What each dataset says about each claim",
+  "note": "Columns are datasets, rows are claims. A cell is a verdict plus the written RULE that verdict had to satisfy, plus the file it was read from and that file's sha256. Nothing is pooled across datasets, nothing is averaged across AIT's two directions, and where a rule is not satisfied the cell says NO EVIDENCE rather than a weaker version of the claim. NO EVIDENCE and needs more data are different findings: the first means the quantity was measured and the rule is not satisfied by the measured values, the second that it was not run or cannot be measured on that dataset at all.",
+  "verdict_vocabulary": [
+    "CONFIRMS",
+    "CONTRADICTS",
+    "NO EVIDENCE",
+    "needs more data"
+  ],
+  "verdict_meaning": {
+    "CONFIRMS": "the cited file satisfies the rule",
+    "CONTRADICTS": "the cited file satisfies the rule's opposite",
+    "NO EVIDENCE": "measured, but the rule is not satisfied by the measured values",
+    "needs more data": "not run on this dataset, or not measurable on it"
+  },
+  "columns": [
+    {
+      "id": "synthetic",
+      "label": "synthetic",
+      "note": "rho is set, so dependence has a ground truth"
+    },
+    {
+      "id": "ait",
+      "label": "AIT Log Data Set V2.0",
+      "note": "two directions, never pooled"
+    },
+    {
+      "id": "lanl",
+      "label": "LANL cyber1",
+      "note": "clean data only; Part 29's tests B, D and half of C were not run"
+    }
+  ],
+  "rows": [
+    {
+      "id": "detection",
+      "claim": "Detection: under attack, dependence among the implicated views rises above its clean reference.",
+      "cells": {
+        "synthetic": {
+          "verdict": "CONFIRMS",
+          "rule": "CONFIRMS only if mean dependence among the compromised views under chorus k=2 eps=1.0 exceeds clean all-pairs dependence by more than the two 5-seed standard deviations combined.",
+          "detail": "0.6970 +/- 0.0380 compromised against 0.1849 +/- 0.0361 clean: a rise of 0.5122 against a combined std of 0.0741, over 5 seeds.",
+          "source_file": "results/chorus/attack_metrics.json",
+          "sha256": "89a6e841ced086c527cf1866eefdc06b5dd24bae3ce8dc7611ae277d04d99b23"
+        },
+        "ait": {
+          "verdict": "NO EVIDENCE",
+          "rule": "CONFIRMS only if attack-window dependence exceeds benign-window dependence in BOTH directions, reported separately (Part 29 forbids pooling the two scenarios), AND the comparison is informative about fusion at all. L17 says it is not: one view (`dns`) solves this label, so no AIT comparison between fused systems is evidence about fusion. NO EVIDENCE rather than `needs more data`: both directions WERE measured over 5 seeds and they disagree, so more runs of the same design will not settle it.",
+          "detail": "A_rm_to_santos: attack 0.2906 +/- 0.0274 against benign 0.3273 +/- 0.0124 (falls); B_santos_to_rm: attack 0.3619 +/- 0.0196 against benign 0.2482 +/- 0.0249 (rises). The two directions disagree, and L17 conditions both.",
+          "source_file": "results/ait_attack/results.json.gz",
+          "sha256": "fd5c6446affd5146398ee20a6f42eddff67621b48e3c5981ff0f6c829588b485"
+        },
+        "lanl": {
+          "verdict": "NO EVIDENCE",
+          "rule": "CONFIRMS only if Part 29's test A holds its sign across all four view configurations. NO EVIDENCE rather than `needs more data`: test A WAS run on all four arms over 5 seeds, and it does not hold its sign -- docs/KNOWN_LIMITATIONS.md L30 records it as not a stable signal on LANL. (Tests B, D and the detector half of C were not run, which is why the other two LANL cells read `needs more data` instead.)",
+          "detail": "Attack-minus-benign mean dependence per arm: with_auth +0.0473, without_auth +0.0602, without_dns +0.0306, without_flows -0.1092. without_flows reverses the sign.",
+          "source_file": "results/lanl/results.json",
+          "sha256": "18b4618763e259f33a0dfd7c9a2cf8f6f57d4d545826adc69ad6ff5c6ebfd5df"
+        }
+      }
+    },
+    {
+      "id": "defence",
+      "claim": "Defence: the dependence discount lowers attack success relative to the undiscounted baseline.",
+      "cells": {
+        "synthetic": {
+          "verdict": "CONTRADICTS",
+          "rule": "CONFIRMS if PrismFlow's mean attack success is below naive's in every non-clean condition; CONTRADICTS if it is at or above naive's in every one of them; otherwise NO EVIDENCE.",
+          "detail": "PrismFlow is above naive in 12 of 12 non-clean conditions (range +0.0007 to +0.0427), 5 seeds each.",
+          "source_file": "results/chorus/attack_metrics.json",
+          "sha256": "89a6e841ced086c527cf1866eefdc06b5dd24bae3ce8dc7611ae277d04d99b23"
+        },
+        "ait": {
+          "verdict": "NO EVIDENCE",
+          "rule": "CONFIRMS only if PrismFlow's paired attack success is below naive's in every cell of both directions, with the compromised set named (L17: a cell that does not say whether `dns` was compromised is uninterpretable). Mixed signs in either direction fail the rule. NO EVIDENCE rather than `needs more data`: all 185 cells per direction WERE measured, and their signs are mixed.",
+          "detail": "A_rm_to_santos: PrismFlow below naive in 117 cells, above in 68; B_santos_to_rm: PrismFlow below naive in 98 cells, above in 87. Signs are mixed in both directions.",
+          "source_file": "results/ait_attack/results.json.gz",
+          "sha256": "fd5c6446affd5146398ee20a6f42eddff67621b48e3c5981ff0f6c829588b485"
+        },
+        "lanl": {
+          "verdict": "needs more data",
+          "rule": "CONFIRMS or CONTRADICTS requires an attack-success measurement. Part 29's chorus grid was not run on LANL, so no cell exists to test either way. Not NO EVIDENCE: nothing was measured and found inconclusive here, so there is no negative result to report -- the experiment is simply absent.",
+          "detail": "Part 29's chorus grid was not run on LANL, and no partial grid is reported.",
+          "source_file": "results/lanl/results.json",
+          "sha256": "18b4618763e259f33a0dfd7c9a2cf8f6f57d4d545826adc69ad6ff5c6ebfd5df"
+        }
+      }
+    },
+    {
+      "id": "honest_duplication",
+      "claim": "Honest-duplication false positive: the detector fires on redundancy that no attacker created.",
+      "cells": {
+        "synthetic": {
+          "verdict": "needs more data",
+          "rule": "CONFIRMS only if the clone condition and its clean reference run the SAME number of views, so the detector's score can be attributed to duplication rather than to width. docs/KNOWN_LIMITATIONS.md L22 records that they do not: `clone_k2` runs 6 views against a 4-view reference, and the suspicion score is a maximum over off-diagonal entries, which grows with width. The figure therefore cannot be differenced against any fixed-width result.",
+          "detail": "clone_k2 detector AUC 0.8743 +/- 0.0583 over 5 seeds, above every chorus condition (best 0.7215) -- but at 6 views against 4, so part of the gap is the width change itself (L22).",
+          "source_file": "results/comparison/detector.json",
+          "sha256": "d2048c51c05e1ba66e65eefa3065ab1079a16e2de8bb4e65565cb913db407971"
+        },
+        "ait": {
+          "verdict": "needs more data",
+          "rule": "CONFIRMS requires a within-sensor-group PAIR to score the detector on, and on these five views no such pair exists, so the quantity is not measurable here rather than measured and inconclusive. Part 29 recorded the word `NO EVIDENCE` in `sensor_group_check.verdict`; under this page's vocabulary an unmeasurable quantity is `needs more data`, and the run's own word is quoted below unchanged.",
+          "detail": "sensor_groups() returns {'network': [4]} -- one member, suricata -- so no within-group PAIR exists and the strict same-sensor comparison has no value to report. There is no packet-capture view yet (docs/part27-ait-datacard.md section 9, limitation 9). Nothing was substituted under this name; see natural_dependence for a DIFFERENT and separately labelled quantity.",
+          "source_file": "results/ait_attack/results.json.gz",
+          "sha256": "fd5c6446affd5146398ee20a6f42eddff67621b48e3c5981ff0f6c829588b485"
+        },
+        "lanl": {
+          "verdict": "needs more data",
+          "rule": "CONFIRMS requires a detector AUC on a duplicated-but-honest condition. LANL ships no sensor-group definition, so no strict same-sensor pair exists to score, and the detector was not scored on the naturally-dependent pairs either: the quantity is not measurable on this dataset rather than measured and inconclusive. Part 30 recorded the words `NO EVIDENCE` for the strict pair in `part29_tests_not_run.C_honest_duplication`; under this page's vocabulary an unmeasurable quantity is `needs more data`, and the run's own text is quoted below unchanged.",
+          "detail": "PARTIALLY RUN. The strict same-sensor pair does not exist here: LANL cyber1 ships no sensor-group definition, so there is no within-group pair to score and the answer is NO EVIDENCE. The 'different sensors, naturally dependent' half needs the most/least dependent pairs, which ARE written to systems.<name>.pair_table; scoring the detector on them was not run.",
+          "source_file": "results/lanl/results.json",
+          "sha256": "18b4618763e259f33a0dfd7c9a2cf8f6f57d4d545826adc69ad6ff5c6ebfd5df"
+        }
+      }
+    }
+  ],
+  "limitations_source": "docs/KNOWN_LIMITATIONS.md",
+  "provenance": {
+    "generated_utc": "2026-10-23T05:37:41Z",
+    "sources": [
+      {
+        "path": "results/chorus/attack_metrics.json",
+        "sha256": "89a6e841ced086c527cf1866eefdc06b5dd24bae3ce8dc7611ae277d04d99b23",
+        "bytes": 274155
+      },
+      {
+        "path": "results/comparison/detector.json",
+        "sha256": "d2048c51c05e1ba66e65eefa3065ab1079a16e2de8bb4e65565cb913db407971",
+        "bytes": 420125
+      },
+      {
+        "path": "results/ait_attack/results.json.gz",
+        "sha256": "fd5c6446affd5146398ee20a6f42eddff67621b48e3c5981ff0f6c829588b485",
+        "bytes": 2832261
+      },
+      {
+        "path": "results/ait_attack/results_manifest.json",
+        "sha256": "88c0de26474069a4b4db2e4f41a67f730a740e28d5f0d5775203fcbfef23e9cd",
+        "bytes": 1097
+      },
+      {
+        "path": "results/lanl/results.json",
+        "sha256": "18b4618763e259f33a0dfd7c9a2cf8f6f57d4d545826adc69ad6ff5c6ebfd5df",
+        "bytes": 475377
+      },
+      {
+        "path": "docs/KNOWN_LIMITATIONS.md",
+        "sha256": "b15a33bc38b173baef0cb60e909f4131d5023622521f032907fe8cfea0722301",
+        "bytes": 78907
+      }
+    ]
+  }
+}

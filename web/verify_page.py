@@ -1,7 +1,8 @@
 """Headless page checks for the Part 25 site. Python stdlib only, no npm.
 
-    .venv\\Scripts\\python.exe web/verify_page.py shot  out.png [--path /]
+    .venv\\Scripts\\python.exe web/verify_page.py shot  out.png [--path /] [--width 375]
     .venv\\Scripts\\python.exe web/verify_page.py reveal
+    .venv\\Scripts\\python.exe web/verify_page.py real
     .venv\\Scripts\\python.exe web/verify_page.py eval  "expression"
 
 WHY THIS EXISTS RATHER THAN PLAYWRIGHT OR PUPPETEER
@@ -332,6 +333,174 @@ def reveal_matrix(path: str = "/") -> int:
     return 1 if failures else 0
 
 
+# --------------------------------------------------------------------------
+# Part 31: the real-data section
+# --------------------------------------------------------------------------
+#
+# Four things a passing reveal matrix would not catch, because they are about
+# CONTENT rather than visibility:
+#
+#   1. every mount filled -- a placeholder still reading "loading committed
+#      data" is a fetch that failed, and looks identical to a slow one;
+#   2. no console error and no uncaught exception anywhere on the page;
+#   3. no horizontal scroll at 375px, the brief's width;
+#   4. every claim cell carries a verdict word from the allowed vocabulary
+#      AND the rule and the source file beside it. A verdict shown on its own
+#      is exactly the failure this section exists to prevent, so it is gated
+#      rather than trusted. Both negative words are accepted, because they
+#      say different things: NO EVIDENCE is measured-but-inconclusive, and
+#      "needs more data" is not-run-or-not-measurable. Which one a given cell
+#      should carry is the builder's decision and is argued in its rule; this
+#      check only enforces that the word is one of the four and that the rule
+#      is there to be read.
+#
+# The error collector is installed through addScriptToEvaluateOnNewDocument,
+# so it is in place before the page's own scripts run. A hook the page itself
+# installs cannot see an error thrown while the page is loading, which is the
+# case that matters here.
+
+REAL_MOUNTS = ["real-ait", "real-lanl", "real-claims", "limits-v1-realdata"]
+
+COLLECT_ERRORS = """
+window.__pfErrors = [];
+window.addEventListener('error', function (e) {
+  window.__pfErrors.push('error: ' + (e.message || e.type));
+});
+window.addEventListener('unhandledrejection', function (e) {
+  window.__pfErrors.push('unhandled rejection: ' + String(e.reason));
+});
+(function () {
+  var real = console.error;
+  console.error = function () {
+    window.__pfErrors.push('console.error: ' +
+      Array.prototype.join.call(arguments, ' '));
+    return real.apply(console, arguments);
+  };
+})();
+"""
+
+REAL_CHECKS = """
+(() => {
+  const out = {mounts: {}, claims: {ok: 0, bad: []}};
+  for (const id of %s) {
+    const n = document.getElementById(id);
+    out.mounts[id] = !n ? "MISSING"
+      : /placeholder/.test(n.className) ? "PLACEHOLDER"
+      : n.innerHTML.length < 200 ? "EMPTY"
+      : "ok";
+  }
+  const words = ["CONFIRMS", "CONTRADICTS", "NO EVIDENCE", "needs more data"];
+  const cells = document.querySelectorAll(".claims tbody td");
+  for (const td of cells) {
+    const pill = td.querySelector(".pill");
+    const rule = td.querySelector(".claims__rule");
+    const src = td.querySelector(".src code");
+    const word = pill ? pill.textContent.trim() : null;
+    if (!word || words.indexOf(word) < 0) { out.claims.bad.push("no verdict word"); }
+    else if (!rule || rule.textContent.length < 40) { out.claims.bad.push(word + ": no rule"); }
+    else if (!src) { out.claims.bad.push(word + ": no source file"); }
+    else { out.claims.ok += 1; }
+  }
+  out.claims.total = cells.length;
+  // Both negative words must survive on the page. They were one word once,
+  // and collapsing them again would report an experiment that was never run
+  // as a negative finding -- which is the thing this vocabulary exists to
+  // stop, so it is gated rather than left to review.
+  out.claims.words = Array.from(new Set(
+    Array.from(cells).map(function (td) {
+      var p = td.querySelector(".pill");
+      return p ? p.textContent.trim() : "";
+    }))).sort();
+  out.errors = (window.__pfErrors || []).slice(0, 10);
+  // Per SECTION, not per document. The page as a whole already scrolls
+  // sideways at phone width -- scores.html does it too, with nothing from
+  // this Part on it -- so a document-level figure would gate the new section
+  // on behaviour it did not cause and cannot fix without touching sections
+  // this Part is not allowed to change. What IS this Part's business is
+  // whether #real is worse than the sections already shipped, so the check
+  // measures every section and compares.
+  out.sections = {};
+  document.querySelectorAll("section.chapter").forEach(function (s) {
+    out.sections[s.id] = s.scrollWidth - s.clientWidth;
+  });
+  return JSON.stringify(out);
+})()
+""" % json.dumps(REAL_MOUNTS)
+
+
+def real_section(path: str = "/") -> int:
+    print("REAL-DATA SECTION -- mounts filled, claim cells ruled, no overflow")
+    print("  sampled 7s after load, at both widths")
+    print("")
+    failures = []
+    for label, width in (("desktop 1440px", 1440), ("phone 375px", 375)):
+        b = Browser()
+        try:
+            b.ws.call("Page.addScriptToEvaluateOnNewDocument",
+                      {"source": COLLECT_ERRORS})
+            b.ws.call("Emulation.setDeviceMetricsOverride", {
+                "width": width, "height": 900, "deviceScaleFactor": 1,
+                "mobile": width < 700})
+            b.goto(BASE + path, settle=2.0)
+            time.sleep(7.0)
+            raw = b.js(REAL_CHECKS)
+            info = json.loads(raw) if isinstance(raw, str) else {}
+
+            for mount_id, state in sorted(info.get("mounts", {}).items()):
+                bad = state != "ok"
+                if bad:
+                    failures.append("%s %s %s" % (label, mount_id, state))
+                print("  %-14s %-22s %-12s %s"
+                      % (label, mount_id, state, "FAIL" if bad else ""))
+
+            claims = info.get("claims", {})
+            bad = bool(claims.get("bad")) or claims.get("total", 0) < 9
+            if bad:
+                failures.append("%s claim cells: %r" % (label, claims.get("bad")))
+            print("  %-14s %-22s %d of %d with verdict+rule+source %s"
+                  % (label, "claim cells", claims.get("ok", 0),
+                     claims.get("total", 0), "FAIL" if bad else ""))
+
+            words = claims.get("words") or []
+            missing = [w for w in ("NO EVIDENCE", "needs more data")
+                       if w not in words]
+            if missing:
+                failures.append("%s verdict vocabulary collapsed: %s absent"
+                                % (label, ", ".join(missing)))
+            print("  %-14s %-22s %s %s"
+                  % (label, "verdict vocabulary", ", ".join(words),
+                     "FAIL" if missing else ""))
+
+            sections = info.get("sections") or {}
+            mine = sections.get("real")
+            others = {k: v for k, v in sections.items() if k != "real"}
+            baseline = min(others.values()) if others else 0
+            bad = mine is None or mine > max(baseline, 1)
+            if bad:
+                failures.append(
+                    "%s #real overflows by %spx against a %dpx floor on the "
+                    "existing sections" % (label, mine, baseline))
+            print("  %-14s %-22s #real %spx, existing sections %s %s"
+                  % (label, "horizontal overflow", mine,
+                     ", ".join("%s %dpx" % kv for kv in sorted(others.items())),
+                     "FAIL" if bad else ""))
+
+            errors = info.get("errors") or []
+            failures += ["%s console: %s" % (label, e) for e in errors]
+            print("  %-14s %-22s %d %s"
+                  % (label, "console errors", len(errors), "FAIL" if errors else ""))
+        finally:
+            b.kill()
+    print("")
+    if failures:
+        print("  %d FAILURE(S):" % len(failures))
+        for f in failures:
+            print("    " + f)
+    else:
+        print("  all real-data checks pass")
+    return 1 if failures else 0
+
+
 def main() -> int:
     if len(sys.argv) < 2:
         print(__doc__)
@@ -339,6 +508,8 @@ def main() -> int:
     mode = sys.argv[1]
     if mode == "reveal":
         return reveal_matrix(sys.argv[2] if len(sys.argv) > 2 else "/")
+    if mode == "real":
+        return real_section(sys.argv[2] if len(sys.argv) > 2 else "/")
     if mode == "shot":
         # shot OUT [--path /] [--at SELECTOR] [--tokens /assets/css/x.css]
         out = Path(sys.argv[2])
@@ -346,6 +517,10 @@ def main() -> int:
         path = "/"
         selector = None
         tokens = None
+        # The brief's phone width is a reviewable artefact, so it is a flag
+        # rather than a one-off script: a screenshot nobody can regenerate is
+        # not evidence about the layout.
+        width = 1440
         for i, a in enumerate(args):
             if a == "--path" and i + 1 < len(args):
                 path = args[i + 1]
@@ -353,8 +528,14 @@ def main() -> int:
                 selector = args[i + 1]
             if a == "--tokens" and i + 1 < len(args):
                 tokens = args[i + 1]
+            if a == "--width" and i + 1 < len(args):
+                width = int(args[i + 1])
         b = Browser()
         try:
+            if width != 1440:
+                b.ws.call("Emulation.setDeviceMetricsOverride", {
+                    "width": width, "height": 900, "deviceScaleFactor": 1,
+                    "mobile": width < 700})
             if tokens:
                 # A candidate palette photographed on the REAL site, without
                 # editing a single file in web/.
@@ -382,16 +563,28 @@ def main() -> int:
                 box = b.js(
                     "(() => { const e = document.querySelector(" +
                     json.dumps(selector) + "); if (!e) return null;"
-                    " const r = e.getBoundingClientRect();"
-                    " return JSON.stringify({x: r.left + scrollX, y: r.top + scrollY,"
-                    " w: Math.ceil(r.width), h: Math.ceil(r.height)}); })()")
+                    " const r = e.getBoundingClientRect(), pad = 2;"
+                    " return JSON.stringify({x: Math.max(0, r.left + scrollX - pad),"
+                    " y: r.top + scrollY, w: Math.ceil(r.width) + pad * 2,"
+                    " h: Math.ceil(r.height)}); })()")
                 if not box:
                     raise SystemExit("selector not found: %s" % selector)
                 rect = json.loads(box)
                 b.ws.call("Emulation.setDeviceMetricsOverride", {
-                    "width": 1440, "height": min(int(rect["h"]) + 40, 16000),
-                    "deviceScaleFactor": 1, "mobile": False})
+                    "width": width, "height": min(int(rect["h"]) + 40, 16000),
+                    "deviceScaleFactor": 1, "mobile": width < 700})
                 time.sleep(0.6)
+                # The resize re-flowed the page: the rect above describes the
+                # OLD layout. Measuring again is the only way the clip lands
+                # on the element the caller asked for.
+                box = b.js(
+                    "(() => { const e = document.querySelector(" +
+                    json.dumps(selector) + "); if (!e) return null;"
+                    " const r = e.getBoundingClientRect(), pad = 2;"
+                    " return JSON.stringify({x: Math.max(0, r.left + scrollX - pad),"
+                    " y: r.top + scrollY, w: Math.ceil(r.width) + pad * 2,"
+                    " h: Math.ceil(r.height)}); })()")
+                rect = json.loads(box)
                 data = b.ws.call("Page.captureScreenshot", {
                     "format": "png", "captureBeyondViewport": True,
                     "clip": {"x": rect["x"], "y": rect["y"], "width": rect["w"],
@@ -434,9 +627,10 @@ def main() -> int:
                 box = b.js(
                     "(() => { const e = document.querySelector(" +
                     json.dumps(selector) + "); if (!e) return null;"
-                    " const r = e.getBoundingClientRect();"
-                    " return JSON.stringify({x: r.left + scrollX, y: r.top + scrollY,"
-                    " w: Math.ceil(r.width), h: Math.ceil(r.height)}); })()")
+                    " const r = e.getBoundingClientRect(), pad = 2;"
+                    " return JSON.stringify({x: Math.max(0, r.left + scrollX - pad),"
+                    " y: r.top + scrollY, w: Math.ceil(r.width) + pad * 2,"
+                    " h: Math.ceil(r.height)}); })()")
                 if not box:
                     raise SystemExit("selector not found: %s" % selector)
                 rect = json.loads(box)

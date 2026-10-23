@@ -1,0 +1,206 @@
+{
+  "title": "LANL cyber1 (days 1-16)",
+  "dataset": {
+    "name": "LANL Comprehensive Multi-Source Cyber-Security Events (cyber1)",
+    "name_source": "configs/data/lanl.yaml",
+    "licence": null,
+    "source_url": null,
+    "attribution": null,
+    "attribution_absent_note": "No licence text, DOI, source link or required-attribution paragraph for LANL cyber1 exists anywhere in this repository. configs/data/lanl.yaml and experiments/lanl/README.md name the dataset and stop there. None is shown here rather than one being written for the occasion, and no download link is published.",
+    "views": [
+      "auth",
+      "dns",
+      "flows",
+      "proc"
+    ],
+    "label_method": "A sample is (computer, 300 s window). attack = 1 means a redteam.txt.gz event in that window names that computer as its source or its destination. benign = 0 means NO KNOWN red-team event does, which is not the same as verified clean: the red-team file covers only the activity LANL's red team recorded, so an unlabelled compromise inside the capture is counted as benign here.",
+    "window_seconds": 300,
+    "days_train": [
+      1,
+      10
+    ],
+    "days_test": [
+      13,
+      16
+    ]
+  },
+  "sample": {
+    "design": "declared case-control: all cases, deterministic 1/512 hash of controls",
+    "n_test": 18729,
+    "n_test_attack": 410,
+    "test_prevalence": 0.021891184793635537,
+    "limitation": "L23",
+    "limitation_note": "The reported prevalence is a property of the sample, not of the network: accuracy, Brier and ECE describe this sample only and no population operating point has been measured (docs/KNOWN_LIMITATIONS.md L23)."
+  },
+  "arms": [
+    {
+      "arm": "with_auth",
+      "label": "WITH auth (auth, proc, flows, dns)",
+      "views": [
+        "auth",
+        "proc",
+        "flows",
+        "dns"
+      ],
+      "naive_roc_auc": {
+        "mean": 0.8277579455689748,
+        "std": 0.0033043278641189428,
+        "n_seeds": 5
+      },
+      "prismflow_roc_auc": {
+        "mean": 0.8374676032747553,
+        "std": 0.004318018156500329,
+        "n_seeds": 5
+      },
+      "paired_difference": {
+        "mean": 0.009709657705780583,
+        "std": 0.0063388517452646,
+        "n_seeds": 5,
+        "n_seeds_favouring_prismflow": 5
+      },
+      "bootstrap_ci95": {
+        "observed": 0.009709657705780583,
+        "low": 0.0026597039593938008,
+        "high": 0.013795979129611925,
+        "replicates": 2000,
+        "n_test_computers": 8350
+      }
+    },
+    {
+      "arm": "without_auth",
+      "label": "WITHOUT auth (proc, flows, dns)",
+      "views": [
+        "proc",
+        "flows",
+        "dns"
+      ],
+      "naive_roc_auc": {
+        "mean": 0.7755262096264175,
+        "std": 0.0025312825597666477,
+        "n_seeds": 5
+      },
+      "prismflow_roc_auc": {
+        "mean": 0.7774518925439268,
+        "std": 0.002982201180825347,
+        "n_seeds": 5
+      },
+      "paired_difference": {
+        "mean": 0.0019256829175093415,
+        "std": 0.002496251320322937,
+        "n_seeds": 5,
+        "n_seeds_favouring_prismflow": 4
+      },
+      "bootstrap_ci95": {
+        "observed": 0.0019256829175093415,
+        "low": -0.0005473267698559131,
+        "high": 0.006317080379896868,
+        "replicates": 2000,
+        "n_test_computers": 8350
+      }
+    },
+    {
+      "arm": "without_dns",
+      "label": "WITHOUT dns (auth, proc, flows)",
+      "views": [
+        "auth",
+        "proc",
+        "flows"
+      ],
+      "naive_roc_auc": {
+        "mean": 0.8335656835033332,
+        "std": 0.0029362600527790134,
+        "n_seeds": 5
+      },
+      "prismflow_roc_auc": {
+        "mean": 0.838886295582755,
+        "std": 0.005785483948986274,
+        "n_seeds": 5
+      },
+      "paired_difference": {
+        "mean": 0.005320612079421761,
+        "std": 0.0070307309924216525,
+        "n_seeds": 5,
+        "n_seeds_favouring_prismflow": 4
+      },
+      "bootstrap_ci95": {
+        "observed": 0.005320612079421761,
+        "low": 0.0010389236818756076,
+        "high": 0.008302825146308923,
+        "replicates": 2000,
+        "n_test_computers": 8350
+      }
+    },
+    {
+      "arm": "without_flows",
+      "label": "WITHOUT flows (auth, proc, dns)",
+      "views": [
+        "auth",
+        "proc",
+        "dns"
+      ],
+      "naive_roc_auc": {
+        "mean": 0.813692727396186,
+        "std": 0.002212302329294364,
+        "n_seeds": 5
+      },
+      "prismflow_roc_auc": {
+        "mean": 0.8233220340337035,
+        "std": 0.0030757821929668764,
+        "n_seeds": 5
+      },
+      "paired_difference": {
+        "mean": 0.00962930663751751,
+        "std": 0.0013333714739007943,
+        "n_seeds": 5,
+        "n_seeds_favouring_prismflow": 5
+      },
+      "bootstrap_ci95": {
+        "observed": 0.00962930663751751,
+        "low": 0.0051831726195126675,
+        "high": 0.014182779140917813,
+        "replicates": 2000,
+        "n_test_computers": 8350
+      }
+    }
+  ],
+  "trivial_scalar": {
+    "name": "total_records_across_views",
+    "test_auc": 0.6842788175411642,
+    "train_auc": 0.8163776242251073,
+    "orientation": "as-is",
+    "note": "Each row is a SINGLE SCALAR, no training. Orientation (sign) is chosen on the train block only and then applied unchanged to test."
+  },
+  "seen_unseen": {
+    "limitation": "L26",
+    "note": "'seen' = the attack sample's computer also has at least one attack sample in the train block. Each group is scored against all benign test samples. Descriptive, not a controlled comparison.",
+    "limitation_note": "The models' ranking advantage over that scalar is confined to attack computers already seen as attacked in train. On unseen computers the scalar reaches 0.7563 and no arm clears it by more than 0.01 (docs/KNOWN_LIMITATIONS.md L26)."
+  },
+  "bootstrap_note": "2000 replicates, fixed seed 12345, clusters = test computers, paired (same resampled computers for both systems, every seed). Measures test-set sampling variability; the per-seed std measures training randomness. They are not interchangeable.",
+  "evidence_digests": {
+    "samples_npz": "9035c237f7a794b62d9a6d2b81491f0d2f7907f6972c3e64581b9805d0bc49fb",
+    "scores_n_files": 40,
+    "run1_decompressed": "ace7c1866b28572ad39a15bfc5667d23623b96cd23ee576829cc0a085357e583"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "provenance": {
+    "generated_utc": "2026-10-23T04:43:48Z",
+    "sources": [
+      {
+        "path": "results/lanl/results.json",
+        "sha256": "18b4618763e259f33a0dfd7c9a2cf8f6f57d4d545826adc69ad6ff5c6ebfd5df",
+        "bytes": 475377
+      },
+      {
+        "path": "results/lanl/results_manifest.json",
+        "sha256": "ef36b764f87cb43154ae7b9a44a28f300a07ba28b98595bd0a04a6cd6bcc2bb4",
+        "bytes": 8145
+      }
+    ]
+  }
+}

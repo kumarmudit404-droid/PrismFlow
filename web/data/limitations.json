@@ -108,18 +108,124 @@
         "title": "No human-subject evaluation and no deployment evaluation were run",
         "status": null,
         "group": "standing"
+      },
+      {
+        "id": "L16",
+        "n": 16,
+        "title": "On real cross-scenario data, discrimination and calibration come apart, and the positive class is one or three episodes",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L17",
+        "n": 17,
+        "title": "On AIT the label is solved by one view, so Part 28 is not evidence about fusion",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L18",
+        "n": 18,
+        "title": "On real data the detector inverts under attack, and the protocol cannot speak to deployment",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L19",
+        "n": 19,
+        "title": "The coordination term's effect depends on the view and the direction",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L20",
+        "n": 20,
+        "title": "Part 09's L3 extension is only partially reproduced on AIT",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L21",
+        "n": 21,
+        "title": "Fixed epsilon is not comparable across views or directions",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L22",
+        "n": 22,
+        "title": "Part 10's clone comparison is not like-for-like",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L23",
+        "n": 23,
+        "title": "On LANL the reported prevalence is a declared case-control sample, not the network",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L24",
+        "n": 24,
+        "title": "On LANL the `auth` view is label-adjacent, and dropping it does not drop the selection",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L25",
+        "n": 25,
+        "title": "Part 28's scaler and trainer are not reusable across datasets",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L26",
+        "n": 26,
+        "title": "On LANL the models' advantage over a trivial scalar is confined to seen attack computers",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L27",
+        "n": 27,
+        "title": "On LANL one host carries a third of the attack class, with no benign contrast",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L28",
+        "n": 28,
+        "title": "On LANL the execution mode changes the fitted weights, and the per-seed std understates the spread",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L29",
+        "n": 29,
+        "title": "On two LANL arms the probabilities are worse than a constant",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L30",
+        "n": 30,
+        "title": "What Part 30 does not establish",
+        "status": null,
+        "group": "real_data"
       }
     ],
     "counts": {
-      "total": 15,
+      "total": 30,
       "resolved": 0,
       "closed": 0,
       "new": 0,
-      "open": 15
+      "open": 30
     },
     "group_labels": {
       "per_part": "discovered as each Part ran",
-      "standing": "standing limitations of the project as a whole"
+      "standing": "standing limitations of the project as a whole",
+      "real_data": "real-data findings (Parts 28-30)"
     }
   },
   "v2": {
@@ -198,12 +304,12 @@
     }
   },
   "provenance": {
-    "generated_utc": "2026-10-09T03:30:37Z",
+    "generated_utc": "2026-10-23T04:43:48Z",
     "sources": [
       {
         "path": "docs/KNOWN_LIMITATIONS.md",
-        "sha256": "64b5e45917c08b04c57995d841401a5edc0c32c6b8907b7d55f466c8491f1091",
-        "bytes": 48787
+        "sha256": "b15a33bc38b173baef0cb60e909f4131d5023622521f032907fe8cfea0722301",
+        "bytes": 78907
       },
       {
         "path": "docs/v2-known-limitations.md",

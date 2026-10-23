@@ -287,7 +287,7 @@
   ],
   "label": "5 seeds per cell, mean and standard deviation, from the committed calibration_duplicated run. naive has no ENIV, efficiency_ratio or mean_dependence by construction -- those cells are \"not measured\", not zero.",
   "provenance": {
-    "generated_utc": "2026-09-28T16:41:54Z",
+    "generated_utc": "2026-10-23T04:43:48Z",
     "sources": [
       {
         "path": "results/calibration_duplicated/config_used.json",
