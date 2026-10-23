@@ -1593,8 +1593,12 @@ def build_real_summary() -> dict:
         "CONFIRMS requires a detector AUC on a duplicated-but-honest "
         "condition. LANL ships no sensor-group definition, so no strict "
         "same-sensor pair exists to score, and the detector was not scored "
-        "on the naturally-dependent pairs either. Nothing was measured and "
-        "found inconclusive, so this is not NO EVIDENCE.",
+        "on the naturally-dependent pairs either: the quantity is not "
+        "measurable on this dataset rather than measured and inconclusive. "
+        "Part 30 recorded the words `NO EVIDENCE` for the strict pair in "
+        "`part29_tests_not_run.C_honest_duplication`; under this page's "
+        "vocabulary an unmeasurable quantity is `needs more data`, and the "
+        "run's own text is quoted below unchanged.",
         lanl_src,
         (not_run or {}).get("C_honest_duplication", ""))
 
