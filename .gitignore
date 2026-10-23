@@ -71,6 +71,13 @@ results/*/*/*/*/*
 # ignore it outright, ahead of the per-extension un-ignores above.
 results/*_quick/
 
+# Part 30 only. README sections 7.3-7.9 and the cluster bootstrap are computed
+# from these arrays and from nothing else, so a clean checkout cannot
+# reproduce them unless they are tracked. 0.78 MB + 5.9 MB, sha256 of each
+# pinned in results/lanl/results_manifest.json. NPZ is tracked nowhere else.
+!results/lanl/samples.npz
+!results/lanl/scores/*.npz
+
 logs/*
 !logs/.gitkeep
 checkpoints/*
