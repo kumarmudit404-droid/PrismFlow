@@ -1,0 +1,129 @@
+{
+  "per_view": {
+    "auth": {
+      "records_scanned": 277999264,
+      "population_cells": 22941894,
+      "population_cells_per_day": {
+        "0": 0,
+        "1": 1175229,
+        "2": 1396979,
+        "3": 1316511,
+        "4": 1172499,
+        "5": 1165763,
+        "6": 1517305,
+        "7": 1623133,
+        "8": 1646542,
+        "9": 1625667,
+        "10": 1452646,
+        "11": 1245362,
+        "12": 1246882,
+        "13": 1568134,
+        "14": 1649072,
+        "15": 1608975,
+        "16": 1531195
+      }
+    },
+    "proc": {
+      "records_scanned": 115159740,
+      "population_cells": 23627216,
+      "population_cells_per_day": {
+        "0": 0,
+        "1": 1187022,
+        "2": 1426133,
+        "3": 1359763,
+        "4": 1226921,
+        "5": 1221991,
+        "6": 1553394,
+        "7": 1661961,
+        "8": 1683200,
+        "9": 1658823,
+        "10": 1489562,
+        "11": 1309413,
+        "12": 1294083,
+        "13": 1597857,
+        "14": 1680410,
+        "15": 1695198,
+        "16": 1581485
+      }
+    },
+    "flows": {
+      "records_scanned": 121284699,
+      "population_cells": 13484366,
+      "population_cells_per_day": {
+        "0": 0,
+        "1": 781113,
+        "2": 976974,
+        "3": 914465,
+        "4": 792777,
+        "5": 801272,
+        "6": 1095090,
+        "7": 1141029,
+        "8": 1023324,
+        "9": 1015816,
+        "10": 864116,
+        "11": 712829,
+        "12": 713083,
+        "13": 947942,
+        "14": 926750,
+        "15": 658406,
+        "16": 119380
+      }
+    },
+    "dns": {
+      "records_scanned": 1055902,
+      "population_cells": 580753,
+      "population_cells_per_day": {
+        "0": 0,
+        "1": 29758,
+        "2": 34104,
+        "3": 33496,
+        "4": 29813,
+        "5": 29672,
+        "6": 35792,
+        "7": 37260,
+        "8": 38216,
+        "9": 38849,
+        "10": 40241,
+        "11": 33801,
+        "12": 33843,
+        "13": 40678,
+        "14": 41839,
+        "15": 42631,
+        "16": 40760
+      }
+    }
+  },
+  "control_divisor": 512,
+  "redteam_rows": 749,
+  "redteam_events_per_day": {
+    "2": 10,
+    "3": 15,
+    "6": 21,
+    "7": 3,
+    "8": 1,
+    "9": 273,
+    "10": 15,
+    "13": 209,
+    "14": 81,
+    "15": 35,
+    "16": 26,
+    "21": 1,
+    "22": 4,
+    "23": 1,
+    "27": 26,
+    "28": 9,
+    "29": 3,
+    "30": 16
+  },
+  "scan_seconds": 233.59278392791748,
+  "workers": 4,
+  "read_until": 1382400,
+  "smoke": 0,
+  "kept_samples_total": 61641,
+  "estimated_population_cells_union": {
+    "value": null,
+    "method": "Not directly counted. The union over views of occupied cells cannot be derived from per-view counts, and counting it exactly would need a cross-view per-window set this loader does not keep. The exact per-view counts are in per_view; the union is bounded below by their maximum and above by their sum.",
+    "lower_bound": 23627216,
+    "upper_bound": 60634229
+  }
+}

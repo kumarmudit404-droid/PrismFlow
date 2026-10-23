@@ -1,0 +1,173 @@
+{
+  "decision": "parallel",
+  "rule": "Fixed before measuring: use parallel units if parallel throughput >= 2x run 1's sequential throughput, else sequential. Parallelism is across (arm, system, seed) units only; hyperparameters and seeds 0-4 are unchanged.",
+  "threads_per_process": 1,
+  "max_concurrent_processes": 11,
+  "benchmark_idle_machine": [
+    {
+      "threads": 1,
+      "ms_per_step": 3.9391136169433594,
+      "projected_naive_model_seconds": 105.72580947875977
+    },
+    {
+      "threads": 2,
+      "ms_per_step": 4.000864028930664,
+      "projected_naive_model_seconds": 107.38319053649903
+    },
+    {
+      "threads": 4,
+      "ms_per_step": 4.970909357070923,
+      "projected_naive_model_seconds": 133.41920714378358
+    },
+    {
+      "threads": 12,
+      "ms_per_step": 9.24908995628357,
+      "projected_naive_model_seconds": 248.24557442665105
+    }
+  ],
+  "benchmark_note": "200 real training steps of a with_auth naive model on the real train block, 10 warm-up steps discarded. torch's default thread count (12) is 2.35x slower per step than 1 thread: tiny batches of a 4-view MLP spend more time in thread synchronisation than in arithmetic. Run 1 ran at the default and its measured 253 s/naive model matches this benchmark's 248 s projection at 12 threads, which is the check that the benchmark reflects reality.",
+  "sequential_run1_seconds_per_unit": 335.5,
+  "projected_parallel_seconds_per_unit": 140.20161691748578,
+  "projected_throughput_speedup_vs_run1": 26.322806263867882,
+  "prismflow_to_naive_cost_ratio_run1": 1.6521739130434783,
+  "benchmark_run2_contended": {
+    "when_local": "2026-10-18 15:20-15:22 IST",
+    "n_steps": 200,
+    "repeats": 3,
+    "background_load_percent_observed": [
+      36,
+      30,
+      24,
+      24,
+      4,
+      23,
+      33,
+      23,
+      20,
+      32,
+      22
+    ],
+    "per_threads": [
+      {
+        "threads": 1,
+        "ms_per_step_repeats": [
+          8.374993801116943,
+          9.861400127410889,
+          10.225800275802612
+        ],
+        "ms_per_step_mean": 9.487398068110148,
+        "ms_per_step_std": 0.980448523358312
+      },
+      {
+        "threads": 2,
+        "ms_per_step_repeats": [
+          10.759068727493286,
+          9.688899517059326,
+          11.277531385421753
+        ],
+        "ms_per_step_mean": 10.575166543324789,
+        "ms_per_step_std": 0.8101251837220169
+      },
+      {
+        "threads": 4,
+        "ms_per_step_repeats": [
+          6.599847078323364,
+          11.153439283370972,
+          10.916212797164917
+        ],
+        "ms_per_step_mean": 9.556499719619751,
+        "ms_per_step_std": 2.563282121110178
+      },
+      {
+        "threads": 12,
+        "ms_per_step_repeats": [
+          11.079216003417969,
+          32.2856605052948,
+          35.74023365974426
+        ],
+        "ms_per_step_mean": 26.368370056152344,
+        "ms_per_step_std": 13.352984410087645
+      }
+    ],
+    "note": "CONTAMINATED, not a clean benchmark. No PrismFlow process was running (all 22 orphans had been terminated), but this box carried 20-33% load from unrelated desktop applications throughout. The readings are non-monotonic in thread count and 12 threads alone spans 11.1-35.7 ms/step across three identical repeats, so this run cannot discriminate 1 from 2 from 4 threads. The one signal it reproduces is that 12 threads (torch's default here) is never faster and is sometimes 3x slower. The thread choice below was therefore taken from the 2026-10-17 idle-machine benchmark, which is the only clean one, and was fixed before this run's units were launched."
+  },
+  "orphans_terminated_before_benchmark": {
+    "n_run_lanl_processes": 22,
+    "n_supervisor_shells": 25,
+    "detail": "A Phase 2 scheduler from the earlier stopped session (scratchpad e346cb63, phase2.sh) was still live and had launched 11 units at 15:12:18, 4 minutes before this run began. Its 22 run_lanl.py processes were 11 units x (launcher stub + interpreter). The brief says to terminate processes whose command line shows run_lanl.py; the bash phase2.sh supervisors do not name run_lanl.py but hold an 11-slot queue over the remaining 29 units and would have relaunched every process killed, so they were stopped first. Nothing else was touched. No unit file from that scheduler had been written, so no result was discarded."
+  },
+  "phase0b_process_audit_run2_continuation": {
+    "when_local": "2026-10-18 16:14-16:25 IST",
+    "n_python_processes_found": 24,
+    "classification": {
+      "live_scheduler_units": 22,
+      "orphaned_aggregate": 2
+    },
+    "terminated": [
+      "run_lanl.py --aggregate (2 processes, PID 9016 and 19268, started 15:40:22, still running 40 minutes later on a then-incomplete set of arms). Its command line shows run_lanl.py, its parent session was gone, and its output would have been superseded by the final aggregate, so it was terminated. Nothing it had written was kept."
+    ],
+    "not_terminated": "The other 22 processes were 11 live units of the Phase 2 scheduler (phase2.sh, supervisor PID 18016, started 15:22:36) working the brief's own arm priority order. They are NOT orphans: the supervisor shell was alive, the queue was advancing, and a 40-second CPU sample confirmed every one of them accumulating CPU time. Killing them would have discarded in-flight work on the arms the brief owes.",
+    "cpu_not_idle_reading_taken": "The brief's Phase 1 asks for a thread benchmark on an IDLE machine. The machine was NOT idle in this session and was not made idle, because idling it meant killing the owed arms mid-flight. The conservative reading taken, recorded here rather than resolved by asking: Phase 1 was already executed and committed before this session - the thread count and the parallel-vs-sequential decision were fixed from the 2026-10-17 idle-machine benchmark and had already been applied to every unit on disk - so repeating it could only have produced a second contaminated reading at the cost of the arms. No new benchmark was run in this session and no benchmark number here comes from a loaded box except the one already labelled CONTAMINATED and excluded."
+  },
+  "thread_count_reproducibility_observation": {
+    "status": "REPORTED, NOT FIXED. Frozen-module observation; no frozen code was changed and no committed value was regenerated.",
+    "what": "A committed Part 28 ENIV value is reproducible only at the torch thread count that produced it. tests/unit/test_ait_attack.py::test_clean_dependence_matches_part28 re-computes eniv_eigen and asserts it equals Part 28's committed seed-0 value to abs=1e-6.",
+    "measured": {
+      "default_threads_12": "PASSES (1 passed in 28.98s)",
+      "omp_num_threads_1_eniv_eigen_obtained": 3.4289614712229826,
+      "committed_part28_eniv_eigen_expected": 3.4396320614332856,
+      "absolute_difference": -0.010670590210303033,
+      "tolerance_asserted": 1e-06
+    },
+    "why_it_matters_here": "Part 30 run 1 ran at torch's default 12 threads and run 2 at 1 thread. The thread count changes the order in which sums are accumulated during training, so it changes the fitted weights and then every diagnostic computed from them. The difference is about 0.3% of ENIV on AIT - four orders of magnitude above the 1e-6 tolerance that test asserts - which is the scale to keep in mind when reading this Part's run-1-vs-run-2 replicate table and its seed-0 equivalence check. It is arithmetic, not a quality difference between the systems.",
+    "gate_consequence": "The Part 30 gate test suite is therefore run at the DEFAULT thread count, which is the count the committed values were produced at. Under OMP_NUM_THREADS=1 that one test fails; that is the test detecting a thread change, not a defect introduced by Part 30."
+  },
+  "achieved_parallel_measured": {
+    "n_units": 40,
+    "mean_seconds_per_unit": 1768.8251333236694,
+    "std_seconds_per_unit": 1258.5698610420327,
+    "per_system": {
+      "naive": {
+        "n_units": 20,
+        "mean_seconds_per_unit": 1270.7914036154748,
+        "std_seconds_per_unit": 756.3668352279844
+      },
+      "prismflow": {
+        "n_units": 20,
+        "mean_seconds_per_unit": 2266.858863031864,
+        "std_seconds_per_unit": 1468.7032747059159
+      }
+    },
+    "throughput_speedup_vs_run1": 2.0864131397010697,
+    "note": "A unit takes LONGER in this mode than it did sequentially - 1769 s against run 1's 336 s - because 11 of them share the box. The gain is throughput, not latency. The projection above overstated that gain because it assumed no contention between concurrent units; the decision rule (at least 2x run 1's sequential throughput) is met on the MEASURED figure as well as the projected one, so the mode choice stands on what happened rather than on the forecast."
+  },
+  "equivalence_check_seed0": {
+    "per_system": {
+      "naive": {
+        "balanced_accuracy": {
+          "run1": 0.5642793234799535,
+          "run2": 0.5582090565706138,
+          "absolute_difference": -0.00607026690933965
+        },
+        "roc_auc": {
+          "run1": 0.8374738875670868,
+          "run2": 0.8234802863613548,
+          "absolute_difference": -0.01399360120573201
+        }
+      },
+      "prismflow": {
+        "balanced_accuracy": {
+          "run1": 0.5618402990897096,
+          "run2": 0.5715691025844152,
+          "absolute_difference": 0.009728803494705618
+        },
+        "roc_auc": {
+          "run1": 0.8412721564575764,
+          "run2": 0.8402092190035935,
+          "absolute_difference": -0.0010629374539828929
+        }
+      }
+    },
+    "note": "Same seed, same hyperparameters, same sample table and the same time split. A non-zero difference here is execution mode and floating-point reduction order, not a different experiment: run 1 ran sequentially at torch's default 12 threads and run 2 at 1 thread, which changes the order in which sums are accumulated. The difference is NOT evidence about either system's quality."
+  }
+}

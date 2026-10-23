@@ -1,0 +1,197 @@
+# Part 30 - LANL "Comprehensive, Multi-Source Cyber-Security Events" (cyber1)
+# loader configuration.
+#
+# PRE-REGISTERED. Every value below was written and committed BEFORE any model
+# was trained or any metric computed, which is the only reason the feature list
+# and the split can be read as a design rather than as a result. Nothing in
+# this file may be changed after a number has been looked at; a change here
+# means a new experiment, not a revision of this one.
+#
+# The raw files are read-only. The loader never extracts, renames, moves or
+# writes anything under data/raw/.
+
+dataset: LANL Comprehensive Multi-Source Cyber-Security Events (cyber1)
+raw_root: data/raw
+
+# ---------------------------------------------------------------------------
+# Time grid
+# ---------------------------------------------------------------------------
+# The capture's own clock: integer seconds, first event at t = 1.
+#
+# day    = floor((t - 1) / 86400) + 1      -> day 1 is t in [1, 86400]
+# window = floor((t - 1) / window_seconds)  -> window 0 is t in [1, 300]
+#
+# Both are pre-registered. `.claude/commands/part30.md` does not define a day
+# boundary anywhere, so the day rule is this experiment's stated reading and is
+# flagged as such in experiments/lanl/README.md.
+#
+# window_seconds is NOT a free choice here: part30.md step 1 says "window from
+# config, default = the window chosen for AIT", and the window chosen for AIT
+# at the Part 27 review gate is 300 s network
+# (configs/data/ait.yaml `window_seconds`, experiments/ait_clean/config.yaml
+# `data.window_seconds` and `chose_at: part27 review gate`). So 300 is taken
+# from Part 28, not invented for Part 30.
+day_seconds: 86400
+window_seconds: 300
+
+# A window belongs to exactly one split. No window straddles a boundary: every
+# boundary below is an exact multiple of window_seconds, which is asserted in
+# tests/data/test_lanl_cyber1.py rather than left to inspection.
+#
+#   train  t =       1 ..  864000   days  1-10
+#   gap    t =  864001 .. 1036800   days 11-12   DROPPED, never read
+#   test   t = 1036801 .. 1382400   days 13-16
+#
+# Days 17-30 are not used. Nothing from the test block may be used for
+# fitting, scaling, feature selection, thresholds or model selection.
+split:
+  train: {start: 1, end: 864000, days: [1, 10]}
+  gap: {start: 864001, end: 1036800, days: [11, 12]}
+  test: {start: 1036801, end: 1382400, days: [13, 16]}
+# The loader stops reading each file once t exceeds this. The files are sorted
+# by time, so this is a prefix read, and the loader verifies non-decreasing
+# timestamps over the whole portion it scans.
+read_until: 1382400
+
+# ---------------------------------------------------------------------------
+# Samples and views
+# ---------------------------------------------------------------------------
+# part30.md step 1: "Views: auth, proc, flows, dns. Sample = (computer, time
+# window)". That is the AIT loader's `host` sample mode, not the `network` mode
+# Part 28 ran on, and it is part30.md's text, so it stands.
+sample_mode: computer_window
+
+# Views in canonical order. This order fixes the V axis of every tensor and
+# must not be reordered.
+views: [auth, proc, flows, dns]
+
+# Which column of each record decides WHICH computer the event is attributed
+# to. An auth or flow record names two computers; attributing the event to the
+# SOURCE computer is one reading and is the one pre-registered here, because
+# the source is the computer that originated the observable behaviour. The
+# destination column is still used for distinct-value features.
+attributed_computer: source
+
+# ---------------------------------------------------------------------------
+# Features: the simplest count-based per-window aggregates
+# ---------------------------------------------------------------------------
+# part30.md names no features. These are therefore this experiment's choice,
+# pre-registered here before any run, and are deliberately the plainest
+# count-based aggregates of each view's own columns: event counts, distinct
+# users and computers, and the auth failure rate. No cross-view feature, no
+# ratio between views, and nothing derived from the label file.
+#
+# Every count feature is log1p-transformed, matching the AIT loader's
+# documented transform (prismflow/data/ait_lds.py FEATURES) so that scaling
+# starts from a known place. failure_rate is already a fraction in [0, 1] and
+# is NOT transformed.
+#
+# `native_dim` per view is declared so the encoder's input width is the view's
+# own width and the padded columns stay unreachable, exactly as
+# prismflow/data/ait_lds.py view_configs does it.
+log1p_counts: true
+features:
+  auth:
+    - n_events              # records attributed to this computer in this window
+    - n_distinct_src_user
+    - n_distinct_dst_user
+    - n_distinct_dst_computer
+    - n_success             # field 9 == "Success"
+    - n_failure             # field 9 == "Fail"
+    - n_distinct_auth_type  # field 6
+    - failure_rate          # n_failure / (n_success + n_failure), 0 if neither
+  proc:
+    - n_events
+    - n_distinct_user
+    - n_distinct_process
+    - n_start               # field 5 == "Start"
+    - n_end                 # field 5 == "End"
+  flows:
+    - n_events
+    - n_distinct_dst_computer
+    - n_distinct_src_port
+    - n_distinct_dst_port
+    - sum_packets           # field 8
+    - sum_bytes             # field 9
+    - sum_duration          # field 2
+  dns:
+    - n_events
+    - n_distinct_resolved   # field 3
+
+# Padded width D of the [N, V, D] tensor. Equals the widest view (auth, 8).
+feature_dim: 8
+
+# ---------------------------------------------------------------------------
+# Labels
+# ---------------------------------------------------------------------------
+# From redteam.txt.gz only. The 34 exact duplicate rows are KEPT: a window is
+# binary, so a duplicated event cannot change a label, and dropping rows would
+# be an edit to the label source.
+#
+# AMBIGUITY, resolved here and reported in the README. part30.md says only
+# "Labels from redteam.txt". A red-team row names a time, a user, a source
+# computer and a destination computer, while a sample is (computer, window), so
+# "the event falls inside it" can mean two different things:
+#
+#   computer_window  attack = 1 if a red-team event in that window names THAT
+#                    computer, as source or destination.          <- PRIMARY
+#   window_only      attack = 1 if a red-team event falls in that window at
+#                    all, for every computer in the window.
+#
+# `computer_window` is primary because it is the only reading under which the
+# label depends on the computer half of the sample; under `window_only` the
+# label is a property of the clock alone and every computer in an attacked
+# window is called an attacker. BOTH are counted and both are reported, so the
+# choice is visible rather than buried.
+label:
+  definition: computer_window
+  also_report: window_only
+  attribute_to: [source, destination]
+  keep_duplicate_rows: true
+
+# ---------------------------------------------------------------------------
+# Case-control sampling of the (computer, window) cells
+# ---------------------------------------------------------------------------
+# WHY THIS EXISTS. At 300 s, this capture occupies roughly 1.5 million occupied
+# (computer, window) cells PER DAY -- measured by the day-1 sizing probe, and
+# recorded exactly for the full range in results/lanl/population.json. Days
+# 1-16 are therefore on the order of 2e7 samples, against 440 attack cells in
+# the train block and 410 in the test block: a prevalence near 2e-5. Two facts
+# follow, and they are measurements, not preferences:
+#
+#   * 40 epochs over 2e7 samples is not reachable in this Part's time budget;
+#   * a uniform subsample that IS reachable leaves single-digit attack cells,
+#     which trips this Part's own stop condition of >= 10 attack windows per
+#     split.
+#
+# So the sample set is a declared case-control sample: every attack cell is
+# kept, and a benign cell is kept iff
+#
+#     crc32(computer | window) % control_divisor == 0
+#
+# This is a DETERMINISTIC HASH of the cell identity, not a draw from a random
+# generator. It needs no prior knowledge of the cell universe (one streaming
+# pass suffices), it is identical on every rerun AND on every experiment seed
+# -- so a seed still varies only initialisation and batch order, exactly as in
+# Part 28 -- and it reads neither a label nor a feature value.
+#
+# WHAT IT COSTS, stated here and repeated in the README: sample prevalence is
+# an artefact of control_divisor and is NOT population prevalence. Accuracy and
+# every other prevalence-dependent figure then describes the sample, not the
+# network. Balanced accuracy, ROC AUC and per-class recall are the figures that
+# survive the reweighting.
+control_divisor: 512
+
+# Unlike AIT, this dataset ships no "label-covered file" notion, so there is no
+# label_known mask to filter on: every window inside the read range is labelled
+# either attack or benign. What that costs is stated in the README - "benign"
+# here means "no KNOWN red-team event", not "verified clean".
+label_known_all: true
+
+# ---------------------------------------------------------------------------
+# Stop conditions. These override every other setting.
+# ---------------------------------------------------------------------------
+stop_conditions:
+  min_attack_windows_per_split: 10   # train and test counted separately
+  on_timestamp_inversion: stop_and_report
+  on_gzip_error: stop_and_report

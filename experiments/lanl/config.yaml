@@ -1,0 +1,107 @@
+experiment:
+  id: lanl
+  description: >
+    Part 30. Naive fusion and V1 PrismFlow on LANL cyber1, at 300 s
+    (computer, window) samples, days 1-16, split by TIME with a two-day gap.
+    Run twice: WITH the auth view and WITHOUT it, because the red-team labels
+    are drawn from auth data.
+
+# WHAT THE LABEL MEANS. A sample is (computer, 300 s window). attack = 1 means
+# a redteam.txt.gz event in that window names that computer as its source or
+# its destination. benign = 0 means no KNOWN red-team event does, which is NOT
+# "verified clean" - the red-team file covers only the activity LANL's red team
+# recorded. See configs/data/lanl.yaml `label:` for the alternative
+# window-only reading, which is counted and reported alongside.
+
+# WHAT A SEED VARIES HERE, and what it does not. The split is fixed by time
+# (configs/data/lanl.yaml `split:`) and the case-control sample is a
+# deterministic crc32 hash of the cell identity, so a seed CANNOT redraw the
+# data and CANNOT re-partition it. A seed selects exactly two things: the
+# model's parameter initialisation (via set_seed) and the minibatch order of
+# every training epoch (via iter_batches(shuffle=True, seed=seed+epoch)).
+# Every reported +/- is therefore INITIALISATION-AND-BATCH-ORDER variance on a
+# fixed split. It is not dataset variance and it is not a spread over
+# independent attacks.
+seeds: [0, 1, 2, 3, 4]
+
+data:
+  config: configs/data/lanl.yaml
+
+# part30.md step 2. The red-team events are drawn from auth data, so the auth
+# view is label-adjacent and every experiment runs both ways. The two
+# configurations are paired within seed; neither is "the" result.
+# PRIORITY ORDER. Run 1 finished only with_auth, which is the label-adjacent
+# arm and so the least informative one. The order below puts the arms the brief
+# owes first, so a run that is cut short loses the least important arm rather
+# than the most important.
+#
+# All four arms share ONE sample table (results/lanl/samples.npz): the same
+# rows, labels and split, built from all four views. An arm drops a view's
+# FEATURE COLUMNS and its encoder; it never rebuilds or re-filters the sample
+# set. That is what makes the arms paired within seed rather than merely
+# similar, and it is why a sample whose only present view is the dropped one
+# survives as a row with an all-False view mask.
+view_configurations:
+  # 1. part30.md step 2: the red-team labels are drawn from auth data, so the
+  #    auth view is label-adjacent and the brief requires the arm without it.
+  - name: without_auth
+    label: "WITHOUT auth (proc, flows, dns)"
+    views: [proc, flows, dns]
+  # 2-3. Part 28 step 5: a view missing in more than 50% of train samples gets
+  #    a configuration without it. Measured in run 1: flows missing 0.5640,
+  #    dns missing 0.9839 (results/lanl/results.run1.json.gz,
+  #    configurations.with_auth.missingness.train).
+  - name: without_flows
+    label: "WITHOUT flows (auth, proc, dns)"
+    views: [auth, proc, dns]
+  - name: without_dns
+    label: "WITHOUT dns (auth, proc, flows)"
+    views: [auth, proc, flows]
+  # 4. Re-run so every arm shares one execution mode and thread setting. Run 1
+  #    is kept and reported as a replicate, not replaced.
+  - name: with_auth
+    label: "WITH auth (auth, proc, flows, dns)"
+    views: [auth, proc, flows, dns]
+
+systems:
+  - {name: naive, label: naive fusion, use_discount: false}
+  - {name: prismflow, label: V1 PrismFlow, use_discount: true}
+
+# Identical to experiments/ait_clean/config.yaml (Part 28), which is itself
+# identical to experiments/real/config.yaml (Part 15). Not re-tuned for LANL:
+# re-tuning would make the cross-dataset table a comparison of two different
+# systems rather than one system on two datasets.
+model:
+  hidden_dims: [64, 64]
+  feature_dim: 32
+  dropout: 0.0
+
+training:
+  epochs: 40
+  batch_size: 64
+  lr: 0.001
+  anneal_epochs: 10
+  per_view_loss_weight: 1.0
+
+# Feature scaling is fitted on the TRAIN BLOCK only, refitted per view
+# configuration, never fitted on or informed by the test block.
+scaling:
+  method: zscore
+  present_rows_only: true
+  epsilon: 1.0e-8
+
+evaluation:
+  batch_size: 256
+  n_bins: 15
+  coverages: [1.0, 0.9, 0.8, 0.5]
+
+missingness:
+  threshold: 0.5
+
+diagnostics:
+  eniv_methods: [eigen, design_effect]
+  headline_eniv_method: eigen
+
+# Overrides everything. Checked after windowing, before any model is built.
+stop_conditions:
+  min_attack_windows_per_split: 10

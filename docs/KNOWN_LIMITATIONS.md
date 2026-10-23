@@ -3,7 +3,8 @@
 Open issues that are measured or suspected but not resolved. Each entry names
 the evidence and what would change our understanding of it.
 
-L1-L8 were written as each Part found them and are ordered by discovery. L9-L15
+L1-L8 were written as each Part found them and are ordered by discovery, and so
+were L16-L30 (L16-L22 in Parts 28-29, L23-L30 in Part 30). L9-L15
 were added in Part 16 to cover the standing limitations of the project as a
 whole -- the ones that are true regardless of which experiment you read, and
 which a reader is most likely to assume away.
@@ -1156,3 +1157,211 @@ can only be compared qualitatively ([[L5]], [[L8]]).
 **What would change our understanding.** A clone condition whose clean
 reference has the same view count as the attacked model, which would separate
 detected duplication from the width change.
+
+## L23. On LANL the reported prevalence is a declared case-control sample, not the network
+
+**Component:** Part 30's LANL cyber1 sample (`experiments/lanl/`, 300 s
+windows, days 1-16), and every threshold metric computed on it.
+
+**Evidence:** `results/lanl/population.json`; `experiments/lanl/README.md`
+section 11.
+
+- **The sample space is far larger than the sample.** On LANL cyber1 at 300 s
+  the `(computer, window)` sample space is between **23,627,216** and
+  **60,634,229** occupied cells over days 1-16, against **439** train and
+  **410** test attack cells -- a population prevalence near **2e-5**.
+- **The sample is declared case-control.** All cases, plus a deterministic
+  1/512 hash of controls. Its test prevalence is **0.0219**, about **1095x**
+  the population rate.
+
+**What this means.** The accuracy, Brier and ECE Part 30 reports describe that
+sample and not the network, and no population operating point has been
+measured on LANL.
+
+**What would change our understanding.** A measurement at, or reweighted to,
+the population prevalence, which would give an operating point that transfers
+to the network.
+
+## L24. On LANL the `auth` view is label-adjacent, and dropping it does not drop the selection
+
+**Component:** Part 30's `with_auth` arms, and the `without_auth` arm offered
+as the independent-evidence comparison (`experiments/lanl/`).
+
+**Evidence:** `results/lanl/results.json` (`phase3_diagnostics.arm_coverage`,
+`phase3_diagnostics.trivial_baselines`) and `results/lanl/samples.npz`;
+`experiments/lanl/README.md` sections 7.1 and 11.
+
+- **The labels come from the same stream as a view.** LANL's red-team labels
+  are derived from authentication records, so the `auth` view is
+  label-adjacent. Part 30 measures both arms, so the WITHOUT-auth arm is the
+  one that bears on detection from evidence independent of the label source.
+- **That arm is itself limited.** **139 of 410** of its test attack samples
+  (**33.9%**) have no record in any remaining view, so they are unpredictable
+  by construction and cap the arm's attainable recall before training.
+- **Sample selection survives the view drop.** Every attack sample has an
+  `auth` record while about a third of benign samples do not (**410 of 410**
+  attack against **12,323 of 18,319** benign in the test block), so auth
+  presence alone reaches test AUC **0.6637**.
+
+**What this means.** The `without_auth` arm removes the auth features but not
+this selection, because cells were chosen from all four views.
+
+**What would change our understanding.** A sample whose control cells are
+drawn without reference to the `auth` stream, which would separate the view
+drop from the selection.
+
+## L25. Part 28's scaler and trainer are not reusable across datasets
+
+**Component:** Part 28's `fit_scaler`, `apply_scaler` and `train_ait`
+(`experiments/ait_clean/run_ait_clean.py`).
+
+**Evidence:** `experiments/lanl/run_lanl.py`, which mirrors all three;
+`experiments/lanl/README.md` section 11.
+
+- **Each resolves native view widths through `ait_lds.FEATURES`**, keyed by
+  AIT source names.
+- **Part 30 mirrored them rather than patching Part 28.**
+
+**What this means.** Any future Part on a third dataset will hit the same
+wall.
+
+**What would change our understanding.** A width resolution passed in by the
+caller rather than looked up by source name, which would let one
+implementation serve every dataset.
+
+## L26. On LANL the models' advantage over a trivial scalar is confined to seen attack computers
+
+**Component:** Part 30's four arms on LANL cyber1, compared against the
+untrained scalar `total_records_across_views`.
+
+**Evidence:** `results/lanl/results.json`,
+`phase3_diagnostics.seen_unseen` and
+`phase4_closeout.trivial_scalar_seen_unseen`; `experiments/lanl/README.md`
+sections 7.3, 7.7 and 11.
+
+- **All-test, the models lead.** `total_records_across_views`, oriented on
+  train only, reaches test ROC AUC **0.6843** over all **410** test attack
+  samples, against **0.7755 to 0.8389** for the trained arms.
+- **Split by whether the attack computer also has attack samples in train**,
+  the scalar reaches **0.6405** on the **255** seen samples and **0.7563** on
+  the **155** unseen ones, while the models reach **0.8153 to 0.8875** on seen
+  and **0.7102 to 0.7614** on unseen.
+- **On unseen computers the lead is gone.** `without_auth` naive,
+  `without_auth` prismflow and `without_flows` naive are below the scalar;
+  `without_flows` prismflow, `without_dns` naive, `without_dns` prismflow,
+  `with_auth` naive and `with_auth` prismflow are within 0.01 of it.
+- **The verdict is not uniform within `without_flows`**, so these are stated
+  per arm and system, not per arm.
+- **One fixed split, no interval.**
+
+**What this means.** On LANL cyber1 the trained models' ranking advantage over
+a single untrained scalar is confined to attack computers already seen as
+attacked in train.
+
+**What would change our understanding.** An unseen-computer result that clears
+the scalar by more than 0.01 with an interval attached.
+
+## L27. On LANL one host carries a third of the attack class, with no benign contrast
+
+**Component:** Part 30's LANL sample construction (all cases, benign cells at
+1/512 by hash).
+
+**Evidence:** `results/lanl/results.json`
+(`phase3_diagnostics.host_audit`, `phase4_closeout.top_attack_computers`,
+`phase4_closeout.drop_top_test_computer`); `experiments/lanl/README.md`
+sections 7.9 and 11.
+
+- **One computer dominates the attack class.** `C17693` accounts for **279 of
+  the 849** attack samples (**142 of 439** in train, **137 of 410** in test).
+- **It has almost no benign contrast.** **1** benign sample in train and **1**
+  in test, because benign cells are kept at 1/512 by hash.
+- **Removing it moves the headline.** Dropping every test row of `C17693`
+  lowers test ROC AUC by **0.036 to 0.052** depending on arm and system.
+- **Host overlap across blocks.** **35** attack computers appear in both
+  blocks and **104** are test-only.
+
+**What this means.** A model can therefore learn that host's activity profile
+as the attack class without learning attack behaviour.
+
+**What would change our understanding.** A design that keeps all or a stated
+share of the benign cells of attack hosts, which would be needed to separate
+host from behaviour.
+
+## L28. On LANL the execution mode changes the fitted weights, and the per-seed std understates the spread
+
+**Component:** Part 30's torch thread count and process concurrency
+(`results/lanl/execution_mode.json`), and every per-seed standard deviation
+computed inside a single run.
+
+**Evidence:** `results/lanl/results.json`, `execution_mode` including
+`execution_mode.thread_count_reproducibility_observation`;
+`results/lanl/results.run1.json.gz`; `experiments/lanl/README.md` section 11.
+
+- **The torch thread count changes the fitted weights.** Runs 1 (12 threads,
+  sequential) and 2 (1 thread, 11 concurrent) of the `with_auth` arm agree in
+  the sign of the PrismFlow-minus-naive difference for `roc_auc`, `prob_ece`,
+  `benign_recall` and `accuracy` (`roc_auc` **+0.0069, +0.0097**; `prob_ece`
+  **-0.0013, -0.0008**), but disagree for `balanced_accuracy` (**-0.0004,
+  +0.0088**), `attack_recall` (**-0.0010, +0.0176**) and `brier` (**+0.0000,
+  -0.0004**).
+- **The same seed differs across modes.** Up to **0.0140** in AUC (naive
+  seed 0: **0.8375** and **0.8235**), about **4** per-seed standard deviations
+  of that same arm and system (**0.0033**).
+- **A seed count such as 5/5 inside one run shares one execution mode** and is
+  not independent evidence about mode effects.
+
+**What this means.** Differences of order 0.01 in `balanced_accuracy`,
+`attack_recall` and `brier` are not established, and the per-seed std
+understates replicate spread. Related: Part 28's committed ENIV is
+reproducible only at the thread count that produced it.
+
+**What would change our understanding.** Seeds run across at least two
+execution modes, so the reported std covers mode as well as seed.
+
+## L29. On two LANL arms the probabilities are worse than a constant
+
+**Component:** the probability outputs of both systems in Part 30's
+`without_auth` and `without_flows` arms.
+
+**Evidence:** `results/lanl/results.json`, per-arm `brier` and `roc_auc`;
+`experiments/lanl/README.md` section 11.
+
+- **Brier above the constant-prevalence baseline of 0.0428.** In
+  `without_auth` **0.1218** and **0.1219**, in `without_flows` **0.0628** and
+  **0.0630**, for both systems.
+- **Ranking is unaffected.** ROC AUC is **0.7755 to 0.8233**.
+- **Cause not diagnosed.** Candidates, none tested: rows with an all-False
+  view mask, no validation split, and the shift in sample prevalence from
+  train (**1.0%**) to test (**2.2%**).
+
+**What this means.** Probability outputs of those arms should not be used.
+
+**What would change our understanding.** A test of each candidate cause, and a
+Brier below the constant baseline once the responsible one is fixed.
+
+## L30. What Part 30 does not establish
+
+**Component:** the scope of Part 30 as a whole, against Part 29's test battery
+and against L1-L22.
+
+**Evidence:** `experiments/lanl/README.md` sections 9 and 11;
+`results/lanl/results.json`, the per-unit test-A populations and
+`phase4_closeout.views_present_shares`.
+
+- **Most of Part 29's battery was not run on LANL.** Tests B (chorus attack),
+  D (masked-view detector AUC) and the detector half of C were not run.
+- **No robustness claim in L1-L22 has been tested on this dataset**, and
+  Part 30 is clean-data evidence only.
+- **Part 29 test A is not a stable signal.** ENIV is lower and mean pairwise
+  dependence higher on attack windows in `without_auth`, `without_dns` and
+  `with_auth`, and both reverse in `without_flows` for both systems (ENIV
+  **+0.2636** naive, **5/5** seeds and **+0.2116** prismflow, **5/5** seeds).
+- **The two classes also differ in how many rows can carry a pair at all.**
+  In `with_auth`, **66.1%** of attack rows against **54.3%** of benign rows
+  have two or more views.
+
+**What this means.** Part 30 is clean-data evidence on a second dataset
+family; no robustness or attack claim carries over to LANL.
+
+**What would change our understanding.** Running tests B, C and D on LANL, and
+a test-A reading that holds its sign across all four arms.
