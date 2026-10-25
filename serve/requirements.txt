@@ -1,0 +1,17 @@
+# Pinned exactly, not floated. A diagnostic service whose dependency set
+# drifts between the version that was tested and the version that is running
+# is reporting numbers nobody measured. These are the versions the Part 32
+# tests passed against.
+#
+# torch is NOT pinned here: the CPU-only wheel comes from PyTorch's own index
+# and is installed separately in the Dockerfile, because the default PyPI
+# wheel pulls ~2 GB of CUDA this service never uses.
+
+fastapi==0.120.4
+uvicorn[standard]==0.53.0
+python-multipart==0.0.22
+pydantic==2.13.5
+numpy==2.5.3
+scipy==1.18.1
+pandas==3.0.6
+pyarrow==25.0.1

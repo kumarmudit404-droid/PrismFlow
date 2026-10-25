@@ -1119,3 +1119,16 @@ pre::before,
     color: var(--text-secondary);
   }
 }
+
+/* ---- Part 32: the live diagnostic panel ----
+ * Three states, all built from existing tokens. "offline" is deliberately
+ * the quietest of them: it is the shipped state, not a fault, and styling
+ * it as an error would read as something being broken. */
+.try__status { font-family: var(--font-mono); font-size: var(--step--1); }
+.try__status--busy     { color: var(--text-muted); }
+.try__status--ok       { color: var(--text-secondary); }
+.try__status--offline  { color: var(--status-not-measured); }
+.try__status--rejected { color: var(--status-provider-error); }
+#try-controls input[type="file"] { color: var(--text-secondary); max-width: 100%; }
+#try-controls label { display: block; margin-bottom: var(--sp-1); color: var(--text-secondary); font-size: var(--step--1); }
+#try code { overflow-wrap: anywhere; word-break: break-all; }
