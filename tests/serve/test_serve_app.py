@@ -75,6 +75,9 @@ def test_score_returns_the_three_literal_fields():
         "not validated - see KNOWN_LIMITATIONS L3, L4, L5, L8")
     assert body["estimator_validation"] == (
         "ENIV is validated on synthetic data only - see KNOWN_LIMITATIONS L9")
+    # L22 travels over HTTP too, not only out of score().
+    assert "NOT comparable across different view counts" in (
+        body["suspicion_comparability"])
 
 
 def test_a_rejected_upload_is_400_with_a_named_rule():

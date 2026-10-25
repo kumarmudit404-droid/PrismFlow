@@ -58,6 +58,13 @@ DEFENCE_NOTE = "not validated - see KNOWN_LIMITATIONS L3, L4, L5, L8"
 ESTIMATOR_VALIDATION_NOTE = (
     "ENIV is validated on synthetic data only - see KNOWN_LIMITATIONS L9"
 )
+SUSPICION_COMPARABILITY_NOTE = (
+    "the suspicion score is NOT comparable across different view counts - it "
+    "is a maximum over off-diagonal pairs, so a wider upload maximises over "
+    "more draws and scores higher at identical per-pair dependence. Never "
+    "difference it against a result with a different view count. See "
+    "KNOWN_LIMITATIONS L22"
+)
 
 
 def config_hash(seed: int) -> str:
@@ -153,6 +160,10 @@ def score(gated, seed: int = 0) -> dict:
         "calibration": CALIBRATION_NOTE,
         "defence": DEFENCE_NOTE,
         "estimator_validation": ESTIMATOR_VALIDATION_NOTE,
+        # Top-level, not inside "suspicion": the caveat has to survive the
+        # branch where suspicion is null, so a reader comparing two runs sees
+        # it before they have a score to compare.
+        "suspicion_comparability": SUSPICION_COMPARABILITY_NOTE,
     }
 
     if gated.evidence is None:

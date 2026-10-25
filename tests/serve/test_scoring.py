@@ -13,6 +13,7 @@ from serve.scoring import (
     CALIBRATION_NOTE,
     DEFENCE_NOTE,
     ESTIMATOR_VALIDATION_NOTE,
+    SUSPICION_COMPARABILITY_NOTE,
     jsonable,
     score,
 )
@@ -81,6 +82,24 @@ def test_the_three_caveats_are_present_verbatim():
     assert "L3, L4, L5, L8" in out["defence"]
     assert out["estimator_validation"] == ESTIMATOR_VALIDATION_NOTE
     assert "L9" in out["estimator_validation"]
+
+
+def test_the_comparability_caveat_survives_both_branches():
+    """L22: the score is a max over pairs, so width alone moves it.
+
+    Asserted on BOTH branches because the caveat is what stops a reader
+    differencing a 3-view run against a 5-view one, and they would do that
+    with or without an evidence array.
+    """
+    rng = np.random.default_rng(7)
+    without = score(gated(rng.normal(size=(200, 3, 4))))
+    with_ev = score(gated(rng.normal(size=(200, 5, 4)),
+                          evidence=np.abs(rng.normal(size=(200, 5, 2)))))
+    for out in (without, with_ev):
+        assert out["suspicion_comparability"] == SUSPICION_COMPARABILITY_NOTE
+        assert "NOT comparable across different view counts" in (
+            out["suspicion_comparability"])
+        assert "L22" in out["suspicion_comparability"]
 
 
 def test_fusion_and_suspicion_are_null_without_evidence_never_zero():
