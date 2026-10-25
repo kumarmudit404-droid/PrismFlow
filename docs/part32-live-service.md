@@ -104,6 +104,11 @@ the host's secret store, never in a file here.
 
 ## Deploying to Hugging Face Spaces
 
+**The Dockerfile has not been build-tested.** No `docker build` has ever been
+run against it: the Docker daemon is not running on the development machine,
+so the file below is read-but-unexecuted. The first build is the deployer's,
+and it may fail.
+
 1. Create a Space, SDK **Docker**, hardware **CPU basic**.
 2. Push `Dockerfile`, `serve/` and `prismflow/`. The image installs a
    **CPU-only torch wheel** from PyTorch's own index — the default PyPI wheel
