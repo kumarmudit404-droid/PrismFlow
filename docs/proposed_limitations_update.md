@@ -1,7 +1,11 @@
 # Proposed changes to docs/KNOWN_LIMITATIONS.md
 
-**Nothing here has been applied.** `docs/KNOWN_LIMITATIONS.md` is not edited by
-Part 33. This file is the proposal queue: each item names what writing
+**P1, P2 and P3 were accepted and applied** to `docs/KNOWN_LIMITATIONS.md` in
+Part 33, as L22's new bullet, L31 and L32, with one change to P3: the Python
+line now says the tests ran under the development `.venv` (3.13.7), the same
+minor version as the image base `python:3.13-slim` and a different build of
+it, rather than "not the image's interpreter". The items below are the text as
+proposed. This file is the proposal queue: each item names what writing
 `docs/FINAL_REPORT.md` surfaced, what evidence supports it, and the exact text
 proposed. Accepting or rejecting each one is the user's call.
 
