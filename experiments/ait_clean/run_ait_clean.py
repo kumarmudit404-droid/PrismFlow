@@ -11,9 +11,15 @@ NOT "detect an APT" and not "detect a multi-step intrusion". A result from
 this script described as intrusion, APT or campaign detection is a misreport
 even when every number in it is correct.
 
-The multi-step intrusion is 5 windows on russellmitchell and 3 on santos. This
-script counts them and labels anything about them a handful-of-windows result;
-it does not train on them or report a metric over them.
+The multi-step intrusion is 4 windows on russellmitchell (2022-01-24 03:00,
+03:35, 03:55, 04:35) and 3 on santos (2022-01-17 11:15, 11:20, 11:55). The
+counts of windows carrying ANY non-dnsteal step are one higher on each -- 5 and
+4 -- because russellmitchell 13:50 and santos 2022-01-16 07:15 carry
+`exfiltration-service`, which is the tool being stopped rather than intrusion
+activity (`docs/part27-ait-datacard.md`, "The record's own attack time is the
+intrusion, and it is minutes long"). This script counts them and labels
+anything about them a handful-of-windows result; it does not train on them or
+report a metric over them.
 
 TWO DIRECTIONS, NEVER POOLED
 ----------------------------
