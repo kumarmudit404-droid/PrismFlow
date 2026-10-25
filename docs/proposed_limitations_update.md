@@ -119,6 +119,60 @@ but the standing record does not.
 
 ---
 
+## P4. L28's thread-count observation, re-measured in Part 34
+
+**Type:** evidence added to an existing entry. The finding does not change and
+nothing is resolved.
+
+Part 34 step 6 ran `tests/unit/test_ait_attack.py::test_clean_dependence_matches_part28`
+at two thread counts, on the frozen test exactly as committed. Both results:
+
+| run | torch threads | result | `eniv_eigen` obtained |
+|---|---|---|---|
+| `OMP_NUM_THREADS=1` | 1 | **FAILED** (38.18 s) | 3.4289614712229826 |
+| default | 8 | **passed** (44.78 s) | not printed on a pass |
+
+Part 28's committed seed-0 value is **3.4396320614332856** and the test
+asserts equality to `abs=1e-6`. The 1-thread run misses it by
+**-0.010670590210303**, about **1.07e4** times the tolerance.
+
+Two things this adds to L28 that it does not already say:
+
+- **The 1-thread value is itself reproducible.** It equals
+  `results/lanl/execution_mode.json`
+  (`thread_count_reproducibility_observation.measured.omp_num_threads_1_eniv_eigen_obtained`)
+  **to the last digit** -- 3.4289614712229826 both times, measured on a
+  different day in a different session. So the thread count does not make the
+  computation noisy; it selects between two deterministic answers. That is a
+  stronger statement than "the std understates the spread", and it means a
+  thread count is part of an experiment's identity, not a performance knob.
+- **The default count on this machine is 8, not 12.** L28 and
+  `execution_mode.json` both describe run 1 as "torch's default 12 threads".
+  The default is a property of the machine, so "the default" is not a
+  reproducible specification of a run; the number has to be recorded. The test
+  passes at 8 and at 12, which says the committed value is not unique to 12,
+  but it does not tell us the set of counts that reproduce it.
+
+**Proposed text,** to be added to L28 as a bullet after "The same seed differs
+across modes":
+
+> - **The thread count selects between deterministic answers, it does not add
+>   noise.** Re-measured in Part 34 at two counts on the unmodified test:
+>   `OMP_NUM_THREADS=1` obtains `eniv_eigen` **3.4289614712229826** against
+>   Part 28's committed **3.4396320614332856** and fails the `abs=1e-6`
+>   assertion by **0.0107**; the machine default (**8** threads here) passes.
+>   The 1-thread value matches the one recorded in
+>   `results/lanl/execution_mode.json` to the last digit, from a separate
+>   session, so each count reproduces its own value exactly. A reported figure
+>   is therefore conditional on a thread count, and "the default" does not
+>   name one: this machine's default is 8 while the run-1 record says 12.
+
+**Status of L28: OPEN, unchanged.** What would change it is still seeds run
+across at least two execution modes, which Part 34 did not do -- step 6 is one
+seed of one diagnostic at two thread counts, not a replicate design.
+
+---
+
 ## Rejected while writing the report
 
 - **An entry for the AIT honest-duplication result.** Part 29's
