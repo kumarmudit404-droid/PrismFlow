@@ -1,0 +1,46 @@
+{
+  "part": "34",
+  "step": "3",
+  "limitation": "L32",
+  "status": "not measured",
+  "verdict": "Docker daemon not running - start Docker Desktop and re-run step 3",
+  "when_utc": "2026-10-25T18:58:56Z",
+  "what_was_attempted": "docker info, docker ps, docker version and docker desktop status. The Docker CLI (client 29.7.2, context desktop-linux) is installed and answers, but no server is reachable: the named pipe npipe:////./pipe/dockerDesktopLinuxEngine does not exist. No build was started, so there is nothing to report about the image.",
+  "probes": [
+    {
+      "argv": "docker info --format {{.ServerVersion}}",
+      "exit_code": 1,
+      "stdout_tail": [],
+      "stderr_tail": [
+        "failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified."
+      ]
+    },
+    {
+      "argv": "docker ps",
+      "exit_code": 1,
+      "stdout_tail": [],
+      "stderr_tail": [
+        "failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified."
+      ]
+    },
+    {
+      "argv": "docker desktop status",
+      "exit_code": 1,
+      "stdout_tail": [],
+      "stderr_tail": [
+        "Could not retrieve status. Is Docker Desktop running?",
+        "You can start Docker Desktop by running 'docker desktop start'."
+      ]
+    }
+  ],
+  "not_measured": {
+    "build_succeeded": "not measured - no build was run",
+    "build_seconds": "not measured - no build was run",
+    "image_size_bytes": "not measured - no build was run",
+    "health_response": "not measured - no container was run",
+    "score_response": "not measured - no container was run",
+    "caveat_fields_present": "not measured - no container was run"
+  },
+  "to_re_run": "docker desktop start, wait for the daemon, then re-run /part34 step 3",
+  "image_never_pushed": true
+}
