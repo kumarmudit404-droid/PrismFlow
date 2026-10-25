@@ -57,6 +57,10 @@ PORT = 9411
 # 127.0.0.1 and never localhost: localhost resolves to ::1 first on this box
 # and serve.py binds IPv4 only.
 BASE = "http://127.0.0.1:%s" % os.environ.get("PRISMFLOW_WEB_PORT", "825")
+# Socket and DevTools-call deadline. A loaded machine can take minutes to
+# paint the page these checks sample, and a deadline shorter than that
+# reports a FAIL for every target rather than "the browser was slow".
+TIMEOUT = float(os.environ.get("PRISMFLOW_VERIFY_TIMEOUT", "300"))
 
 
 def browser_path() -> str:
@@ -77,7 +81,7 @@ class WS:
         if not match:
             raise ValueError("unexpected debugger url: %r" % url)
         host, port, path = match.group(1), int(match.group(2)), match.group(3)
-        self.sock = socket.create_connection((host, port), timeout=30)
+        self.sock = socket.create_connection((host, port), timeout=TIMEOUT)
         key = base64.b64encode(os.urandom(16)).decode()
         self.sock.sendall((
             "GET %s HTTP/1.1\r\nHost: %s:%d\r\nUpgrade: websocket\r\n"
@@ -140,7 +144,8 @@ class WS:
             if opcode in (0x1, 0x2):
                 return json.loads(body.decode("utf-8", "replace"))
 
-    def call(self, method: str, params: dict | None = None, timeout: float = 60.0) -> dict:
+    def call(self, method: str, params: dict | None = None,
+             timeout: float = TIMEOUT) -> dict:
         self.next_id += 1
         mine = self.next_id
         self.send({"id": mine, "method": method, "params": params or {}})
@@ -212,7 +217,7 @@ class Browser:
         self.ws.call("Page.navigate", {"url": url})
         time.sleep(settle)
 
-    def js(self, expression: str, timeout: float = 60.0):
+    def js(self, expression: str, timeout: float = TIMEOUT):
         res = self.ws.call("Runtime.evaluate", {
             "expression": expression, "returnByValue": True,
             "awaitPromise": True}, timeout=timeout)
