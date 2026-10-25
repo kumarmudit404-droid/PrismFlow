@@ -1,8 +1,41 @@
 # Project status
 
-Final status as of 2026-10-07. Consistent with `docs/CONTRACT.md`,
+Final status as of 2026-10-25. Consistent with `docs/CONTRACT.md`,
 `docs/KNOWN_LIMITATIONS.md` and `docs/v2-known-limitations.md`; where this file
 and one of those disagree, those are authoritative and this one is wrong.
+
+**Status of the real-data track and the site (Parts 26-33), added 2026-10-25.**
+The numbers in sections 1 to 3 below are the synthetic and V2 record and are
+unchanged. What has happened since 2026-10-07 is status, not a revision of
+them:
+
+- **Parts 26-27 — AIT Log Data Set V2.0 loaded** and its data card written.
+- **Part 28 — PrismFlow run on AIT clean data**, two directions, never pooled.
+  On this label **one view (`dns`) solves the task**, so no Part 28 number is
+  evidence about fusion (`docs/KNOWN_LIMITATIONS.md` L17).
+- **Part 29 — chorus attack and detector on AIT.** The detector inverts under
+  attack on real data, and the all-or-nothing protocol cannot speak to
+  deployment (L18).
+- **Part 30 — LANL cyber1**, four view configurations. **Clean-data evidence
+  only**: tests B, D and the detector half of C were not run, and no
+  robustness or attack claim carries over (L30). Its sample is a declared
+  case-control sample (L23) with an execution-mode spread the per-seed std
+  understates (L28).
+- **Part 31 — the real-data section on the site**, with a per-dataset claim
+  table whose verdicts are CONFIRMS, CONTRADICTS, NO EVIDENCE and needs more
+  data.
+- **Part 32 — a live diagnostic scoring service** (`serve/`) and the site's
+  *Try it* panel. The site ships with the API switched **off**; the
+  `Dockerfile` **has not been build-tested**
+  (`docs/part32-live-service.md`).
+- **Part 33 — `docs/FINAL_REPORT.md`**, every number resolved against a cited
+  committed file by `docs/check_report_numbers.py`. Proposed changes to the
+  limitations record are queued in `docs/proposed_limitations_update.md` and
+  **have not been applied**.
+
+**The headline verdicts are unchanged by the real data.** Detection is
+evidenced **on synthetic data only**; the defence is **refuted on synthetic
+data** and is **not validated on AIT or on LANL**.
 
 Every figure below names the committed file it came from. Where no committed
 file holds a number, this file says **not measured** and does not estimate one.
@@ -226,9 +259,11 @@ not a distribution — see the calibration table above and V2-L6.
 
 ## 4. Standing limitations
 
-`docs/KNOWN_LIMITATIONS.md` carries L1–L15 in full and
-`docs/v2-known-limitations.md` carries V2-L1 through V2-L7. They are the
-record; this is an index.
+`docs/KNOWN_LIMITATIONS.md` carries L1–L30 in full and
+`docs/v2-known-limitations.md` carries V2-L1 through V2-L9. They are the
+record; this is an index. The index below covers L1–L15 and V2-L1 to V2-L7;
+L16–L30 (the real-data limitations of Parts 28-30) and V2-L8, V2-L9 are
+indexed in `docs/FINAL_REPORT.md` sections 4, 7 and 8.
 
 **V1, discovered as each Part ran:** L1 flat confidence under duplication
 depends on training-time adaptation · L2 residual per-pair dependence

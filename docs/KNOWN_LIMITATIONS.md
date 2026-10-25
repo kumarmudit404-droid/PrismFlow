@@ -4,7 +4,8 @@ Open issues that are measured or suspected but not resolved. Each entry names
 the evidence and what would change our understanding of it.
 
 L1-L8 were written as each Part found them and are ordered by discovery, and so
-were L16-L30 (L16-L22 in Parts 28-29, L23-L30 in Part 30). L9-L15
+were L16-L32 (L16-L22 in Parts 28-29, L23-L30 in Part 30, L31-L32 in Part 33
+from what writing `docs/FINAL_REPORT.md` surfaced). L9-L15
 were added in Part 16 to cover the standing limitations of the project as a
 whole -- the ones that are true regardless of which experiment you read, and
 which a reader is most likely to assume away.
@@ -1146,6 +1147,11 @@ section 8.
   unordered pairs. A maximum over 30 draws is stochastically larger than one
   over 12 even when every per-pair distribution is identical.
 - **A clean clone with equal pair count has not been run.**
+- **The live diagnostic of Part 32 states this limit in every response.**
+  `serve/scoring.py` returns `suspicion_comparability` as a literal field on
+  every `/score` result, including the branch where no suspicion score could
+  be computed, so an uploader cannot read two runs of different widths as
+  comparable without first being told they are not.
 
 **What this means.** The **0.8743** figure compares different pair counts, so
 part of it is the width change itself rather than detected duplication, and
@@ -1370,3 +1376,49 @@ family; no robustness or attack claim carries over to LANL.
 
 **What would change our understanding.** Running tests B, C and D on LANL, and
 a test-A reading that holds its sign across all four arms.
+
+## L31. One window length per real dataset, and no sensitivity analysis
+
+**Component:** every Part 28, 29 and 30 metric (`experiments/ait_clean/`,
+`experiments/ait_attack/`, `experiments/lanl/`).
+
+**Evidence:** `results/ait_clean/summary.md` and `results/lanl/results.json`
+(`window_seconds`); `docs/part27-ait-datacard.md`.
+
+- **AIT is reported at 300 s in network mode, LANL at 300 s over days
+  1-16.** No metric in either Part is reported at a second window length.
+- **The window length is not a neutral parameter.** It sets which lines fall
+  in a positive window, how often a view is empty and therefore masked, and
+  the size of the `(unit, window)` sample space that [[L23]]'s prevalence is
+  computed against.
+- **Re-binning is implemented and tested, but was never run against the
+  metrics.** `rewindow` re-bins one scan to any multiple exactly for
+  merge-closed features.
+
+**What this means.** Every real-data figure is conditional on one choice of
+window length, and the project has no measurement of how much any of them
+would move at another.
+
+**What would change our understanding.** The same metrics at two or more
+window lengths per dataset, reported separately and never pooled.
+
+## L32. Part 32's container image has never been built
+
+**Component:** the deployment path of the live diagnostic service
+(`Dockerfile`, `serve/requirements.txt`).
+
+**Evidence:** `docs/part32-live-service.md`, "Deploying to Hugging Face
+Spaces".
+
+- **No `docker build` has been run against the Dockerfile.** The pinned
+  dependency set, the CPU-only torch wheel and the non-root user are all
+  unexercised; the first build is the deployer's and it may fail.
+- **The service's own code is tested** under `tests/serve/`, but those tests
+  ran under the development `.venv` (Python **3.13.7**), the same minor
+  version as the image base `python:3.13-slim` and a different build of it.
+
+**What this means.** No claim that the service runs in a container is
+supported by anything in this repository.
+
+**What would change our understanding.** One successful build, and a
+`/health` response from the running container.
