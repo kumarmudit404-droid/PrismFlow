@@ -85,8 +85,14 @@ both are wrong together.
 ## 3. Synthetic results (Parts 05–15)
 
 Synthetic data is the only place `rho` is a parameter that was *set*, so it is
-the only place the estimator has a ground truth to be validated against. Every
-row is 5 seeds, mean +/- sample std.
+the only place the estimator has a ground truth to be validated against. The
+seed counts are not uniform. 3.1's correlation is a single pooled value with
+no recorded seed count (`results/final_summary.json` rows[0] carries
+`"std": null, "n_seeds": null`), so it is not a 5-seed figure and must not be
+read as one. The two detector AUCs in 3.3 are 5 seeds each per
+`results/comparison/detector.json` (`summary.clone_k2.auc.n_seeds` and
+`summary.missing_50.auc.n_seeds`). Every other row below is 5 seeds, mean
++/- sample std.
 
 ### 3.1 The estimator reads what it is supposed to read
 
@@ -169,7 +175,7 @@ it is measured redundancy and the remainder is estimator floor. **ENIV is
 applied here, not validated here**: real views carry no ground-truth
 dependence (L9).
 
-**Sources:** `results/final_summary.json`, `results/real/README.md`.
+**Sources:** `results/final_summary.json`, `results/comparison/detector.json`, `results/real/README.md`.
 
 ---
 
