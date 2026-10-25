@@ -213,14 +213,28 @@
         "title": "What Part 30 does not establish",
         "status": null,
         "group": "real_data"
+      },
+      {
+        "id": "L31",
+        "n": 31,
+        "title": "One window length per real dataset, and no sensitivity analysis",
+        "status": null,
+        "group": "real_data"
+      },
+      {
+        "id": "L32",
+        "n": 32,
+        "title": "Part 32's container image has never been built",
+        "status": null,
+        "group": "real_data"
       }
     ],
     "counts": {
-      "total": 30,
+      "total": 32,
       "resolved": 0,
       "closed": 0,
       "new": 0,
-      "open": 30
+      "open": 32
     },
     "group_labels": {
       "per_part": "discovered as each Part ran",
@@ -304,12 +318,12 @@
     }
   },
   "provenance": {
-    "generated_utc": "2026-10-23T04:43:48Z",
+    "generated_utc": "2026-10-25T18:18:55Z",
     "sources": [
       {
         "path": "docs/KNOWN_LIMITATIONS.md",
-        "sha256": "b15a33bc38b173baef0cb60e909f4131d5023622521f032907fe8cfea0722301",
-        "bytes": 78907
+        "sha256": "28083c058fc0d81f5fb57034ef8803710e541f8ba4e90fe77f5af5d6e5d18864",
+        "bytes": 82870
       },
       {
         "path": "docs/v2-known-limitations.md",

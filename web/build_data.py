@@ -1455,7 +1455,9 @@ def build_real_summary() -> dict:
         "WERE measured over 5 seeds and they disagree, so more runs of the "
         "same design will not settle it.",
         gz_src,
-        "; ".join(
+        "PrismFlow, natural_windows.dnsteal_only attack windows against "
+        "natural_windows.benign windows -- "
+        + "; ".join(
             "%s: attack %.4f +/- %.4f against benign %.4f +/- %.4f (%s)"
             % (name, atk["mean"], atk["std"], ben["mean"], ben["std"],
                "rises" if d > 0 else "falls")
@@ -1463,14 +1465,21 @@ def build_real_summary() -> dict:
         + ". The two directions disagree, and L17 conditions both.")
 
     # ---- detection, LANL: L30 ------------------------------------------
-    lanl_signs = []
-    for name, arm in sorted(lanl["configurations"].items()):
-        pops = dig(arm, "part29_test_a_natural_attack_windows", "per_system",
-                   "prismflow", "populations") or {}
-        atk = dig(pops, "attack_windows", "summary", "mean_dependence_eigen")
-        ben = dig(pops, "benign_windows", "summary", "mean_dependence_eigen")
-        if atk and ben and atk.get("mean") is not None:
-            lanl_signs.append((name, atk["mean"] - ben["mean"]))
+    def lanl_deltas(system: str) -> list[tuple[str, float]]:
+        out = []
+        for name, arm in sorted(lanl["configurations"].items()):
+            pops = dig(arm, "part29_test_a_natural_attack_windows",
+                       "per_system", system, "populations") or {}
+            atk = dig(pops, "attack_windows", "summary",
+                      "mean_dependence_eigen")
+            ben = dig(pops, "benign_windows", "summary",
+                      "mean_dependence_eigen")
+            if atk and ben and atk.get("mean") is not None:
+                out.append((name, atk["mean"] - ben["mean"]))
+        return out
+
+    lanl_signs = lanl_deltas("prismflow")
+    naive_signs = dict(lanl_deltas("naive"))
     reversing = [n for n, d in lanl_signs if d <= 0]
     det_lanl = cell(
         "NO EVIDENCE",
@@ -1482,10 +1491,14 @@ def build_real_summary() -> dict:
         "not run, which is why the other two LANL cells read `needs more "
         "data` instead.)",
         lanl_src,
-        "Attack-minus-benign mean dependence per arm: "
+        "PrismFlow attack-minus-benign mean dependence per arm: "
         + ", ".join("%s %+.4f" % (n, d) for n, d in lanl_signs)
         + ". %s reverse%s the sign."
-        % (", ".join(reversing) or "No arm", "" if len(reversing) != 1 else "s"))
+        % (", ".join(reversing) or "No arm", "" if len(reversing) != 1 else "s")
+        + " Naive on the same arms differs: %s."
+        % ", ".join("%s %+.4f" % (n, naive_signs[n])
+                    for n in ("with_auth", "without_flows")
+                    if n in naive_signs))
 
     # ---- defence, synthetic: mechanical over every non-clean condition ---
     worse = []

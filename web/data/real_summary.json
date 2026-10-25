@@ -45,14 +45,14 @@
         "ait": {
           "verdict": "NO EVIDENCE",
           "rule": "CONFIRMS only if attack-window dependence exceeds benign-window dependence in BOTH directions, reported separately (Part 29 forbids pooling the two scenarios), AND the comparison is informative about fusion at all. L17 says it is not: one view (`dns`) solves this label, so no AIT comparison between fused systems is evidence about fusion. NO EVIDENCE rather than `needs more data`: both directions WERE measured over 5 seeds and they disagree, so more runs of the same design will not settle it.",
-          "detail": "A_rm_to_santos: attack 0.2906 +/- 0.0274 against benign 0.3273 +/- 0.0124 (falls); B_santos_to_rm: attack 0.3619 +/- 0.0196 against benign 0.2482 +/- 0.0249 (rises). The two directions disagree, and L17 conditions both.",
+          "detail": "PrismFlow, natural_windows.dnsteal_only attack windows against natural_windows.benign windows -- A_rm_to_santos: attack 0.2906 +/- 0.0274 against benign 0.3273 +/- 0.0124 (falls); B_santos_to_rm: attack 0.3619 +/- 0.0196 against benign 0.2482 +/- 0.0249 (rises). The two directions disagree, and L17 conditions both.",
           "source_file": "results/ait_attack/results.json.gz",
           "sha256": "fd5c6446affd5146398ee20a6f42eddff67621b48e3c5981ff0f6c829588b485"
         },
         "lanl": {
           "verdict": "NO EVIDENCE",
           "rule": "CONFIRMS only if Part 29's test A holds its sign across all four view configurations. NO EVIDENCE rather than `needs more data`: test A WAS run on all four arms over 5 seeds, and it does not hold its sign -- docs/KNOWN_LIMITATIONS.md L30 records it as not a stable signal on LANL. (Tests B, D and the detector half of C were not run, which is why the other two LANL cells read `needs more data` instead.)",
-          "detail": "Attack-minus-benign mean dependence per arm: with_auth +0.0473, without_auth +0.0602, without_dns +0.0306, without_flows -0.1092. without_flows reverses the sign.",
+          "detail": "PrismFlow attack-minus-benign mean dependence per arm: with_auth +0.0473, without_auth +0.0602, without_dns +0.0306, without_flows -0.1092. without_flows reverses the sign. Naive on the same arms differs: with_auth +0.0061, without_flows -0.1238.",
           "source_file": "results/lanl/results.json",
           "sha256": "18b4618763e259f33a0dfd7c9a2cf8f6f57d4d545826adc69ad6ff5c6ebfd5df"
         }
@@ -115,7 +115,7 @@
   ],
   "limitations_source": "docs/KNOWN_LIMITATIONS.md",
   "provenance": {
-    "generated_utc": "2026-10-23T05:37:41Z",
+    "generated_utc": "2026-10-25T18:18:55Z",
     "sources": [
       {
         "path": "results/chorus/attack_metrics.json",
@@ -144,8 +144,8 @@
       },
       {
         "path": "docs/KNOWN_LIMITATIONS.md",
-        "sha256": "b15a33bc38b173baef0cb60e909f4131d5023622521f032907fe8cfea0722301",
-        "bytes": 78907
+        "sha256": "28083c058fc0d81f5fb57034ef8803710e541f8ba4e90fe77f5af5d6e5d18864",
+        "bytes": 82870
       }
     ]
   }
