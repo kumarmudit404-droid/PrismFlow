@@ -85,8 +85,14 @@ both are wrong together.
 ## 3. Synthetic results (Parts 05–15)
 
 Synthetic data is the only place `rho` is a parameter that was *set*, so it is
-the only place the estimator has a ground truth to be validated against. Every
-row is 5 seeds, mean +/- sample std.
+the only place the estimator has a ground truth to be validated against. The
+seed counts are not uniform. 3.1's correlation is a single pooled value with
+no recorded seed count (`results/final_summary.json` rows[0] carries
+`"std": null, "n_seeds": null`), so it is not a 5-seed figure and must not be
+read as one. The two detector AUCs in 3.3 are 5 seeds each per
+`results/comparison/detector.json` (`summary.clone_k2.auc.n_seeds` and
+`summary.missing_50.auc.n_seeds`). Every other row below is 5 seeds, mean
++/- sample std.
 
 ### 3.1 The estimator reads what it is supposed to read
 
@@ -169,7 +175,7 @@ it is measured redundancy and the remainder is estimator floor. **ENIV is
 applied here, not validated here**: real views carry no ground-truth
 dependence (L9).
 
-**Sources:** `results/final_summary.json`, `results/real/README.md`.
+**Sources:** `results/final_summary.json`, `results/comparison/detector.json`, `results/real/README.md`.
 
 ---
 
@@ -270,7 +276,10 @@ all are properties of this sample and this split:
   for **279** attack samples — **142** of the **439** in train and **137** of
   the **410** in test — with **1** benign sample in each block. Dropping its
   test rows lowers test ROC AUC by **0.036** to **0.052** depending on arm and
-  system (`docs/KNOWN_LIMITATIONS.md` L27).
+  system (`results/lanl/results.json`,
+  `phase4_closeout.drop_top_test_computer.per_arm`, each arm 5 seeds,
+  differenced against the eight rows of the table above;
+  `docs/KNOWN_LIMITATIONS.md` L27).
 - **Auth presence alone is a selection signal** (L24). Every attack sample has
   an `auth` record, so the untrained `auth_present_indicator` reaches test AUC
   **0.6637**. The `without_auth` arm removes the auth features; it does not
@@ -471,9 +480,9 @@ it expects a query language — and fixing them advanced **coverage only**.
 
 ## 8. Limitations and threats to validity
 
-The record is `docs/KNOWN_LIMITATIONS.md` (L1–L30) and
+The record is `docs/KNOWN_LIMITATIONS.md` (L1–L32) and
 `docs/v2-known-limitations.md` (V2-L1 to V2-L9). This section names the
-threats that bound this report's claims rather than restating all thirty.
+threats that bound this report's claims rather than restating all forty-one.
 
 **A testbed is not a network.** AIT is a testbed: its traffic is generated,
 its attack is one continuously-running exfiltration tool, and one view solves
@@ -503,7 +512,7 @@ dropping its test rows lowers test ROC AUC by **0.036** to **0.052**.
 choice that changes the label distribution, the per-view missingness and the
 sample space. The LANL figures are at 300-second windows over days 1 to 16;
 the AIT figures are at 300-second windows in network mode. No sensitivity
-analysis over window length is reported here.
+analysis over window length is reported here (L31).
 
 **Prevalence is a sampling decision on LANL** (L23). The reported prevalence
 is the sample's, not the network's.
@@ -524,6 +533,10 @@ population inside an attacked run, and no cell anywhere in the grid varies the
 contaminated fraction.
 
 **No human-subject evaluation and no deployment evaluation were run** (L15).
+
+**The Part 32 container has never been built** (L32). The Dockerfile is
+committed and unverified, so nothing in this report establishes that the live
+service reproduces inside a container.
 
 **Sources:** `docs/KNOWN_LIMITATIONS.md`, `docs/v2-known-limitations.md`.
 
@@ -593,11 +606,11 @@ and none of them is estimated anywhere in this report.
 | the cause of the LANL Brier failure on two arms | **not measured** — three candidate causes, none tested (L29) |
 | seeds run across two execution modes | **not measured** — every std shares one mode (L28) |
 | the union of occupied LANL population cells | **not measured** — bounded, not counted (L23) |
-| window-length sensitivity on either real dataset | **not measured** — one window length per dataset |
+| window-length sensitivity on either real dataset | **not measured** — one window length per dataset (L31) |
 | attack success as a function of the ENIV surface | **not measured** — no such cell exists; the two experiments' `k` axes count different things |
 | human-subject evaluation | **not measured** — not run (L15) |
 | deployment evaluation | **not measured** — not run (L15) |
-| the Part 32 Docker image | **not measured** — the Dockerfile has not been build-tested |
+| the Part 32 Docker image | **not measured** — the Dockerfile has not been build-tested (L32) |
 
 **Sources:** `docs/v2-known-limitations.md`, `docs/KNOWN_LIMITATIONS.md`, `docs/PROJECT_STATUS.md`.
 
