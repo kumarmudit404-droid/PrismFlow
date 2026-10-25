@@ -252,7 +252,34 @@ ENIV on the `with_auth` arm (PrismFlow, eigen form) is **3.5627 +/- 0.0429**
 against four nominal views, efficiency ratio **0.8907 +/- 0.0107**, mean
 dependence **0.1363 +/- 0.0140**.
 
-Three qualifications travel with every LANL number:
+An untrained single scalar reads most of that ranking.
+`total_records_across_views`, oriented on the train block only and never
+fitted, reaches test ROC AUC **0.6843** against the **0.7755** to **0.8389**
+the eight arm-and-system rows above span (L26).
+
+Four facts govern how the table is read. None of them is a detection result;
+all are properties of this sample and this split:
+
+- **Split by whether the attack computer is also attacked in train, the
+  trained arms' lead disappears** (L26). The scalar reaches **0.6405** on the
+  **255** seen attack samples and **0.7563** on the **155** unseen ones, while
+  the arms reach **0.8153** to **0.8875** on seen and **0.7102** to **0.7614**
+  on unseen. No arm clears the scalar by more than **0.01** on unseen
+  computers.
+- **One host carries a third of the attack class** (L27). `C17693` accounts
+  for **279** attack samples — **142** of the **439** in train and **137** of
+  the **410** in test — with **1** benign sample in each block. Dropping its
+  test rows lowers test ROC AUC by **0.036** to **0.052** depending on arm and
+  system (`docs/KNOWN_LIMITATIONS.md` L27).
+- **Auth presence alone is a selection signal** (L24). Every attack sample has
+  an `auth` record, so the untrained `auth_present_indicator` reaches test AUC
+  **0.6637**. The `without_auth` arm removes the auth features; it does not
+  remove that selection.
+- **The `without_auth` arm is capped before training** (L24). **139** of its
+  **410** test attack samples have no record in any remaining view, so they
+  are unpredictable by construction.
+
+Three further qualifications travel with every LANL number:
 
 - **The sample is a declared case-control sample, not the network** (L23).
   Controls are a deterministic 1/512 hash of the control population; the test
@@ -296,16 +323,20 @@ dependence by more than the two 5-seed standard deviations combined.*
 Measured: compromised **0.6970 +/- 0.0380** against clean
 **0.1849 +/- 0.0361**, over 5 seeds.
 
-**AIT — NO EVIDENCE.** The two directions disagree. `A_rm_to_santos`: attack
-**0.2906 +/- 0.0274** against benign **0.3273 +/- 0.0124** — it falls.
-`B_santos_to_rm`: attack **0.3619 +/- 0.0196** against benign
-**0.2482 +/- 0.0249** — it rises. Both were measured over 5 seeds, so more
+**AIT — NO EVIDENCE.** The two directions disagree. Both readings are
+PrismFlow's mean dependence on the `dnsteal_only` attack windows against the
+benign windows — that subset, not all attack windows, and that system, not
+naive. `A_rm_to_santos`: **0.2906 +/- 0.0274** against
+**0.3273 +/- 0.0124** — it falls. `B_santos_to_rm`: **0.3619 +/- 0.0196**
+against **0.2482 +/- 0.0249** — it rises. Both were measured over 5 seeds, so more
 runs of the same design will not settle it, and L17 conditions both.
 
 **LANL — NO EVIDENCE.** Test A does not hold its sign across the four arms.
-Attack-minus-benign mean dependence: `with_auth` **+0.0473**, `without_auth`
-**+0.0602**, `without_dns` **+0.0306**, `without_flows` **-0.1092**. The last
-reverses.
+PrismFlow's attack-minus-benign mean dependence: `with_auth` **+0.0473**,
+`without_auth` **+0.0602**, `without_dns` **+0.0306**, `without_flows`
+**-0.1092**. The last reverses, and it reverses for naive on the same arm too
+(**-0.1238**, `results/lanl/results.json`
+`part29_test_a_natural_attack_windows`).
 
 **What detection amounts to.** The estimator identifies coordinated collusion
 reliably **on synthetic data, where `rho` was set**. On neither real dataset
@@ -335,8 +366,8 @@ PrismFlow is above naive in **12** of **12** non-clean conditions, 5 seeds
 each. The discount did not merely fail to help — the attack succeeded slightly
 *more* often with it than without it, in every attacked cell.
 
-**AIT — NO EVIDENCE.** All 185 cells per direction were measured and their
-signs are mixed: PrismFlow below naive in **117** cells and above in **68** in
+**AIT — NO EVIDENCE.** All **185** cells that carry an attack-success
+measurement were compared per direction, and their signs are mixed: PrismFlow below naive in **117** cells and above in **68** in
 direction A, below in **98** and above in **87** in direction B.
 
 **LANL — needs more data.** Part 29's chorus grid was not run on LANL, so no
@@ -400,12 +431,16 @@ them on a handful of rows. That refusal is the correct behaviour and is the
 honest summary of V2's state.
 
 Two rows fused at 48 rows — rows 032 and 044, at ENIV **1.7052** and
-**1.657**. A single fused row is not a result: at one row, one pass, with a
-lexical adjudicator standing in for Claude, row 032 shows the code path
-executes end to end and nothing more. Its ENIV was **1.648** with confidence
-**0.6731** in that pass; the same row in a later re-verification fused to
-**1.7634** with confidence **0.5580**. **The two differ although the code is
-identical**, because the reasoner sends no temperature and no seed and the
+**1.657** in the post-fix 48-row pass
+(`results/v2/part24_pipeline_verification_postfix.json`, `rows[30].eniv` and
+`rows[41].eniv`). A single fused row is not a result: at one row, one pass,
+with a lexical adjudicator standing in for Claude, row 032 shows the code path
+executes end to end and nothing more. In the pre-fix 48-row pass the same row
+read ENIV **1.648** with confidence **0.6731**
+(`results/v2/part24_pipeline_verification_pass1.json`, `rows[30]`); in the
+later 6-row re-verification it fused to **1.7634** with confidence **0.5580**
+(`results/v2/part24_reverify_n6.json`, `rows[1]`). **The three differ although
+the code is identical**, because the reasoner sends no temperature and no seed and the
 provider samples at its own default — which is itself a reason no single pass
 can be a finding.
 
@@ -430,7 +465,7 @@ can be a finding.
 V2-L2 and V2-L3 were the same fault — a connector handed a bag of words where
 it expects a query language — and fixing them advanced **coverage only**.
 
-**Sources:** `results/v2/part24_pipeline_verification_postfix.json`, `results/v2/coverage_funnel_old_vs_postfix.json`, `results/v2/part24_pipeline_verification.json`, `results/v2/part24_reverify_n6.json`, `docs/v2-known-limitations.md`.
+**Sources:** `results/v2/part24_pipeline_verification_postfix.json`, `results/v2/coverage_funnel_old_vs_postfix.json`, `results/v2/part24_pipeline_verification.json`, `results/v2/part24_pipeline_verification_pass1.json`, `results/v2/part24_reverify_n6.json`, `docs/v2-known-limitations.md`.
 
 ---
 
@@ -447,8 +482,22 @@ clean-data classification only (L30). No result in this report was measured on
 real adversarial traffic in a production network.
 
 **Label leakage on LANL `auth`.** The `auth` view is label-adjacent, and
-dropping it does not drop the selection (L24). The `without_auth` arm is the
-one that is not label-adjacent, and it is also the arm whose Brier is worst.
+dropping it does not drop the selection (L24). The `without_auth` arm removes
+the auth features, but the selection survives: every attack sample has an
+`auth` record, so auth presence alone reaches test AUC **0.6637**, and **139**
+of that arm's **410** test attack samples have no record in any remaining view
+at all. It is also the arm whose Brier is worst.
+
+**On LANL an untrained scalar is most of the ranking** (L26).
+`total_records_across_views` reaches test ROC AUC **0.6843**; split by whether
+the attack computer is also attacked in train it reaches **0.6405** on the
+**255** seen attack samples and **0.7563** on the **155** unseen ones, against
+**0.8153** to **0.8875** and **0.7102** to **0.7614** for the arms, and no arm
+clears it by more than **0.01** on unseen computers.
+
+**One LANL host carries a third of the attack class** (L27). `C17693` holds
+**279** of the **849** attack samples with **1** benign sample per block, and
+dropping its test rows lowers test ROC AUC by **0.036** to **0.052**.
 
 **Window choice.** Both real datasets are windowed, and the window length is a
 choice that changes the label distribution, the per-view missingness and the
@@ -484,11 +533,14 @@ contaminated fraction.
 
 **A signal that is not cross-view agreement.** This is first because L8 is the
 project's structural result: detection and correction fail together because
-both read the same quantity. Timestamps, provenance and retrieval paths are
-independent of belief agreement — two views that agree because they read the
-same upstream source share a provenance trail whether or not their beliefs are
-coordinated, and an attacker who suppresses measured dependence does not
-thereby suppress it. Nothing of this kind has been built or measured.
+both read the same quantity. The untested hypothesis is that timestamps,
+provenance and retrieval paths carry information a belief-agreement signal
+does not: that two views reading the same upstream source would leave a shared
+provenance trail whether or not their beliefs were coordinated, and that an
+attacker able to suppress measured dependence would not thereby suppress that
+trail. Both halves are conjecture. Nothing of this kind has been built or
+measured, and nothing here is known about what an attacker can or cannot
+suppress.
 
 **A capping, per-sample discount.** The defence result would be revisited by a
 discount that caps a view's contribution rather than scaling it, applied per
