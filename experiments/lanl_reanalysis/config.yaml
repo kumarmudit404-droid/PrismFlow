@@ -55,7 +55,9 @@ shared:
 # ---------------------------------------------------------------------------
 step2_l29:
   metrics: [brier, brier_reliability, brier_resolution]
-  report: mean and std over the 5 seeds, per arm and system
+  report: >
+    mean and sample std (ddof = 1, Part 30's convention) over the 5 seeds,
+    per arm and system.
   causes:
     a_all_false_view_mask:
       kind: subset
@@ -230,13 +232,20 @@ step6_l28:
   metrics: [roc_auc, prob_ece, benign_recall, accuracy, balanced_accuracy, attack_recall, brier]
   quantities:
     within_mode_std: >
-      Population std (ddof = 0, Part 30's convention) over the 5 seeds of that
-      metric, within one mode, per system.
+      Sample std (ddof = 1) over the 5 seeds of that metric, within one mode,
+      per system. CORRECTION, committed before any number of this Part was
+      committed: the first version of this file said "population std
+      (ddof = 0, Part 30's convention)". Part 30's convention is ddof = 1
+      (`experiments/ait_clean/run_ait_clean.py::summarise`, statistics.stdev),
+      so the parenthesis was simply wrong about an existing convention. The
+      convention is corrected to match Part 30 so the figures are comparable
+      with its tables. No decision rule, threshold or analysis changes.
     across_mode_spread: >
       run2 mean minus run1 mean (signed), and the largest absolute
       same-seed difference between the modes, per system.
     pooled_spread: >
-      Population std over all 10 values (5 seeds x 2 modes), per system.
+      Sample std (ddof = 1) over all 10 values (5 seeds x 2 modes), per
+      system.
   report: per metric, per system
 
 # ---------------------------------------------------------------------------
