@@ -240,3 +240,99 @@ the running container — is untouched.
 
 **To close it:** `docker desktop start`, wait for the daemon, then re-run
 `/part34` step 3.
+
+---
+
+<!-- PART35:BEGIN -->
+
+## Part 35 proposals (L23, L26, L27, L28 `with_auth`, L29)
+
+Written by `experiments/lanl_reanalysis/run.py` from `results/lanl_reanalysis/results.json`. Every figure is generated, not transcribed. `docs/KNOWN_LIMITATIONS.md` is unchanged.
+
+### L29 - proposed **CLOSED**
+
+L29's own "what would change our understanding" is "a test of each candidate cause, and a Brier below the constant baseline once the responsible one is fixed". All three named candidates were tested under a rule fixed before any number existed, one of them is responsible, and removing its rows does put Brier below the baseline. The responsible cause is NOT fixed, because the rows it names are unpredictable by construction - excluding them changes the evaluated population rather than the model - so the operative warning is unchanged. Proposed CLOSED as diagnosed; the user may prefer OPEN on the strength of the unfixed half, and that is their call.
+
+> **L29 (update, Part 35).** Each candidate cause was corrected alone on the saved test-block scores, 5 seeds, both systems, against the fixed two-class constant baseline 0.0428. Pre-registered rule: a cause accounts for the failure only if correcting it alone puts Brier below 0.0428 in 5 of 5 seeds for both systems.
+> - `without_auth`: 3600 of 18729 test rows have an all-False view mask (139 of them attack rows). On every one of them, in both systems and all 5 seeds, `prob_attack` is exactly 0.5 and the saved `vacuity_confidence` is exactly 0.0 - the least confident value it can take. A constant 0.5 scores the maximum two-class Brier of 0.5 per row, so those rows alone contribute 0.0961 to the arm's Brier, against a whole budget of 0.0428.
+> - `without_auth` naive: uncorrected 0.1218 +/- 0.0006; present rows only 0.0318 +/- 0.0007 against that subset's own constant baseline 0.0352; absent rows 0.5000 +/- 0.0000; prior-shift ORACLE 0.2033 +/- 0.0015; cross-fitted Platt DIAGNOSTIC 0.0432 +/- 0.0000
+> - `without_auth` prismflow: uncorrected 0.1219 +/- 0.0005; present rows only 0.0319 +/- 0.0006 against that subset's own constant baseline 0.0352; absent rows 0.5000 +/- 0.0000; prior-shift ORACLE 0.2038 +/- 0.0013; cross-fitted Platt DIAGNOSTIC 0.0432 +/- 0.0000
+> - `without_flows`: 998 of 18729 test rows have an all-False view mask (0 of them attack rows). On every one of them, in both systems and all 5 seeds, `prob_attack` is exactly 0.5 and the saved `vacuity_confidence` is exactly 0.0 - the least confident value it can take. A constant 0.5 scores the maximum two-class Brier of 0.5 per row, so those rows alone contribute 0.0266 to the arm's Brier, against a whole budget of 0.0428.
+> - `without_flows` naive: uncorrected 0.0628 +/- 0.0004; present rows only 0.0382 +/- 0.0004 against that subset's own constant baseline 0.0452; absent rows 0.5000 +/- 0.0000; prior-shift ORACLE 0.0882 +/- 0.0008; cross-fitted Platt DIAGNOSTIC 0.0427 +/- 0.0001
+> - `without_flows` prismflow: uncorrected 0.0630 +/- 0.0006; present rows only 0.0384 +/- 0.0006 against that subset's own constant baseline 0.0452; absent rows 0.5000 +/- 0.0000; prior-shift ORACLE 0.0891 +/- 0.0011; cross-fitted Platt DIAGNOSTIC 0.0426 +/- 0.0001
+> - Verdicts: `without_auth`: accounted for by (a) the all-False view mask; not accounted for by (b) the prior shift (ORACLE) (0/5 naive, 0/5 prismflow), (c) cross-fitted Platt (DIAGNOSTIC) (0/5 naive, 0/5 prismflow); `without_flows`: accounted for by (a) the all-False view mask; not accounted for by (b) the prior shift (ORACLE) (0/5 naive, 0/5 prismflow), (c) cross-fitted Platt (DIAGNOSTIC) (4/5 naive, 5/5 prismflow).
+> - **"Accounts for" is not "fixed".** The rows cause (a) names are unpredictable by construction (Part 30 section 4.2): every model must score them identically whatever their label. Restricting the metric to the rows with a present view changes the evaluated population; it does not change a probability. A deployed detector still meets those cells and still emits 0.5 on them.
+> - The prior-shift correction makes it WORSE in both failing arms, and it is an ORACLE (it uses the test prevalence). The Platt recalibration is a DIAGNOSTIC fitted on test rows and cross-fitted by computer fold, because `results/lanl/` holds no train-block scores; it does not meet the rule either. Neither is a deployable fix, so the operative sentence stands: **probability outputs of those arms should not be used.**
+> - A route for Part 38, not run here: the protocol's own `vacuity_confidence` is already exactly 0.0 on precisely these rows, so abstaining on them is a selective-prediction decision the existing machinery can express, rather than a new model.
+> - Evidence: `results/lanl_reanalysis/results.json`, `step2_l29`; `experiments/lanl_reanalysis/README.md` section 1.
+
+### L23 - proposed **CLOSED**
+
+L23 asks for "a measurement at, or reweighted to, the population prevalence". That measurement now exists, and it confirms the limitation rather than lifting it: the reweighting is only as good as the uniformity of the control hash, and its false-alarm resolution is 512 cells, so it still gives no operating point that transfers.
+
+> **L23 (update, Part 35).** Metrics were recomputed under inverse-probability weights (attack 1, benign 512, the declared 1/512 control hash) on the saved test-block scores, 5 seeds per arm and system.
+> - `without_auth` naive: weighted Brier 0.097901 +/- 0.000881, weighted prevalence 0.00004371, and at the 0.5 threshold weighted precision 0.000090 +/- 0.000000, recall 0.3912 +/- 0.0013, FPR 0.18904962 +/- 0.00007117 at 443290 +/- 167 weighted false alarms per test day
+> - `without_auth` prismflow: weighted Brier 0.098170 +/- 0.000824, weighted prevalence 0.00004371, and at the 0.5 threshold weighted precision 0.000090 +/- 0.000001, recall 0.3907 +/- 0.0032, FPR 0.18901687 +/- 0.00004883 at 443213 +/- 114 weighted false alarms per test day
+> - `without_flows` naive: weighted Brier 0.030717 +/- 0.000455, weighted prevalence 0.00004371, and at the 0.5 threshold weighted precision 0.000089 +/- 0.000008, recall 0.1112 +/- 0.0095, FPR 0.05490474 +/- 0.00008097 at 128742 +/- 190 weighted false alarms per test day
+> - `without_flows` prismflow: weighted Brier 0.031319 +/- 0.000478, weighted prevalence 0.00004371, and at the 0.5 threshold weighted precision 0.000085 +/- 0.000011, recall 0.1073 +/- 0.0143, FPR 0.05499208 +/- 0.00008279 at 128947 +/- 194 weighted false alarms per test day
+> - `without_dns` naive: weighted Brier 0.005472 +/- 0.000437, weighted prevalence 0.00004371, and at the 0.5 threshold weighted precision 0.001230 +/- 0.000236, recall 0.1263 +/- 0.0184, FPR 0.00451990 +/- 0.00035251 at 10598 +/- 827 weighted false alarms per test day
+> - `without_dns` prismflow: weighted Brier 0.005936 +/- 0.000623, weighted prevalence 0.00004371, and at the 0.5 threshold weighted precision 0.001232 +/- 0.000152, recall 0.1244 +/- 0.0150, FPR 0.00441072 +/- 0.00012448 at 10342 +/- 292 weighted false alarms per test day
+> - `with_auth` naive: weighted Brier 0.003592 +/- 0.000472, weighted prevalence 0.00004371, and at the 0.5 threshold weighted precision 0.009390 +/- 0.002252, recall 0.1273 +/- 0.0199, FPR 0.00062230 +/- 0.00020643 at 1459 +/- 484 weighted false alarms per test day
+> - `with_auth` prismflow: weighted Brier 0.004228 +/- 0.000559, weighted prevalence 0.00004371, and at the 0.5 threshold weighted precision 0.010981 +/- 0.004255, recall 0.1444 +/- 0.0108, FPR 0.00062230 +/- 0.00019145 at 1459 +/- 449 weighted false alarms per test day
+> - The weights reconstruct the occupied-cell population only as far as the crc32 control hash is uniform over cells; uniformity is assumed, not measured. A weighted false-positive count moves in steps of 512 cells over 4 test days, so **no alarm rate between 0 and 128 per day is representable** and all three pre-registered targets (1, 10 and 100 false alarms per test day) collapse onto the same zero-alarm threshold. The weighted precision of 1.0 there means no SAMPLED control fired, which estimates the population false-alarm count as 0 with a resolution of 512 cells; it does not mean a detector with no false alarms. A reweighted estimate is therefore not an operating point.
+> - Population cells over the test days alone: between 6,554,950 and 15,730,712 (`results/lanl/population.json`, summed per day over days 13-16).
+> - Evidence: `results/lanl_reanalysis/results.json`, `step3_l23`; `experiments/lanl_reanalysis/README.md` section 2.
+
+### L26 - proposed **CLOSED**
+
+L26 asks for "an unseen-computer result that clears the scalar by more than 0.01 with an interval attached". The interval is now attached, by the pre-registered 2000-replicate computer-cluster bootstrap, and the result confirms the limitation: NO arm-and-system pair clears that bar, and every paired model-minus-scalar interval on unseen computers includes 0. Closed as confirmed, with the numbers whichever way they fell.
+
+> **L26 (update, Part 35).** A computer-cluster bootstrap (2000 replicates, fixed seed 12345, 8,350 test computers drawn with replacement) was run on the saved scores, paired against the untrained scalar inside each replicate. The scalar was recomputed from `samples.npz` with Part 30's train-fixed orientation and reproduces the committed test AUC 0.6843 before any interval was computed.
+> - Scalar `total_records_across_views`: seen AUC 0.6405 [0.5347, 0.8990], unseen AUC 0.7563 [0.7030, 0.8078].
+> - Paired model-minus-scalar on unseen computers, `without_auth/naive`: -0.0461 [-0.1127, 0.0224], **includes 0**
+> - Paired model-minus-scalar on unseen computers, `without_auth/prismflow`: -0.0436 [-0.1106, 0.0250], **includes 0**
+> - Paired model-minus-scalar on unseen computers, `without_flows/naive`: -0.0127 [-0.0728, 0.0479], **includes 0**
+> - Paired model-minus-scalar on unseen computers, `without_flows/prismflow`: -0.0055 [-0.0625, 0.0534], **includes 0**
+> - Paired model-minus-scalar on unseen computers, `without_dns/naive`: 0.0021 [-0.0682, 0.0697], **includes 0**
+> - Paired model-minus-scalar on unseen computers, `without_dns/prismflow`: 0.0026 [-0.0675, 0.0703], **includes 0**
+> - Paired model-minus-scalar on unseen computers, `with_auth/naive`: 0.0043 [-0.0634, 0.0714], **includes 0**
+> - Paired model-minus-scalar on unseen computers, `with_auth/prismflow`: 0.0052 [-0.0639, 0.0723], **includes 0**
+> - Above the scalar with an interval excluding 0: none. Below it with an interval excluding 0: none. Interval includes 0: `without_auth/naive`, `without_auth/prismflow`, `without_flows/naive`, `without_flows/prismflow`, `without_dns/naive`, `without_dns/prismflow`, `with_auth/naive`, `with_auth/prismflow`. L26's own clearance bar is +0.01 with an interval attached; the arm-and-system pairs that clear it are **none**.
+> - Evidence: `results/lanl_reanalysis/results.json`, `step4_l26`; `experiments/lanl_reanalysis/README.md` section 3.
+
+### L27 - proposed **OPEN**
+
+L27's "what would change our understanding" is a DESIGN change - a sample that keeps all or a stated share of the benign cells of attack hosts. That needs a re-sample and a retrain, which is Part 38. Part 35 only widens the sensitivity measurement from one host to five, so L27 stays OPEN with new evidence attached.
+
+> **L27 (new evidence, Part 35; still OPEN).** The leave-one-host-out measurement of section 7.9 was extended from the single top host to the 5 computers with the most test attack rows, for all four arms and both systems, on the saved scores (5 seeds, mean +/- std, no interval - one host is not a resample).
+> - `C17693`: 137 attack and 1 benign test rows
+> - `C1015`: 12 attack and 1 benign test rows
+> - `C2388`: 10 attack and 3 benign test rows
+> - `C1936`: 7 attack and 0 benign test rows
+> - `C2079`: 7 attack and 3 benign test rows
+> - Largest AUC change from removing one host: `without_auth/naive` minus `C17693` -0.0519; `without_auth/prismflow` minus `C17693` -0.0508; `without_flows/naive` minus `C17693` -0.0435.
+> - The design change L27 names has not been made, so the limitation is unchanged. Evidence: `results/lanl_reanalysis/results.json`, `step5_l27`; `experiments/lanl_reanalysis/README.md` section 4.
+
+### L28 - proposed **OPEN**
+
+L28 asks for "seeds run across at least two execution modes, so the reported std covers mode as well as seed". Only `with_auth` has two modes in `results/lanl/`; the quantity is now reported per metric for that arm, and the other three arms have no second mode to compare, so they stay OPEN until Part 38 runs them.
+
+> **L28 (new evidence, Part 35; still OPEN).** For `with_auth` only, the per-seed std within each execution mode, the spread across modes and the pooled spread are now reported per metric, both systems (`results/lanl/results.run1.json.gz` at 12 threads sequential against `results/lanl/results.json` at 1 thread, concurrency 11).
+> - prismflow `attack_recall`: within-mode std 0.0196 (run 1) and 0.0146 (run 2); across-mode mean difference 0.0190; largest same-seed gap 0.0341; pooled std over the 10 values 0.0191, which is 0.98x the larger within-mode std
+> - prismflow `balanced_accuracy`: within-mode std 0.0098 (run 1) and 0.0073 (run 2); across-mode mean difference 0.0095; largest same-seed gap 0.0170; pooled std over the 10 values 0.0095, which is 0.98x the larger within-mode std
+> - naive `roc_auc`: within-mode std 0.0039 (run 1) and 0.0033 (run 2); across-mode mean difference -0.0031; largest same-seed gap 0.0140; pooled std over the 10 values 0.0038, which is 0.96x the larger within-mode std
+> - prismflow `benign_recall`: within-mode std 0.0002 (run 1) and 0.0002 (run 2); across-mode mean difference -0.0001; largest same-seed gap 0.0002; pooled std over the 10 values 0.0002, which is 0.96x the larger within-mode std
+> - prismflow `accuracy`: within-mode std 0.0004 (run 1) and 0.0003 (run 2); across-mode mean difference 0.0003; largest same-seed gap 0.0007; pooled std over the 10 values 0.0004, which is 0.96x the larger within-mode std
+> - naive `brier`: within-mode std 0.0005 (run 1) and 0.0005 (run 2); across-mode mean difference 0.0001; largest same-seed gap 0.0010; pooled std over the 10 values 0.0005, which is 0.94x the larger within-mode std
+> - naive `balanced_accuracy`: within-mode std 0.0081 (run 1) and 0.0088 (run 2); across-mode mean difference 0.0002; largest same-seed gap 0.0146; pooled std over the 10 values 0.0080, which is 0.91x the larger within-mode std
+> - naive `attack_recall`: within-mode std 0.0163 (run 1) and 0.0176 (run 2); across-mode mean difference 0.0005; largest same-seed gap 0.0293; pooled std over the 10 values 0.0160, which is 0.91x the larger within-mode std
+> - prismflow `brier`: within-mode std 0.0003 (run 1) and 0.0002 (run 2); across-mode mean difference -0.0003; largest same-seed gap 0.0007; pooled std over the 10 values 0.0003, which is 0.88x the larger within-mode std
+> - prismflow `roc_auc`: within-mode std 0.0036 (run 1) and 0.0043 (run 2); across-mode mean difference -0.0003; largest same-seed gap 0.0042; pooled std over the 10 values 0.0038, which is 0.87x the larger within-mode std
+> - naive `accuracy`: within-mode std 0.0003 (run 1) and 0.0003 (run 2); across-mode mean difference -0.0000; largest same-seed gap 0.0006; pooled std over the 10 values 0.0003, which is 0.87x the larger within-mode std
+> - prismflow `prob_ece`: within-mode std 0.0007 (run 1) and 0.0011 (run 2); across-mode mean difference 0.0004; largest same-seed gap 0.0020; pooled std over the 10 values 0.0009, which is 0.79x the larger within-mode std
+> - naive `benign_recall`: within-mode std 0.0001 (run 1) and 0.0002 (run 2); across-mode mean difference -0.0000; largest same-seed gap 0.0004; pooled std over the 10 values 0.0002, which is 0.76x the larger within-mode std
+> - naive `prob_ece`: within-mode std 0.0002 (run 1) and 0.0009 (run 2); across-mode mean difference -0.0001; largest same-seed gap 0.0008; pooled std over the 10 values 0.0006, which is 0.69x the larger within-mode std
+> - **The reading, which sharpens L28 rather than lifting it.** The two modes' 5-seed MEANS are close: the largest across-mode mean difference over these metrics is 0.0190, and pooling the 10 values raises the std to at most 0.98x the larger within-mode std. What moves is the SAME SEED: the largest same-seed gap is 0.0341, which is several within-mode stds. So the mode selects between deterministic answers per seed, as L28 already says, and the 5-seed mean absorbs most of it; a SINGLE-seed figure is the one that must not be read as mode-independent.
+> - The three remaining arms (`without_auth`, `without_flows`, `without_dns`) were run in one mode only, so no cross-mode spread exists for them and L28 is not closed. Evidence: `results/lanl_reanalysis/results.json`, `step6_l28`; `experiments/lanl_reanalysis/README.md` section 5.
+
+<!-- PART35:END -->

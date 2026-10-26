@@ -1,0 +1,231 @@
+{
+ "manifest_note": "Run 1 of Part 30 (with_auth only, 2026-10-17, commit 452bc1f). Immutable record: this file is never overwritten. Later runs write results.json afresh; run 1 is read from the gzip copy and reported as a replicate. sha256 is of the DECOMPRESSED bytes, so it can be checked after `gzip -dc`.",
+ "n_verified": 42,
+ "all_match": true,
+ "verified": {
+  "results/lanl/samples.npz": {
+   "expected_sha256": "9035c237f7a794b62d9a6d2b81491f0d2f7907f6972c3e64581b9805d0bc49fb",
+   "got_sha256": "9035c237f7a794b62d9a6d2b81491f0d2f7907f6972c3e64581b9805d0bc49fb",
+   "match": true
+  },
+  "results/lanl/scores/with_auth_naive_seed0.npz": {
+   "expected_sha256": "7d5dfae63f7cb3f4acf116f3d7fb473dd21e74fc11c8830bf81f641b2f5a5ff0",
+   "got_sha256": "7d5dfae63f7cb3f4acf116f3d7fb473dd21e74fc11c8830bf81f641b2f5a5ff0",
+   "match": true
+  },
+  "results/lanl/scores/with_auth_naive_seed1.npz": {
+   "expected_sha256": "ed438da71f5eb6219ab826af7fdbabd9a2a72c33fb6d333b74a354d857b7e80d",
+   "got_sha256": "ed438da71f5eb6219ab826af7fdbabd9a2a72c33fb6d333b74a354d857b7e80d",
+   "match": true
+  },
+  "results/lanl/scores/with_auth_naive_seed2.npz": {
+   "expected_sha256": "5a067ced69f50a8303db3f35ea64f0546b32c2c8e3ab780313e343da29f918d4",
+   "got_sha256": "5a067ced69f50a8303db3f35ea64f0546b32c2c8e3ab780313e343da29f918d4",
+   "match": true
+  },
+  "results/lanl/scores/with_auth_naive_seed3.npz": {
+   "expected_sha256": "d65ba8f2055502d05668e5c32af2f732617553995c79f8d18b30c4d68f9b1e1e",
+   "got_sha256": "d65ba8f2055502d05668e5c32af2f732617553995c79f8d18b30c4d68f9b1e1e",
+   "match": true
+  },
+  "results/lanl/scores/with_auth_naive_seed4.npz": {
+   "expected_sha256": "660fe4d98dc29764f35de70491c511ef0d2a5c2f87729da8a8550f975e3430d0",
+   "got_sha256": "660fe4d98dc29764f35de70491c511ef0d2a5c2f87729da8a8550f975e3430d0",
+   "match": true
+  },
+  "results/lanl/scores/with_auth_prismflow_seed0.npz": {
+   "expected_sha256": "32249eeade945cd4940d0ca90ba65890f969164b4284788ae1ae28e771d5fa4a",
+   "got_sha256": "32249eeade945cd4940d0ca90ba65890f969164b4284788ae1ae28e771d5fa4a",
+   "match": true
+  },
+  "results/lanl/scores/with_auth_prismflow_seed1.npz": {
+   "expected_sha256": "651a046fae6596cf26e598f362d930fb3d6bc03078b62b90339bd5f85d01a1b4",
+   "got_sha256": "651a046fae6596cf26e598f362d930fb3d6bc03078b62b90339bd5f85d01a1b4",
+   "match": true
+  },
+  "results/lanl/scores/with_auth_prismflow_seed2.npz": {
+   "expected_sha256": "00730a3d0df22360c024c71ddcd0fbba7425fbaafe8345e9d5bf35f2b575d694",
+   "got_sha256": "00730a3d0df22360c024c71ddcd0fbba7425fbaafe8345e9d5bf35f2b575d694",
+   "match": true
+  },
+  "results/lanl/scores/with_auth_prismflow_seed3.npz": {
+   "expected_sha256": "5d9fa5e54ec3b550116d67510ca7ce16fbd41f2ca38ff899f7ebe1baae71d741",
+   "got_sha256": "5d9fa5e54ec3b550116d67510ca7ce16fbd41f2ca38ff899f7ebe1baae71d741",
+   "match": true
+  },
+  "results/lanl/scores/with_auth_prismflow_seed4.npz": {
+   "expected_sha256": "7ecd14cbef474aad5002992a9b168f160aa2c9321bb4c8b54e582c3323866345",
+   "got_sha256": "7ecd14cbef474aad5002992a9b168f160aa2c9321bb4c8b54e582c3323866345",
+   "match": true
+  },
+  "results/lanl/scores/without_auth_naive_seed0.npz": {
+   "expected_sha256": "5352bbfcade7c3b47ee7521441f379f65b2d92eb24c181afa7eb4b74001f71bd",
+   "got_sha256": "5352bbfcade7c3b47ee7521441f379f65b2d92eb24c181afa7eb4b74001f71bd",
+   "match": true
+  },
+  "results/lanl/scores/without_auth_naive_seed1.npz": {
+   "expected_sha256": "688f7ce25e68878aefbbb1b65c2a20fd9e398d1138c773a4f75fbc8df234de8d",
+   "got_sha256": "688f7ce25e68878aefbbb1b65c2a20fd9e398d1138c773a4f75fbc8df234de8d",
+   "match": true
+  },
+  "results/lanl/scores/without_auth_naive_seed2.npz": {
+   "expected_sha256": "13a8ce31c49b085ae7cca4d654c943c2a3d897e44d83c646663d42721bfc0d70",
+   "got_sha256": "13a8ce31c49b085ae7cca4d654c943c2a3d897e44d83c646663d42721bfc0d70",
+   "match": true
+  },
+  "results/lanl/scores/without_auth_naive_seed3.npz": {
+   "expected_sha256": "87720b66ca1709c334c0a3fa20d1282cdf4d630a4eed1511f07dc83243891f8f",
+   "got_sha256": "87720b66ca1709c334c0a3fa20d1282cdf4d630a4eed1511f07dc83243891f8f",
+   "match": true
+  },
+  "results/lanl/scores/without_auth_naive_seed4.npz": {
+   "expected_sha256": "e151150bd3d2e633377877f655d39e9f017ac6071a3ceee0dcea9432f7a01487",
+   "got_sha256": "e151150bd3d2e633377877f655d39e9f017ac6071a3ceee0dcea9432f7a01487",
+   "match": true
+  },
+  "results/lanl/scores/without_auth_prismflow_seed0.npz": {
+   "expected_sha256": "0b57d6f3af06318eceeda2f8a79d05949edf716d1fa4c5bd89371104977c3117",
+   "got_sha256": "0b57d6f3af06318eceeda2f8a79d05949edf716d1fa4c5bd89371104977c3117",
+   "match": true
+  },
+  "results/lanl/scores/without_auth_prismflow_seed1.npz": {
+   "expected_sha256": "68f9b631830c239794db8d7184cbf0d01ea4594882c24ee23890451a676daea7",
+   "got_sha256": "68f9b631830c239794db8d7184cbf0d01ea4594882c24ee23890451a676daea7",
+   "match": true
+  },
+  "results/lanl/scores/without_auth_prismflow_seed2.npz": {
+   "expected_sha256": "e05404c8fafb99799fc8d3ba92a64d52f90b56684d06a5b318fd8095feeafd91",
+   "got_sha256": "e05404c8fafb99799fc8d3ba92a64d52f90b56684d06a5b318fd8095feeafd91",
+   "match": true
+  },
+  "results/lanl/scores/without_auth_prismflow_seed3.npz": {
+   "expected_sha256": "f5e7a42a0d6a7f548c90ed3a5afe2363c7d65eb831b8628eed11e439e33473f8",
+   "got_sha256": "f5e7a42a0d6a7f548c90ed3a5afe2363c7d65eb831b8628eed11e439e33473f8",
+   "match": true
+  },
+  "results/lanl/scores/without_auth_prismflow_seed4.npz": {
+   "expected_sha256": "f18794509bff145d7d914b98980df09e3074bdde23d705561676aacefe133b36",
+   "got_sha256": "f18794509bff145d7d914b98980df09e3074bdde23d705561676aacefe133b36",
+   "match": true
+  },
+  "results/lanl/scores/without_dns_naive_seed0.npz": {
+   "expected_sha256": "22fea3d30016256f3c388e62f13f79cbeef03022ffec7bb7c1aa72e1e4b4d4ad",
+   "got_sha256": "22fea3d30016256f3c388e62f13f79cbeef03022ffec7bb7c1aa72e1e4b4d4ad",
+   "match": true
+  },
+  "results/lanl/scores/without_dns_naive_seed1.npz": {
+   "expected_sha256": "224a4ea224eb4e688277de3f8c88d174b981fbe0d8aebe245b58870ecd5b4042",
+   "got_sha256": "224a4ea224eb4e688277de3f8c88d174b981fbe0d8aebe245b58870ecd5b4042",
+   "match": true
+  },
+  "results/lanl/scores/without_dns_naive_seed2.npz": {
+   "expected_sha256": "817e3558faa2f734d0166c1803ff994dd3284337151bf652bf127a97fee329c6",
+   "got_sha256": "817e3558faa2f734d0166c1803ff994dd3284337151bf652bf127a97fee329c6",
+   "match": true
+  },
+  "results/lanl/scores/without_dns_naive_seed3.npz": {
+   "expected_sha256": "b56ff77642e5747590a5bacc1e5e57311cbfd68f713e4a67b8446ae172bc69b8",
+   "got_sha256": "b56ff77642e5747590a5bacc1e5e57311cbfd68f713e4a67b8446ae172bc69b8",
+   "match": true
+  },
+  "results/lanl/scores/without_dns_naive_seed4.npz": {
+   "expected_sha256": "0b3c49b07b9c72d43c0f1fce7cd8a5c408947e2f3f7cd8ad55d86b4de18bca6f",
+   "got_sha256": "0b3c49b07b9c72d43c0f1fce7cd8a5c408947e2f3f7cd8ad55d86b4de18bca6f",
+   "match": true
+  },
+  "results/lanl/scores/without_dns_prismflow_seed0.npz": {
+   "expected_sha256": "1d32163652f124c23612e54f2ca7e084f6f9e963aaa91add12c94f0b8725150b",
+   "got_sha256": "1d32163652f124c23612e54f2ca7e084f6f9e963aaa91add12c94f0b8725150b",
+   "match": true
+  },
+  "results/lanl/scores/without_dns_prismflow_seed1.npz": {
+   "expected_sha256": "ff85daa54f9a22769d8fc59997160c14f25b48b6cac712c7993bf66ba9c1299a",
+   "got_sha256": "ff85daa54f9a22769d8fc59997160c14f25b48b6cac712c7993bf66ba9c1299a",
+   "match": true
+  },
+  "results/lanl/scores/without_dns_prismflow_seed2.npz": {
+   "expected_sha256": "0770a6f32d3e54819223d4dfc1c75790722477406e05c0bdb4c5384ca9740340",
+   "got_sha256": "0770a6f32d3e54819223d4dfc1c75790722477406e05c0bdb4c5384ca9740340",
+   "match": true
+  },
+  "results/lanl/scores/without_dns_prismflow_seed3.npz": {
+   "expected_sha256": "6102a7fce89a04c892c01d9a53cb315bef939298200c3c7d206f8f4e1c5e21d3",
+   "got_sha256": "6102a7fce89a04c892c01d9a53cb315bef939298200c3c7d206f8f4e1c5e21d3",
+   "match": true
+  },
+  "results/lanl/scores/without_dns_prismflow_seed4.npz": {
+   "expected_sha256": "94bf8f898d3ec96da421961b63290b6f419f78e6e4dc52546f7b256d2e514d86",
+   "got_sha256": "94bf8f898d3ec96da421961b63290b6f419f78e6e4dc52546f7b256d2e514d86",
+   "match": true
+  },
+  "results/lanl/scores/without_flows_naive_seed0.npz": {
+   "expected_sha256": "b44843d76d0883d1754078d3216aeb27806dca72cec909ab75d6b76fc90a8c1a",
+   "got_sha256": "b44843d76d0883d1754078d3216aeb27806dca72cec909ab75d6b76fc90a8c1a",
+   "match": true
+  },
+  "results/lanl/scores/without_flows_naive_seed1.npz": {
+   "expected_sha256": "2b0cca92776dc3d5409dcf2b91389488027b5ce2ea48a112b6fd82786c50d7ca",
+   "got_sha256": "2b0cca92776dc3d5409dcf2b91389488027b5ce2ea48a112b6fd82786c50d7ca",
+   "match": true
+  },
+  "results/lanl/scores/without_flows_naive_seed2.npz": {
+   "expected_sha256": "6bf42c9cfbb8c2ca9ea565a144d13c3e6f5cef083322ccb47f3003dc69f799b6",
+   "got_sha256": "6bf42c9cfbb8c2ca9ea565a144d13c3e6f5cef083322ccb47f3003dc69f799b6",
+   "match": true
+  },
+  "results/lanl/scores/without_flows_naive_seed3.npz": {
+   "expected_sha256": "19af0f4f1ba9d40dbf50d23bb0d83d4f152ecb878702160d2f167c868c559ac3",
+   "got_sha256": "19af0f4f1ba9d40dbf50d23bb0d83d4f152ecb878702160d2f167c868c559ac3",
+   "match": true
+  },
+  "results/lanl/scores/without_flows_naive_seed4.npz": {
+   "expected_sha256": "bcdde59a8a4fa152187259c7e423423e5116dfc78b2a3ff97b9dc9c4ae954cb1",
+   "got_sha256": "bcdde59a8a4fa152187259c7e423423e5116dfc78b2a3ff97b9dc9c4ae954cb1",
+   "match": true
+  },
+  "results/lanl/scores/without_flows_prismflow_seed0.npz": {
+   "expected_sha256": "3997913a6ac124d9386dcfe57b3c688bad2db5c33f50b52689eb166056465617",
+   "got_sha256": "3997913a6ac124d9386dcfe57b3c688bad2db5c33f50b52689eb166056465617",
+   "match": true
+  },
+  "results/lanl/scores/without_flows_prismflow_seed1.npz": {
+   "expected_sha256": "9da59a744b92a85a845717d8148e808b61f8ff1e76ea4fb2fec58aa20e54b4d5",
+   "got_sha256": "9da59a744b92a85a845717d8148e808b61f8ff1e76ea4fb2fec58aa20e54b4d5",
+   "match": true
+  },
+  "results/lanl/scores/without_flows_prismflow_seed2.npz": {
+   "expected_sha256": "27b72f85fbf67a7a405488c89e3c32e1fe7b53ea33fe629267bd49fbd300ed1d",
+   "got_sha256": "27b72f85fbf67a7a405488c89e3c32e1fe7b53ea33fe629267bd49fbd300ed1d",
+   "match": true
+  },
+  "results/lanl/scores/without_flows_prismflow_seed3.npz": {
+   "expected_sha256": "5d143091354ff2079a96593f3bedf78346d336b47f97515144297112df296d1e",
+   "got_sha256": "5d143091354ff2079a96593f3bedf78346d336b47f97515144297112df296d1e",
+   "match": true
+  },
+  "results/lanl/scores/without_flows_prismflow_seed4.npz": {
+   "expected_sha256": "c805d8fce6f12d40b195bf5a429c832d203ac40161d6e0a3c84af9b05cd9f2f9",
+   "got_sha256": "c805d8fce6f12d40b195bf5a429c832d203ac40161d6e0a3c84af9b05cd9f2f9",
+   "match": true
+  },
+  "results/lanl/results.run1.json.gz (decompressed)": {
+   "expected_sha256": "ace7c1866b28572ad39a15bfc5667d23623b96cd23ee576829cc0a085357e583",
+   "got_sha256": "ace7c1866b28572ad39a15bfc5667d23623b96cd23ee576829cc0a085357e583",
+   "match": true
+  }
+ },
+ "recorded_not_in_manifest": {
+  "results/lanl/results.json": {
+   "sha256_now": "18b4618763e259f33a0dfd7c9a2cf8f6f57d4d545826adc69ad6ff5c6ebfd5df",
+   "note": "no sha256 in results_manifest.json; recorded, not verified"
+  },
+  "results/lanl/population.json": {
+   "sha256_now": "eba9805aa68a5507a843bb1c188d71b1b81e7cbd1309d3f2d63e9144dc17b2d5",
+   "note": "no sha256 in results_manifest.json; recorded, not verified"
+  },
+  "results/lanl/split.json": {
+   "sha256_now": "a495883d899bba5e97bb80a7d122f21a1dfc1878e61c1ca3a47b724e2031bfa8",
+   "note": "no sha256 in results_manifest.json; recorded, not verified"
+  }
+ }
+}
