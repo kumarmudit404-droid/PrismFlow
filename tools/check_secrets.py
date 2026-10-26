@@ -117,6 +117,33 @@ def targets(argv: list[str]) -> list[Path]:
     return paths
 
 
+def scan_text(rel: str, text: str, secrets: dict[str, str]) -> list[str]:
+    """Apply both checks to one file's text, at the path it is recorded under.
+
+    Split out of check() so tools/push_scan.py can run these rules over a blob
+    it never writes to disk. ACKNOWLEDGED and SELF are keyed by repo-relative
+    path, so `rel` has to be that path and not wherever the bytes came from.
+    """
+    if rel in SELF or rel == ".env":
+        return []
+    findings = []
+    for lineno, line in enumerate(text.splitlines(), 1):
+        for label, pattern in PROVIDER_PATTERNS:
+            for match in pattern.finditer(line):
+                hit = match.group(0)
+                if (rel, hit) in ACKNOWLEDGED:
+                    continue
+                if label == "newsapi-shaped" and _is_content_hash(line, match):
+                    continue
+                findings.append(
+                    "%s:%d  matches a %s key pattern" % (rel, lineno, label))
+        for value, name in secrets.items():
+            if value in line:
+                findings.append(
+                    "%s:%d  contains the value of %s from .env" % (rel, lineno, name))
+    return findings
+
+
 def check(paths: list[Path]) -> list[str]:
     secrets = env_values()
     findings = []
@@ -125,26 +152,11 @@ def check(paths: list[Path]) -> list[str]:
             rel = path.relative_to(ROOT).as_posix()
         except ValueError:
             rel = str(path)
-        if rel in SELF or rel == ".env":
-            continue
         try:
             text = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
-        for lineno, line in enumerate(text.splitlines(), 1):
-            for label, pattern in PROVIDER_PATTERNS:
-                for match in pattern.finditer(line):
-                    hit = match.group(0)
-                    if (rel, hit) in ACKNOWLEDGED:
-                        continue
-                    if label == "newsapi-shaped" and _is_content_hash(line, match):
-                        continue
-                    findings.append(
-                        "%s:%d  matches a %s key pattern" % (rel, lineno, label))
-            for value, name in secrets.items():
-                if value in line:
-                    findings.append(
-                        "%s:%d  contains the value of %s from .env" % (rel, lineno, name))
+        findings.extend(scan_text(rel, text, secrets))
     return findings
 
 
