@@ -176,7 +176,7 @@
         "id": "L25",
         "n": 25,
         "title": "Part 28's scaler and trainer are not reusable across datasets",
-        "status": null,
+        "status": "RESOLVED 2026-10-26",
         "group": "real_data"
       },
       {
@@ -231,10 +231,10 @@
     ],
     "counts": {
       "total": 32,
-      "resolved": 0,
+      "resolved": 1,
       "closed": 0,
       "new": 0,
-      "open": 32
+      "open": 31
     },
     "group_labels": {
       "per_part": "discovered as each Part ran",
@@ -318,12 +318,12 @@
     }
   },
   "provenance": {
-    "generated_utc": "2026-10-25T18:18:55Z",
+    "generated_utc": "2026-10-26T08:15:50Z",
     "sources": [
       {
         "path": "docs/KNOWN_LIMITATIONS.md",
-        "sha256": "28083c058fc0d81f5fb57034ef8803710e541f8ba4e90fe77f5af5d6e5d18864",
-        "bytes": 82870
+        "sha256": "8d6588ede478b4780cc7b440fa458d2675e3e5f9bb24b772c23284a95b29b3a8",
+        "bytes": 85453
       },
       {
         "path": "docs/v2-known-limitations.md",
