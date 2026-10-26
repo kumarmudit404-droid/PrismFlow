@@ -1650,8 +1650,11 @@ def proposed_status(res: dict) -> list[dict]:
             + "\n- **The reading, which sharpens L28 rather than lifting it.** The "
             "two modes' 5-seed MEANS are close: the largest across-mode mean "
             f"difference over these metrics is {_f(max(abs(e['across_mode_mean_difference_run2_minus_run1']) for _, _, _, e in ratios))}, "
-            "and pooling the 10 values raises the std to at most "
-            f"{_f(max(r for r, _, _, _ in ratios), 2)}x the larger within-mode std. "
+            + ("and pooling the 10 values does not widen the std at all - the "
+               "pooled std is at most "
+               if max(r for r, _, _, _ in ratios) <= 1.0 else
+               "and pooling the 10 values widens the std to at most ")
+            + f"{_f(max(r for r, _, _, _ in ratios), 2)}x the larger within-mode std. "
             "What moves is the SAME SEED: the largest same-seed gap is "
             f"{_f(max(e['max_abs_same_seed_difference'] for _, _, _, e in ratios))}, "
             "which is several within-mode stds. So the mode selects between "

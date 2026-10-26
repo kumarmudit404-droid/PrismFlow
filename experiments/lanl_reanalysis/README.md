@@ -2,7 +2,7 @@
 
 No training. Every number below is computed from Part 30's committed test-block scores and sample table, both verified against `results/lanl/results_manifest.json` before being read (42 sha256 checks, all matched). `results/lanl/` is read-only and unchanged.
 
-Pre-registered in `experiments/lanl_reanalysis/config.yaml`, committed before any number here existed (commit `b924c45`). This file is generated from `results/lanl_reanalysis/results.json` by `experiments/lanl_reanalysis/run.py`, so no figure in it is typed by hand.
+Pre-registered in `experiments/lanl_reanalysis/config.yaml`, committed before any number here existed (commit `f11bbca`). This file is generated from `results/lanl_reanalysis/results.json` by `experiments/lanl_reanalysis/run.py`, so no figure in it is typed by hand.
 
 **There are no train-block scores in `results/lanl/`.** Anything needing a fit is cross-fitted over test computers and labelled DIAGNOSTIC. None of it is a deployable recalibration.
 
@@ -280,5 +280,5 @@ Proposals only. `docs/KNOWN_LIMITATIONS.md` is NOT edited by this Part; the text
 | `tests/unit/test_lanl_reanalysis.py` | weighting, fold assignment, bootstrap helper |
 | `docs/proposed_limitations_update.md` | the proposed limitation text |
 
-Elapsed: 71.1 s, analysis only - no training, nothing rescanned. git HEAD at the time of the run: `b924c45a1d691d6d20f8c5437ee991dfe69c2bdc` - `run.py` is committed in the step that follows the run, so HEAD here is the step before it.
+Elapsed: 132.5 s, analysis only - no training, nothing rescanned. git HEAD at the time of the run: `eca3cf2fd912b3497e98eb3da2b9663f0ca9d0e6` - `run.py` is committed in the step that follows the run, so HEAD here is the step before it.
 
