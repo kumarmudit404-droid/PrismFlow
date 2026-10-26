@@ -1219,7 +1219,37 @@ this selection, because cells were chosen from all four views.
 drawn without reference to the `auth` stream, which would separate the view
 drop from the selection.
 
-## L25. Part 28's scaler and trainer are not reusable across datasets
+## L25. RESOLVED 2026-10-26. Part 28's scaler and trainer are not reusable across datasets
+
+**Status: resolved** by `prismflow/training/` (Part 34 step 2, commit
+`7a5602b`), a dataset-agnostic `fit_scaler`, `apply_scaler` and trainer whose
+view widths arrive as the `native_dims` argument. No module in the package
+imports a dataset module or reads a source-name table; its only first-party
+imports are `prismflow.data.loaders`, `prismflow.models.*`, `prismflow.train`
+and `prismflow.utils.seed`. So the entry's closing condition -- a width
+resolution passed in by the caller -- is met, and a third dataset no longer
+hits this wall.
+
+The equivalence is bit-for-bit rather than approximate
+(`tests/unit/test_training_agnostic.py`, 9 tests): the scaler equals
+`experiments/lanl/run_lanl.py`'s mirror on the `with_auth` train block of
+`results/lanl/samples.npz` (`mean`, `std`, `native_dims` `[8, 5, 7, 2]`,
+`fit_rows` 42912, `present_rows_per_view` and the scaled `[n, V, D]` array),
+and equals Part 28's `fit_scaler` on the AIT widths `[9, 8, 9, 9, 10]`; one
+training unit (LANL `with_auth` naive, seed 0, at the 1 thread
+`results/lanl/execution_mode.json` records) reproduces
+`results/lanl/scores/with_auth_naive_seed0.npz` exactly, `prob_attack` and
+`vacuity` bit-equal over 18729 test samples, largest absolute difference
+**0.0**, with no tolerance in the assertion.
+
+**The residue.** The duplicated copies in Parts 28 and 30 remain:
+`experiments/ait_clean/run_ait_clean.py` and `experiments/lanl/run_lanl.py`
+are frozen and were not modified, so what Part 34 removed is the cause -- the
+source-name lookup -- and not the two existing copies, which a Part authorised
+to edit those files would have to replace with a call to `prismflow.training`.
+
+The original entry is kept below, because the duplication it recorded was
+real.
 
 **Component:** Part 28's `fit_scaler`, `apply_scaler` and `train_ait`
 (`experiments/ait_clean/run_ait_clean.py`).
@@ -1318,6 +1348,17 @@ computed inside a single run.
   of that same arm and system (**0.0033**).
 - **A seed count such as 5/5 inside one run shares one execution mode** and is
   not independent evidence about mode effects.
+- **The thread count selects between deterministic answers, it does not add
+  noise.** Re-measured in Part 34 at two counts on the unmodified test
+  `tests/unit/test_ait_attack.py::test_clean_dependence_matches_part28`:
+  `OMP_NUM_THREADS=1` obtains `eniv_eigen` **3.4289614712229826** against
+  Part 28's committed **3.4396320614332856** and fails the `abs=1e-6`
+  assertion by **0.0107**; the machine default (**8** threads here) passes.
+  The 1-thread value matches the one recorded in
+  `results/lanl/execution_mode.json` to the last digit, from a separate
+  session, so each count reproduces its own value exactly. A reported figure
+  is therefore conditional on a thread count, and "the default" does not
+  name one: this machine's default is 8 while the run-1 record says 12.
 
 **What this means.** Differences of order 0.01 in `balanced_accuracy`,
 `attack_recall` and `brier` are not established, and the per-seed std
