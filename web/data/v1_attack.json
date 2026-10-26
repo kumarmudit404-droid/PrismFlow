@@ -356,7 +356,7 @@
     }
   ],
   "provenance": {
-    "generated_utc": "2026-10-26T08:15:50Z",
+    "generated_utc": "2026-10-26T11:41:42Z",
     "sources": [
       {
         "path": "results/chorus/attack_metrics.json",

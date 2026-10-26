@@ -209,7 +209,7 @@
     "One fused row is not a calibration result. V2-L6 is unchanged."
   ],
   "provenance": {
-    "generated_utc": "2026-10-26T08:15:50Z",
+    "generated_utc": "2026-10-26T11:41:42Z",
     "sources": [
       {
         "path": "results/v2/part24_pipeline_verification.json",

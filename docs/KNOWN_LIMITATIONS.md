@@ -1164,7 +1164,48 @@ can only be compared qualitatively ([[L5]], [[L8]]).
 reference has the same view count as the attacked model, which would separate
 detected duplication from the width change.
 
-## L23. On LANL the reported prevalence is a declared case-control sample, not the network
+## L23. CLOSED 2026-10-26, confirmed not lifted. On LANL the reported prevalence is a declared case-control sample, not the network
+
+**Status: closed as CONFIRMED: the measurement exists and does not lift the
+limitation.** L23 asked for "a measurement at, or reweighted to, the
+population prevalence". Part 35 recomputed the metrics under
+inverse-probability weights (attack 1, benign 512, the declared 1/512 control
+hash) on the saved test-block scores, 5 seeds per arm and system. That
+measurement now exists, and it confirms the entry rather than retiring it.
+
+- **Weighted prevalence 0.00004371**, against the sample's 0.0219. Weighted
+  Brier: `without_auth` **0.097901 +/- 0.000881** (naive) and **0.098170 +/-
+  0.000824** (prismflow); `without_flows` **0.030717 +/- 0.000455** and
+  **0.031319 +/- 0.000478**; `without_dns` **0.005472 +/- 0.000437** and
+  **0.005936 +/- 0.000623**; `with_auth` **0.003592 +/- 0.000472** and
+  **0.004228 +/- 0.000559**.
+- **Weighted precision collapses at the default threshold.** `without_auth`
+  **0.000090**, `without_flows` **0.000085 to 0.000089**, `without_dns`
+  **0.001230 to 0.001232**, `with_auth` **0.009390 to 0.010981**, at weighted
+  false-alarm counts of **1,459** to **443,290** per test day.
+- **The reweighting is only as good as the hash.** The weights reconstruct the
+  occupied-cell population only as far as the crc32 control hash is uniform
+  over cells, and uniformity is assumed here, not measured.
+- **Its false-alarm resolution is 512 cells.** A weighted false-positive count
+  moves in steps of **512** cells over 4 test days, so **no alarm rate between
+  0 and 128 per day is representable**, and all three pre-registered targets
+  (**1**, **10** and **100** false alarms per test day) collapse onto the same
+  zero-alarm threshold. The weighted precision of **1.0** there means no
+  SAMPLED control fired, which estimates the population false-alarm count as 0
+  with a resolution of 512 cells; it does not mean a detector with no false
+  alarms.
+
+**So a reweighted estimate is not an operating point**, and the entry's
+original reading stands: no population operating point has been measured on
+LANL. The population cell count is still bounded, not counted -- between
+**6,554,950** and **15,730,712** over the test days
+(`results/lanl/population.json`).
+
+**Evidence:** `results/lanl_reanalysis/results.json` (`step3_l23`);
+`experiments/lanl_reanalysis/README.md` section 2.
+
+The original entry is kept below, because the sampling decision it recorded is
+unchanged.
 
 **Component:** Part 30's LANL cyber1 sample (`experiments/lanl/`, 300 s
 windows, days 1-16), and every threshold metric computed on it.
@@ -1268,7 +1309,43 @@ wall.
 caller rather than looked up by source name, which would let one
 implementation serve every dataset.
 
-## L26. On LANL the models' advantage over a trivial scalar is confined to seen attack computers
+## L26. CLOSED 2026-10-26, confirmed not lifted. On LANL the models' advantage over a trivial scalar is confined to seen attack computers
+
+**Status: closed as CONFIRMED: the interval is attached and the clearance bar
+is not met.** L26 asked for "an unseen-computer result that clears the scalar
+by more than 0.01 with an interval attached". Part 35 ran the pre-registered
+computer-cluster bootstrap (2000 replicates, fixed seed 12345, 8,350 test
+computers drawn with replacement), pairing each arm and system against the
+untrained scalar inside each replicate. The scalar was recomputed from
+`samples.npz` with Part 30's train-fixed orientation and reproduces the
+committed test AUC **0.6843** before any interval was computed.
+
+- **No arm-and-system pair clears the scalar by 0.01 on unseen computers.**
+  The largest paired model-minus-scalar difference is **+0.0052** (`with_auth`
+  prismflow); the smallest is **-0.0461** (`without_auth` naive).
+- **All eight paired intervals include 0.** `without_auth` naive **-0.0461
+  [-0.1127, 0.0224]**; `without_auth` prismflow **-0.0436 [-0.1106, 0.0250]**;
+  `without_flows` naive **-0.0127 [-0.0728, 0.0479]**; `without_flows`
+  prismflow **-0.0055 [-0.0625, 0.0534]**; `without_dns` naive **0.0021
+  [-0.0682, 0.0697]**; `without_dns` prismflow **0.0026 [-0.0675, 0.0703]**;
+  `with_auth` naive **0.0043 [-0.0634, 0.0714]**; `with_auth` prismflow
+  **0.0052 [-0.0639, 0.0723]**.
+- **A 0.01 difference is not resolvable on this test set.** The paired
+  intervals are about **+/-0.07** wide, seven times the clearance bar they
+  were asked to test.
+- **So the result is "not shown to clear the scalar", not "equal to the
+  scalar".** The data are consistent with the models being better than the
+  scalar on unseen computers, with their being worse, and with their being the
+  same; this test set cannot tell those apart.
+- **The interval covers test-set sampling only.** It resamples test computers.
+  It does not cover seed, execution mode (L28), or the sample design (L24,
+  L27).
+
+**Evidence:** `results/lanl_reanalysis/results.json` (`step4_l26`);
+`experiments/lanl_reanalysis/README.md` section 3.
+
+The original entry is kept below, because the confinement it recorded is
+unchanged.
 
 **Component:** Part 30's four arms on LANL cyber1, compared against the
 untrained scalar `total_records_across_views`.
@@ -1319,6 +1396,29 @@ sections 7.9 and 11.
 - **Host overlap across blocks.** **35** attack computers appear in both
   blocks and **104** are test-only.
 
+**New evidence, Part 35; the entry stays OPEN.** The leave-one-host-out
+measurement was extended from the single top host to the **5** computers with
+the most test attack rows, for all four arms and both systems, on the saved
+test-block scores (5 seeds, mean +/- std).
+
+- **Removing `C17693` (137 of 410 test attack rows, and 1 benign) costs 0.036
+  to 0.052 AUC across all eight arm-and-system pairs.** The extremes are
+  `without_dns` prismflow **-0.0360** and `without_auth` naive **-0.0519**.
+- **Removing any of the other four top hosts changes AUC by at most 0.007.**
+  `C1015` (12 attack test rows), `C2388` (10), `C1936` (7) and `C2079` (7)
+  together give 32 host-arm-system cells whose largest absolute change is
+  **0.0069**.
+- **No interval is attached: this is descriptive.** One host is not a
+  resample, so these figures carry no interval and are not a significance
+  test.
+- **Why it stays OPEN.** L27's closing condition is a DESIGN change -- a
+  sample that keeps all or a stated share of the benign cells of attack hosts.
+  That needs a re-sample and a retrain, which is Part 38. Part 35 only widened
+  the sensitivity measurement from one host to five.
+
+**Evidence:** `results/lanl_reanalysis/results.json` (`step5_l27`);
+`experiments/lanl_reanalysis/README.md` section 4.
+
 **What this means.** A model can therefore learn that host's activity profile
 as the attack class without learning attack behaviour.
 
@@ -1360,6 +1460,37 @@ computed inside a single run.
   is therefore conditional on a thread count, and "the default" does not
   name one: this machine's default is 8 while the run-1 record says 12.
 
+**New evidence, Part 35; the entry stays OPEN.** For `with_auth` -- the only
+arm with two execution modes in `results/lanl/` -- the per-seed std within each
+mode, the spread across modes and the pooled spread are now reported per
+metric for both systems (`results/lanl/results.run1.json.gz` at 12 threads
+sequential against `results/lanl/results.json` at 1 thread, concurrency 11).
+Both halves of the result matter, and they point in opposite directions.
+
+- **The 5-seed MEANS barely move across modes, so pooling the modes does not
+  widen the std.** The largest across-mode mean difference over these metrics
+  is **0.0190** (prismflow `attack_recall`), and the pooled std over all 10
+  values is **0.79x to 0.98x** the larger within-mode std for PrismFlow
+  (**0.87x to 0.98x** over the six metrics other than `prob_ece`, which is
+  **0.79x**) and **0.69x to 0.96x** for naive. Pooling the two modes did not
+  widen the std in any of the 14 cells.
+- **The SAME SEED moves by several within-mode stds.** The largest same-seed
+  naive `roc_auc` gap is **0.0140**, against a within-mode std of **0.0033**
+  (run 2) to **0.0039** (run 1) -- about four stds. The largest same-seed gap
+  over all metrics is **0.0341** (prismflow `attack_recall`).
+- **The reading, which sharpens L28 rather than lifting it.** The mode selects
+  between deterministic answers per seed, as this entry already says, and the
+  5-seed MEAN absorbs most of it. It is a SINGLE-seed figure that must not be
+  read as mode-independent.
+- **Why it stays OPEN.** `without_auth`, `without_flows` and `without_dns`
+  were run in one execution mode only, so no cross-mode spread exists for
+  them, and the entry's closing condition -- seeds run across at least two
+  execution modes -- is met for one arm of four. The other three wait on
+  Part 38.
+
+**Evidence:** `results/lanl_reanalysis/results.json` (`step6_l28`);
+`experiments/lanl_reanalysis/README.md` section 5.
+
 **What this means.** Differences of order 0.01 in `balanced_accuracy`,
 `attack_recall` and `brier` are not established, and the per-seed std
 understates replicate spread. Related: Part 28's committed ENIV is
@@ -1368,7 +1499,74 @@ reproducible only at the thread count that produced it.
 **What would change our understanding.** Seeds run across at least two
 execution modes, so the reported std covers mode as well as seed.
 
-## L29. On two LANL arms the probabilities are worse than a constant
+## L29. CLOSED 2026-10-26, diagnosed not fixed. On two LANL arms the probabilities are worse than a constant
+
+**Status: closed as DIAGNOSED, not as fixed.** L29 asked for "a test of each
+candidate cause, and a Brier below the constant baseline once the responsible
+one is fixed". Part 35 tested all three candidates on the saved test-block
+scores, 5 seeds, both systems, against the fixed two-class constant baseline
+**0.0428**, under a rule written down before any number existed: a cause
+accounts for the failure only if correcting it alone puts Brier below 0.0428
+in 5 of 5 seeds for both systems.
+
+- **Responsible: the all-False view mask.** `without_auth` has **3600 of
+  18729** test rows with no present view (**139** of them attack rows);
+  `without_flows` has **998** (**0** attack). On every one of those rows, in
+  both systems and all 5 seeds, `prob_attack` is exactly **0.5**, which scores
+  the maximum two-class Brier of **0.5** per row -- **0.0961** of
+  `without_auth`'s Brier and **0.0266** of `without_flows`'s, against a whole
+  budget of 0.0428. Restricted to rows with a present view, Brier falls to
+  **0.0318 +/- 0.0007** and **0.0319 +/- 0.0006** (`without_auth` naive and
+  prismflow) and **0.0382 +/- 0.0004** and **0.0384 +/- 0.0006**
+  (`without_flows`), against those subsets' own constant baselines **0.0352**
+  and **0.0452** -- below 0.0428 in 5 of 5 seeds, both systems, both arms.
+- **Not responsible: the prior shift, and it is an ORACLE.** Correcting from
+  train to test prevalence makes both arms WORSE (`without_auth` **0.2033 +/-
+  0.0015** and **0.2038 +/- 0.0013**; `without_flows` **0.0882 +/- 0.0008**
+  and **0.0891 +/- 0.0011**): 0 of 5 seeds in every cell. It also uses the
+  test prevalence, so it is not available to a deployed detector.
+- **Not responsible: recalibration, and it is a DIAGNOSTIC.** Cross-fitted
+  Platt by computer fold reaches **0.0432 +/- 0.0000** on `without_auth` (0 of
+  5, both systems) and **0.0427 +/- 0.0001** and **0.0426 +/- 0.0001** on
+  `without_flows` (4 of 5 naive, 5 of 5 prismflow), so it fails the
+  both-systems rule. `results/lanl/` holds no train-block scores, so it is
+  fitted on test rows and cross-fitted by computer fold. It is not a
+  deployable recalibration.
+
+**"Accounts for" is not "fixed", which is why this closes as diagnosed and not
+as resolved.** The rows the responsible cause names are unpredictable by
+construction (L24; Part 30 section 4.2): every model must score them
+identically whatever their label. Restricting the metric to rows with a
+present view changes the evaluated population; it does not change a
+probability, and a deployed detector still meets those cells and still emits
+0.5 on them. **So the operative warning is unchanged: the probability outputs
+of the `without_auth` and `without_flows` arms must not be used.**
+
+**The 0.5/0.0 pair on those rows, and what it is not.** On rows where every
+view of an arm is absent the saved scores carry `prob_attack` **0.5** and the
+npz column named `vacuity` **0.0**. A vacuity of 0.0 with no evidence would be
+an output defect, but that is not what the column holds: `run_lanl.py` writes
+`collected["vacuity_confidence"]` into the npz key `"vacuity"`
+(`experiments/lanl/run_lanl.py` line 2533), and that array is
+`PrismFlowOutput.confidence`, defined as `1.0 - fused_uncertainty`
+(`prismflow/models/prismflow.py` line 187). So 0.0 there is **minimum
+confidence on maximum vacuity**, which is the correct output for a row with no
+evidence, and `prismflow/models` is not implicated. What is wrong is the npz
+key: a reader who takes `vacuity = 0.0` at face value reads "no ignorance" on
+a row that has no evidence at all. That mislabel is in
+`experiments/lanl/run_lanl.py`, which is FROZEN. **Reported, not patched;
+decision pending with the user.**
+
+**A route for Part 38, not run here.** Because the saved confidence is already
+exactly 0.0 on precisely these rows, abstaining on them is a
+selective-prediction decision the existing machinery can express, rather than
+a new model.
+
+**Evidence:** `results/lanl_reanalysis/results.json` (`step2_l29`);
+`experiments/lanl_reanalysis/README.md` section 1.
+
+The original entry is kept below, because the failure it recorded is real and
+is not fixed.
 
 **Component:** the probability outputs of both systems in Part 30's
 `without_auth` and `without_flows` arms.
