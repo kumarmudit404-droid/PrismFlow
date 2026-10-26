@@ -1,0 +1,261 @@
+# Part 35 - PRE-REGISTRATION. Committed BEFORE any number in this Part was
+# computed (step 1 of part35.md). Every analysis, metric, threshold, bootstrap
+# setting and decision rule below is fixed by this file; run.py reads it and
+# adds nothing to it.
+#
+# NO TRAINING. results/lanl/ is READ-ONLY. Nothing in this Part fits a model.
+# The only inputs are results/lanl/samples.npz, results/lanl/scores/*.npz,
+# results/lanl/results.json, results/lanl/results.run1.json.gz,
+# results/lanl/population.json and results/lanl/split.json, each verified
+# against results/lanl/results_manifest.json where the manifest carries a
+# sha256 for it. A mismatch STOPS the Part; it is never worked around.
+
+experiment:
+  id: lanl_reanalysis
+  description: >
+    Re-analysis of Part 30's saved LANL cyber1 test-block scores, addressing
+    L23 (population rate), L26 (intervals), L27 (host sensitivity),
+    L28 (with_auth execution-mode spread) and L29 (Brier above a constant).
+
+# ---------------------------------------------------------------------------
+# Shared settings
+# ---------------------------------------------------------------------------
+shared:
+  arms: [without_auth, without_flows, without_dns, with_auth]
+  # Step 2's named causes are diagnosed on without_auth and without_flows, the
+  # two arms L29 is about. without_dns and with_auth are carried as REFERENCES
+  # in the same tables: arms whose Brier is already below the baseline, so a
+  # correction that moves them too is not specific to the failure.
+  l29_failing_arms: [without_auth, without_flows]
+  l29_reference_arms: [with_auth, without_dns]
+  systems: [naive, prismflow]
+  seeds: [0, 1, 2, 3, 4]
+  # Score rows are joined to samples.npz rows on the exact key
+  # (computer, window_start). A score row with no matching sample row, or a
+  # duplicate key on either side, STOPS the Part.
+  join_key: [computer, window_start]
+  # Part 30's constants, read from the committed files, never re-derived:
+  #   train prevalence  split.json per_split.train.attack_prevalence_in_sample
+  #   test prevalence   split.json per_split.test.attack_prevalence_in_sample
+  #   test days         split.json per_split.test.days  (13-16 -> 4 days)
+  # Brier is the TWO-CLASS form of docs/EVALUATION_PROTOCOL.md:
+  #   mean_i sum_k (p_ik - y_ik)^2, range [0, 2], twice the binary form.
+  # Its decomposition (reliability, resolution, uncertainty, within_bin) is
+  # computed by Part 28's own metric_row, imported unedited from
+  # experiments/ait_clean/run_ait_clean.py, at n_bins = 15.
+  brier_form: two_class
+  n_bins: 15
+  # The constant-prevalence baseline every step-2 verdict is read against.
+  # 2 * pi * (1 - pi) at the test prevalence 0.021891184793635537.
+  constant_baseline_brier: 0.0428
+  default_threshold: 0.5   # argmax for two classes
+
+# ---------------------------------------------------------------------------
+# STEP 2 - L29: why two arms have Brier above the constant baseline
+# ---------------------------------------------------------------------------
+step2_l29:
+  metrics: [brier, brier_reliability, brier_resolution]
+  report: >
+    mean and sample std (ddof = 1, Part 30's convention) over the 5 seeds,
+    per arm and system.
+  causes:
+    a_all_false_view_mask:
+      kind: subset
+      label: >
+        Rows with at least one view present for that arm, against rows whose
+        view mask is all False for that arm.
+      definition: >
+        present = samples.view_mask[:, arm_views].any(axis=1) on the joined
+        test rows. The two subsets are scored separately and completely; the
+        'absent' subset is reported even when it carries no attack row, in
+        which case any metric it cannot define is written as not_measured.
+      oracle: false
+      diagnostic_only: false
+    b_prior_shift:
+      kind: probability_transform
+      label: Prior-shift correction from train prevalence to test prevalence.
+      definition: >
+        r = (pi_test / pi_train) / ((1 - pi_test) / (1 - pi_train));
+        p2 = r * p / (r * p + (1 - p)). Applied to every test row of the arm.
+      oracle: true
+      oracle_note: >
+        It uses the TEST prevalence, which a deployed system does not know.
+        Reported as an ORACLE correction, never as a deployable one.
+      diagnostic_only: false
+    c_cross_fitted_platt:
+      kind: probability_transform
+      label: Cross-fitted Platt recalibration by computer fold.
+      definition: >
+        fold(computer) = zlib.crc32(computer.encode('utf-8')) % 2. Platt
+        parameters (a, b) in sigmoid(a * logit(p) + b) are fitted by
+        minimising mean log-loss on the rows of one fold with scipy BFGS
+        (analytic gradient, init a=1 b=0, maxiter 500) and applied to the
+        rows of the OTHER fold, both ways round, so every test row is scored
+        out of fold. p is clipped to [1e-6, 1 - 1e-6] before the logit.
+      oracle: false
+      diagnostic_only: true
+      diagnostic_note: >
+        There are no train-block scores in results/lanl/, so the calibrator
+        is fitted on TEST rows and can only be cross-fitted within the test
+        block. That is a DIAGNOSTIC of how much of the Brier gap a monotone
+        recalibration could close. It is NOT a deployable recalibration and
+        is never reported as one.
+  # THE DECISION RULE, fixed here before any number existed.
+  decision_rule: >
+    A cause ACCOUNTS FOR the failure only if correcting that cause ALONE
+    brings Brier below 0.0428 in 5 of 5 seeds for BOTH systems, for the arm
+    in question. 4 of 5, or 5 of 5 in one system only, is NOT accounted for.
+    No combination of causes is tested, and no cause is credited in part.
+    The verdict "none does" is a permitted and reportable outcome.
+  # Cause (a) changes the row set, so its Brier is not on the same rows as the
+  # 0.0428 baseline. The rule above still uses the fixed 0.0428; the subset's
+  # own constant baseline 2 * pi_subset * (1 - pi_subset) is reported BESIDE
+  # it as context and is not part of the rule.
+  subset_baseline_reported: true
+
+# ---------------------------------------------------------------------------
+# STEP 3 - L23: metrics at the population rate
+# ---------------------------------------------------------------------------
+step3_l23:
+  weights:
+    attack: 1
+    benign: 512
+    source: >
+      The declared control divisor of configs/data/lanl.yaml: all cases kept,
+      a benign cell kept iff crc32(computer|window) % 512 == 0. The
+      inverse-probability weight of a kept control is therefore 512.
+  caveat_to_state: >
+    The weights reconstruct the occupied-cell population only as far as the
+    crc32 hash is uniform over cells. Uniformity is assumed, not measured
+    here, and the weighted counts are estimates of population counts, not
+    counts. The resolution of a weighted false-positive count is 512 cells:
+    no weighted alarm count between 0 and 512 is representable.
+  metrics: [precision, recall, false_positive_rate, weighted_brier]
+  weighted_brier: >
+    sum_i w_i * sum_k (p_ik - y_ik)^2 / sum_i w_i, the two-class form.
+  thresholds:
+    - {name: default, rule: "alarm iff prob_attack >= 0.5"}
+    - {name: fa_1_per_day, false_alarms_per_test_day: 1}
+    - {name: fa_10_per_day, false_alarms_per_test_day: 10}
+    - {name: fa_100_per_day, false_alarms_per_test_day: 100}
+  threshold_selection: >
+    For a target rate R, the threshold is the SMALLEST candidate t (candidates
+    are the unique prob_attack values of that arm, system and seed, plus
+    1 + max) with weighted_false_positives(t) / n_test_days <= R, where an
+    alarm is prob_attack >= t. The achieved weighted rate is reported beside
+    the target, because the 512-cell resolution means a target below
+    128 per day can only be met by the zero-alarm threshold.
+  population_bounds_from: results/lanl/population.json
+  report: mean and std over the 5 seeds, per arm and system
+
+# ---------------------------------------------------------------------------
+# STEP 4 - L26: intervals
+# ---------------------------------------------------------------------------
+step4_l26:
+  bootstrap:
+    kind: computer_cluster
+    replicates: 2000
+    seed: 12345
+    clusters: the distinct computers of the test block
+    draw: >
+      n_clusters computers drawn WITH replacement; every test row of a drawn
+      computer enters the replicate with that computer's multiplicity.
+    statistic: >
+      For a model arm and system, the MEAN OVER THE 5 SEEDS of the ROC AUC on
+      the replicate's rows. For the untrained scalar, the ROC AUC itself
+      (no seed). AUC is the Mann-Whitney form with ties credited 0.5, Part
+      28's roc_auc_binary, imported unedited.
+    interval: percentile, 2.5 and 97.5
+    skip_rule: >
+      A replicate with no attack row or no benign row in the group defines no
+      AUC and is dropped; the number of replicates used is reported.
+  groups:
+    seen: >
+      Attack rows whose computer also has at least one attack row in the
+      TRAIN block (Part 30 section 7.3's definition), scored against ALL
+      benign test rows of the replicate.
+    unseen: >
+      Attack rows whose computer has no attack row in the train block, scored
+      against ALL benign test rows of the replicate.
+  scalar:
+    name: total_records_across_views
+    definition: >
+      sum over views v of expm1(views[:, v, 0]) * view_mask[:, v], recomputed
+      from results/lanl/samples.npz. Feature 0 of every view is
+      log1p(n_events) for that view.
+    orientation: >
+      Part 30's train-fixed orientation: the sign is chosen on the TRAIN block
+      alone (as-is if train AUC >= 0.5, else negated) and applied unchanged to
+      test.
+    gate: >
+      The recomputed all-test AUC must equal Part 30's committed 0.6843 to 4
+      decimal places BEFORE any interval is computed. A mismatch STOPS the
+      Part.
+  paired_difference:
+    on: unseen
+    statistic: >
+      Within each replicate, (mean-over-seeds model AUC) - (scalar AUC) on the
+      SAME resampled rows, so the two share the draw and the difference is
+      paired.
+    reported_per: [arm, system]
+
+# ---------------------------------------------------------------------------
+# STEP 5 - L27: leave-one-host-out
+# ---------------------------------------------------------------------------
+step5_l27:
+  hosts: >
+    The 5 computers with the most TEST rows of label attack, ranked by that
+    count, ties broken by computer name ascending.
+  removal: >
+    Every test row of that computer, attack and benign together, is removed.
+    The remaining rows are scored unchanged.
+  metric: ROC AUC
+  report: >
+    mean and std over the 5 seeds of the AUC with that host removed, and the
+    change from the all-test AUC on the same scores, per arm and system.
+  interval: >
+    NONE. One host is not a resample, so no interval is attached and the
+    result is descriptive.
+
+# ---------------------------------------------------------------------------
+# STEP 6 - L28: with_auth execution-mode spread
+# ---------------------------------------------------------------------------
+step6_l28:
+  arm: with_auth
+  arms_left_open: [without_auth, without_flows, without_dns]
+  open_note: >
+    The other three arms were run in ONE execution mode only, so no
+    cross-mode spread exists for them. They stay OPEN until Part 38.
+  modes:
+    run1: {file: results/lanl/results.run1.json.gz, threads: 12, concurrency: sequential}
+    run2: {file: results/lanl/results.json, threads: 1, concurrency: 11}
+  metrics: [roc_auc, prob_ece, benign_recall, accuracy, balanced_accuracy, attack_recall, brier]
+  quantities:
+    within_mode_std: >
+      Sample std (ddof = 1) over the 5 seeds of that metric, within one mode,
+      per system. CORRECTION, committed before any number of this Part was
+      committed: the first version of this file said "population std
+      (ddof = 0, Part 30's convention)". Part 30's convention is ddof = 1
+      (`experiments/ait_clean/run_ait_clean.py::summarise`, statistics.stdev),
+      so the parenthesis was simply wrong about an existing convention. The
+      convention is corrected to match Part 30 so the figures are comparable
+      with its tables. No decision rule, threshold or analysis changes.
+    across_mode_spread: >
+      run2 mean minus run1 mean (signed), and the largest absolute
+      same-seed difference between the modes, per system.
+    pooled_spread: >
+      Sample std (ddof = 1) over all 10 values (5 seeds x 2 modes), per
+      system.
+  report: per metric, per system
+
+# ---------------------------------------------------------------------------
+# Outputs
+# ---------------------------------------------------------------------------
+outputs:
+  results: results/lanl_reanalysis/results.json
+  readme: experiments/lanl_reanalysis/README.md
+  readme_is_generated: >
+    README.md is written by run.py from results.json, so no number in it is
+    transcribed by hand.
+  proposals: docs/proposed_limitations_update.md
+  not_edited: docs/KNOWN_LIMITATIONS.md

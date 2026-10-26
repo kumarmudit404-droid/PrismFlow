@@ -527,7 +527,7 @@
   ],
   "label": "This is the dataset, not a result. No prediction, score or calibration metric appears in this table, because none has been computed on these rows -- see V2-L6.",
   "provenance": {
-    "generated_utc": "2026-10-26T08:15:50Z",
+    "generated_utc": "2026-10-26T11:41:42Z",
     "sources": [
       {
         "path": "data/v2/evaluation_queries.json",
