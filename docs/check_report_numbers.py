@@ -22,8 +22,13 @@ places the report used -- so the report may round, but may not invent.
 
     .venv/Scripts/python.exe docs/check_report_numbers.py
 
-Exit 0 when every number resolves, 1 otherwise. Fix the REPORT, never this
-script's expectations.
+A STATUS WORD IS ALSO CHECKED. An UPPERCASE OPEN, CLOSED or RESOLVED stated
+for L<n> must match what L<n>'s own heading in docs/KNOWN_LIMITATIONS.md says,
+because a report that calls an entry closed while the record still calls it
+open is the one error a number check cannot see.
+
+Exit 0 when every number resolves and every stated status matches, 1
+otherwise. Fix the REPORT, never this script's expectations.
 """
 
 from __future__ import annotations
@@ -36,12 +41,45 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 REPORT = ROOT / "docs" / "FINAL_REPORT.md"
+KNOWN = ROOT / "docs" / "KNOWN_LIMITATIONS.md"
 
 CITE = re.compile(r"(?:results|docs|web)/[A-Za-z0-9_./-]+\.(?:json|gz|md|csv|txt)")
 NUMBER = re.compile(r"(?<![\w.])[-+]?\d+(?:\.\d+)?(?![\w.]*[A-Za-z])")
 BACKTICKED = re.compile(r"`[^`]*`")
 SKIP_BEFORE = re.compile(r"(?:V2-)?L$|[Pp]art $|[Ss]ection $|#|§$|20\d\d-|\d-$")
 SEED_PHRASE = re.compile(r"\b5(?= seeds?\b|-seed\b)")
+KL_HEADING = re.compile(r"^## L(\d+)\.\s*(RESOLVED|CLOSED)?")
+STATUS_WORD = re.compile(r"\b(OPEN|CLOSED|RESOLVED)\b")
+# Plain L-numbers only: V2-L entries live in docs/v2-known-limitations.md,
+# which is a separate record with its own markers.
+L_REF = re.compile(r"(?<!V2-)\bL(\d+)\b")
+
+
+def status_disagreements(lines: list) -> list:
+    """Every UPPERCASE status the report states for L<n> must match the record.
+
+    An entry with no marker in its heading is open, which is how
+    docs/KNOWN_LIMITATIONS.md has always spelled "open" -- by saying nothing.
+    """
+    record = {}
+    for line in KNOWN.read_text(encoding="utf-8").splitlines():
+        m = KL_HEADING.match(line)
+        if m:
+            record[m.group(1)] = m.group(2) or "OPEN"
+    out = []
+    for lineno, line in enumerate(lines, 1):
+        said = {m.group(1) for m in STATUS_WORD.finditer(line)}
+        if not said:
+            continue
+        for n in sorted({m.group(1) for m in L_REF.finditer(line)}):
+            truth = record.get(n)
+            if truth is None:
+                out.append("line %d  a status is stated for L%s, which is not an "
+                           "entry in %s" % (lineno, n, KNOWN.name))
+            elif truth not in said:
+                out.append("line %d  the report calls L%s %s, %s calls it %s"
+                           % (lineno, n, "/".join(sorted(said)), KNOWN.name, truth))
+    return out
 
 
 def numbers_in(obj, out: set) -> None:
@@ -158,11 +196,14 @@ def main() -> int:
             failures.append("%s  %s not found in %s\n      %s"
                             % (where, token, ", ".join(sources), line.strip()[:110]))
 
+    failures.extend(status_disagreements(lines))
+
     print("check_report_numbers: %d number(s) checked in %s"
           % (checked, REPORT.relative_to(ROOT).as_posix()))
     for f in failures:
         print("  FAIL  %s" % f)
-    print("  all numbers resolve to a cited file" if not failures
+    print("  all numbers resolve to a cited file, and every stated limitation "
+          "status matches the record" if not failures
           else "  %d unresolved" % len(failures))
     return 1 if failures else 0
 

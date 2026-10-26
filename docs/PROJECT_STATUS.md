@@ -1,8 +1,17 @@
 # Project status
 
-Final status as of 2026-10-25. Consistent with `docs/CONTRACT.md`,
+Final status as of 2026-10-25, with the limitation counts refreshed
+2026-10-26 after Part 35 merged. Consistent with `docs/CONTRACT.md`,
 `docs/KNOWN_LIMITATIONS.md` and `docs/v2-known-limitations.md`; where this file
 and one of those disagree, those are authoritative and this one is wrong.
+
+As merged, `docs/KNOWN_LIMITATIONS.md` stands at **32** entries — **1**
+resolved, **3** closed and **28** open — and `docs/v2-known-limitations.md` is
+unchanged at **9** — **2** resolved, **2** closed, **1** new and **5** open.
+Resolved and closed are not the same marker and are never merged: resolved
+means the defect was fixed, closed means the entry reached a terminal
+statement without one. Counts from `web/data/limitations.json`, which
+`web/build_data.py` derives from the two records.
 
 **Status of the real-data track and the site (Parts 26-33), added 2026-10-25.**
 The numbers in sections 1 to 3 below are the synthetic and V2 record and are
