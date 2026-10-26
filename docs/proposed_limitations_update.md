@@ -119,6 +119,60 @@ but the standing record does not.
 
 ---
 
+## P4. L28's thread-count observation, re-measured in Part 34
+
+**Type:** evidence added to an existing entry. The finding does not change and
+nothing is resolved.
+
+Part 34 step 6 ran `tests/unit/test_ait_attack.py::test_clean_dependence_matches_part28`
+at two thread counts, on the frozen test exactly as committed. Both results:
+
+| run | torch threads | result | `eniv_eigen` obtained |
+|---|---|---|---|
+| `OMP_NUM_THREADS=1` | 1 | **FAILED** (38.18 s) | 3.4289614712229826 |
+| default | 8 | **passed** (44.78 s) | not printed on a pass |
+
+Part 28's committed seed-0 value is **3.4396320614332856** and the test
+asserts equality to `abs=1e-6`. The 1-thread run misses it by
+**-0.010670590210303**, about **1.07e4** times the tolerance.
+
+Two things this adds to L28 that it does not already say:
+
+- **The 1-thread value is itself reproducible.** It equals
+  `results/lanl/execution_mode.json`
+  (`thread_count_reproducibility_observation.measured.omp_num_threads_1_eniv_eigen_obtained`)
+  **to the last digit** -- 3.4289614712229826 both times, measured on a
+  different day in a different session. So the thread count does not make the
+  computation noisy; it selects between two deterministic answers. That is a
+  stronger statement than "the std understates the spread", and it means a
+  thread count is part of an experiment's identity, not a performance knob.
+- **The default count on this machine is 8, not 12.** L28 and
+  `execution_mode.json` both describe run 1 as "torch's default 12 threads".
+  The default is a property of the machine, so "the default" is not a
+  reproducible specification of a run; the number has to be recorded. The test
+  passes at 8 and at 12, which says the committed value is not unique to 12,
+  but it does not tell us the set of counts that reproduce it.
+
+**Proposed text,** to be added to L28 as a bullet after "The same seed differs
+across modes":
+
+> - **The thread count selects between deterministic answers, it does not add
+>   noise.** Re-measured in Part 34 at two counts on the unmodified test:
+>   `OMP_NUM_THREADS=1` obtains `eniv_eigen` **3.4289614712229826** against
+>   Part 28's committed **3.4396320614332856** and fails the `abs=1e-6`
+>   assertion by **0.0107**; the machine default (**8** threads here) passes.
+>   The 1-thread value matches the one recorded in
+>   `results/lanl/execution_mode.json` to the last digit, from a separate
+>   session, so each count reproduces its own value exactly. A reported figure
+>   is therefore conditional on a thread count, and "the default" does not
+>   name one: this machine's default is 8 while the run-1 record says 12.
+
+**Status of L28: OPEN, unchanged.** What would change it is still seeds run
+across at least two execution modes, which Part 34 did not do -- step 6 is one
+seed of one diagnostic at two thread counts, not a replicate design.
+
+---
+
 ## Rejected while writing the report
 
 - **An entry for the AIT honest-duplication result.** Part 29's
@@ -128,3 +182,61 @@ but the standing record does not.
 - **An entry for the Part 32 service's unconditional dependence estimate.**
   The service already says so in every response (`conditioning`), and it is a
   property of running without a model rather than a defect of the method.
+
+---
+
+## P5. Proposed status of L25 and L32 after Part 34
+
+Part 34's gate asks for a proposed status for the two limitations it set out
+to close. Neither proposal edits `docs/KNOWN_LIMITATIONS.md`.
+
+### L25 — proposed **RESOLVED**, with one residue named below
+
+L25's "what would change our understanding" is *"a width resolution passed in
+by the caller rather than looked up by source name, which would let one
+implementation serve every dataset."* That now exists and is checked.
+
+**Evidence.** `prismflow/training/` (`scaling.py`, `trainer.py`). The native
+width of each view arrives as the `native_dims` argument; no module in the
+package imports a dataset module or reads a source-name table — its only
+first-party imports are `prismflow.data.loaders`, `prismflow.models.*`,
+`prismflow.train` and `prismflow.utils.seed`. `tests/unit/test_training_agnostic.py`,
+9 tests, shows the arithmetic is the same arithmetic and not a rewrite of it:
+
+- `test_scaler_equals_run_lanl_mirror_bit_for_bit` — equal to
+  `experiments/lanl/run_lanl.py`'s mirror on the LANL `with_auth` train block
+  of `results/lanl/samples.npz`: `mean`, `std`, `native_dims` `[8, 5, 7, 2]`,
+  `fit_rows` 42912, `present_rows_per_view`, and the scaled `[n, V, D]` array.
+- `test_scaler_equals_part28_fit_scaler_bit_for_bit` — equal to Part 28's
+  `fit_scaler` on the AIT widths `[9, 8, 9, 9, 10]`.
+- `test_trainer_reproduces_committed_lanl_probabilities` — one training unit
+  (LANL `with_auth` naive, seed 0) at the 1 thread
+  `results/lanl/execution_mode.json` records, reproduces
+  `results/lanl/scores/with_auth_naive_seed0.npz` exactly: `prob_attack` and
+  `vacuity` bit-equal over 18729 test samples, largest absolute difference
+  **0.0**. The assertion carries no tolerance; on failure it reports the
+  largest difference and the thread count.
+
+**The residue.** `experiments/ait_clean/run_ait_clean.py` and
+`experiments/lanl/run_lanl.py` are frozen and were not modified, so the two
+existing copies are still in the tree. What Part 34 removes is the *cause* —
+the source-name lookup — and therefore the forward claim in L25's "what this
+means": a third dataset no longer hits this wall. If L25 is read instead as
+"two copies exist in the repository", it stays **OPEN** until a Part that is
+authorised to edit those two files calls `prismflow.training`.
+
+### L32 — proposed **OPEN**, unchanged
+
+**Evidence.** `results/serve_docker/report.json` and
+`docs/part32-live-service.md`. The Docker CLI (client 29.7.2, context
+`desktop-linux`) answers, but no daemon is reachable: `docker info`,
+`docker ps` and `docker desktop status` all fail on
+`npipe:////./pipe/dockerDesktopLinuxEngine` — "The system cannot find the file
+specified." Re-probed on 2026-10-26 at the start of the gate, with the same
+result. No build was started, so every field of the step-3 report that would
+describe the image is recorded as *not measured* rather than as a failure.
+L32's closing condition — one successful build and a `/health` response from
+the running container — is untouched.
+
+**To close it:** `docker desktop start`, wait for the daemon, then re-run
+`/part34` step 3.

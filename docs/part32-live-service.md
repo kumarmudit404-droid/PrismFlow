@@ -206,3 +206,21 @@ until you make edits 1–3 above, because the local server sends the same CSP
 as the deployed site.
 
 Tests: `.venv\Scripts\python.exe -m pytest -q tests/serve`.
+
+## The container build (L32) — attempted 2026-10-26, not measured
+
+Part 34 step 3 tried to build and run this image. **It did not run: the Docker
+daemon was not reachable on this machine.** The Docker CLI is installed and
+answers (client 29.7.2, context `desktop-linux`), but there is no server
+behind it — `npipe:////./pipe/dockerDesktopLinuxEngine` does not exist, and
+`docker ps`, `docker info --format '{{.ServerVersion}}'` and
+`docker desktop status` all fail. The probes and their exit codes are in
+`results/serve_docker/report.json`.
+
+Nothing about the image is therefore known. Build success, build time, image
+size, the `/health` response and the `/score` response are all **not
+measured** — not zero, not assumed to work, and not estimated. **L32 stays
+OPEN**, and the first `docker build` is still the deployer's.
+
+To close it: `docker desktop start`, wait for the daemon to answer
+`docker ps`, then re-run Part 34 step 3.
