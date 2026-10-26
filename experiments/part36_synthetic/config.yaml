@@ -1,0 +1,302 @@
+# Part 36 - synthetic estimator and detector checks (L2, L9, L10, L11, L22)
+#
+# PRE-REGISTRATION. Committed before any number in results/part36_synthetic/
+# existed. Every analysis, metric, threshold, decision rule and fallback
+# subset below is fixed here; the runner reads this file and reports the
+# verdict the rule gives, whichever way the numbers fall.
+#
+# NO TRAINING OF FROZEN MODULES. prismflow/ and the earlier experiments'
+# runners are imported, never edited. Part 36 trains its own models with the
+# imported training code, at the settings named below.
+
+experiment:
+  id: part36_synthetic
+  description: >
+    Synthetic estimator and detector checks for L2, L9 (first half only),
+    L10, L11 and L22. Five seeds everywhere, mean +/- sample standard
+    deviation (ddof=1), paired within seed where two conditions are compared.
+
+seeds: [0, 1, 2, 3, 4]
+std_convention: "sample standard deviation, numpy ddof=1"
+
+outputs:
+  results_dir: results/part36_synthetic
+  readme: experiments/part36_synthetic/README.md
+  proposals: docs/proposed_limitations_update.md
+  not_edited:
+    - docs/KNOWN_LIMITATIONS.md
+    - prismflow/
+    - experiments/eniv_validation/
+    - experiments/tail/
+    - experiments/comparison/
+
+# --------------------------------------------------------------------------
+# What Part 36 cannot do, recorded before it runs so no reader expects it.
+# --------------------------------------------------------------------------
+cannot:
+  - "L9 second half: a real dataset with an independently established
+     dependence structure does not exist in this checkout, so the external-
+     validity half of L9 cannot be addressed here and L9 cannot be closed on
+     the strength of Part 36 alone."
+  - "L2's causal link: L2 says the connection between residual per-pair
+     dependence and prismflow's confidence drift at rho=0.0 is UNTESTED.
+     Part 36 measures the residual dependence against view count. It does not
+     test the link to the drift, which needs the clone_eigen_softcluster
+     harness, so that half stays open."
+
+# --------------------------------------------------------------------------
+# STEP 0 - REPRODUCTION FIRST. If any check fails, the runner stops and
+# nothing after it is interpretable.
+# --------------------------------------------------------------------------
+reproduction:
+  rule: >
+    Each committed value is re-derived with the ORIGINAL settings and must
+    agree to the tolerance named. A failure stops the run; it is reported, not
+    worked around.
+  tolerance_note: >
+    tol is an absolute tolerance on the mean, set to half a unit in the last
+    decimal place the committed record reports, which is the most the record's
+    own rounding can hide.
+  checks:
+    - name: eniv_validation_4view
+      source: results/eniv_validation/summary.json
+      settings: "n_views 4, rho grid [0.0,0.2,0.4,0.6,0.8,0.95], 5 seeds,
+                 n_samples 2000, epochs 40, batch_size 64 (TrainConfig default)"
+      quantities:
+        - {path: [eniv_features_cca_holdout, correlation_with_truth], committed: 0.9922060509334697, tol: 0.00005}
+        - {path: [eniv_features_cca_holdout, mae], committed: 0.5220005950719182, tol: 0.00005}
+        - {path: [eniv_features_cca_holdout, mae_std], committed: 0.29982128173320327, tol: 0.00005}
+    - name: comparison_clone_k2
+      source: results/comparison/detector.json
+      settings: "n_views 4, rho 0.3, epochs 40, batch_size 64, 30 attack steps,
+                 16 detector permutations, 5 seeds; clone_k2 scored by the
+                 width-6 model against the width-4 clean reference"
+      quantities:
+        - {path: [summary, clone_k2, auc, mean], committed: 0.8743088888888889, tol: 0.00005}
+        - {path: [summary, clone_k2, auc, std], committed: 0.05831081226634124, tol: 0.00005}
+    - name: tail_detection
+      source: results/tail/tail.json
+      settings: "n_views 4, rho 0.3, n_samples 8000 (test slice 1200),
+                 epochs 40, q 0.95, 5 seeds, attack k 2 beta 1.0 steps 30"
+      quantities:
+        - {path: [detection, "eps0.2", tail, auc, mean], committed: 0.4846145138888889, tol: 0.00005}
+        - {path: [detection, "eps2.0", tail, auc, mean], committed: 0.5856175694444444, tol: 0.00005}
+
+# --------------------------------------------------------------------------
+# A - L9 (first half) and L2: does the compression scale with view count?
+# --------------------------------------------------------------------------
+analysis_a:
+  addresses: [L9, L2]
+  question: >
+    L9's closing condition names "a generator with analytically known rho at
+    other view counts (6, 8, 16) to test whether the compression scales with
+    n_views". L2 asks whether residual per-pair dependence accumulates with
+    view count.
+  generator: "experiments.eniv_validation.run_validation.run_cell, imported"
+  view_counts_full: [4, 6, 8, 16]
+  view_counts_smallest_subset: [4, 6, 8]
+  rho_grid: [0.0, 0.2, 0.4, 0.6, 0.8, 0.95]
+  rho_grid_smallest_subset: [0.0, 0.4, 0.95]
+  settings: "n_samples 2000, epochs 40, batch_size 64 - the committed
+             eniv_validation settings, changed only in n_views"
+  truth: "analytic_n_eff_eigen(rho, V), the closed form compute_eniv's
+          eigenvalue form is defined against"
+  primary_estimator: eniv_features_cca_holdout
+  reported_estimators:
+    - eniv_features_cca_holdout
+    - eniv_views_cca
+    - eniv_model_forward
+  metrics:
+    - "correlation with truth, over all (rho, seed) cells at that view count"
+    - "mean absolute error against truth, mean +/- std over cells"
+    - "signed error against truth per rho level, to show direction"
+    - "L2: mean residual per-pair dependence rho_bar at rho = 0.0, where the
+       true per-pair dependence is 0, so the whole reading is residual"
+  decision_rule_l9: >
+    The compression SCALES with view count if the mean absolute error at
+    V = 16 exceeds the error at V = 4 by more than the across-cell std at
+    V = 4, in the same direction for the primary estimator. It is FLAT if the
+    MAE at every view count lies within one V = 4 std of the V = 4 MAE.
+    Anything else is reported as MIXED, with the per-view-count numbers.
+  decision_rule_l2: >
+    Residual per-pair dependence ACCUMULATES with view count if the mean
+    rho_bar at rho = 0.0 is monotonically non-decreasing in V over the view
+    counts run AND the V = 16 value exceeds the V = 4 value by more than the
+    larger of the two stds. L2's own figure is ~0.05 per pair; the measured
+    value is reported against it whichever way it falls.
+  l9_closure_note: >
+    Even a FLAT result closes only L9's first half. The second half needs a
+    real dataset with known dependence and is listed under `cannot`.
+
+# --------------------------------------------------------------------------
+# B - L10: separate the sample-count component from the structural floor.
+# --------------------------------------------------------------------------
+analysis_b:
+  addresses: [L10]
+  question: >
+    L10's closing condition is "a batch-size sweep holding rho fixed, to
+    separate the sample-count component from the estimator's structural
+    floor".
+  design_decision: >
+    The sweep varies the ESTIMATION sample count only. TrainConfig.batch_size
+    drives both training and estimation, so sweeping it would confound "the
+    estimator saw fewer samples" with "a differently trained model", and L10's
+    question is about the estimator. One model is trained per seed at the
+    committed settings; the dependence matrix is then estimated on nested
+    random subsamples of that model's test split. This is a DEVIATION from the
+    literal words "batch-size sweep" and is stated as one.
+  n_samples: 16000
+  n_samples_reason: >
+    the 70/15/15 split gives a 2400-row test split, which is the smallest
+    dataset that can supply the largest pre-registered estimation n of 2048.
+    The committed eniv_validation n_samples of 2000 gives a 300-row test
+    split and cannot.
+  estimation_n_full: [64, 128, 256, 512, 1024, 2048]
+  estimation_n_smallest_subset: [64, 256, 1024]
+  subsample_rule: >
+    Nested: the n = 64 subsample is a prefix of the n = 128 subsample and so
+    on, drawn once per seed from a numpy Generator seeded with 36000 + seed,
+    so the sweep is paired within seed and the only thing that changes along
+    it is how many rows the estimator sees.
+  rho_fixed: 0.3
+  rho_fixed_reason: >
+    the regime Parts 11-14 evaluate in, and the one L10 singles out as sitting
+    on the upward-bias side of the zero crossing.
+  view_counts: [4, 6]
+  view_counts_reason: >
+    4 is the committed design point; 6 is where L10's own clean measurement of
+    the floor was taken (the Part 15 permutation null, 5.5094 +/- 0.0777
+    against a true 6.0).
+  metrics:
+    - "ENIV and rho_bar at each estimation n, mean +/- std over 5 seeds"
+    - "signed ENIV bias against analytic_n_eff_eigen(0.3, V)"
+    - "the same under the independence permutation null (rho = 0.0 data), which
+       is where a residual deficit is pure finite-sample artefact"
+  separation_model: >
+    Least squares fit of |bias|(n) = floor + c / n over the estimation n run,
+    per view count and per seed. `floor` is the structural component, `c / n`
+    the sample-count component. Reported with the fit's residual, and with the
+    raw per-n means so the fit can be checked rather than trusted.
+  decision_rule: >
+    The bias is DOMINATED BY SAMPLE COUNT if the fitted floor is within one
+    across-seed std of 0 and the n = 64 bias is more than twice the n = 2048
+    bias. It has a STRUCTURAL FLOOR if the fitted floor exceeds one across-seed
+    std of 0 and the n = 2048 bias is still more than that std from 0. Both
+    conditions failing is reported as INCONCLUSIVE, with the fit.
+
+# --------------------------------------------------------------------------
+# C - L11: is Part 13's negative tail result substantive or underpowered?
+# --------------------------------------------------------------------------
+analysis_c:
+  addresses: [L11]
+  question: >
+    L11's closing condition is "re-running Part 13's detection arm at 4x the
+    split size".
+  runner: "experiments.tail.run_tail, imported"
+  n_samples_committed: 8000
+  n_samples_full: 32000
+  n_samples_reason: "4x the committed 8000, so the test slice goes from 1200
+                     to 4800 rows and n_tail at q = 0.95 from 60 to 240"
+  epsilons_full: [0.0, 0.2, 0.5, 1.0, 2.0]
+  epsilons_smallest_subset: [0.2, 2.0]
+  epsilons_subset_reason: >
+    the two epsilon levels that carry L11's quoted band endpoints, so the
+    decision rule can still be evaluated on a reduced run.
+  quantile: 0.95
+  settings: "otherwise the committed Part 13 settings: n_views 4, rho 0.3,
+             epochs 40, batch_size 64, attack k 2, beta 1.0, 30 steps"
+  metrics:
+    - "tail AUC per epsilon, mean +/- std over 5 seeds"
+    - "rho_bar AUC per epsilon, for contrast"
+    - "n_tail actually achieved at q = 0.95, to confirm the 4x"
+    - "std as a fraction of the mean, which L11 names as the actual problem"
+  # TWO BANDS ARE PRE-REGISTERED ON PURPOSE. See the note below.
+  band_as_quoted_in_l11: [0.4846, 0.5856]
+  band_as_committed_in_results: [0.4801, 0.5856]
+  band_discrepancy_note: >
+    L11's text quotes the Part 13 tail AUC span as "0.4846 +/- 0.0022 to
+    0.5856 +/- 0.0126". The committed values in results/tail/tail.json are
+    0.4846 (eps 0.2), 0.4801 (eps 0.5), 0.5370 (eps 1.0) and 0.5856
+    (eps 2.0), so the true committed span is 0.4801 to 0.5856 and L11's quoted
+    floor EXCLUDES one of its own four points. A rule built on the quoted
+    floor would score a re-run of 0.482 as "outside the band" against a floor
+    the original experiment already breached. Both bands are therefore
+    evaluated and both verdicts reported, and a correction to L11's text goes
+    to docs/proposed_limitations_update.md. The committed-values band is the
+    PRIMARY rule.
+  decision_rule: >
+    SUBSTANTIVE if every epsilon's 4x tail AUC mean lies inside the primary
+    band [0.4801, 0.5856]. UNDERPOWERED-AFTER-ALL if any mean moves outside it
+    by more than its own across-seed std, which would mean the original
+    negative result was a power artefact. Reported for both bands, and for
+    every epsilon separately - the two directions are never averaged.
+
+# --------------------------------------------------------------------------
+# D - L22: the clone comparison at equal width.
+# --------------------------------------------------------------------------
+analysis_d:
+  addresses: [L22]
+  question: >
+    L22's closing condition is "a clone condition whose clean reference has
+    the same view count as the attacked model".
+  runner: "experiments.comparison.run_comparison, imported"
+  what_the_committed_run_does: >
+    Read from the code, not inferred. run_comparison.py trains one model per
+    width in {4, 6} per seed; the width-6 model is trained on a genuinely
+    6-view dataset. The clone_k2 condition feeds that width-6 model the 4-view
+    dataset with 2 views appended by duplicate_view, and scores it against the
+    `clean` condition, which runs the width-4 model on 4 views. So the
+    reference maximises over 12 ordered off-diagonal entries and the attacked
+    model over 30. That asymmetry is L22.
+  the_equal_width_design: >
+    The same width-6 model scores two conditions: (i) ATTACKED, the 4-view
+    dataset with 2 duplicated views appended, exactly as clone_k2 does; and
+    (ii) CLEAN-AT-WIDTH-6, the 6-view dataset the model was trained on, with
+    no corruption. Both pass 6 views through one model, so both maximise over
+    the same 30 ordered off-diagonal entries and the width change is removed
+    by construction.
+  settings: "the committed Part 10 settings, unchanged: n_views 4, rho 0.3,
+             epochs 40, batch_size 64, 16 detector permutations, 5 seeds"
+  conditions:
+    - {name: clean_w4, width: 4, data: 4-view, corruption: none, role: "the committed reference, reproduced"}
+    - {name: clean_w6, width: 6, data: 6-view, corruption: none, role: "the equal-width reference, new"}
+    - {name: clone_k2, width: 6, data: 4-view, corruption: "duplicate_view k=2", role: "the attacked condition"}
+  metrics:
+    - "detector AUC of clone_k2 against clean_w4, which must reproduce 0.8743"
+    - "detector AUC of clone_k2 against clean_w6, the equal-width figure"
+    - "the difference between the two, paired within seed, mean +/- std"
+    - "mean suspicion score per condition, to show where the shift sits"
+  decision_rule: >
+    The width change EXPLAINS PART of the committed figure if the equal-width
+    AUC is below the committed AUC by more than the paired difference's own
+    std. It explains NONE of it if the paired difference's mean is within one
+    std of 0. If the equal-width AUC is HIGHER, that is reported as such and
+    L22's direction of concern is recorded as not confirmed. Either way the
+    committed 0.8743 remains a figure that must not be differenced against a
+    fixed-width result, because it is measured at mixed widths; only the new
+    equal-width number is comparable.
+  smallest_subset: "the three conditions above are already the minimum; there
+                    is nothing to cut without losing the comparison."
+
+# --------------------------------------------------------------------------
+# BUDGET
+# --------------------------------------------------------------------------
+budget:
+  rule: >
+    One seed of each analysis is timed before its full run. If an analysis
+    projects past 90 minutes of wall clock, the runner executes that
+    analysis's `*_smallest_subset` instead, marks the remainder OPEN in the
+    README, and says which cells were not run. A projection is never used in
+    place of a measurement.
+  projection_method: >
+    measured wall clock for one seed of the full cell grid, multiplied by the
+    number of seeds. Reported in results/part36_synthetic/timings.json
+    alongside what was actually run.
+  limit_minutes_per_analysis: 90
+
+gate:
+  commands:
+    - "pytest -q"
+    - "python tools/check_secrets.py --all"
+    - "python tools/push_scan.py main..HEAD"
+  merge: false
