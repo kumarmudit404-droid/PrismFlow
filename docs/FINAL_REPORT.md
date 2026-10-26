@@ -583,8 +583,9 @@ it and fusion has something to do (L17).
 
 ## 10. Not measured
 
-These are absences, not zeros. Nothing in this list has a committed number,
-and none of them is estimated anywhere in this report.
+These are absences, not zeros. Nothing still marked **not measured** has a
+committed number, and none of those is estimated anywhere in this report. Two
+rows were retired by Part 35 and say so, with the file that measured them.
 
 | quantity | status |
 |---|---|
@@ -603,8 +604,8 @@ and none of them is estimated anywhere in this report.
 | honest-duplication detector AUC on AIT | **not measured** — `sensor_groups()` yields no within-group pair on these five views |
 | a clone condition whose clean reference has the same view count | **not measured** — the reason the clone AUC cannot be differenced (L22) |
 | detector AUC on partially contaminated batches | **not measured** — no cell varies the contaminated fraction (L18) |
-| the cause of the LANL Brier failure on two arms | **not measured** — three candidate causes, none tested (L29) |
-| seeds run across two execution modes | **not measured** — every std shares one mode (L28) |
+| the cause of the LANL Brier failure on two arms | **measured since, Part 35** — all three candidate causes tested on the saved test-block scores, 5 seeds, both systems, in `results/lanl_reanalysis/results.json`. The all-False view mask is the only one that puts Brier below the 0.0428 constant baseline in 5 of 5 seeds for both systems; the prior shift (an ORACLE, it uses the test prevalence) and cross-fitted Platt (a DIAGNOSTIC, there are no train-block scores to fit on) do not. **Diagnosed, not fixed** — the rows that cause names are unpredictable by construction, so restricting the metric to rows with a present view changes the evaluated population rather than any probability, and **those arms' probability outputs still must not be used**. L29 is CLOSED (as diagnosed). |
+| seeds run across two execution modes | **measured since for one arm of four, Part 35** — `with_auth` was run in two execution modes, and the within-mode std, the across-mode spread and the pooled spread are reported per metric for both systems in `results/lanl_reanalysis/results.json`. `without_auth`, `without_flows` and `without_dns` are still single-mode, so for them this stays **not measured**, and L28 stays OPEN. |
 | the union of occupied LANL population cells | **not measured** — bounded, not counted (L23) |
 | window-length sensitivity on either real dataset | **not measured** — one window length per dataset (L31) |
 | attack success as a function of the ENIV surface | **not measured** — no such cell exists; the two experiments' `k` axes count different things |
