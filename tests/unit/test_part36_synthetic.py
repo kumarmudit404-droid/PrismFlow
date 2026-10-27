@@ -14,6 +14,7 @@ files exist and skip when they do not, so a clean checkout still passes.
 
 import json
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 import pytest
@@ -32,6 +33,7 @@ from experiments.part36_synthetic.run_part36 import (
     verdict_l11,
     verdict_l22,
 )
+from experiments.part36_synthetic.render import fit_residual_signs, power_fit
 
 
 # --------------------------------------------------------------------------
@@ -279,3 +281,57 @@ def test_sweep_is_nested_paired_and_refuses_an_n_it_cannot_supply():
     assert shorter["64"]["eniv"] == first["64"]["eniv"]
     order = np.random.default_rng(36000).permutation(200)
     assert np.array_equal(order[:64], order[:128][:64])
+
+
+# --------------------------------------------------------------------------
+# render.py -- the two post-hoc helpers, which are the only new logic there.
+# Everything else in render.py reads a verdict back and formats it.
+# --------------------------------------------------------------------------
+def _cell_from(bias_by_n, floor, c):
+    return {
+        "per_estimation_n": {
+            str(n): {"signed_eniv_bias": {"mean": -abs(b), "std": 0.01, "n": 5}}
+            for n, b in bias_by_n.items()
+        },
+        "fit_floor": {"mean": floor, "std": 0.01, "n": 5},
+        "fit_c": {"mean": c, "std": 1.0, "n": 5},
+        "fit_residual_rms": {"mean": 0.05, "std": 0.01, "n": 5},
+    }
+
+
+def test_power_fit_recovers_an_exponent_it_was_given():
+    n_grid = [64, 128, 256, 512, 1024, 2048]
+    cell = _cell_from({n: 10.0 * n ** -0.5 for n in n_grid}, floor=0.1, c=50.0)
+    slope, rms, _ = power_fit(cell, n_grid)
+    assert slope == pytest.approx(-0.5, abs=1e-9)
+    assert rms == pytest.approx(0.0, abs=1e-9)
+
+
+def test_power_fit_reports_losing_to_the_pre_registered_fit():
+    """The helper must be able to say the post-hoc model is WORSE, or it is
+    only ever evidence for itself."""
+    n_grid = [64, 128, 256, 512]
+    # Exactly floor + c/n, which the power law cannot match.
+    cell = _cell_from({n: 0.4 + 60.0 / n for n in n_grid}, floor=0.4, c=60.0)
+    cell["fit_residual_rms"]["mean"] = 0.0
+    slope, rms, wins = power_fit(cell, n_grid)
+    assert rms > 0.0
+    assert wins is False
+
+
+def test_fit_residual_signs_reads_the_pattern_off_the_fit():
+    n_grid = [64, 128, 256]
+    cell = _cell_from({64: 1.0, 128: 0.6, 256: 0.4}, floor=0.3, c=64.0)
+    # fit = 1.3, 0.8, 0.55 -> measured is below the fit at every n.
+    assert fit_residual_signs(cell, n_grid) == "---"
+    cell2 = _cell_from({64: 2.0, 128: 0.6, 256: 0.4}, floor=0.3, c=64.0)
+    assert fit_residual_signs(cell2, n_grid) == "+--"
+
+
+def test_render_refuses_a_partial_record_rather_than_writing_a_gapped_readme():
+    import experiments.part36_synthetic.render as render
+
+    with mock.patch.object(render, "load", lambda name: None):
+        with pytest.raises(SystemExit) as excinfo:
+            render.main()
+    assert "run run_part36.py" in str(excinfo.value)
