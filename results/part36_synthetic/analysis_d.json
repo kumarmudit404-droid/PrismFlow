@@ -1,0 +1,152 @@
+{
+  "torch": "2.14.0+cpu",
+  "numpy": "2.5.3",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "conditions": [
+    {
+      "name": "clean_w4",
+      "width": 4,
+      "data": "4-view",
+      "corruption": "none",
+      "role": "the committed reference, reproduced"
+    },
+    {
+      "name": "clean_w6",
+      "width": 6,
+      "data": "6-view",
+      "corruption": "none",
+      "role": "the equal-width reference, new"
+    },
+    {
+      "name": "clone_k2",
+      "width": 6,
+      "data": "4-view",
+      "corruption": "duplicate_view k=2",
+      "role": "the attacked condition"
+    }
+  ],
+  "per_seed": [
+    {
+      "seed": 0,
+      "auc_clone_vs_clean_w4_mixed_width": 0.8006555555555556,
+      "auc_clone_vs_clean_w6_equal_width": 0.6626222222222222,
+      "paired_difference_equal_minus_mixed": -0.13803333333333334,
+      "mean_score_clean_w4": 0.34568737290710316,
+      "mean_score_clean_w6": 0.4377795555255733,
+      "mean_score_clone_k2": 0.5215242372228149
+    },
+    {
+      "seed": 1,
+      "auc_clone_vs_clean_w4_mixed_width": 0.9188333333333333,
+      "auc_clone_vs_clean_w6_equal_width": 0.7605,
+      "paired_difference_equal_minus_mixed": -0.15833333333333333,
+      "mean_score_clean_w4": 0.33809482594945917,
+      "mean_score_clean_w6": 0.40939440713376724,
+      "mean_score_clone_k2": 0.5331890590667855
+    },
+    {
+      "seed": 2,
+      "auc_clone_vs_clean_w4_mixed_width": 0.9412777777777778,
+      "auc_clone_vs_clean_w6_equal_width": 0.8734111111111111,
+      "paired_difference_equal_minus_mixed": -0.06786666666666663,
+      "mean_score_clean_w4": 0.3993055413137242,
+      "mean_score_clean_w6": 0.45779547409190097,
+      "mean_score_clone_k2": 0.5513966743454768
+    },
+    {
+      "seed": 3,
+      "auc_clone_vs_clean_w4_mixed_width": 0.8331111111111111,
+      "auc_clone_vs_clean_w6_equal_width": 0.7092,
+      "paired_difference_equal_minus_mixed": -0.12391111111111108,
+      "mean_score_clean_w4": 0.31148032283495025,
+      "mean_score_clean_w6": 0.3788654794269913,
+      "mean_score_clone_k2": 0.49608963204729034
+    },
+    {
+      "seed": 4,
+      "auc_clone_vs_clean_w4_mixed_width": 0.8776666666666667,
+      "auc_clone_vs_clean_w6_equal_width": 0.8203,
+      "paired_difference_equal_minus_mixed": -0.05736666666666668,
+      "mean_score_clean_w4": 0.40042632763561725,
+      "mean_score_clean_w6": 0.4563162068182983,
+      "mean_score_clone_k2": 0.5190802977465245
+    }
+  ],
+  "summary": {
+    "auc_clone_vs_clean_w4_mixed_width": {
+      "mean": 0.8743088888888889,
+      "std": 0.05831081226634124,
+      "n": 5
+    },
+    "auc_clone_vs_clean_w6_equal_width": {
+      "mean": 0.7652066666666667,
+      "std": 0.08429997752002395,
+      "n": 5
+    },
+    "paired_difference_equal_minus_mixed": {
+      "mean": -0.10910222222222221,
+      "std": 0.04431972876749915,
+      "n": 5
+    },
+    "mean_score_clean_w4": {
+      "mean": 0.35899887812817083,
+      "std": 0.03941144927473912,
+      "n": 5
+    },
+    "mean_score_clean_w6": {
+      "mean": 0.42803022459930623,
+      "std": 0.03371046640669249,
+      "n": 5
+    },
+    "mean_score_clone_k2": {
+      "mean": 0.5242559800857785,
+      "std": 0.020273199387065132,
+      "n": 5
+    }
+  },
+  "reproduction": {
+    "source": "results/comparison/detector.json",
+    "quantities": [
+      {
+        "quantity": "summary.clone_k2.auc.mean",
+        "committed": 0.8743088888888889,
+        "measured": 0.8743088888888889,
+        "tol": 5e-05,
+        "abs_diff": 0.0,
+        "pass": true
+      },
+      {
+        "quantity": "summary.clone_k2.auc.std",
+        "committed": 0.05831081226634124,
+        "measured": 0.05831081226634124,
+        "tol": 5e-05,
+        "abs_diff": 0.0,
+        "pass": true
+      }
+    ]
+  },
+  "verdict": {
+    "rule": "part explained if the equal-width AUC is below the committed AUC by more than the paired difference's own std; none if the paired mean is within one std of 0; a higher equal-width AUC is reported as L22's direction not confirmed",
+    "mixed_width_auc": 0.8743088888888889,
+    "equal_width_auc": 0.7652066666666667,
+    "paired_difference": {
+      "mean": -0.10910222222222221,
+      "std": 0.04431972876749915,
+      "n": 5
+    },
+    "verdict": "WIDTH EXPLAINS PART OF THE COMMITTED FIGURE"
+  },
+  "timings_seconds": {
+    "seed0": 126.2112869,
+    "seed1": 150.0636459000001,
+    "seed2": 172.9292714999999,
+    "seed3": 166.82232909999993,
+    "seed4": 161.5584214999999
+  }
+}

@@ -65,13 +65,43 @@ to this, revisit this entry first, before assuming the attack itself is the
 problem. A first check would be to compare the prismflow and
 naive-weights-plus-discount systems under the attack.
 
-## L2. Residual per-pair dependence accumulates with view count
+## L2. Residual per-pair dependence accumulates with view count in the clone harness
 
 From 333f143: residual ~0.05 per-pair measured dependence accumulates in the
 soft cluster size, so an untouched view's alpha falls from ~0.88 to ~0.75 going
 from 4 to 8 views (controlled harness). This may contribute to prismflow's
 upward confidence drift at rho=0.0 in `clone_eigen_softcluster`
 (+0.003, +0.007, +0.010, +0.013 for k=1..4). That link is untested.
+
+**New evidence, Part 36; the entry stays OPEN, with its scope narrowed.**
+Residual per-pair dependence was measured against view count on the
+analytic-rho generator, at rho = 0.0, where the true per-pair dependence is 0
+and the added views are INDEPENDENT rather than clones (5 seeds):
+
+- V = 4: chance-corrected **0.3345 +/- 0.0163**, uncorrected
+  **0.0844 +/- 0.0336**.
+- V = 6: chance-corrected **0.3139 +/- 0.0033**, uncorrected
+  **0.0590 +/- 0.0050**.
+- V = 8: chance-corrected **0.3071 +/- 0.0053**, uncorrected
+  **0.0511 +/- 0.0106**.
+- V = 16: chance-corrected **0.2732 +/- 0.0062**, uncorrected
+  **0.0271 +/- 0.0068**.
+- Pre-registered rule: ACCUMULATES only if the mean is monotonically
+  non-decreasing in V and the V = 16 value exceeds the V = 4 value by more than
+  the larger std. Monotone: no; gap **-0.0613** against **0.0163**.
+  **Verdict: DOES NOT ACCUMULATE.**
+- **The reading, which narrows this entry rather than lifting it.** The
+  residual FALLS with view count under both the corrected and the uncorrected
+  estimator, so it is not an intrinsic property of the estimator that
+  accumulates with width. The accumulation is specific to
+  `clone_eigen_softcluster`, where the added views are CLONES -- hence the
+  scoped title.
+- **Why it stays OPEN.** The causal link to the confidence drift at rho = 0.0
+  remains UNTESTED. It needs the `clone_eigen_softcluster` harness and was
+  declared out of scope before the run.
+
+**Evidence:** `results/part36_synthetic/analysis_a.json`;
+`experiments/part36_synthetic/README.md` section 2.
 
 ## L3. The discount addresses redundant evidence, not unreliable evidence
 
@@ -531,23 +561,61 @@ boundary from the data side.
 
 The validation sweep is the ONLY evidence in this project that ENIV measures
 what it claims to measure, and it exists only because the synthetic generator
-lets us choose `rho` and compute `analytic_n_eff` in closed form. The sweep
+lets us choose `rho` and compute the analytic truth in closed form. The sweep
 covers a single design point: **n_views = 4**, rho in {0.0, 0.2, 0.4, 0.6, 0.8,
 0.95}, 5 seeds each.
+
+**Truth column.** Every figure in this entry -- the MAE, the correlation, the
+signed errors and the Part 36 block below -- is computed against
+`analytic_n_eff_eigen`, the eigenvalue form of the analytic truth. The CSV also
+carries `analytic_n_eff`, a different column, and the two must never be mixed
+in one series: over the same 30 fits this estimator scores MAE
+**0.5220 +/- 0.2998** at correlation **0.9922** against `analytic_n_eff_eigen`
+but MAE **0.7523 +/- 0.2476** at correlation **0.9069** against
+`analytic_n_eff`. An earlier revision of this entry quoted the MAE from the
+first column and the signed errors from the second.
 
 - The model's own estimator (`features_cca_holdout`) tracks the truth in RANK
   but not in VALUE: correlation with truth **0.9922**, mean absolute error
   **0.5220 +/- 0.2998** effective views. Against a true ENIV of 4.0 at rho = 0
-  it reads **2.9951 +/- 0.0486**; against a true 1.039 at rho = 0.95 it reads
+  it reads **2.9951 +/- 0.0486**; against a true 1.150 at rho = 0.95 it reads
   **1.8104 +/- 0.0702**.
 - The error is not noise around the truth, it is COMPRESSION toward the middle
-  of the range: signed error runs **-1.0049** at rho = 0, then **+0.2557,
-  +0.7232, +0.8831, +0.8756, +0.7714** as rho rises. The estimator understates
-  independence when views are independent and overstates it when they are not.
+  of the range: signed error against `analytic_n_eff_eigen` runs **-1.0049**,
+  **-0.6443**, **-0.2587**, **+0.1117**, **+0.4520**, **+0.6604** at
+  rho = 0.0, 0.2, 0.4, 0.6, 0.8, 0.95. The estimator overstates dependence
+  when views are near-independent and understates it when they are strongly
+  dependent, crossing between rho = 0.4 and rho = 0.6.
 - The best-case variant (`views_cca`, run on raw views rather than encoder
   features) reaches MAE **0.1919 +/- 0.1494** at correlation **0.9965**, so the
   compression is partly attributable to the encoder, not to ENIV alone. That
   variant is not what the model uses.
+
+**New evidence, Part 36; the entry stays OPEN.** The analytic-rho generator was
+run at V = [4, 6, 8, 16], rho [0.0, 0.2, 0.4, 0.6, 0.8, 0.95], 5 seeds, with
+only `n_views` varied from the committed settings. The committed V = 4 point
+reproduces first (MAE 0.5220005950719182, correlation 0.9922060509334697, both
+to abs diff 0).
+
+- V = 4: correlation with truth **0.9922**, MAE **0.5220 +/- 0.2998**
+  effective views, which is **0.1305** of V.
+- V = 6: correlation **0.9930**, MAE **0.8514 +/- 0.4575**, **0.1419** of V.
+- V = 8: correlation **0.9924**, MAE **1.1662 +/- 0.6368**, **0.1458** of V.
+- V = 16: correlation **0.9938**, MAE **2.2995 +/- 1.3063**, **0.1437** of V.
+- Pre-registered rule: SCALES if MAE(V = 16) - MAE(V = 4) exceeds the
+  across-cell std at V = 4. Measured gap **1.7775** against std **0.2998**.
+  **Verdict: SCALES.**
+- **The reading.** Rank agreement does not degrade -- correlation is flat near
+  0.993 at every view count. The VALUE error grows almost exactly in
+  proportion to V, so the single validated design point of n_views = 4 is the
+  most favourable one run, and every ENIV reported at a higher view count
+  carries a proportionally larger absolute error.
+- **Why it stays OPEN.** Only the first half of the closing condition was
+  answerable. The second half needs a real dataset with an independently
+  established dependence structure, which does not exist in this checkout.
+
+**Evidence:** `results/part36_synthetic/analysis_a.json`;
+`experiments/part36_synthetic/README.md` section 1.
 
 **What this means.** Every ENIV, efficiency ratio and discount magnitude
 reported on real data in Part 15 is a measurement taken with an instrument
@@ -558,9 +626,10 @@ Claims of the form "these views carry N independent views of evidence" are
 licensed only up to an error of roughly half an effective view, in a direction
 that depends on where the true value sits.
 
-**What would change our understanding.** A generator with analytically known
-rho at other view counts (6, 8, 16) to test whether the compression scales with
-n_views; and a real dataset with an independently established dependence
+**What would change our understanding.** The first half of this condition -- a
+generator with analytically known rho at other view counts (6, 8, 16) -- was
+run in Part 36 and is reported above: the compression does scale with n_views.
+What remains is a real dataset with an independently established dependence
 structure, which we do not have. See [[L10]] for the finite-sample component of
 this error and [[L14]] for the single-dataset limitation.
 
@@ -595,6 +664,45 @@ x 6 rho) and the Part 15 permutation-null control,
   the bias at the extremes. Running more seeds does not reduce the error that
   matters here.
 
+**New evidence, Part 36; the entry stays OPEN, sharpened.** Nested estimation
+subsamples of one trained model's test split per seed, n in
+[64, 128, 256, 512, 1024, 2048], rho fixed at 0.3, 5 seeds, paired within seed.
+The sweep varies the ESTIMATION sample count, a deviation from the "batch-size
+sweep" wording that was stated in `config.yaml` before the run. Signed ENIV
+bias against `analytic_n_eff_eigen`:
+
+- `V4_dependent` (truth 3.10): bias **-1.2548 +/- 0.0781** at n = 64,
+  **-0.2581 +/- 0.0232** at n = 2048 (a 4.9x reduction); fitted floor
+  **0.2736 +/- 0.0348**, fitted c **65.1 +/- 6.5**, fit residual rms 0.0404.
+- `V4_independent_null` (truth 4.00): bias **-2.1469 +/- 0.0454** at n = 64,
+  **-0.7493 +/- 0.0352** at n = 2048 (a 2.9x reduction); fitted floor
+  **0.7892 +/- 0.0331**, fitted c **91.3 +/- 2.2**, fit residual rms 0.0758.
+- `V6_dependent` (truth 4.50): bias **-1.9311 +/- 0.1629** at n = 64,
+  **-0.2589 +/- 0.0734** at n = 2048 (a 7.5x reduction); fitted floor
+  **0.3220 +/- 0.0599**, fitted c **108.8 +/- 9.0**, fit residual rms 0.0994.
+- `V6_independent_null` (truth 6.00): bias **-3.4630 +/- 0.1397** at n = 64,
+  **-1.0979 +/- 0.0270** at n = 2048 (a 3.2x reduction); fitted floor
+  **1.2255 +/- 0.0271**, fitted c **153.0 +/- 9.6**, fit residual rms 0.1671.
+- **Both components are present.** The sample-count component is large and
+  real: the bias shrinks by 2.9x to 7.5x between n = 64 and n = 2048. It does
+  not reach zero -- at n = 2048 the bias is still many across-seed stds from 0
+  in all 4 cells. That part is a measurement, not a fit.
+- **What the sweep cannot separate, and this is the sharpening.** The
+  residuals of the pre-registered `floor + c / n` fit are sign-ordered rather
+  than scattered, with the identical pattern in all 4 cells, and a floor-free
+  power law `k * n^alpha` -- one parameter fewer -- fits the same 6 points
+  comparably (better in 2 of 4 cells), with exponents **-0.459**
+  (`V4_dependent`), **-0.308** (`V4_independent_null`), **-0.585**
+  (`V6_dependent`) and **-0.338** (`V6_independent_null`) -- all far short of
+  the -1 the pre-registered model assumes.
+- **Why it stays OPEN.** The fitted floor is therefore an UPPER BOUND on the
+  structural component over this n range, not an identified limit. The
+  "structural floor" is supported as "still far from zero at n = 2048" rather
+  than as "non-zero in the limit", which is weaker than CLOSED would claim.
+
+**Evidence:** `results/part36_synthetic/analysis_b.json`;
+`experiments/part36_synthetic/README.md` sections 3.3 and 3.4.
+
 **What this means.** The dominant error in the dependence signal is systematic,
 not statistical, so the 5-SEED RULE protects against the smaller of the two
 problems. In the regime where PrismFlow is most often evaluated (rho = 0.3,
@@ -603,12 +711,21 @@ crossing: it over-reports dependence, so the discount is applied slightly too
 hard. Any claim that rests on the absolute level of measured dependence -- as
 opposed to its direction of change under an intervention -- inherits this.
 
-**What would change our understanding.** A batch-size sweep holding rho fixed,
-to separate the sample-count component from the estimator's structural floor.
-Not run: every experiment here uses `evaluation.batch_size = 512` and the
-comparison was never made. Related: [[L9]], [[L11]].
+**What would change our understanding.** The sweep this entry asked for was run
+in Part 36 and is reported above; it establishes an upper bound on the
+structural component but cannot identify it, because over n = 64 to 2048 a
+floor-free power law fits as well as a floor. What remains is a sweep reaching
+an n where the decay visibly flattens. Related: [[L9]], [[L11]].
 
-## L11. Tail dependence is unreliable below 50 exceedances, and the threshold bites
+## L11. CLOSED 2026-11-05, confirmed not lifted. Tail dependence is unreliable below 50 exceedances, and the threshold bites
+
+**Status: closed as CONFIRMED: the re-run exists and does not lift the
+limitation.** L11 asked for Part 13's detection arm re-run at 4x the split
+size, with the negative result to be confirmed as substantive if tail AUC
+stayed inside the measured band. Part 36 ran it and it did, so the outstanding
+question is answered. The entry's operative warning -- that a POSITIVE tail
+result at n_tail near 50 should not be believed -- is unchanged, and the
+dispersion it names as the real problem is unchanged too.
 
 **Component:** `prismflow/statistics/tail_dependence.py`, where
 `MIN_TAIL_SAMPLES = 50` and `TailEstimate.reliable` is
@@ -640,10 +757,42 @@ is consistent with both "no signal" and "not enough data" -- but the converse
 does not hold. A future POSITIVE tail result at n_tail near 50 should not be
 believed without a larger split.
 
-**What would change our understanding.** Re-running Part 13's detection arm at
-4x the split size. If tail AUC stayed at the measured **0.4846 +/- 0.0022 to
-0.5856 +/- 0.0126**, the negative result would be confirmed as substantive
-rather than underpowered.
+**New evidence, Part 36; this is what closes the entry.** Part 13's detection
+arm was re-run at `n_samples = 32000` against the committed 8000 -- a test
+slice of 4800 rows against 1200, and n_tail at q = 0.95 of **240** against 60
+-- with every other committed setting unchanged, 5 seeds. The committed tail
+AUCs reproduce first (0.4846145138888889 at eps 0.2 and 0.5856175694444444 at
+eps 2.0, both to abs diff 0).
+
+- eps 0.2: tail AUC **0.4938 +/- 0.0039** at 4x against **0.4846 +/- 0.0022**
+  committed; n_tail **240.0 +/- 0.0**; std/mean **0.008**.
+- eps 0.5: tail AUC **0.5007 +/- 0.0042** at 4x against **0.4801 +/- 0.0063**
+  committed; n_tail **240.0 +/- 0.0**; std/mean **0.008**.
+- eps 1.0: tail AUC **0.5554 +/- 0.0087** at 4x against **0.5370 +/- 0.0132**
+  committed; n_tail **240.0 +/- 0.0**; std/mean **0.016**.
+- eps 2.0: tail AUC **0.5568 +/- 0.0129** at 4x against **0.5856 +/- 0.0126**
+  committed; n_tail **240.0 +/- 0.0**; std/mean **0.023**.
+- Every epsilon's 4x mean lies inside the band, so the rule returns
+  **SUBSTANTIVE**. The negative result of Part 13 is not a power artefact. At
+  eps 2.0 the AUC in fact FELL with four times the data, from 0.5856 to
+  0.5568.
+- **A correction to this entry's own text.** The band was previously quoted
+  here as "0.4846 +/- 0.0022 to 0.5856 +/- 0.0126", but the committed means in
+  `results/tail/tail.json` are 0.4846 (eps 0.2), **0.4801** (eps 0.5), 0.5370
+  (eps 1.0) and 0.5856 (eps 2.0). The quoted floor of 0.4846 excluded this
+  entry's own eps 0.5 point, so the span is **0.4801 to 0.5856**. Part 36
+  pre-registered and evaluated both the quoted and the committed band rather
+  than picking one; the verdict is SUBSTANTIVE under each.
+- **The dispersion is unchanged by the 4x.** Across-seed std as a fraction of
+  the mean is still 0.008 to 0.023 at four times the split. Quadrupling buys
+  exceedances, not agreement between seeds.
+
+**Evidence:** `results/part36_synthetic/analysis_c.json`;
+`experiments/part36_synthetic/README.md` section 4.
+
+**What would change our understanding.** Nothing outstanding on the question
+this entry posed. A positive tail result at n_tail near the floor of 50 would
+still need a larger split before it was believed.
 
 ## L12. The attacker capabilities that defeat the defence are specific, and only partly tested
 
@@ -1126,7 +1275,15 @@ view's own standard deviation or by a fixed perturbed-cell fraction, so two
 views can be attacked at matched effort; and more than one seed for the reach
 figures.
 
-## L22. Part 10's clone comparison is not like-for-like
+## L22. CLOSED 2026-11-05, confirmed not lifted. Part 10's clone comparison is not like-for-like
+
+**Status: closed as CONFIRMED: the equal-width figure exists and does not lift
+the limitation.** L22 asked for a clone condition whose clean reference has the
+same view count as the attacked model. Part 36 built it and measured it, so a
+comparable number now exists. It confirms this entry's direction of concern
+rather than retiring it: part of 0.8743 really is the width, and the operative
+warning -- that 0.8743 must not be differenced against any fixed-width result
+-- is unchanged.
 
 **Component:** Part 10's `clone_k2` detector condition
 (`experiments/comparison/`), quoted in [[L5]] as AUC 0.8743 +/- 0.0583.
@@ -1146,7 +1303,8 @@ section 8.
   entries (6x5) and the 4-view reference over **12** (4x3) -- 15 against 6
   unordered pairs. A maximum over 30 draws is stochastically larger than one
   over 12 even when every per-pair distribution is identical.
-- **A clean clone with equal pair count has not been run.**
+- **A clean clone with equal pair count has now been run**, in Part 36; see
+  the block below.
 - **The live diagnostic of Part 32 states this limit in every response.**
   `serve/scoring.py` returns `suspicion_comparability` as a literal field on
   every `/score` result, including the branch where no suspicion score could
@@ -1160,9 +1318,48 @@ such asymmetry -- every condition and its clean reference run the same
 5-view model -- and it also runs no duplication condition, so the two Parts
 can only be compared qualitatively ([[L5]], [[L8]]).
 
-**What would change our understanding.** A clone condition whose clean
-reference has the same view count as the attacked model, which would separate
-detected duplication from the width change.
+**New evidence, Part 36; this is what closes the entry.** The same width-6
+model scored two conditions, so both maximise their suspicion score over the
+same **30** ordered off-diagonal entries: ATTACKED (the 4-view dataset with 2
+duplicated views appended, exactly as `clone_k2` does) and CLEAN-AT-WIDTH-6
+(the 6-view dataset the model was trained on, uncorrupted). Committed Part 10
+settings throughout, 5 seeds, paired within seed. The committed mixed-width
+figure reproduces bit-for-bit first (0.8743088888888889 +/-
+0.05831081226634124, abs diff 0).
+
+- `clone_k2` against the committed 4-view reference (MIXED width):
+  **0.8743 +/- 0.0583**.
+- `clone_k2` against a clean 6-view reference (EQUAL width):
+  **0.7652 +/- 0.0843**.
+- Paired difference, equal minus mixed: **-0.1091 +/- 0.0443**, negative in
+  **5 of 5** seeds, magnitude 2.5x its own std. **Verdict: WIDTH EXPLAINS PART
+  OF THE COMMITTED FIGURE.**
+- Mean suspicion score: clean at width 4 **0.3590 +/- 0.0394**, clean at width
+  6 **0.4280 +/- 0.0337**, cloned at width 6 **0.5243 +/- 0.0203**. The width
+  change alone lifts the clean reference by **+0.0690**, which is where the AUC
+  difference comes from.
+- **The reading.** Part of 0.8743 is the width: **0.1091** of it, or 29% of
+  the committed figure's margin over chance. The rest is not. At equal width
+  the detector still separates the cloned condition from a clean 6-view
+  reference at **0.7652 +/- 0.0843**, so duplication is detected and not
+  merely counted. **0.7652 is the number that may be differenced against a
+  fixed-width result; 0.8743 still may not.**
+- **Equal width controls view COUNT but not information content.** `clone_k2`
+  carries 4 distinct views plus 2 duplicates while the clean width-6 reference
+  carries 6 distinct views, so the two conditions differ in how much
+  independent evidence they hold as well as in duplication. The 0.7652 figure
+  therefore isolates the width artefact -- which is what L22 asked for -- but
+  is not a pure like-for-like contrast, and no condition in this design can be:
+  a clean reference cannot be both 6 views wide and built from 4 views' worth
+  of information.
+
+**Evidence:** `results/part36_synthetic/analysis_d.json`;
+`experiments/part36_synthetic/README.md` section 5.
+
+**What would change our understanding.** Nothing outstanding on the question
+this entry posed. Separating duplication from information content, as opposed
+to from width, would need a clean reference built by splitting 4 views' worth
+of signal across 6 channels.
 
 ## L23. CLOSED 2026-10-26, confirmed not lifted. On LANL the reported prevalence is a declared case-control sample, not the network
 

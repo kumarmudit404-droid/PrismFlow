@@ -1,0 +1,31 @@
+{
+  "eniv_validation_4view": {
+    "source": "results/eniv_validation/summary.json",
+    "quantities": [
+      {
+        "quantity": "eniv_features_cca_holdout.correlation_with_truth",
+        "committed": 0.9922060509334697,
+        "measured": 0.9922060509334697,
+        "tol": 5e-05,
+        "abs_diff": 0.0,
+        "pass": true
+      },
+      {
+        "quantity": "eniv_features_cca_holdout.mae",
+        "committed": 0.5220005950719182,
+        "measured": 0.5220005950719182,
+        "tol": 5e-05,
+        "abs_diff": 0.0,
+        "pass": true
+      },
+      {
+        "quantity": "eniv_features_cca_holdout.mae_std",
+        "committed": 0.29982128173320327,
+        "measured": 0.29982128173320327,
+        "tol": 5e-05,
+        "abs_diff": 0.0,
+        "pass": true
+      }
+    ]
+  }
+}
