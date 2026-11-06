@@ -1,0 +1,203 @@
+{
+ "smoke": true,
+ "not_a_finding": true,
+ "mode": {
+  "mode": "default",
+  "torch_threads_observed": 8,
+  "concurrency": 1,
+  "machine_default_threads_measured": 8
+ },
+ "days": 16,
+ "build": {
+  "rule": "v2",
+  "attack_hosts": 302,
+  "attack_cells_in_redteam_file": 932,
+  "attack_cells_in_read_range": 850,
+  "selection": {
+   "n_selected": 1117912,
+   "cases_added_outside_streamed_views": 271,
+   "records_scanned": {
+    "proc": 115159740,
+    "flows": 121284699,
+    "dns": 1055902
+   },
+   "occupied_cells_per_streamed_view": {
+    "proc": 23627216,
+    "flows": 13484366,
+    "dns": 580753
+   },
+   "streamed_views": [
+    "proc",
+    "flows",
+    "dns"
+   ],
+   "divisor": 512
+  },
+  "cells_in_train_or_test_blocks": 281824,
+  "size_fallback": {
+   "attack_host_benign_share_k": 2,
+   "attack_host_benign_share": "1/4",
+   "fallback_fired": true,
+   "rows_before_fallback": 979122,
+   "rows_after_fallback": 281824,
+   "attack_host_benign_cells_before": 929764,
+   "attack_host_benign_cells_dropped": 697298,
+   "max_total_bar": 400000
+  },
+  "n_samples": 281823,
+  "seconds": {
+   "selection_pass": 184.0,
+   "feature_pass": 409.6
+  },
+  "peak_rss_mb": 2366.4,
+  "per_day": {
+   "train": {
+    "1": {
+     "samples": 17790,
+     "attack_samples": 0,
+     "attack_windows": 0
+    },
+    "2": {
+     "samples": 19156,
+     "attack_samples": 18,
+     "attack_windows": 8
+    },
+    "3": {
+     "samples": 19100,
+     "attack_samples": 22,
+     "attack_windows": 11
+    },
+    "4": {
+     "samples": 18232,
+     "attack_samples": 0,
+     "attack_windows": 0
+    },
+    "5": {
+     "samples": 18206,
+     "attack_samples": 0,
+     "attack_windows": 0
+    },
+    "6": {
+     "samples": 20387,
+     "attack_samples": 36,
+     "attack_windows": 18
+    },
+    "7": {
+     "samples": 21076,
+     "attack_samples": 6,
+     "attack_windows": 2
+    },
+    "8": {
+     "samples": 21100,
+     "attack_samples": 2,
+     "attack_windows": 1
+    },
+    "9": {
+     "samples": 21681,
+     "attack_samples": 351,
+     "attack_windows": 108
+    },
+    "10": {
+     "samples": 20635,
+     "attack_samples": 4,
+     "attack_windows": 2
+    }
+   },
+   "test": {
+    "13": {
+     "samples": 21539,
+     "attack_samples": 222,
+     "attack_windows": 64
+    },
+    "14": {
+     "samples": 21876,
+     "attack_samples": 109,
+     "attack_windows": 43
+    },
+    "15": {
+     "samples": 21087,
+     "attack_samples": 37,
+     "attack_windows": 15
+    },
+    "16": {
+     "samples": 19958,
+     "attack_samples": 42,
+     "attack_windows": 19
+    }
+   }
+  }
+ },
+ "split_summary": {
+  "train": {
+   "n_samples": 197363,
+   "n_attack_samples": 439,
+   "n_benign_samples": 196924,
+   "attack_prevalence_in_sample": 0.0022243277615358503,
+   "n_distinct_attack_windows": 150
+  },
+  "test": {
+   "n_samples": 84460,
+   "n_attack_samples": 410,
+   "n_benign_samples": 84050,
+   "attack_prevalence_in_sample": 0.0048543689320388345,
+   "n_distinct_attack_windows": 141
+  }
+ },
+ "units": {
+  "0": {
+   "n": 84460,
+   "n_attack": 410,
+   "n_benign": 84050,
+   "prevalence": 0.0048543689320388345,
+   "roc_auc": 0.7201082108501037,
+   "balanced_accuracy": 0.551219512195122,
+   "accuracy": 0.9956429078853896,
+   "attack_recall": 0.1024390243902439,
+   "benign_recall": 1.0,
+   "brier": 0.004237271698718655,
+   "prob_ece": 0.003600682873748925,
+   "constant_baseline_brier": 0.004830804034310492,
+   "eniv_eigen": null,
+   "mean_dependence": null,
+   "train_seconds": 679.4,
+   "all_false_mask_rows": 0,
+   "arm_views": [
+    "auth",
+    "proc",
+    "flows",
+    "dns"
+   ],
+   "system": "naive",
+   "seed": 0,
+   "peak_rss_mb": 2366.4
+  },
+  "1": {
+   "n": 84460,
+   "n_attack": 410,
+   "n_benign": 84050,
+   "prevalence": 0.0048543689320388345,
+   "roc_auc": 0.7463095283005181,
+   "balanced_accuracy": 0.5548780487804879,
+   "accuracy": 0.995678427658063,
+   "attack_recall": 0.10975609756097561,
+   "benign_recall": 1.0,
+   "brier": 0.004187993812641293,
+   "prob_ece": 0.0033730569941362604,
+   "constant_baseline_brier": 0.004830804034310492,
+   "eniv_eigen": null,
+   "mean_dependence": null,
+   "train_seconds": 942.6,
+   "all_false_mask_rows": 0,
+   "arm_views": [
+    "auth",
+    "proc",
+    "flows",
+    "dns"
+   ],
+   "system": "naive",
+   "seed": 1,
+   "peak_rss_mb": 2366.4
+  }
+ },
+ "peak_rss_mb": 2366.4
+}
