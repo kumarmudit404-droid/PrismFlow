@@ -10,7 +10,7 @@
  *   2. motion.js may set that attribute only through this file, so a missing
  *      or broken failsafe costs the fade, never the content.
  *   3. The deadline below runs from the moment this file executes and depends
- *      on nothing else -- not motion.js, anime.js, WebGL or an observer.
+ *      on nothing else -- not motion.js, WebGL or an observer.
  *
  * Classic script, not a module, loaded in <head> ahead of everything else so
  * it has already run before anything can ask to hide.
@@ -18,7 +18,7 @@
 (function () {
   "use strict";
 
-  var SELECTORS = [".chapter__lede", ".panel", ".limit"];
+  var SELECTORS = [".reveal", ".chapter__lede", ".panel", ".limit"];
 
   /* A deadline for the whole page, not per element. */
   var DEADLINE_MS = 5000;

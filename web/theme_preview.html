@@ -15,8 +15,19 @@
 
 <header class="ph">
   <h1>Theme variants — phase (f) step 1</h1>
+  <p class="note" style="border:2px solid currentColor;padding:0.75rem">
+    <strong>SUPERSEDED.</strong> The applied theme is no longer variant B. It is
+    <em>spectrum light</em> — a near-white base, a violet accent and a
+    graphics-only six-stop spectrum — and it lives in the same
+    <code>assets/css/tokens.css</code> this page reads. The B block below
+    therefore <strong>paints itself in the live light palette while its printed
+    hex labels and ratios are variant B's old dark values</strong>, kept as the
+    record of that decision. Trust the swatches, not the captions, and run
+    <code>python web/check_palette.py</code> for the applied figures. Variant A
+    is unchanged and its captions are still correct.
+  </p>
   <p>
-    Two candidates. <strong>Variant B was chosen and is applied</strong>, so
+    Two candidates. <strong>Variant B was chosen and applied in phase (f)</strong>, so
     the B block below reads <code>assets/css/tokens.css</code> itself rather
     than a copy — this sheet cannot show a variant B that differs from the one
     the site ships. Variant A is kept at
@@ -122,7 +133,7 @@
 <!-- ======================= VARIANT B ======================= -->
 <section class="variant variant--b">
   <div class="variant__inner">
-    <h2>Variant B — Dark ember <span class="tag">applied</span></h2>
+    <h2>Variant B — Dark ember <span class="tag">superseded</span></h2>
     <p class="variant__sub">
       Warm near-black base, white text, bright-orange glow accent.
       <strong>Worst greyscale step 1.32:1 · worst CVD separation 11.01</strong>
@@ -203,8 +214,9 @@
 
 <footer class="pf">
   <p>
-    Variant B is applied; variant A is kept for the record. No number, chart
-    value, source line or limitation text was touched by the theme change.
+    Neither variant is applied any more; see the note at the top. Both are kept
+    for the record. No number, chart value, source line or limitation text was
+    touched by any theme change.
   </p>
 </footer>
 

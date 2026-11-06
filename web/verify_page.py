@@ -283,10 +283,17 @@ CONDITIONS = [
        }
      }).observe(document.documentElement, {attributes:true, attributeFilter:['data-motion']});
      """),
-    ("anime.js import fails", """
-     const realFetch = window.fetch;
-     Object.defineProperty(window, 'fetch', {value: realFetch, writable: true});
-     document.addEventListener('DOMContentLoaded', () => {}, {once:true});
+    # Was "anime.js import fails", which injected a no-op once the reveals
+    # stopped using anime.js -- a condition that could not fail, which is not
+    # a test. This is the real version of that failure for a CSS-class reveal:
+    # an observer that accepts every registration and never calls back, so
+    # .is-visible is never added and only the failsafe deadline un-hides the
+    # page. Strictly harder than deleting IntersectionObserver, because
+    # nothing can detect that it is broken.
+    ("IntersectionObserver never calls back", """
+     window.IntersectionObserver = function () {
+       return {observe(){}, unobserve(){}, disconnect(){}, takeRecords(){ return []; }};
+     };
      """),
     ("motion.js throws on load", """
      window.addEventListener('error', e => e.preventDefault());
@@ -525,7 +532,7 @@ def main() -> int:
         # The brief's phone width is a reviewable artefact, so it is a flag
         # rather than a one-off script: a screenshot nobody can regenerate is
         # not evidence about the layout.
-        width = 1440
+        width, height = 1440, 900
         for i, a in enumerate(args):
             if a == "--path" and i + 1 < len(args):
                 path = args[i + 1]
@@ -535,11 +542,16 @@ def main() -> int:
                 tokens = args[i + 1]
             if a == "--width" and i + 1 < len(args):
                 width = int(args[i + 1])
+            # The hero is anchored in PERCENTAGES of a 16:9 box, so proving the
+            # alignment means photographing it at several aspect ratios, which
+            # needs the height as well as the width.
+            if a == "--height" and i + 1 < len(args):
+                height = int(args[i + 1])
         b = Browser()
         try:
-            if width != 1440:
+            if (width, height) != (1440, 900):
                 b.ws.call("Emulation.setDeviceMetricsOverride", {
-                    "width": width, "height": 900, "deviceScaleFactor": 1,
+                    "width": width, "height": height, "deviceScaleFactor": 1,
                     "mobile": width < 700})
             if tokens:
                 # A candidate palette photographed on the REAL site, without

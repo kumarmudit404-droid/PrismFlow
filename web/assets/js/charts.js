@@ -171,7 +171,7 @@
     var legend = el("div", "legend");
     rhoValues.forEach(function (rho) {
       legend.insertAdjacentHTML("beforeend",
-        '<span class="legend__item"><i style="background:' + (RHO_COLOUR[String(rho)] || "#888") +
+        '<span class="legend__item"><i style="background:' + (RHO_COLOUR[String(rho)] || "var(--text-secondary)") +
         '"></i>rho = ' + rho + "</span>");
     });
     legend.insertAdjacentHTML("beforeend",

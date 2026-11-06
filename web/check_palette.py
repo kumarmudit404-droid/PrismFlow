@@ -28,6 +28,8 @@ WHAT IT CHECKS
      under simulated deuteranopia, protanopia and tritanopia
   6. --status-not-measured is the lowest-chroma AND lowest-contrast token, so
      absent data can never read as data
+  7. every text token >= 4.5:1 on each COMPOSITED surface, not only on --base:
+     the tinted surfaces carry their own alpha and sit below it
 
 Exit code is 1 if any hard check fails, so this can gate a commit.
 """
@@ -193,6 +195,29 @@ ANGLES = ["--angle-regulatory", "--angle-sentiment", "--angle-tech",
 TEXT = ["--text-primary", "--text-secondary", "--text-muted"]
 
 
+RGBA = re.compile(r"(--[a-z0-9-]+)\s*:\s*rgba\(([^)]+)\)\s*;")
+
+
+def surface_rgb(path: Path, name: str, base: tuple):
+    """The real pixel a surface token produces over --base.
+
+    Half the palette's surfaces carry their own alpha, so the token value is
+    not what text sits on -- the composite is. A plain hex token is returned
+    unchanged.
+    """
+    text = path.read_text(encoding="utf-8")
+    hexes = {m.group(1): m.group(2) for m in TOKEN.finditer(text)}
+    if name in hexes:
+        return parse_hex(hexes[name])
+    for m in RGBA.finditer(text):
+        if m.group(1) != name:
+            continue
+        parts = [float(x) for x in m.group(2).split(",")]
+        r, g, b, a = parts[0] / 255, parts[1] / 255, parts[2] / 255, parts[3]
+        return tuple(c * a + d * (1 - a) for c, d in zip((r, g, b), base))
+    return None
+
+
 def read_tokens(path: Path) -> dict:
     return {m.group(1): m.group(2) for m in TOKEN.finditer(
         path.read_text(encoding="utf-8"))}
@@ -302,6 +327,40 @@ def report(path: Path) -> int:
             print("    FAIL lower contrast elsewhere: %s" % ", ".join(stronger))
         if not louder and not stronger:
             print("    the quietest token in the system, as required")
+
+    # 7. text on the surfaces it actually lands on, not just on --base
+    #
+    # --section-scrim is first because it is the one almost every word on the
+    # site is actually read against: it is what every chapter sits on over the
+    # fixed backdrop. This check composites it over --base, which is the
+    # friendly case; the hostile case is the backdrop's own darkest pixel
+    # showing THROUGH it, and only check_prism_contrast.py can see that.
+    #
+    # --base is the EASIEST background on the page. Every tinted surface in
+    # the palette sits a little below it, and a token that clears 4.5:1 on
+    # --base can still fail on --track or --quote-bg. Those are rgba, so the
+    # ratio has to be computed against the composite, not against the token.
+    print("")
+    print("  text on the composited surfaces, worst pair per surface")
+    text_fg = [k for k in TEXT + ["--accent-text", "--accent-2", "--brand-orange",
+                                  "--status-provider-error", "--status-genuine-zero"]
+               if k in tok]
+    for name in ["--section-scrim", "--surface", "--accent-wash",
+                 "--glass-bg-solid", "--nav-bg", "--quote-bg", "--limits-hover",
+                 "--wrong-tint", "--track"]:
+        bg = surface_rgb(path, name, base)
+        if bg is None:
+            continue
+        worst, who = None, None
+        for key in text_fg:
+            c = contrast(parse_hex(tok[key]), bg)
+            if worst is None or c < worst:
+                worst, who = c, key
+        ok = worst >= 4.5
+        print("    %-18s %6.2f:1  4.5:1  %-24s %s"
+              % (name, worst, who, "" if ok else "FAIL"))
+        if not ok:
+            fails.append("%s on %s is %.2f:1, below 4.5:1" % (who, name, worst))
 
     print()
     if fails:

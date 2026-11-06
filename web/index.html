@@ -18,46 +18,66 @@
 </head>
 <body>
 <a class="skip-link" href="#ch1">Skip to content</a>
-<!-- One canvas for all ambient motion: a single compositor layer rather than a
-     stack of blurred ones. -->
-<canvas id="ambient" aria-hidden="true"></canvas>
+<!-- ======================= THE FIXED BACKDROP =======================
+     The spectrum image and the live prism are ONE layer, fixed to the
+     viewport behind every pixel of content. The whole page scrolls over it.
 
-<!-- The site-wide prism background, fixed to the viewport with the whole page
-     scrolling over it. It is the product's own mark -- one incident beam
-     refracting into five angle beams -- and there is no logo file in this
-     repository to use instead.
+     They are in the same box on purpose. The image is cropped with
+     object-fit:cover and object-position pinned to its own convergence point,
+     and the prism is placed at the same percentages of the same box, so the
+     rays meet the glass at every viewport aspect rather than only at the
+     image's native one.
 
-     This SVG is always present and is the only thing that renders until a
-     WebGL 2 context has actually been obtained. motion.js then mounts
-     hero3d.js into the same box and sets [data-hero="gl"], which is the only
-     thing that fades the SVG out. No WebGL, reduced motion, a failed import or
-     a throw inside the module all leave the SVG exactly where it is, so there
-     is no state in which this box is empty.
+     The frame that used to be baked into the JPG has been cropped out of the
+     file: app.css draws the spectrum frame, and two frames meant two
+     rounded rectangles at two different insets.
 
-     It stays static on purpose: a background that animates behind body text is
-     a legibility problem, so the motion lives in the WebGL path, which
-     motion.js pauses when it is off-screen. -->
-<div id="prism-bg" aria-hidden="true">
-  <svg class="prism-bg__svg" viewBox="0 0 900 240" preserveAspectRatio="xMidYMid meet"
-       aria-hidden="true" focusable="false">
-    <line x1="0" y1="120" x2="330" y2="120" stroke="var(--beam-incident)" stroke-width="2.5"/>
-    <path d="M360 40 L470 190 L250 190 Z" fill="none" stroke="var(--text-secondary)" stroke-width="1.5"/>
-    <g class="beams">
-      <line class="beam beam--regulatory" x1="400" y1="120" x2="900" y2="38"  stroke="var(--angle-regulatory)"/>
-      <line class="beam" x1="400" y1="120" x2="900" y2="79"  stroke="var(--angle-sentiment)"/>
-      <line class="beam" x1="400" y1="120" x2="900" y2="120" stroke="var(--angle-tech)"/>
-      <line class="beam" x1="400" y1="120" x2="900" y2="161" stroke="var(--angle-market)"/>
-      <line class="beam" x1="400" y1="120" x2="900" y2="202" stroke="var(--angle-financial)"/>
-    </g>
-  </svg>
+     Body text now scrolls over this, so every content section carries a
+     translucent scrim. The alpha is measured, not chosen -- see tokens.css. -->
+<div id="backdrop" aria-hidden="true">
+  <picture>
+    <source srcset="assets/img/bg-spectrum-light.webp" type="image/webp">
+    <img class="backdrop-bg" src="assets/img/bg-spectrum-light.jpg" alt="" aria-hidden="true"
+         width="1536" height="836" fetchpriority="high" decoding="async">
+  </picture>
+
+  <!-- The live prism. The static SVG inside is always present and is the only
+       thing that renders until a WebGL 2 context has actually been obtained;
+       motion.js then mounts hero3d.js into the same box and sets
+       [data-hero="gl"], which is the only thing that fades the SVG out. No
+       WebGL, reduced motion, a failed import or a throw inside the module all
+       leave the SVG exactly where it is, so this box is never empty.
+
+       The SVG's viewBox is the triangle plus margin, and is the SAME box
+       hero3d.js's camera frames (its FIT constant), so the swap between the
+       two is invisible. The five beams it used to draw are in the photograph
+       now; drawing them twice put a second, differently-angled fan over the
+       first. -->
+  <div id="prism-bg" class="backdrop-prism">
+    <svg class="prism-bg__svg" viewBox="235 35 250 210" preserveAspectRatio="xMidYMid meet"
+         aria-hidden="true" focusable="false">
+      <path d="M360 40 L470 190 L250 190 Z" fill="var(--prism-tint)" fill-opacity="0.55"
+            stroke="var(--text-muted)" stroke-width="2"/>
+    </svg>
+  </div>
+  <!-- Keeps the glass off the page rather than floating on it. A div, not a
+       box-shadow on the canvas, because the canvas is square and the shadow
+       has to sit under the triangle. -->
+  <div class="backdrop-prism__shadow"></div>
 </div>
 
 <nav class="site-nav" aria-label="Chapters">
   <div class="wrap site-nav__inner">
     <span class="site-nav__brand">
-      <!-- A supplied raster asset, generated with an image model and committed as a
-           file -- unlike the prism mark, which stays SVG and WebGL. -->
-      <img class="site-nav__mark" src="assets/img/nav-mark.png" width="30" height="29" alt="" aria-hidden="true">
+      <!-- The mark, tied to the spectrum: a conic ring in the six --spec-*
+           stops with the committed PNG inset inside it. The PNG is a supplied
+           raster asset, generated with an image model and committed as a file
+           -- unlike the prism mark, which stays SVG and WebGL. The ring is
+           decoration and the wrapper is aria-hidden with the brand name as
+           the accessible text beside it. -->
+      <span class="site-nav__brand-mark" aria-hidden="true">
+        <img class="site-nav__mark" src="assets/img/nav-mark.png" width="30" height="29" alt="">
+      </span>
       PrismFlow
     </span>
     <ul class="site-nav__list">
@@ -72,39 +92,42 @@
       <li><a class="site-nav__link site-nav__link--limits" href="#limits">Known limitations</a></li>
     </ul>
   </div>
+  <!-- The scroll-progress line, pinned to the underside of the sticky bar.
+       Decoration: it duplicates the scrollbar and carries no information the
+       page does not already give, so it is aria-hidden and is left static
+       under prefers-reduced-motion. motion.js sets --p; with no JS it stays
+       at zero width, which is simply an absent line. -->
+  <div class="scroll-progress" aria-hidden="true"></div>
 </nav>
 
 <main>
-
 <!-- ============================ HERO ============================ -->
-<!-- No .no-prism-bg here, deliberately: the hero is text, and the prism showing
-     behind it is the intended look.
+<!-- Text only. The image and the prism are the fixed backdrop above, so the
+     hero's job here is to hold its copy clear of the glass: the column stays
+     on the left and the rays meet the prism in the open right-hand third. -->
+<header class="hero">
+  <div class="hero__inner">
+    <h1 class="hero__title">Agreement is not<br>evidence.</h1>
+    <p class="hero__thesis">
+      Agreement between views should contribute evidence in proportion to the
+      effective independence of those views, not in proportion to how many views
+      agree.
+    </p>
 
-     That is a contrast decision and it was measured, not assumed -- the hero
-     figures at 1440px and 390px, and the adapter that produced them, are in
-     web/README.md. If they ever fall below 4.5:1, the fix is
-     --prism-scrim-local on this container or restoring .no-prism-bg. Do NOT
-     lower --prism-bg-opacity or PEAK_LUM: both are tuned against their own
-     separate measurements. -->
-<header class="wrap hero">
-  <h1 class="hero__title">Agreement is not<br>evidence.</h1>
-  <p class="hero__thesis">
-    Agreement between views should contribute evidence in proportion to the
-    effective independence of those views, not in proportion to how many views
-    agree.
-  </p>
-
-  <!-- The hero is text only; the prism is the site-wide fixed background
-       above, not an element here. -->
-
-  <p class="prose">
-    A research project, reported as a research project: this tour states what
-    was measured, on how many seeds, and — just as often — what could not be
-    measured at all. Every figure on these pages names the committed file it
-    came from.
-  </p>
-  <a class="limits-link" href="#limits" aria-label="Known limitations, from the introduction">Known limitations →</a>
+    <p class="prose">
+      A research project, reported as a research project: this tour states what
+      was measured, on how many seeds, and — just as often — what could not be
+      measured at all. Every figure on these pages names the committed file it
+      came from.
+    </p>
+    <a class="limits-link" href="#limits" aria-label="Known limitations, from the introduction">Known limitations →</a>
+  </div>
 </header>
+
+<!-- The reading sheet: the measured scrim every chapter is read against. It
+     stops at the hero, which is the one place the artwork is meant to be
+     looked at rather than read over, and the hero carries its own panel. -->
+<div class="sheet">
 
 <!-- ============================ CH 1 ============================ -->
 <section class="chapter wrap" id="ch1" aria-labelledby="ch1-h">
@@ -603,6 +626,7 @@
   <div class="placeholder" id="limits-v2">loading committed data…</div>
 </section>
 
+</div><!-- /.sheet -->
 </main>
 
 <footer class="site-foot">

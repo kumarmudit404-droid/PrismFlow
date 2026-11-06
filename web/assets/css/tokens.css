@@ -3,13 +3,22 @@
  * `python web/check_palette.py` gates that. It also measures the applied
  * palette; the figures are recorded in web/README.md.
  *
- * Variant B, "dark ember". The light alternative is kept at
- * tokens-a-light.css and theme_preview.html shows both, so the choice stays
- * inspectable.
+ * SPECTRUM LIGHT. The site runs on a near-white base with a violet accent and
+ * a six-stop spectrum used for graphics only. The previous dark palette
+ * ("variant B, dark ember") is gone from here; tokens-a-light.css remains as
+ * the warm light candidate and theme_preview.html still shows it.
  *
- * Orange is UI chrome only: base, surfaces, nav, buttons, links, focus rings.
- * The five angle colours stay categorical and are held well away from the
- * accent, so a measured value can never be mistaken for a control.
+ * TWO NAMES FOR ONE COLOUR, ON PURPOSE. check_palette.py reads literal hex
+ * off --base, --text-*, --accent*, --angle-* and --status-not-measured, and
+ * app.css plus every module in assets/js already consume those names. The
+ * newer, plainer names (--bg, --text-strong, --text) are var() aliases onto
+ * them rather than a second set of literals, so there is still exactly one
+ * place each colour is written down.
+ *
+ * --spec-1..6 ARE GRAPHICS ONLY: borders, rules, chart series, badges and the
+ * prism. They are pastel by design and most of them do not clear 3:1 on the
+ * base, so they must never carry text and must never be the only encoder of a
+ * value. The five --angle-* tokens are the DATA palette and are gated.
  *
  * Changing a value here changes the whole theme.
  */
@@ -22,115 +31,200 @@
    * so it still scales from the reader's own browser zoom setting. */
   font-size: 118%;
 
-  /* ---- structure ----------------------------------------------------
-   * Warm near-black rather than a blue-black: an orange theme over a blue base
-   * reads as two separate colour systems stacked. */
-  --base:            #0C0907;
-  --surface:         #16110D;
-  --surface-raised:  #201811;
-  --hairline:        #33261C;
+  /* ---- structure ----------------------------------------------------- */
+  --base:            #F7F8FA;
+  --surface:         #FFFFFF;
+  --surface-raised:  #FFFFFF;
+  --hairline:        #DFE3EB;
 
-  /* ---- text --------------------------------------------------------- */
-  --text-primary:    #FBF4EC;   /* 18.06:1 on base */
-  --text-secondary:  #C4B3A2;   /*  9.60:1 */
-  --text-muted:      #8E7D6C;   /*  4.83:1 */
+  /* ---- text ---------------------------------------------------------
+   * Measured on --base by check_palette.py; the comments are its output. */
+  --text-primary:    #12182B;   /* 16.59:1 on base */
+  --text-secondary:  #3A4256;   /*  9.44:1 */
+  --text-muted:      #5A6478;   /*  5.60:1 */
 
-  /* ---- the orange UI accent -----------------------------------------
-   * The accent carries dark ink, never white: white on #FF7A2F measures
-   * 2.60:1 and fails, while #1A1008 on it is 7.20:1. Anywhere orange is a
-   * fill, the label is dark. --accent-text is the orange used as text. */
-  --accent:          #FF7A2F;   /*  7.64:1 on base */
-  --accent-ink:      #1A1008;   /*  7.20:1 on accent */
-  --accent-strong:   #FF9A5A;   /*  9.47:1 -- hover and active */
-  --accent-text:     #FF9A5A;   /*  9.47:1 on base, for link text */
-  --accent-glow:     #FF7A2F;
-  --accent-wash:     #2A1A10;
+  /* ---- the violet UI accent ------------------------------------------
+   * One token works as a fill, as link text and as a focus ring: it is
+   * 6.36:1 on the base and carries white at 6.82:1. */
+  --accent:          #5B3FD4;   /*  6.36:1 on base */
+  --accent-ink:      #FFFFFF;   /*  6.76:1 on accent */
+  --accent-strong:   #452DAC;   /*  9.07:1 -- hover and active */
+  --accent-text:     #5B3FD4;   /*  6.36:1 on base, for link text */
+  /* Decorative only -- 3.09:1 on the base, so it never carries text. */
+  --accent-glow:     #8C7BFF;
+  --accent-wash:     #ECE8FB;
 
-  /* ---- the five angles, in spectral order (violet bends most) -------- */
-  --angle-regulatory: #583DFC;  /*  3.31:1  L*42 C110 */
-  --angle-sentiment:  #E6097A;  /*  4.43:1  L*50 C 78 */
-  --angle-tech:       #1B95C9;  /*  5.85:1  L*58 C 38 */
-  --angle-market:     #10C166;  /*  8.39:1  L*69 C 70 */
-  /* Chroma 78 deliberately. A paler cream (#FEE2B0) sits 13.9 CIEDE2000 from
-   * --text-primary, close enough that a gold data point starts reading as body
-   * text; this gold is 28.0 away. The chroma floor is raised for this angle
-   * only, since it is the pale end of the staircase where that can happen. */
-  --angle-financial:  #FFC72A;  /* 12.70:1  L*83 C 78 */
+  /* The teal second accent and the brand orange. Both carry text, so both are
+   * measured against the DIMMEST background any text sits on -- --track over
+   * --base, luminance 0.7915 -- not just against --base, which is the easiest
+   * surface on the page. The orange was darkened from the requested #B85E00,
+   * which was 4.26:1 even on --base. */
+  --accent-2:        #0B6B7D;   /*  5.79:1 on base, 4.81:1 on --track */
+  --brand-orange:    #9C5000;   /*  5.55:1 on base, 4.73:1 on --track */
 
+  /* ---- the six-stop spectrum, GRAPHICS ONLY --------------------------
+   * The frame, the rules, the progress line and the prism's rim cycle these.
+   * Contrast on the base, measured: 2.61, 1.65, 1.20, 1.51, 1.61, 3.09. Only
+   * --spec-6 clears the 3:1 non-text floor, which is why these are confined
+   * to decoration that carries no meaning on its own. */
+  --spec-1: #FF6B6B;
+  --spec-2: #F5B95F;
+  --spec-3: #F2E86B;
+  --spec-4: #6BE39A;
+  --spec-5: #62D6E8;
+  --spec-6: #8C7BFF;
+
+  /* ---- the five angles, in spectral order (violet bends most) ---------
+   * The DATA palette, searched rather than picked by eye and carried over
+   * from tokens-a-light.css, where check_palette.py holds the maths.
+   *
+   * The luminance staircase runs downward here, and has to: on a light base
+   * contrast comes from being dark, so regulatory -- the angle with no
+   * connector -- is the highest-contrast angle rather than the lowest. Its
+   * "unbuilt" reading is carried entirely by --angle-unbuilt-filter.
+   *
+   * Financial was darkened from #B58B00, which measured 2.97:1 on this base
+   * and so missed the 3:1 floor that the warmer #FFFCF8 base let it clear. */
+  --angle-regulatory: #0710A1;  /* 12.37:1 */
+  --angle-sentiment:  #8F0049;  /*  8.73:1 */
+  --angle-tech:       #00658C;  /*  6.10:1 */
+  --angle-market:     #0B8947;  /*  4.22:1 */
+  --angle-financial:  #B08700;  /*  3.13:1 */
+
+  /* Regulatory is the unbuilt angle. Rendered through this filter everywhere,
+   * so "no connector exists" is visible before you read a word. */
   --angle-unbuilt-filter: saturate(0.35) opacity(0.55);
 
   /* ---- beam --------------------------------------------------------- */
-  --beam-incident:   #FFF6EA;   /* 17.34:1 -- the single beam before the prism */
+  --beam-incident:   #4A5168;   /* the single beam, dark on a light base */
 
-  /* ---- status ------------------------------------------------------- */
-  --status-provider-error: #FF5C3D;
-  --status-genuine-zero:   #7A6A5C;
-  /* The dimmest, lowest-chroma DATA token in the system. */
-  --status-not-measured:   #4A3C30;
-
-  /* ---- surfaces that carry their own alpha ---------------------------- */
-  --scrim:           rgba(12, 9, 7, 0.84);
-  /* Local scrim behind the few --text-muted blocks that sit over the prism.
-   * 0.80 is measured, not picked: 0.70 held 4.29:1 and 0.75 held 4.42:1, both
-   * short of the 4.5:1 floor; 0.80 holds 4.53:1. app.css has which blocks
-   * carry it. */
-  --prism-scrim-local: rgba(12, 9, 7, 0.80);
-  --nav-bg:          rgba(12, 9, 7, 0.92);
-  --dialog-backdrop: rgba(12, 9, 7, 0.72);
-
-  /* The spectrum wash, warmed to the ember base. */
-  --wash-beam:       rgba(255, 122, 47, 0.12);
-  --wash-regulatory: rgba(88, 61, 252, 0.10);
-  --wash-tech:       rgba(27, 149, 201, 0.09);
-  --wash-market:     rgba(16, 193, 102, 0.07);
-  --wash-sentiment:  rgba(230, 9, 122, 0.07);
-
-  --quote-bg:        rgba(255, 199, 42, 0.05);
-  --limits-border:   rgba(255, 122, 47, 0.35);
-  --limits-hover:    rgba(255, 122, 47, 0.10);
-
-  --track:           rgba(251, 244, 236, 0.06);
-  --link-underline:  rgba(255, 154, 90, 0.45);
-  --wrong-tint:      rgba(255, 92, 61, 0.10);
-  --alert-border:    rgba(255, 92, 61, 0.45);
-
-  /* ---- the prism background ------------------------------------------
-   * How strongly the site-wide prism in #prism-bg shows through. A token
-   * rather than a number in app.css, so the one value that trades "the prism
-   * is visible" against "the text on top of it is legible" sits beside the
-   * colours it is measured against.
+  /* ---- status ------------------------------------------------------
+   * Never the only encoder: every status also carries a text label. */
+  --status-provider-error: #B3261E;   /*  6.15:1 on base, 5.24:1 on --track */
+  --status-genuine-zero:   #5F6674;   /*  5.43:1 on base, 4.62:1 on --track */
+  /* The dimmest, lowest-chroma DATA token in the system: absent data must
+   * never read as data. check_palette.py proves it is quieter than all five
+   * angles on both axes -- 2.63:1 against --angle-financial's 3.13:1 floor,
+   * and chroma 7.6 against the angles' minimum of 30.1.
    *
-   * Measured, not chosen: web/check_prism_contrast.py renders the real page,
-   * reads back the composited background pixels under each sampled text
-   * region with the text hidden, and reports the worst ratio against the text
-   * token that sits there. */
-  --prism-bg-opacity: 0.40;
+   * It is deliberately below the 4.5:1 text floor and cannot be raised to it
+   * while the gate holds: the rule is that nothing encoding a measured value
+   * may be quieter than the colour meaning "there is no value", and the
+   * quietest angle is 3.13:1. The dark palette had the same property at
+   * 1.87:1, so this is a little louder, not a new compromise. Every "not
+   * measured" also carries its words, never the colour alone. */
+  --status-not-measured:   #949BA8;
+
+  /* ---- the section scrim ----------------------------------------------
+   * Body text scrolls over the fixed backdrop, so every content section sits
+   * on this. --surface at an alpha SOLVED, not chosen.
+   *
+   * The solve: with the scrim removed, the prism driven across twelve frames
+   * of a full rotation and every text region sampled for its DARKEST
+   * composited pixel, the binding case is .chapter__lede in --text-secondary
+   * over the prism's edge lines at rgb(106,104,115) -- 1.83:1 bare. The
+   * minimum alpha that lifts that to 4.5:1 is 0.46. 0.65 is 0.46 plus a
+   * margin, and it measures 5.39:1 at the worst region, 10.86:1 for body
+   * prose, with 35% of the backdrop still showing through.
+   *
+   * Raising it hides the artwork; lowering it below 0.46 breaks AA on a dark
+   * prism edge. web/check_prism_contrast.py is the gate that holds it, and it
+   * must SCORE regions -- a run that scores nothing is not evidence here. */
+  --section-scrim: rgba(255, 255, 255, 0.65);
+
+  /* ---- surfaces that carry their own alpha ----------------------------
+   * The page background is the scrim, not --base. A light palette that leaves
+   * these at a dark literal renders dark text on a dark page. */
+  --scrim:           rgba(247, 248, 250, 0.86);
+  /* Local scrim behind the few --text-muted blocks that sit over the hero
+   * image. */
+  --prism-scrim-local: rgba(247, 248, 250, 0.80);
+  /* The menu bar's glass. --surface, not --base, and translucent enough that
+   * the backdrop reads as moving colour behind it rather than as a grey
+   * band; app.css pairs it with blur AND saturate, and falls back to opaque
+   * --surface where backdrop-filter is unsupported. */
+  --nav-bg:          rgba(255, 255, 255, 0.72);
+  --dialog-backdrop: rgba(18, 24, 43, 0.55);
+
+  /* The spectrum wash, in the spectrum's own hues. Alphas are low because the
+   * base is near-white and there is no scrim darkness to hide behind. */
+  --wash-beam:       rgba(140, 123, 255, 0.10);
+  --wash-regulatory: rgba(7, 16, 161, 0.05);
+  --wash-tech:       rgba(98, 214, 232, 0.10);
+  --wash-market:     rgba(107, 227, 154, 0.09);
+  --wash-sentiment:  rgba(255, 107, 107, 0.07);
+
+  --quote-bg:        rgba(140, 123, 255, 0.07);
+  --limits-border:   rgba(91, 63, 212, 0.35);
+  --limits-hover:    rgba(91, 63, 212, 0.08);
+
+  --track:           rgba(18, 24, 43, 0.08);
+  --link-underline:  rgba(91, 63, 212, 0.40);
+  --wrong-tint:      rgba(179, 38, 30, 0.08);
+  --alert-border:    rgba(179, 38, 30, 0.45);
+
+  /* ---- the prism ------------------------------------------------------
+   * The prism is now anchored inside the hero over the background image, not
+   * painted behind the whole page, so this is a straight opacity on a
+   * decorative element rather than the legibility knob it used to be. */
+  --prism-bg-opacity: 1;
+  /* A faint cool tint in the glass. Clear glass on a white page is invisible;
+   * this is what gives the solid a body. */
+  --prism-tint:      #EDE9FF;
+  /* The field of the opaque plane hero3d.js puts behind the glass so
+   * transmission has something to bend. MEASURED off the background image at
+   * the prism's own anchor, where it reads (252,252,252): at --surface's pure
+   * white the plane showed as a faint card, and at --base's #F7F8FA as a
+   * faint grey one. */
+  --prism-backdrop:  #FCFCFC;
 
   /* ---- glass -------------------------------------------------------- */
-  --glass-bg:       rgba(32, 24, 17, 0.58);
-  --glass-bg-solid: rgba(22, 17, 13, 0.90);
-  --glass-border:   rgba(255, 122, 47, 0.22);
+  --glass-bg:       rgba(255, 255, 255, 0.62);
+  --glass-bg-solid: rgba(255, 255, 255, 0.92);
+  --glass-border:   rgba(91, 63, 212, 0.16);
   --glass-blur:     14px;
-  --glass-sheen:    rgba(255, 214, 184, 0.16);
-  --glass-shadow:   rgba(0, 0, 0, 0.55);
+  --glass-sheen:    rgba(255, 255, 255, 0.75);
+  --glass-shadow:   rgba(18, 24, 43, 0.10);
 
-  /* ---- type --------------------------------------------------------- */
+  /* ---- aliases --------------------------------------------------------
+   * The plainer names, pointing at the gated ones above. Nothing new is
+   * defined here; see the header note. */
+  --bg:          var(--base);
+  --text-strong: var(--text-primary);
+  --text:        var(--text-secondary);
+
+  /* ---- type ---------------------------------------------------------
+   * SYSTEM STACK, NOT VENDORED. Inter and JetBrains Mono were asked for as
+   * local @font-face files, but no font binary is in this repository and
+   * nothing may be fetched at runtime or at build time, so there is nothing
+   * to vendor. If the reader happens to have Inter or JetBrains Mono
+   * installed they are used; otherwise the platform UI face is. */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
                Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-               "Liberation Mono", monospace;
-  /* Titles only. No CDN and no vendored font file -- a system stack that uses
-   * the heaviest installed display face where one exists and otherwise falls
-   * back to --font-sans. The different voice comes from weight 800-900,
-   * letter-spacing and uppercase applied where this token is used. */
-  --font-display: "Segoe UI Black", "Arial Black", "Helvetica Neue", var(--font-sans);
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+               Consolas, "Liberation Mono", monospace;
+  /* Titles only. The different voice comes from weight, letter-spacing and
+   * case applied where this token is used, not from a separate face. */
+  --font-display: var(--font-sans);
 
+  /* h1 clamp(2.2rem, 5vw, 3.6rem) and h2 clamp(1.5rem, 2.6vw, 2.1rem) as
+   * specified, expressed on the existing --step scale so nothing downstream
+   * has to change.
+   *
+   * THE REM BOUNDS ARE DIVIDED BY 1.18, THE VW TERMS ARE NOT. :root is at
+   * 118%, so a rem here is 18.88px and the asked-for 2.2rem has to be written
+   * as 1.8644rem to render at 35.2px. A vw is 1% of the viewport whatever the
+   * root size is, so 5vw stays 5vw -- scaling it too would have made the h1
+   * grow 18% faster than specified between the two bounds. */
   --step--1: clamp(0.80rem, 0.77rem + 0.14vw, 0.88rem);
-  --step-0:  clamp(1.00rem, 0.95rem + 0.22vw, 1.13rem);
-  --step-1:  clamp(1.25rem, 1.15rem + 0.45vw, 1.55rem);
-  --step-2:  clamp(1.60rem, 1.40rem + 0.95vw, 2.25rem);
-  --step-3:  clamp(2.10rem, 1.70rem + 1.90vw, 3.40rem);
-  --step-4:  clamp(2.60rem, 1.90rem + 3.20vw, 4.60rem);
+  --step-0:  0.9004rem;                              /* body, renders 1.0625rem */
+  --step-1:  clamp(1.0594rem, 2.0vw, 1.3242rem);
+  --step-2:  clamp(1.2712rem, 2.6vw, 1.7797rem);     /* h2  1.5rem - 2.1rem */
+  /* No --step-3. There was one, between h2 and h1, and nothing used it once
+   * .chapter__title moved onto the h2 step the brief specified. The gap in
+   * the numbering is deliberate: renaming --step-4 would churn every rule
+   * that already names it and change nothing on screen. */
+  --step-4:  clamp(1.8644rem, 5.0vw, 3.0508rem);     /* h1  2.2rem - 3.6rem */
 
   /* ---- space and shape ---------------------------------------------- */
   --sp-1: 0.375rem;
@@ -141,8 +235,10 @@
   --sp-6: 5rem;
   --radius:    14px;
   --radius-sm: 8px;
+  --frame-radius: 20px;
+  --frame-inset:  18px;
   --maxw:      72rem;
-  --measure:   38rem;   /* reading width; prose never exceeds it */
+  --measure:   68ch;    /* reading width; prose never exceeds it */
 }
 
 /* Honour the OS setting. Non-essential motion is removed rather than

@@ -22,12 +22,12 @@ HOW IT MEASURES
    full rotation cycle, so the sample covers the prism's BRIGHTEST frames
    rather than whichever frame a screenshot happened to catch. The three
    rotation terms have periods of 28.6s, 37.0s and 57.1s, so t is swept to 60s.
-4. For each sampled region the WORST (brightest) background pixel in the
+4. For each sampled region the WORST-CONTRAST background pixel in the
    element's own box across all frames is kept, and the contrast ratio is
    computed against that element's real computed text colour.
 
-The worst pixel, not the mean: a mean would let a bright beam crossing one line
-of a paragraph average away against the dark margin beside it.
+The worst pixel, not the mean: a mean would let one bad line of a paragraph
+average away against the clean margin beside it.
 
 EXIT CODE is 1 if any sampled region falls below 4.5:1, so this can gate.
 """
@@ -57,7 +57,7 @@ REGIONS = [
     # The hero title was not sampled until the hero lost .no-prism-bg: with the
     # opt-out in place there was no prism under it to measure. It is the
     # largest text on the page and sits at the viewport centre, where the
-    # prism's vignette is brightest, so it is the region most worth sampling.
+    # prism sits, so it is the region most worth sampling.
     ("header.hero .hero__title", "hero title, largest text, at the vignette"),
     ("header.hero .hero__thesis", "hero prose, widest measure, top of page"),
     ("header.hero p.prose", "hero body prose"),
@@ -67,10 +67,21 @@ REGIONS = [
     ("#ch4 p", "prose immediately before the results views"),
     ("#limits .chapter__lede", "limitations hub opener"),
     (".site-nav__brand", "sticky nav, which the prism scrolls under"),
+    (".site-foot p", "the footer, --text-muted, the weakest text token on the page"),
 ]
 
-# t sweep, ms. The rotation periods are 28.6s / 37.0s / 57.1s.
-FRAMES = [0, 6000, 12000, 18000, 24000, 30000, 36000, 42000, 48000, 54000, 60000]
+# t sweep, ms: ONE FULL ROTATION, sampled sixteen times.
+#
+# hero3d.js spins the prism at 0.15 rad/s, so a revolution is 2*pi/0.15 =
+# 41.9s and every face the glass can present to the text appears inside it.
+# 2.8s steps put the samples 0.42 rad apart. The two wobble terms (17.0s and
+# 37.0s) are not commensurate with that and are not separately swept -- they
+# move the pose by at most 0.06 and 0.05 rad, well under one step.
+#
+# This matters more than it used to. The prism is a fixed backdrop behind
+# every paragraph on the page again, so the frame that happens to be on screen
+# when a screenshot is taken is not the frame that decides legibility.
+FRAMES = [round(i * 41900 / 16) for i in range(16)]
 
 VIEWPORTS = [(1440, 900, "desktop"), (390, 844, "narrow / phone width")]
 
@@ -108,7 +119,30 @@ def _shot_crop(b, r):
 PROBE_CSS = (
     "*,*::before,*::after{color:transparent !important;"
     "text-shadow:none !important;-webkit-text-fill-color:transparent !important;}"
+    # SCROLLING INSTANTLY IS PART OF THE PROBE, not a style choice.
+    #
+    # app.css sets `html { scroll-behavior: smooth }`, so every
+    # scrollIntoView below ANIMATES. The script waits 1.2s and reads the rect,
+    # and on a long page that animation has not always landed: the rect is
+    # read mid-flight, the element then keeps moving, and the region either
+    # clamps to a negative height ("zero-size box") or trips the moved-region
+    # guard. Ten of eighteen region/viewport pairs came back unmeasured for
+    # this reason alone. The page under test is identical in every other
+    # respect -- a jump and a glide end at the same scroll offset.
+    "html{scroll-behavior:auto !important;}"
 )
+
+
+def read_box(b, selector):
+    """The element's viewport-relative crop box, or None."""
+    return b.js(
+        "(() => { const e = document.querySelector("
+        + json.dumps(selector) + "); if (!e) return null;"
+        " const r = e.getBoundingClientRect();"
+        " return JSON.stringify({x: Math.max(0, Math.floor(r.left)),"
+        " y: Math.max(0, Math.floor(r.top)), w: Math.ceil(r.width),"
+        " h: Math.ceil(Math.min(r.height, innerHeight - r.top))});"
+        " })()")
 
 
 def main() -> int:
@@ -120,7 +154,8 @@ def main() -> int:
 
     worst_overall = (99.0, "nothing measured")
     failures = []
-    measured = 0
+    measured = 0      # regions that produced a ratio
+    clear = 0         # regions examined, with the prism touching no pixel
 
     b = Browser(gpu=True)
     try:
@@ -196,19 +231,21 @@ def main() -> int:
                                         "selector not present -- not measured"))
                     continue
                 time.sleep(1.2)          # the smooth scroll has to land
-                box = b.js(
-                    "(() => { const e = document.querySelector("
-                    + json.dumps(selector) + "); if (!e) return null;"
-                    " const r = e.getBoundingClientRect();"
-                    " return JSON.stringify({x: Math.max(0, Math.floor(r.left)),"
-                    " y: Math.max(0, Math.floor(r.top)), w: Math.ceil(r.width),"
-                    " h: Math.ceil(Math.min(r.height, innerHeight - r.top))});"
-                    " })()")
+                box = read_box(b, selector)
                 if not box or selector not in colours:
                     print("%-34s %s" % (selector[:34],
                                         "selector not present -- not measured"))
                     continue
-                r = json.loads(box)
+                raw = json.loads(box)
+                # INSET PAST THE ELEMENT'S OWN BORDER RING. A semi-transparent
+                # border lets the layer through, and those pixels are border,
+                # not background behind a glyph -- scoring them against the
+                # text colour failed .limits-link at 4.03:1 on 318 pixels that
+                # were all its 1px rule. A border is a non-text UI component
+                # with a 3:1 floor, and check_palette.py already gates the
+                # token it is drawn in.
+                r = {"x": raw["x"] + 2, "y": raw["y"] + 2,
+                     "w": raw["w"] - 4, "h": raw["h"] - 4}
                 if r["w"] < 2 or r["h"] < 2:
                     print("%-34s %s" % (selector[:34],
                                         "zero-size box -- not measured"))
@@ -230,7 +267,13 @@ def main() -> int:
                 # once with it live. Hiding a position:fixed layer shifts no
                 # layout, so the two crops are pixel-aligned, and only the
                 # pixels that differ are the prism's. Among those, the
-                # brightest wins.
+                # WORST-CONTRAST wins, not brightest. Brightest was right
+                # while the page was near-black and every risk was a bright
+                # beam over pale text. On the spectrum-light palette the text
+                # is dark and the risk runs the other way -- a dark facet of
+                # the glass under dark text -- so "brightest" would have
+                # reported the safest pixel in the box as the worst case.
+                # Scoring by the ratio itself is correct on either palette.
                 shot = _shot_crop(b, r)
                 if shot is None:
                     print("%-34s %s" % (selector[:34],
@@ -238,8 +281,8 @@ def main() -> int:
                     continue
 
                 # Let the reveals this scroll just triggered finish, or the
-                # control below sees anime.js mid-fade and marks the whole
-                # block unstable.
+                # control below catches a .is-visible transition mid-fade and
+                # marks the whole block unstable.
                 time.sleep(1.4)
                 b.js("document.getElementById('prism-bg').style.display = 'none'")
                 time.sleep(0.35)
@@ -259,6 +302,35 @@ def main() -> int:
                     print("%-34s %s" % (selector[:34],
                                         "off-screen -- not measured"))
                     continue
+
+                # THE CROP HAS TO STILL POINT AT THE SAME PIXELS.
+                #
+                # `r` is read once, before the prism is hidden, and every crop
+                # after that reuses it. If the page moves in between -- a
+                # smooth scroll that had not finished landing is the one seen
+                # here -- the "without" and "live" crops are of different
+                # parts of the page, every pixel differs, and the worst pixel
+                # in the whole element gets attributed to the prism.
+                #
+                # That is not a hypothetical: it reported `header.hero p.prose`
+                # at 1.93:1 over 106245 "changed" pixels at 390x844, where a
+                # direct diff of the same box shows the prism changing ZERO
+                # pixels and the prism's box sitting 108px below the text's.
+                # A gate that invents a failure is worse than no gate, so a
+                # moved region is reported as not measured rather than scored.
+                # Compared against RAW, the un-inset box, because that is
+                # what read_box returns. Comparing it against the inset `r`
+                # made the guard fire on every region by a constant 2px, every
+                # region reported "moved", and the script then printed "every
+                # sampled region holds >= 4.5:1" over zero measurements.
+                again = read_box(b, selector)
+                moved = (not again or json.loads(again)["y"] != raw["y"]
+                         or json.loads(again)["x"] != raw["x"])
+                if moved:
+                    print("%-34s %s" % (selector[:34],
+                                        "region moved between captures -- "
+                                        "not measured"))
+                    continue
                 base_px = list(without.getdata())
                 ctrl_px = list(control.getdata())
                 unstable = set()
@@ -269,7 +341,8 @@ def main() -> int:
                                 + abs(px[2] - bp[2])) >= 6:
                             unstable.add(i)
 
-                brightest = -1.0
+                worst_lum = None
+                worst_cr = None
                 touched = 0
                 for t in FRAMES:
                     b.js("window.__prismHero && window.__prismHero.frame(%d)" % t)
@@ -291,17 +364,24 @@ def main() -> int:
                             continue
                         touched += 1
                         lum = srgb_lum(px)
-                        if lum > brightest:
-                            brightest = lum
+                        cr_here = ratio(text_lum, lum)
+                        if worst_cr is None or cr_here < worst_cr:
+                            worst_cr, worst_lum = cr_here, lum
 
-                if brightest < 0:
+                if worst_lum is None:
+                    # The probe WORKED and the prism simply is not there. That
+                    # is the normal result now: the prism is a hero element
+                    # and no body text sits on it. Counted separately from a
+                    # scored region, because "examined and clear" and "never
+                    # examined" must not look the same to the exit code.
+                    clear += 1
                     print("%-34s %s" % (selector[:34],
                                         "prism changes no pixel in this box "
                                         "(%d excluded as unstable) -- nothing "
                                         "to measure" % len(unstable)))
                     continue
 
-                cr = ratio(text_lum, brightest)
+                cr = worst_cr
                 ok = cr >= 4.5
                 measured += 1
                 print("%-34s %-9.2f %-10s %-6s %s"
@@ -316,8 +396,33 @@ def main() -> int:
         b.kill()
 
     print("\n" + "=" * 72)
-    print("regions measured: %d" % measured)
+    print("regions scored: %d   regions examined and clear: %d"
+          % (measured, clear))
     print("worst ratio anywhere: %.2f:1  (%s)" % worst_overall)
+    # A PASS OVER NOTHING IS NOT A PASS. Every region can legitimately report
+    # "nothing to measure" -- it does when no text overlaps the prism at all,
+    # which is the design now -- but it can also happen because the harness
+    # broke, and the two look identical from the exit code. If not one region
+    # was scored anywhere, say so and fail rather than print a green line.
+    # A RUN THAT SCORES NOTHING IS A FAILURE, not a clean result.
+    #
+    # While the prism was a hero element with the copy held clear of it,
+    # "examined and clear" everywhere was the correct answer and the only
+    # failure was never examining anything. The prism is a fixed backdrop
+    # behind every paragraph now, so there is no longer any way for a healthy
+    # page to produce no scores: if nothing scored, either the probe is
+    # broken or the prism is not where it is supposed to be. Both are
+    # failures, and neither may exit 0.
+    if not measured:
+        print("")
+        print("NOTHING WAS SCORED IN ANY REGION AT ANY VIEWPORT.")
+        print("%d region(s) were examined and reported the prism touching no"
+              % clear)
+        print("pixel in them. The prism is a fixed backdrop behind every")
+        print("paragraph, so that cannot be true of all of them: either the")
+        print("probe never found the page, no crop lined up, or the backdrop")
+        print("is not rendering. A gate that scores nothing is not a pass.")
+        return 1
     if failures:
         print("\nBELOW 4.5:1 -- the base opacity is too high:")
         for vlabel, selector, cr in failures:
@@ -325,8 +430,8 @@ def main() -> int:
         print("\nNot tuned around silently. Lower --prism-bg-opacity and "
               "re-run, or decide the trade explicitly.")
         return 1
-    print("every sampled region holds >= 4.5:1 against the prism's brightest "
-          "frame at this opacity")
+    print("every scored region holds >= 4.5:1 against the prism's worst frame "
+          "of a full rotation, through the measured --section-scrim")
     return 0
 
 

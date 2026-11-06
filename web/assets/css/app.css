@@ -11,6 +11,10 @@ body {
   font-family: var(--font-sans);
   font-size: var(--step-0);
   line-height: 1.65;
+  /* Every figure on this site is a measurement, and measurements are read in
+   * columns. The mono face is already applied per component; this is what
+   * stops 1 being narrower than 8 inside it. */
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   /* `clip`, not `hidden`. `hidden` forces the computed overflow-y to `auto`,
    * which turns <body> into a second scroll container -- that breaks
@@ -19,23 +23,12 @@ body {
   overflow-x: clip;
 }
 
-/* The spectrum wash: a single warm beam at the top bleeding into the five
- * angle hues. Pure CSS, so it costs nothing and needs no GPU. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  /* -2, below the prism background at -1. The prism has to sit above this wash
-   * and above the scrim: under a 0.84 scrim it would not be a background, it
-   * would be nothing. */
-  z-index: -2;
-  background:
-    radial-gradient(60rem 40rem at 50% -10%, var(--wash-beam), transparent 60%),
-    radial-gradient(40rem 30rem at 8% 20%,  var(--wash-regulatory), transparent 65%),
-    radial-gradient(38rem 28rem at 92% 38%, var(--wash-tech), transparent 65%),
-    radial-gradient(34rem 26rem at 12% 72%, var(--wash-market), transparent 65%),
-    radial-gradient(30rem 24rem at 88% 88%, var(--wash-sentiment), transparent 65%);
-}
+/* No body::before and no body::after.
+ *
+ * They were a fixed spectrum wash and a fixed scrim, both at z-index -2. The
+ * backdrop is an opaque full-viewport photograph at -1, so neither had a
+ * single visible pixel left. The drifting colour they provided is in the
+ * photograph, and legibility is held by the measured section scrim. */
 
 a { color: var(--accent-text); text-decoration-color: var(--link-underline); }
 a:hover { text-decoration-color: currentColor; }
@@ -58,16 +51,46 @@ a:hover { text-decoration-color: currentColor; }
 .wrap { width: min(100% - 2.5rem, var(--maxw)); margin-inline: auto; }
 .prose { max-width: var(--measure); }
 
+/* ---------- the menu bar ----------------------------------------------
+ *
+ * A frosted glass rail over a moving backdrop. Three things carry the theme
+ * without any of them carrying meaning: a spectrum hairline along the top
+ * edge, a spectrum ring around the mark, and the scroll-progress line along
+ * the bottom. All three are --spec-* and all three are decoration; no nav
+ * TEXT is ever a spectrum colour.
+ */
 .site-nav {
   position: sticky; top: 0; z-index: 50;
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  /* Opaque enough that nothing shows through: the coverage table's sticky
-   * header parks just under this bar, and at a lower alpha the data rows
-   * scrolling behind it ghost through as coloured smears. */
   background: var(--nav-bg);
+  /* saturate as well as blur: a plain blur over a pale photograph turns the
+   * bar into flat grey, and the saturation is what keeps it reading as glass
+   * with colour moving behind it. */
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
   border-bottom: 1px solid var(--hairline);
 }
+
+/* THE OPAQUE FALLBACK. Without backdrop-filter the bar is merely translucent,
+ * so the backdrop shows through at full strength and the nav labels lose
+ * their contrast floor. Firefox with layout.css.backdrop-filter disabled, and
+ * anything older, land here. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-nav { background: var(--surface); }
+}
+
+/* The spectrum hairline, pinned to the top edge of the bar -- which is the
+ * top edge of the viewport, since the bar is sticky at 0. */
+.site-nav::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+      var(--spec-1), var(--spec-2), var(--spec-3),
+      var(--spec-4), var(--spec-5), var(--spec-6));
+  pointer-events: none;
+}
+
 .site-nav__inner {
   display: flex; align-items: center; gap: var(--sp-3);
   padding-block: var(--sp-2); flex-wrap: wrap;
@@ -75,20 +98,129 @@ a:hover { text-decoration-color: currentColor; }
 .site-nav__brand {
   font-weight: 650; letter-spacing: -0.01em; margin-right: auto;
   display: flex; align-items: center; gap: var(--sp-2);
+  color: var(--text-primary);
 }
-.site-nav__mark { display: block; width: 1.875rem; height: 1.8125rem; }
-.site-nav__list { display: flex; gap: var(--sp-1); list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+
+/* The mark, tied to the spectrum: a conic ring in the six stops, with the
+ * committed PNG inset inside it. The ring is the element's background and the
+ * image sits on a --surface disc over it, so the ring reads as a 2px rim. */
+.site-nav__brand-mark {
+  display: grid;
+  place-items: center;
+  width: 2.125rem; height: 2.125rem;
+  border-radius: 50%;
+  padding: 2px;
+  background: conic-gradient(from 210deg,
+      var(--spec-1), var(--spec-2), var(--spec-3),
+      var(--spec-4), var(--spec-5), var(--spec-6), var(--spec-1));
+  flex: 0 0 auto;
+}
+.site-nav__mark {
+  display: block; width: 100%; height: 100%;
+  border-radius: 50%;
+  background: var(--surface);
+  object-fit: contain;
+  padding: 1px;
+}
+
+.site-nav__list {
+  display: flex; gap: 0.15rem; list-style: none; margin: 0; padding: 0;
+  flex-wrap: wrap;
+}
+
+/* The links. --text-secondary at rest is 9.44:1 on --base and 9.98:1 on the
+ * glass fill; every other state is listed with its own measured ratio below. */
 .site-nav__link {
-  display: block; padding: 0.3rem 0.6rem; border-radius: var(--radius-sm);
+  position: relative;
+  display: block; padding: 0.35rem 0.6rem 0.4rem;
+  border-radius: var(--radius-sm);
   font-size: var(--step--1); color: var(--text-secondary); text-decoration: none;
-  /* Background only. Transitioning colour as well leaves the text animating
-   * dark while the fill is still mid-grey, so the link renders as a blank pill
-   * for a moment on every scroll. The colour swap is instant. */
-  transition: background-color 0.2s;
+  /* Background and the underline's scale only. Transitioning colour as well
+   * leaves the text animating dark while the fill is still mid-grey, so the
+   * link renders as a blank pill for a moment on every scroll. */
+  transition: background-color 0.18s ease;
 }
-.site-nav__link:hover { color: var(--text-primary); background: rgba(244,244,248,0.06); }
-.site-nav__link[aria-current="true"] { color: var(--accent-ink); background: var(--accent); font-weight: 600; text-align: center; }
+
+/* The spectrum underline. Scaled from 0 rather than faded, so it reads as a
+ * mark being drawn under the word; it is decoration and duplicates the
+ * background and weight changes that come with it. */
+.site-nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0.6rem; right: 0.6rem; bottom: 0.1rem;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+      var(--spec-6), var(--spec-5), var(--spec-4),
+      var(--spec-3), var(--spec-2), var(--spec-1));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.22s cubic-bezier(.22, 1, .36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-nav__link::after { transition: none; }
+}
+
+.site-nav__link:hover {
+  color: var(--text-primary);          /* 16.59:1 on the glass fill */
+  background: var(--limits-hover);
+}
+.site-nav__link:hover::after { transform: scaleX(1); }
+
+/* Focus is NOT the hover look. A keyboard user has to be able to tell where
+ * focus is while hovering something else, so the ring is its own signal and
+ * sits outside the pill. */
+.site-nav__link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  color: var(--text-primary);
+}
+
+/* The active chapter. A wash rather than the old solid --accent fill: over a
+ * moving backdrop a saturated block of colour in the bar competes with the
+ * artwork, and the underline already says which one is current. The label is
+ * --accent-text at 5.63:1 on --accent-wash. */
+.site-nav__link[aria-current="true"] {
+  color: var(--accent-text);
+  background: var(--accent-wash);
+  font-weight: 600;
+}
+.site-nav__link[aria-current="true"]::after { transform: scaleX(1); }
+
+/* The limitations link is the one item that is not a chapter. --accent-text
+ * at rest, 6.36:1 on --base and 6.76:1 on the glass fill. */
 .site-nav__link--limits { color: var(--accent-text); }
+.site-nav__link--limits:hover { color: var(--accent-strong); }
+
+/* ONE ROW ON A PHONE, scrolled rather than wrapped.
+ *
+ * Nine items at 390px wrap to three rows and take 210px of an 844px
+ * viewport -- a quarter of the screen, measured, before a word of the page
+ * is visible. A single scrollable rail keeps the bar one row tall.
+ *
+ * It stays keyboard-reachable without a tabindex: every child is a real
+ * link, and focusing one scrolls it into view by itself. The scrollbar is
+ * hidden because the rail is only ever one row of links and a 15px gutter
+ * under them is most of the height saved. */
+@media (max-width: 768px) {
+  .site-nav__inner { flex-wrap: nowrap; gap: var(--sp-2); }
+  .site-nav__brand { flex: 0 0 auto; }
+  /* The brand word is the one thing that can go: the mark keeps the identity
+   * and the row needs the width for the links. */
+  .site-nav__brand { font-size: 0; gap: 0; }
+  .site-nav__brand-mark { font-size: 1rem; }
+  .site-nav__list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-inline: 0.1rem;
+  }
+  .site-nav__list::-webkit-scrollbar { display: none; }
+  .site-nav__list > li { flex: 0 0 auto; }
+  .site-nav__link { white-space: nowrap; }
+}
 
 /* ---------- chapters -------------------------------------------------- */
 
@@ -129,8 +261,12 @@ a:hover { text-decoration-color: currentColor; }
  * open tracking against the tight negative tracking body headings use, so the
  * two read as different type systems even where the browser resolves both
  * back to the same installed family. */
+/* --step-2 is the h2 step: clamp(1.5rem, 2.6vw, 2.1rem) at the reader's own
+ * root size. Every <h2> on the site carries this class, so putting the h2
+ * scale anywhere else would mean no h2 actually used it. It was --step-3,
+ * which renders 28-40px against the 24-34px asked for. */
 .chapter__title {
-  font-family: var(--font-display); font-size: var(--step-3); font-weight: 900;
+  font-family: var(--font-display); font-size: var(--step-2); font-weight: 900;
   line-height: 1.15; letter-spacing: 0.01em; text-transform: uppercase;
   text-align: center; color: var(--text-primary); margin: var(--sp-2) 0 var(--sp-3);
 }
@@ -140,49 +276,174 @@ h3 { font-size: var(--step-1); margin: var(--sp-5) 0 var(--sp-2); letter-spacing
 h4 { font-size: var(--step-0); margin: var(--sp-4) 0 var(--sp-1); }
 p { max-width: var(--measure); }
 
+/* ---------- the fixed backdrop ---------------------------------------
+ *
+ * The spectrum image and the live prism, one layer, fixed to the viewport
+ * behind every pixel of content. The page scrolls over it.
+ *
+ * Both are placed in PERCENTAGES OF THE SAME BOX, which is what makes the
+ * rays meet the glass at every viewport aspect: object-position pins the
+ * image's own convergence point to 73% / 56.8% of this box, and the prism is
+ * placed at the same pair. There is no viewport where one moves and the other
+ * does not.
+ */
+#backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;            /* above body::before and body::after, below content */
+  overflow: hidden;
+  pointer-events: none;   /* the cursor drives the prism, but never eats a click */
+}
+
+/* MEASURED, not eyeballed. Scanning the committed JPG column by column for
+ * saturated pixels, the painted fan collapses to a single row at x = 0.730,
+ * y = 0.568. With object-fit:cover, an object-position of X% Y% puts the
+ * IMAGE's X%/Y% point on the BOX's X%/Y% point, so pinning it there holds the
+ * convergence point still whatever the viewport does to the crop. */
+.backdrop-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 73% 56.8%;
+  background: var(--bg);   /* only until it decodes */
+}
+
+/* THE ANCHOR IS THE EXIT FACE, NOT THE CENTRE.
+ *
+ * Centring the canvas on the convergence point left a visible gap: the fan is
+ * a single faint line at the convergence point and only reads as rays once it
+ * has spread, which is ~2.5% of the image further right, so the visible fan
+ * started clear of the glass.
+ *
+ * hero3d.js works in the SVG's units. The triangle is M360 40 L470 190 L250
+ * 190 Z about a centroid of (360, 140), framed in a 250-unit box, so for a
+ * square canvas of side S the exit face's centre -- world (55, 25) -- sits
+ * 0.22S right of and 0.10S above the canvas centre. Offsetting the canvas by
+ * exactly that puts the exit face on the convergence point and the glass
+ * extends left of it, so the rays leave through the glass.
+ *
+ * 0.22S also survives the rotation. The prism spins continuously about Y, so
+ * the silhouette sweeps; its NARROWEST projected half-width is ~0.26S (half
+ * the 130-unit extrusion against the 250-unit frame). 0.22 < 0.26, so the ray
+ * origin stays inside the glass at every phase rather than only at rest. */
+.backdrop-prism {
+  --prism-size: clamp(160px, 22vh, 340px);
+  position: absolute;
+  left: 73%;
+  top: 56.8%;
+  width: var(--prism-size);
+  height: var(--prism-size);
+  transform: translate(calc(-50% - var(--prism-size) * 0.22),
+                       calc(-50% + var(--prism-size) * 0.10));
+  opacity: var(--prism-bg-opacity, 1);
+}
+
+/* The contact shadow, so the glass sits on the page instead of floating. */
+.backdrop-prism__shadow {
+  --prism-size: clamp(160px, 22vh, 340px);
+  position: absolute;
+  left: 73%;
+  top: 56.8%;
+  width: calc(var(--prism-size) * 0.78);
+  height: calc(var(--prism-size) * 0.20);
+  transform: translate(calc(-50% - var(--prism-size) * 0.22),
+                       calc(-50% + var(--prism-size) * 0.42));
+  background: radial-gradient(ellipse 50% 50% at 50% 50%,
+      var(--glass-shadow), transparent 72%);
+}
+
+/* On a phone the prism moves to 62% across and up out of the reading column's
+ * worst third, and drops to 0.7 scale. The rays are still in frame -- the
+ * crop is pinned, not centred -- so it keeps its alignment; it is the SIZE
+ * relative to a 390px viewport that is the problem, not the position. */
+@media (max-width: 768px) {
+  .backdrop-prism,
+  .backdrop-prism__shadow { --prism-size: clamp(120px, 17vh, 190px); }
+}
+
 /* ---------- hero ------------------------------------------------------ */
 
-/* The bottom padding is one step shorter than the top. #ch1's own top padding
- * does the section separation here, the same as it does everywhere else, and
- * without this the gap reads as a hole rather than as breathing room. No
- * min-height: the hero is sized by its content. */
-.hero { padding-block: var(--sp-6) var(--sp-4); text-align: center; }
-/* Same title voice as .chapter__title. The hero is three stacked text blocks,
- * so it is centred; text-align lives on .hero rather than on each child, which
- * is what keeps the limits link below the prose centred with them instead of
- * stranded left under centred text. */
+/* Text only now: the image and the prism are the fixed backdrop. The hero is
+ * still sized generously, because this is the one place on the page where the
+ * backdrop is meant to be looked at rather than read over. */
+.hero {
+  position: relative;
+  min-height: 32rem;
+  display: grid;
+  align-content: center;
+  padding-block: var(--sp-6);
+}
+
+/* The text column, held clear of the prism.
+ *
+ * MEASURED, not styled by feel: the prism's left edge sits at
+ * 73% - 0.72 * --prism-size of the VIEWPORT (0.22S of offset plus 0.50S of
+ * half-canvas), and that percentage moves with the viewport because the prism
+ * is sized in vh and the hero in vw.
+ *
+ * The 4% gutter is subtracted TOO. Writing the width as 73% - 0.72S - 2rem
+ * and then pushing the column right by the gutter put its right edge 4% PAST
+ * the prism's left edge -- measured, 1905 px2 of overlap at 1200x900 and
+ * 439 px2 at 1024x768. 69% is 73% minus that gutter. */
+.hero__inner {
+  --prism-size: clamp(160px, 22vh, 340px);
+  position: relative;
+  z-index: 1;
+  width: min(46rem, calc(69% - var(--prism-size) * 0.72 - 2rem));
+  margin-inline: 4% auto;
+  text-align: left;
+  /* The hero copy sits directly on the backdrop, so it carries the same
+   * measured scrim the rest of the page does, as a rounded panel rather than
+   * a full-bleed band -- the point of the hero is that the artwork shows. */
+  background: var(--section-scrim);
+  border-radius: var(--radius);
+  padding: var(--sp-4) var(--sp-4) var(--sp-5);
+}
+
+/* Same title voice as .chapter__title. */
 .hero__title {
   font-family: var(--font-display); font-size: var(--step-4); font-weight: 900;
-  line-height: 1.05; letter-spacing: 0.005em; text-transform: uppercase;
+  line-height: 1.08; letter-spacing: 0.005em; text-transform: uppercase;
   color: var(--text-primary); margin: 0 0 var(--sp-3);
   /* balance, not pretty: the title is two lines held by an explicit <br>, and
    * balance keeps the measure even if that <br> ever stops being honoured. */
   text-wrap: balance;
 }
+
+/* No max-width and no auto margins on either block: .hero__inner is already
+ * the measure, and a second cap inside it would only re-centre the text
+ * within a column that is itself off-centre. */
 .hero__thesis {
   font-size: var(--step-1); color: var(--text-secondary);
-  max-width: 46rem; margin-inline: auto;
+  max-width: none; margin-inline: 0;
   text-wrap: balance;
 }
-/* A short centred rule above the thesis marks it as the one quoted line in
- * the hero. A left border bar would do the same job, but it is an asymmetric
- * mark and reads as a hanging indent against centred text. */
+.hero .prose { max-width: none; margin-inline: 0; }
+
+/* A short rule above the thesis marks it as the one quoted line in the hero.
+ * Left-aligned with the column, not centred in it. */
 .hero__thesis::before {
   content: "";
   display: block;
   width: 3rem;
   height: 2px;
-  margin: 0 auto var(--sp-3);
+  margin: 0 auto var(--sp-3) 0;
   background: var(--accent);
 }
-/* 62ch keeps the hero prose at a readable measure once it is centred; the
- * global `p { max-width: var(--measure) }` is a narrower 38rem and would make
- * the centred block noticeably narrower than the thesis above it. */
-.hero .prose {
-  max-width: 62ch;
-  margin-inline: auto;
+
+/* Under 768px the column goes full width and centred: the prism is small and
+ * high enough there that there is nothing beside it to clear. */
+@media (max-width: 768px) {
+  .hero__inner {
+    width: min(100% - 2.5rem, var(--maxw));
+    margin-inline: auto;
+    text-align: center;
+    padding: var(--sp-4) var(--sp-3) var(--sp-5);
+  }
+  .hero__thesis::before { margin-inline: auto; }
 }
-.hero__prism { margin: var(--sp-5) 0; }
 
 /* ---------- glass panel ----------------------------------------------- */
 
@@ -290,10 +551,16 @@ blockquote.verbatim cite { display: block; margin-top: var(--sp-2); font-size: v
 .limit__title { font-weight: 600; }
 .limit__body { color: var(--text-secondary); max-width: var(--measure); }
 
+/* The pill carries an OPAQUE fill, which it did not need on a plain base.
+ * It sits in the hero over the background image, and with a transparent fill
+ * the image's rays showed through behind --accent-text: measured 3.43:1 at
+ * 1600x900 and 3.68:1 at 390px, both under the 4.5:1 floor. On --surface the
+ * same text is 6.76:1, whatever is behind the pill. */
 .limits-link {
   display: inline-block; margin-top: var(--sp-3);
   font-size: var(--step--1); font-family: var(--font-mono);
   color: var(--accent-text); text-decoration: none;
+  background: var(--surface);
   border: 1px solid var(--limits-border); border-radius: 999px;
   padding: 0.25rem 0.75rem;
 }
@@ -309,7 +576,12 @@ td.num, th.num { text-align: right; font-family: var(--font-mono); }
 
 /* ---------- footer ---------------------------------------------------- */
 
-.site-foot { border-top: 1px solid var(--hairline); padding-block: var(--sp-4); color: var(--text-muted); font-size: var(--step--1); }
+.site-foot {
+  border-top: 1px solid var(--hairline);
+  padding-block: var(--sp-4);
+  color: var(--text-muted);
+  font-size: var(--step--1);
+}
 
 /* ---------- placeholders ---------------------------------------------- */
 
@@ -664,53 +936,9 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
  * Motion
  * ==================================================================== */
 
-/* The single ambient layer: one canvas, one compositor layer, under
- * everything. body::before is the static wash and also the scrim that holds
- * text contrast. */
-#ambient {
-  position: fixed;
-  inset: 0;
-  z-index: -3;            /* below body::before, which is -2 */
-  pointer-events: none;
-  display: block;
-}
-
-/* The scrim. The animated canvas sits below this, so drifting light is always
- * seen through a dim layer and can never lift the background under body text
- * far enough to break the verified contrast ratios.
- *
- * 0.84 is solved, not chosen, against a worst case that assumes every ambient
- * blob and every body::before gradient land on one pixel at full strength at
- * once. That cannot happen in practice, but it makes the guarantee hold
- * however the blobs drift: at 0.55 the weakest token --text-muted fell to
- * 2.94:1, and at 0.84 it holds 4.54:1 against its 4.5 threshold. */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  /* -2 with body::before, painted after it because ::after comes last, so the
-   * scrim still covers the ambient canvas and the wash. It does not cover
-   * #prism-bg at -1: the prism is governed by --prism-bg-opacity and measured
-   * directly against the text over it, not by this scrim. */
-  z-index: -2;
-  pointer-events: none;
-  background: var(--scrim);
-}
-
-/* ---- the prism mark ----
- * The mark is the site-wide background, not a hero element. These rules style
- * the SVG wherever it lives; #prism-bg positions it. */
-.beam { stroke-width: 2.2; }
-/* The unbuilt angle keeps its filter while animating. A moving beam must not
- * imply that Regulatory retrieves anything -- it has no connector at all. */
-.beam--regulatory { filter: var(--angle-unbuilt-filter); }
-
-/* Reduced motion: the canvas is removed by JS, the mark keeps its static
- * pose, and nothing here animates. These rules make that explicit rather than
- * relying on the script alone. */
-@media (prefers-reduced-motion: reduce) {
-  #ambient { display: none !important; }
-}
+/* #ambient is gone with body::before and body::after: it was a 2D canvas at
+ * z-index -3, under all of them, repainting five full-viewport gradients
+ * every frame beneath an opaque photograph. See motion.js section 2. */
 
 /* Reveal targets start hidden only while `data-reveal="armed"`, and that
  * attribute can only be set by reveal-failsafe.js -- a separate file loaded
@@ -720,11 +948,136 @@ body::after {
  *
  * Do not key this off `data-motion`: that is set optimistically, so a throw
  * one line later would leave every target invisible for good. `data-motion`
- * still drives the ambient canvas and the hero; it does not decide whether the
- * reader can read the page. */
+ * still drives the hero; it does not decide whether the reader can read the
+ * page. */
+:root[data-reveal="armed"] .reveal,
 :root[data-reveal="armed"] .chapter__lede,
 :root[data-reveal="armed"] .panel,
-:root[data-reveal="armed"] .limit { opacity: 0; }
+:root[data-reveal="armed"] .limit {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* The reveal itself. A CSS transition, not a JS tween: the only thing
+ * motion.js has to do is add .is-visible, so a throw mid-sweep leaves the
+ * element with the hide rule still on it and the failsafe's deadline still
+ * guaranteed to clear it.
+ *
+ * --i is the element's index within its batch; 80ms apart, capped so a
+ * forty-row table does not take three seconds to appear. */
+:root[data-reveal="armed"] .reveal.is-visible,
+:root[data-reveal="armed"] .chapter__lede.is-visible,
+:root[data-reveal="armed"] .panel.is-visible,
+:root[data-reveal="armed"] .limit.is-visible {
+  opacity: 1;
+  transform: none;
+  transition: opacity 560ms cubic-bezier(.22, 1, .36, 1),
+              transform 560ms cubic-bezier(.22, 1, .36, 1);
+  transition-delay: calc(min(var(--i, 0), 8) * 80ms);
+}
+
+/* Reduced motion: visible immediately, no transform, no transition. Stated
+ * here as well as in the script because this is the rule that would otherwise
+ * hide the content. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-reveal="armed"] .reveal,
+  :root[data-reveal="armed"] .chapter__lede,
+  :root[data-reveal="armed"] .panel,
+  :root[data-reveal="armed"] .limit {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ==================================================================
+ * The spectrum frame, the reading sheet and the scroll-progress line
+ * ==================================================================
+ * ONE frame: four sides, four rounded corners, a crisp 2px at any size and
+ * any DPR. It used to be three sides starting below the hero with the fourth
+ * baked into the JPG -- two rounded rectangles at two different insets, which
+ * misaligned the moment the image was cropped differently. The JPG's own
+ * frame has been cropped out of the committed file and this is the only one.
+ *
+ * IT BELONGS TO THE BACKDROP, NOT TO THE CONTENT. Drawn as a fixed layer
+ * above the content it is a clean frame that also rules a line through every
+ * paragraph crossing the top or bottom of the viewport -- measured, and
+ * visible in the first render. Drawn as part of the fixed backdrop it frames
+ * the artwork, the page scrolls inside it, and it never touches a glyph.
+ *
+ * A masked pseudo-element, not border-image: border-image ignores
+ * border-radius, so the corners would come out square. The #000 in the two
+ * mask layers is a STENCIL, not a colour: only its alpha is read, and the
+ * visible colour is the gradient underneath, which is entirely --spec-*. */
+#backdrop::after {
+  content: "";
+  position: absolute;
+  inset: var(--frame-inset);
+  border-radius: var(--frame-radius);
+  padding: 2px;
+  background: linear-gradient(135deg,
+      var(--spec-1), var(--spec-2), var(--spec-3),
+      var(--spec-4), var(--spec-5), var(--spec-6));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* THE READING SHEET.
+ *
+ * One panel for every chapter rather than a background on each section: the
+ * sections are contiguous, so per-section fills would produce an identical
+ * sheet with seams at every boundary.
+ *
+ * Inset further than the frame -- 8px further on each side -- so the frame's
+ * own line is never underneath it. At the same inset the sheet's edge landed
+ * exactly on the 2px line and dimmed it to the sheet's own alpha, which read
+ * as a frame that faded in and out as the page scrolled.
+ *
+ * It starts below the hero on purpose. The hero is the one place the artwork
+ * is meant to be looked at rather than read over, so it carries its own panel
+ * behind its column instead.
+ *
+ * The alpha is MEASURED. See --section-scrim in tokens.css for the figure and
+ * what it was solved against. */
+.sheet {
+  margin-inline: calc(var(--frame-inset) + 8px);
+  border-radius: var(--frame-radius) var(--frame-radius) 0 0;
+  background: var(--section-scrim);
+  padding-bottom: var(--sp-4);
+}
+
+/* The footer is OUTSIDE <main>, which is semantically right and left it the
+ * one block of text on the page reading straight off the backdrop -- in
+ * --text-muted, the weakest text token there is, over the prism. It carries
+ * the same scrim at the same inset and closes the sheet's bottom corners, so
+ * the two read as one surface. Both contrast gates sample it. */
+.site-foot {
+  margin-inline: calc(var(--frame-inset) + 8px);
+  border-radius: 0 0 var(--frame-radius) var(--frame-radius);
+  background: var(--section-scrim);
+}
+
+/* The frame is a fixed viewport layer, so the document needs room at its foot
+ * for the bottom edge to sit in rather than over the last line of the page. */
+body { padding-bottom: calc(var(--frame-inset) * 2); }
+
+/* Pinned to the underside of the sticky bar. Width is driven by --p, which
+ * motion.js writes on scroll; with no JS --p is unset, the line has zero
+ * width, and an absent decoration is simply absent. */
+.scroll-progress {
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 2px;
+  width: calc(var(--p, 0) * 100%);
+  background: linear-gradient(90deg,
+      var(--spec-1), var(--spec-2), var(--spec-3),
+      var(--spec-4), var(--spec-5), var(--spec-6));
+  pointer-events: none;
+}
 
 /* ==================================================================
  * V2 evaluation dataset table
@@ -890,10 +1243,11 @@ body::after {
 .rv-caveats li { margin-bottom: 0.35rem; }
 
 /* ==================================================================
- * The site-wide prism background
+ * The prism box
  * ==================================================================
- * Fixed to the viewport at z-index -1: above the wash and the scrim (both -2),
- * below every pixel of content. The page scrolls over it.
+ * An element of the fixed backdrop, anchored over the background image. See
+ * the #backdrop rules above for the positioning; these rules style whatever
+ * renders inside.
  *
  * The SVG mark is always in the DOM. hero3d.js appends the WebGL canvas into
  * the same box, and the SVG fades out only once [data-hero="gl"] is set, which
@@ -901,35 +1255,12 @@ body::after {
  * -- no WebGL, reduced motion, a failed import, a throw inside the module --
  * leaves the attribute unset and the static SVG exactly where it was.
  */
-#prism-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-  pointer-events: none;    /* the cursor drives it, but never eats a click */
-  overflow: hidden;
-
-  /* The one knob. Measured, not chosen -- see tokens.css. */
-  opacity: var(--prism-bg-opacity, 0.4);
-
-  /* The vignette. A mask on this box rather than an extra layer, so it can
-   * never be painted over text. The prism runs at full strength through the
-   * middle and fades toward the edges because the five beams run from the
-   * centre to off-frame: without this they cross the left and right margins at
-   * full strength, which is exactly where the reading column sits at narrow
-   * widths. It also keeps the hard edge of the refraction patch off a margin.
-   *
-   * The ellipse is centred slightly above the middle because the prism
-   * geometry sits there, not at 50%. */
-  -webkit-mask-image: radial-gradient(ellipse 72% 58% at 50% 45%,
-      rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 42%,
-      rgba(0, 0, 0, 0.55) 70%, rgba(0, 0, 0, 0) 100%);
-  mask-image: radial-gradient(ellipse 72% 58% at 50% 45%,
-      rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 42%,
-      rgba(0, 0, 0, 0.55) 70%, rgba(0, 0, 0, 0) 100%);
-}
+/* #prism-bg's own box is ".backdrop-prism", in the fixed backdrop section
+ * above. The old full-viewport VIGNETTE is still gone: it existed to keep the
+ * five beams off the reading column's margins, and those beams are in the
+ * photograph now. Legibility over the prism is held by the measured section
+ * scrim instead, which is a flat, predictable quantity a gate can check. */
+#prism-bg { overflow: hidden; }
 
 .prism-bg__svg,
 .prism-bg__gl {
@@ -940,17 +1271,17 @@ body::after {
   display: block;
 }
 
-/* The static fallback's own opacity. Deliberately lower than the live
- * renderer's: a flat SVG has no specular falloff, so at the same alpha it is a
- * harder shape behind text than the glass is. */
-.prism-bg__svg { opacity: 0.15; transition: opacity 420ms ease; }
+/* The static fallback's own opacity. It is a foreground mark now rather than a
+ * wash behind body text, so it is nearly solid; it was 0.15 while this box was
+ * the page background. */
+.prism-bg__svg { opacity: 0.9; transition: opacity 420ms ease; }
 :root[data-hero="gl"] .prism-bg__svg { opacity: 0; }
 
 /* Reduced motion never reaches the GL path at all, but if a reader turns it on
  * after load the canvas is dropped and the static SVG comes back rather than
- * the background vanishing under them. */
+ * the prism vanishing under them. */
 @media (prefers-reduced-motion: reduce) {
-  :root[data-hero="gl"] .prism-bg__svg { opacity: 0.15; }
+  :root[data-hero="gl"] .prism-bg__svg { opacity: 0.9; }
   .prism-bg__gl { display: none; }
 }
 

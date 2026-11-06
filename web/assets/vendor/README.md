@@ -6,10 +6,18 @@ anywhere else would break both properties.
 
 | package | version | licence | files |
 |---|---|---|---|
-| anime.js | 4.5.0 | MIT (`anime/LICENSE.md`) | `anime.esm.min.js` (118 KB) |
 | three.js | 0.186.1 (r186) | MIT (`three/LICENSE`) | `three.module.js` (667 KB), `three.core.js` (1.45 MB) |
 
 Obtained with `npm pack` and copied verbatim; it has not been edited.
+
+## anime.js: removed 2026-11-05
+
+anime.js was vendored for one thing, the scroll reveals, and they are a CSS
+class now: `motion.js` adds `.is-visible` and sets `--i`, and the curve, the
+offset and the stagger are declarations in `app.css`. Nothing imported the
+library any more, so the 118 KB and its licence file are gone rather than
+shipped unused. The reveal guarantee is unaffected -- it never depended on
+anime.js; see `reveal-failsafe.js`.
 
 ## three.js: removed in phase (c), restored in phase (f)
 
@@ -22,8 +30,8 @@ the files are back, restored from commit 269d194 rather than re-downloaded.
 `three.module.js` imports `./three.core.js`, so the two must stay side by side.
 
 **It is never on the critical path and is never loaded eagerly.** `motion.js`
-imports it dynamically only when the hero is near the viewport AND a WebGL 2
-context is actually obtained AND motion is not reduced. A reader who never
-scrolls to the hero does not request it. Nothing under `examples/jsm` is
-vendored, which is why `hero3d.js` writes out its own room environment and its
-own bloom pass instead of importing `RoomEnvironment` and `UnrealBloomPass`.
+imports it dynamically only when a WebGL 2 context is actually obtained AND
+motion is not reduced. Nothing under `examples/jsm` is
+vendored, which is why `hero3d.js` writes out its own room environment instead
+of importing `RoomEnvironment`. It used to hand-roll a bloom pass for the same
+reason; that is gone, for reasons recorded in `web/README.md`.

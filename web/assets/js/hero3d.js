@@ -1,4 +1,7 @@
-/* The photorealistic glass prism, used as the site-wide fixed background.
+/* The photorealistic glass prism, anchored in the hero over the background
+ * image. It used to be the site-wide fixed background; the five coloured beams
+ * it drew are baked into that image now, so they are gone from here -- drawing
+ * them twice put a second, differently-angled fan over the photograph's.
  *
  * An earlier attempt rendered as an opaque grey slab. The cause was not the
  * material: a MeshPhysicalMaterial with transmission = 1 shows what is behind
@@ -27,22 +30,25 @@
 
 import * as THREE from "../vendor/three/three.module.js";
 
-/* The SVG's own coordinate system is the world. viewBox is 0 0 900 240 and the
- * triangle is M360 40 L470 190 L250 190 Z, so working in SVG units with the
- * origin moved to the centre and y flipped makes the silhouette match by
- * construction instead of by eye. */
-const VB = { w: 900, h: 240 };
-const toWorld = (x, y) => new THREE.Vector2(x - VB.w / 2, VB.h / 2 - y);
+/* The SVG's own coordinate system is the world. The triangle is
+ * M360 40 L470 190 L250 190 Z, so working in SVG units with the origin moved
+ * to the triangle's centroid and y flipped makes the silhouette match by
+ * construction instead of by eye.
+ *
+ * FIT is the SVG fallback's viewBox, "235 35 250 210", which is the triangle
+ * plus margin and is centred on the same centroid. Framing GL to the same box
+ * is what makes the swap between the two invisible. */
+const CEN = { x: 360, y: 140 };              // the triangle's centroid
+const FIT = { w: 250, h: 210 };
+const toWorld = (x, y) => new THREE.Vector2(x - CEN.x, CEN.y - y);
 
 const TRI = [toWorld(360, 40), toWorld(470, 190), toWorld(250, 190)];
-const APEX_OUT = toWorld(400, 120);          // where the SVG's beams leave
-const BEAM_Y = [38, 79, 120, 161, 202].map((y) => VB.h / 2 - y);
 const DEPTH = 130;                           // extrusion, z
 
 /* A long lens at a long distance: near-orthographic, so the silhouette lands
  * where the SVG's does, but still with enough perspective to read as a solid. */
 const CAM_DIST = 1400;
-const FOV = 2 * Math.atan((VB.h / 2) / CAM_DIST) * (180 / Math.PI);
+const FOV = 2 * Math.atan((FIT.h / 2) / CAM_DIST) * (180 / Math.PI);
 
 export async function mount(host, api) {
   const { palette, token } = api;
@@ -57,7 +63,12 @@ export async function mount(host, api) {
     return new THREE.Color(v);
   };
 
-  const base = col("--base");
+  /* The six graphics-only spectrum stops. A missing one throws, the caller
+   * catches, and the static SVG stays -- a guessed colour would be the palette
+   * drift this indirection exists to prevent. */
+  const spectrum = [1, 2, 3, 4, 5, 6].map((i) => col("--spec-" + i));
+
+  const field = col("--prism-backdrop");
   const surface = col("--surface-raised");
   const accent = col("--accent");
   const incident = col("--beam-incident");
@@ -74,14 +85,20 @@ export async function mount(host, api) {
     antialias: true, alpha: true, powerPreference: "high-performance",
   });
   renderer.setClearColor(0x000000, 0);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  // Kept low on purpose. A brighter exposure suits a near-black hero slot where
-  // the prism reads through blown highlights, but over the page's own base at
-  // --prism-bg-opacity it puts the glass's specular above the body text.
-  renderer.toneMappingExposure = 1.45;
+  // NO TONE MAPPING. ACES was right for a near-black page: it compressed the
+  // beams' and specular's highlights so they did not clip. There is nothing
+  // to compress here and one thing it actively breaks -- ACES maps linear 1.0
+  // to about 0.8, so the white backdrop plane, and the glass sampling it
+  // through transmission, both came out grey. The old bloom pass was adding
+  // that 20% back by accident; with the bloom gone the grey slab was all that
+  // was left. Colours come out as tokens.css authored them.
+  renderer.toneMapping = THREE.NoToneMapping;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // Shadows off. Nothing receives one any more: the backdrop plane is unlit
+  // so the glass could not cast onto it, and the contact shadow under the
+  // prism is a CSS radial gradient in app.css. A shadow map rendered every
+  // frame for nothing is the most expensive no-op in the file.
+  renderer.shadowMap.enabled = false;
 
   const canvas = renderer.domElement;
   canvas.className = "prism-bg__gl";
@@ -155,8 +172,13 @@ export async function mount(host, api) {
    * as a grey slab -- the original bug.
    *
    * Instead the plane is cut to roughly the prism's own footprint so it no
-   * longer spans the frame, and its field is painted in --base so it is
-   * invisible against the page by construction.
+   * longer spans the frame, and its field is painted so that it is invisible
+   * against the page by construction.
+   *
+   * That field is --prism-backdrop, which is the pixel value the hero image
+   * actually HAS at the anchor: (252,252,252), measured off the committed
+   * JPG. --surface's pure white and --base's #F7F8FA were both tried and both
+   * showed as a faint card, one lighter than the photograph and one greyer.
    */
   function backdropTexture() {
     const W = 512, H = 256;
@@ -173,40 +195,27 @@ export async function mount(host, api) {
     const g = inner.getContext("2d");
 
     const grad = g.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0.00, hex(base));
+    grad.addColorStop(0.00, hex(field));
     grad.addColorStop(0.50, hex(surface));
-    grad.addColorStop(1.00, hex(base));
+    grad.addColorStop(1.00, hex(field));
     g.fillStyle = grad;
     g.fillRect(0, 0, W, H);
 
-    // A pool directly behind the prism, SIZED TO THE PRISM, not to the frame.
-    // At 0.40 of the texture width it was 560 world units against a 220-unit
-    // prism and became a blown-out sun with the glass silhouetted on it --
-    // the opposite failure to the grey slab and just as wrong.
-    const pool = g.createRadialGradient(px, py, 0, px, py, W * 0.11);
-    pool.addColorStop(0.00, hex(accent));
-    pool.addColorStop(0.45, hex(surface));
-    pool.addColorStop(1.00, "rgba(0,0,0,0)");
-    g.globalAlpha = 0.9;
-    g.fillStyle = pool;
-    g.fillRect(0, 0, W, H);
+    /* NO POOLS. Two radial pools used to sit behind the glass to give it
+     * something bright to bend. On a near-black page that worked; on this one
+     * the field is already white, so the only thing a coloured pool can be is
+     * DARKER than its surroundings, and refracted through the prism the two of
+     * them came out as a pair of black eyes on the front face. What the glass
+     * needs here is structure, not brightness, and the streaks below are that.
+     */
 
-    // A cooler second pool, so refraction has more than one colour to split.
-    const qx = px + W * 0.16, qy = H * 0.38;
-    const cool = g.createRadialGradient(qx, qy, 0, qx, qy, W * 0.10);
-    cool.addColorStop(0.00, hex(angleColour[2]));
-    cool.addColorStop(1.00, "rgba(0,0,0,0)");
-    g.globalAlpha = 0.55;
-    g.fillStyle = cool;
-    g.fillRect(0, 0, W, H);
-
-    // STREAKS, not just pools. A blob seen through glass is still a blob;
-    // straight lines BEND, and that is what makes a photograph read as glass.
+    // STREAKS. A blob seen through glass is still a blob; straight lines
+    // BEND, and that is what makes a photograph read as glass.
     g.lineWidth = 3;
-    const streak = [incident, angleColour[2], accent, angleColour[3]];
+    const streak = [spectrum[0], spectrum[3], spectrum[5], spectrum[4]];
     for (let i = 0; i < 9; i++) {
       g.strokeStyle = hex(streak[i % streak.length]);
-      g.globalAlpha = 0.14 + 0.06 * (i % 3);
+      g.globalAlpha = 0.20 + 0.08 * (i % 3);
       g.beginPath();
       const x0 = (i / 9) * W * 1.4 - W * 0.2;
       g.moveTo(x0, -20);
@@ -230,12 +239,12 @@ export async function mount(host, api) {
      * then has nothing behind it, and the prism goes back to being a grey slab.
      * Making this material transparent to hide the streaks reproduced that
      * failure exactly. The masked content is composited over an opaque field of
-     * --base instead, so the plane is invisible where it has no content without
-     * ever being transparent. */
+     * --prism-backdrop instead, so the plane is invisible where it has no
+     * content without ever being transparent. */
     const c = document.createElement("canvas");
     c.width = W; c.height = H;
     const out = c.getContext("2d");
-    out.fillStyle = hex(base);
+    out.fillStyle = hex(field);
     out.fillRect(0, 0, W, H);
     out.drawImage(inner, 0, 0);
 
@@ -244,26 +253,27 @@ export async function mount(host, api) {
     return t;
   }
 
-  // 560x330, not 1400x500. Sized to the prism, which is ~220 units across:
-  // big enough that refraction has somewhere to sample from at every tilt in
-  // step 5's range, small enough that it is not a band across the viewport.
+  // 260x200, down from 560x330. The camera frames 250x210 now rather than the
+  // old 900x240 strip. Wider than the prism's 220 units -- refraction has to
+  // have somewhere to sample from at every tilt in step 5's range -- and
+  // inside the 287x241 frustum at its own depth, so no edge of it is ever on
+  // screen. Taller than it is tall-enough-for-the-prism on purpose: at 200 the
+  // refraction under the bottom bevel bent off the edge of the plane, sampled
+  // the clear colour and drew a dark strip along the base of the glass.
   const backdrop = new THREE.Mesh(
-    new THREE.PlaneGeometry(560, 330),
+    new THREE.PlaneGeometry(270, 228),
     (() => {
       const tex = backdropTexture();
-      // SELF-LIT and OPAQUE. Self-lit because a backdrop that only reflects
-      // the key light is dark exactly where the glass needs it bright, which
-      // is the same failure as having no backdrop at all. Opaque because the
-      // transmission target is built from the opaque objects only -- see the
-      // note in backdropTexture(). `map` is kept so it still takes the shadow.
-      return new THREE.MeshStandardMaterial({
-        map: tex, emissiveMap: tex, emissive: 0xffffff,
-        emissiveIntensity: 1.0, roughness: 0.9, metalness: 0.0,
-      });
+      // UNLIT and OPAQUE. Unlit because the field has to come out at exactly
+      // the texture's own white: that is what makes the plane disappear
+      // against the hero image's 252-253 grey, and anything that multiplies
+      // it by a light rig or by ACES tone mapping renders it as a grey card
+      // instead. Opaque because the transmission target is built from the
+      // opaque objects only -- see the note in backdropTexture().
+      return new THREE.MeshBasicMaterial({ map: tex, toneMapped: false });
     })()
   );
-  backdrop.position.z = -330;
-  backdrop.receiveShadow = true;
+  backdrop.position.z = -210;
   scene.add(backdrop);
 
   /* ---- 3. the prism --------------------------------------------------- */
@@ -281,16 +291,17 @@ export async function mount(host, api) {
   glassGeo.computeVertexNormals();
 
   const glass = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff,
+    // A faint cool tint, from --prism-tint. Clear glass on a white page is
+    // invisible -- which is exactly how this looked before -- and this is what
+    // gives the solid a body without making it a coloured object.
+    color: col("--prism-tint"),
     metalness: 0.0,
-    roughness: 0.02,
-    // 0.90, down from 0.94. Slightly less transmissive glass keeps a body to
-    // the solid instead of vanishing into whatever is behind it -- which
-    // matters more now that what is behind it is the page rather than a
-    // purpose-built backdrop. The edge refraction, which is what reads as
-    // "glass", is preserved: see roughness, ior and the edge lines below.
-    transmission: 0.90,
-    thickness: DEPTH * 0.55,
+    roughness: 0.05,
+    transmission: 0.95,
+    // The brief's "thickness 1.2" is a figure for a unit-scale scene. This one
+    // works in SVG units where the prism is 220 across and DEPTH is 130, so
+    // the ratio is what carries over, not the number.
+    thickness: DEPTH * 1.2,
     ior: 1.52,                 // crown glass
     // The white beam has to come out coloured. Without this the prism is
     // physically a clear block and the whole mark loses its point.
@@ -308,90 +319,41 @@ export async function mount(host, api) {
   });
 
   const prism = new THREE.Mesh(glassGeo, glass);
-  prism.castShadow = true;
   const pivot = new THREE.Group();
   pivot.add(prism);
 
   /* The edges, drawn. A real prism's silhouette and internal edges are the
    * brightest thing about it, but reproducing that from the environment alone
    * needs a larger light rig than a decorative mark can afford at 60fps. This
-   * is a thin additive line along the geometry's own edges, in the beam colour.
-   * 26 degrees keeps it to the silhouette and the facet breaks rather than
-   * wireframing every bevel quad. */
-  const edges = new THREE.LineSegments(
-    new THREE.EdgesGeometry(glassGeo, 26),
-    new THREE.LineBasicMaterial({
-      color: incident, transparent: true, opacity: 0.30,
-      blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false,
+   * is a thin line along the geometry's own edges, cycling the six --spec-*
+   * tokens so the rim reads as an iridescent Fresnel edge rather than one
+   * colour. 26 degrees keeps it to the silhouette and the facet breaks rather
+   * than wireframing every bevel quad.
+   *
+   * NOT additive here. Additive blending adds light, and on a near-white page
+   * there is no headroom left to add any -- the rim disappeared completely. */
+  const edgeMat = new THREE.LineBasicMaterial({
+      color: spectrum[0].clone(), transparent: true, opacity: 0.55,
+      depthWrite: false, toneMapped: false,
       // depthTest OFF on purpose, and it is the physically right answer as
       // well as the prettier one: through a transparent solid you SEE the far
       // edges. With the test on, the glass occluded its own back edges and
       // the silhouette came out as a dashed line.
       depthTest: false,
-    })
-  );
+  });
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(glassGeo, 26), edgeMat);
   pivot.add(edges);
   scene.add(pivot);
 
-  /* ---- 4. the beams ---------------------------------------------------
-   * One white beam in, five coloured beams out, each an additive tube. They
-   * start BEHIND the glass so transmission has them to refract; the visible
-   * segment outside the prism is what the reader sees. */
-  function beam(from, to, colour, radius, opacity) {
-    const a = new THREE.Vector3(from.x, from.y, from.z || 0);
-    const b = new THREE.Vector3(to.x, to.y, to.z || 0);
-    const len = a.distanceTo(b);
-    const geo = new THREE.CylinderGeometry(radius, radius, len, 8, 1, true);
-    const mat = new THREE.MeshBasicMaterial({
-      color: colour, transparent: true, opacity,
-      blending: THREE.AdditiveBlending, depthWrite: false,
-      side: THREE.DoubleSide, toneMapped: false,
-    });
-    const m = new THREE.Mesh(geo, mat);
-    m.position.copy(a).add(b).multiplyScalar(0.5);
-    m.quaternion.setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
-    return m;
-  }
+  /* ---- 4. the beams: NOT DRAWN HERE ------------------------------------
+   * The five coloured beams and the white incident beam are painted into
+   * web/assets/img/bg-spectrum-light.jpg, which this canvas is anchored over.
+   * The prism is positioned so the photograph's fan converges inside the
+   * glass; a second live fan on top of it read as two overlapping marks. */
 
-  const beams = new THREE.Group();
-  scene.add(beams);
-
-  /* Thicker and dimmer than a beam over a dark backdrop would be. Over the
-   * page's own base there is no darkness to glow against, so a wider core
-   * carries the same presence at a much lower additive contribution, which is
-   * what keeps text legible over it. The five colours are not touched -- they
-   * are the categorical angle tokens. */
-  const CORE_R = 2.3, CORE_A = 0.62;     // was 1.6 / 0.85
-  const HALO_R = 7.5, HALO_A = 0.10;     // was 6.0 / 0.14
-
-  // In: from off-frame left to inside the prism.
-  const entry = { x: TRI[2].x + 44, y: 0 };       // just inside the left face
-  beams.add(beam({ x: -VB.w / 2 - 40, y: 0 }, entry, incident, CORE_R, CORE_A));
-  beams.add(beam({ x: -VB.w / 2 - 40, y: 0 }, entry, incident, HALO_R + 1.0, HALO_A + 0.02));
-
-  // Out: five, from just inside the exit face to off-frame right.
-  // The fan starts at the ENTRY point, not at the exit face, so the five
-  // beams are visibly born inside the glass and leave through it. Starting
-  // them outside made the mark read as "beam, gap, fan".
-  const outStart = { x: entry.x + 6, y: entry.y };
-  angles.forEach((a, i) => {
-    const end = { x: VB.w / 2 + 40, y: BEAM_Y[i] };
-    const dim = a.unbuilt ? 0.38 : 1.0;      // regulatory stays visibly unbuilt
-    beams.add(beam(outStart, end, angleColour[i], CORE_R, CORE_A * dim));
-    beams.add(beam(outStart, end, angleColour[i], HALO_R, HALO_A * dim));
-  });
-
-  /* ---- 5. lights and a soft shadow ------------------------------------ */
+  /* ---- 5. lights ------------------------------------------------------ */
   const key = new THREE.DirectionalLight(0xffffff, 4.2);
   key.position.set(-420, 520, 760);
-  key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
-  key.shadow.radius = 7;
-  key.shadow.bias = -0.0015;
-  const cam = key.shadow.camera;
-  cam.left = -600; cam.right = 600; cam.top = 300; cam.bottom = -300;
-  cam.near = 100; cam.far = 2600;
   scene.add(key);
   scene.add(new THREE.AmbientLight(0xffffff, 0.2));
   // A second, grazing light from the left. Glass reads through its EDGES, and
@@ -400,130 +362,22 @@ export async function mount(host, api) {
   rim.position.set(-900, -140, 260);
   scene.add(rim);
 
-  /* ---- 6. bloom, small and hand-rolled --------------------------------
-   * UnrealBloomPass lives in examples/jsm, which is not vendored, so this is a
-   * minimal equivalent: bright-pass at quarter resolution, two separable
-   * Gaussian blurs, additive composite. Four extra draws at a sixteenth of the
-   * pixel count -- it is the cheapest part of the frame. */
-  const QUAD = new THREE.BufferGeometry();
-  QUAD.setAttribute("position", new THREE.Float32BufferAttribute(
-    [-1, -1, 0, 3, -1, 0, -1, 3, 0], 3));
-  QUAD.setAttribute("uv", new THREE.Float32BufferAttribute([0, 0, 2, 0, 0, 2], 2));
-  const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-  const VERT = `
-    varying vec2 vUv;
-    void main() { vUv = uv; gl_Position = vec4(position, 1.0); }`;
-
-  const brightMat = new THREE.RawShaderMaterial({
-    glslVersion: THREE.GLSL3,
-    uniforms: { tSrc: { value: null }, threshold: { value: 0.55 } },
-    vertexShader: "in vec3 position;\nin vec2 uv;\n" + VERT
-      .replace("varying", "out").replace("void main", "void main"),
-    fragmentShader: `
-      precision highp float;
-      in vec2 vUv; out vec4 fragColor;
-      uniform sampler2D tSrc; uniform float threshold;
-      void main() {
-        vec4 c = texture(tSrc, vUv);
-        float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
-        float k = max(l - threshold, 0.0) / max(l, 1e-4);
-        fragColor = vec4(c.rgb * k, 1.0);
-      }`,
-  });
-
-  const blurMat = new THREE.RawShaderMaterial({
-    glslVersion: THREE.GLSL3,
-    uniforms: { tSrc: { value: null }, dir: { value: new THREE.Vector2(1, 0) },
-                texel: { value: new THREE.Vector2(1, 1) } },
-    vertexShader: "in vec3 position;\nin vec2 uv;\n" + VERT.replace("varying", "out"),
-    fragmentShader: `
-      precision highp float;
-      in vec2 vUv; out vec4 fragColor;
-      uniform sampler2D tSrc; uniform vec2 dir; uniform vec2 texel;
-      // 9-tap Gaussian, sigma 2.0, normalised.
-      const float W[5] = float[5](0.2270270, 0.1945946, 0.1216216, 0.0540541, 0.0162162);
-      void main() {
-        vec3 sum = texture(tSrc, vUv).rgb * W[0];
-        for (int i = 1; i < 5; i++) {
-          vec2 o = dir * texel * float(i);
-          sum += texture(tSrc, vUv + o).rgb * W[i];
-          sum += texture(tSrc, vUv - o).rgb * W[i];
-        }
-        fragColor = vec4(sum, 1.0);
-      }`,
-  });
-
-  /* The peak cap.
+  /* ---- 6. bloom: REMOVED ----------------------------------------------
+   * There used to be a hand-rolled bloom here -- bright-pass, two separable
+   * blurs, additive composite -- plus a PEAK_LUM cap in the composite that
+   * bounded the luminance of every pixel the canvas emitted.
    *
-   * Lowering --prism-bg-opacity cannot hold a contrast floor here. Compositing
-   * is linear in sRGB values, and the beams are additive with cores reaching
-   * 255, so holding the floor by opacity alone would need a value low enough to
-   * make the prism invisible.
+   * Both existed for a near-black page. On this one they are worse than
+   * useless. There is no darkness for a glow to read against, and the
+   * bright-pass threshold of 0.55 was below the luminance of the backdrop
+   * plane's own white field, so bloom lifted the whole plane to 255,255,255
+   * and drew it as a visible white card over the photograph. Four extra draws
+   * a frame to make the canvas worse.
    *
-   * So the peak is capped where it is produced. maxLum bounds the luminance of
-   * every pixel this canvas emits -- beams, bloom and glass specular alike -- by
-   * scaling the colour rather than clipping a channel, so hue is preserved and
-   * the angle colours stay where tokens.css put them. The halo is already below
-   * the cap and is untouched; it carries the prism's presence once the core can
-   * no longer blow out.
-   *
-   * The value is measured, not derived: the arithmetic predicted a higher cap
-   * than actually held, because the page under the prism is not bare --base and
-   * the shader's output is not exactly display-referred. It holds the floor for
-   * primary and secondary body text. --text-muted would need a cap low enough to
-   * make the prism invisible, so those few blocks get a local scrim in app.css
-   * instead, each named there. See web/README.md for the measured figures. */
-  const PEAK_LUM = 0.52;
-
-  const compMat = new THREE.RawShaderMaterial({
-    glslVersion: THREE.GLSL3,
-    transparent: true,
-    uniforms: { tScene: { value: null }, tBloom: { value: null },
-                // 0.42, down from 0.60: bloom is the part of the frame that
-                // lifts the pixels AROUND the prism, and those are the pixels
-                // body text sits on.
-                strength: { value: 0.42 },
-                maxLum: { value: PEAK_LUM } },
-    vertexShader: "in vec3 position;\nin vec2 uv;\n" + VERT.replace("varying", "out"),
-    fragmentShader: `
-      precision highp float;
-      in vec2 vUv; out vec4 fragColor;
-      uniform sampler2D tScene; uniform sampler2D tBloom; uniform float strength;
-      uniform float maxLum;
-      void main() {
-        vec4 s = texture(tScene, vUv);
-        vec3 b = texture(tBloom, vUv).rgb * strength;
-        vec3 c = s.rgb + b;
-        // THE PEAK CAP. Scale the whole colour, never clip a channel: clipping
-        // the brightest channel shifts the hue, and these hues are the five
-        // angle tokens. Pixels already under the cap are returned untouched,
-        // so the halo and the glass body are not dimmed -- only the cores and
-        // specular highlights that were blowing past the contrast floor.
-        float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-        if (l > maxLum) { c *= maxLum / l; }
-        // The canvas is transparent over the page, so the glow has to carry
-        // its own alpha or it would only show where the scene already is.
-        float ba = clamp(dot(b, vec3(0.2126, 0.7152, 0.0722)), 0.0, 1.0);
-        fragColor = vec4(c, clamp(s.a + ba, 0.0, 1.0));
-      }`,
-  });
-
-  const quad = new THREE.Mesh(QUAD, brightMat);
-  const quadScene = new THREE.Scene();
-  quadScene.add(quad);
-
-  const rtOpts = { type: THREE.HalfFloatType, depthBuffer: true };
-  let sceneRT = new THREE.WebGLRenderTarget(2, 2, rtOpts);
-  let brightRT = new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType });
-  let blurRT = new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType });
-
-  function pass(material, target) {
-    quad.material = material;
-    renderer.setRenderTarget(target);
-    renderer.clear();
-    renderer.render(quadScene, quadCam);
-  }
+   * The scene now renders straight to the canvas. If a glow is ever wanted
+   * back, it needs a threshold above the field's luminance (0.973 for
+   * --prism-backdrop), not the old 0.55.
+   */
 
   /* ---- 7. sizing ------------------------------------------------------ */
   let W = 0, H = 0, DPR = 1;
@@ -541,18 +395,13 @@ export async function mount(host, api) {
     renderer.setPixelRatio(dpr);
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    // The SVG is 900x240 and scales to the stage width. Matching its framing
-    // means holding the same VISIBLE HEIGHT whatever the container aspect, so
-    // the triangle sits exactly where the SVG's does.
-    const visibleH = VB.h * Math.max(1, (VB.w / VB.h) / (w / h));
+    // The SVG scales to the stage. Matching its framing means holding the
+    // same VISIBLE HEIGHT whatever the container aspect, so the triangle sits
+    // exactly where the SVG's does.
+    const visibleH = FIT.h * Math.max(1, (FIT.w / FIT.h) / (w / h));
     camera.fov = 2 * Math.atan((visibleH / 2) / CAM_DIST) * (180 / Math.PI);
     camera.updateProjectionMatrix();
 
-    const pw = Math.max(1, Math.floor(w * dpr));
-    const ph = Math.max(1, Math.floor(h * dpr));
-    sceneRT.setSize(pw, ph);
-    brightRT.setSize(Math.max(1, pw >> 2), Math.max(1, ph >> 2));
-    blurRT.setSize(Math.max(1, pw >> 2), Math.max(1, ph >> 2));
   }
 
   /* ---- 8. motion ------------------------------------------------------ */
@@ -573,39 +422,26 @@ export async function mount(host, api) {
     resize();
     const s = t * 0.001;
 
-    // Cursor-reactive tilt, eased. Under prefers-reduced-motion the pose is
-    // held still: the tilt is decoration, and nothing is explained by it.
+    // A slow continuous Y rotation at 0.15 rad/s with a slight wobble, plus
+    // the cursor-reactive tilt, eased. Under prefers-reduced-motion the pose
+    // is held still: the tilt is decoration, and nothing is explained by it.
     if (!reduced) {
       pointer.x += (pointer.tx - pointer.x) * 0.06;
       pointer.y += (pointer.ty - pointer.y) * 0.06;
-      pivot.rotation.y = POSE_Y + Math.sin(s * 0.22) * 0.13 + pointer.x * 0.22;
+      pivot.rotation.y = POSE_Y + s * 0.15 + Math.sin(s * 0.37) * 0.06 + pointer.x * 0.22;
       pivot.rotation.x = POSE_X + Math.sin(s * 0.17) * 0.05 - pointer.y * 0.12;
       pivot.rotation.z = Math.sin(s * 0.11) * 0.015;
+
+      // The rim cycles the six spectrum stops, one full pass every ~12s.
+      const f = (s / 12) % 1 * spectrum.length;
+      const i = Math.floor(f);
+      edgeMat.color.copy(spectrum[i])
+             .lerp(spectrum[(i + 1) % spectrum.length], f - i);
     }
 
-    renderer.setRenderTarget(sceneRT);
-    renderer.clear();
-    renderer.render(scene, camera);
-
-    brightMat.uniforms.tSrc.value = sceneRT.texture;
-    pass(brightMat, brightRT);
-
-    const bw = brightRT.width, bh = brightRT.height;
-    blurMat.uniforms.tSrc.value = brightRT.texture;
-    blurMat.uniforms.dir.value.set(1, 0);
-    blurMat.uniforms.texel.value.set(1 / bw, 1 / bh);
-    pass(blurMat, blurRT);
-
-    blurMat.uniforms.tSrc.value = blurRT.texture;
-    blurMat.uniforms.dir.value.set(0, 1);
-    pass(blurMat, brightRT);
-
-    compMat.uniforms.tScene.value = sceneRT.texture;
-    compMat.uniforms.tBloom.value = brightRT.texture;
     renderer.setRenderTarget(null);
     renderer.clear();
-    quad.material = compMat;
-    renderer.render(quadScene, quadCam);
+    renderer.render(scene, camera);
   }
 
   function setReduced(v) {
@@ -622,7 +458,6 @@ export async function mount(host, api) {
           .forEach((m) => m.dispose());
       }
     });
-    [sceneRT, brightRT, blurRT].forEach((rt) => rt.dispose());
     envRT.dispose();
     renderer.dispose();
     canvas.remove();
