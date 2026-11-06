@@ -48,6 +48,7 @@ from experiments.lanl_v2 import sampler as sp                     # noqa: E402
 from prismflow.data.lanl_cyber1 import (                          # noqa: E402
     LANLMultiViewDataset,
     load_lanl_config,
+    load_samples,
     read_redteam,
     save_samples,
     subset,
@@ -102,11 +103,17 @@ def peak_rss_mb():
                 "PagefileUsage", "PeakPagefileUsage")]
 
     try:
+        k32 = ctypes.WinDLL("kernel32")
+        psapi = ctypes.WinDLL("psapi")
+        # Without these, the pseudo-handle comes back as a 32-bit int and the
+        # call fails: the default restype is c_int, not HANDLE.
+        k32.GetCurrentProcess.restype = ctypes.c_void_p
+        psapi.GetProcessMemoryInfo.argtypes = [
+            ctypes.c_void_p, ctypes.POINTER(_PMC), wt.DWORD]
         pmc = _PMC()
         pmc.cb = ctypes.sizeof(_PMC)
-        ok = ctypes.WinDLL("psapi").GetProcessMemoryInfo(
-            ctypes.WinDLL("kernel32").GetCurrentProcess(),
-            ctypes.byref(pmc), pmc.cb)
+        ok = psapi.GetProcessMemoryInfo(
+            k32.GetCurrentProcess(), ctypes.byref(pmc), pmc.cb)
     except (OSError, AttributeError):
         return None
     return round(pmc.PeakWorkingSetSize / 2 ** 20, 1) if ok else None
@@ -458,6 +465,83 @@ def _safe(value):
 
 
 # ---------------------------------------------------------------------------
+# probe: the step rate and the per-process memory the sweep estimate needs
+# ---------------------------------------------------------------------------
+
+#: Part 30's four arms, unchanged (results/lanl/results.json
+#: `config.view_configurations`). Named here so a probe or a sweep selects an
+#: arm by name rather than by a hand-typed view list.
+ARMS = {
+    "without_auth": ("proc", "flows", "dns"),
+    "without_flows": ("auth", "proc", "dns"),
+    "without_dns": ("auth", "proc", "flows"),
+    "with_auth": ("auth", "proc", "flows", "dns"),
+}
+
+
+def probe(tag: str, arm: str, system: str, epochs: int, mode_name: str) -> int:
+    """Time real epochs on a BUILT table, to get ms/step and peak RSS per unit.
+
+    Runs `train` itself with the epoch count overridden -- not a
+    reimplementation of the training step -- so the rate is the sweep's own
+    code path on the sweep's own data. Part 30's `execution_mode` benchmark is
+    the same measurement at 200 steps on Part 30's table.
+
+    Peak RSS here is ONE unit process. Mode A runs 11 of them at once, so the
+    sweep's memory requirement is this figure times the concurrency, not this
+    figure.
+    """
+    mode = apply_mode(mode_name)
+    cfg = load_lanl_config()
+    path = OUT / f"samples_{tag}.npz"
+    t0 = time.time()
+    samples = load_samples(path, cfg)
+    t_load = time.time() - t0
+
+    block = np.asarray(samples.block)
+    train_idx = np.flatnonzero(block == "train")
+    dataset = LANLMultiViewDataset(samples)
+    if tuple(ARMS[arm]) != tuple(samples.sources):
+        dataset = subset(dataset, tuple(ARMS[arm]))
+    a = dataset.samples
+    native_dims = list(dataset.view_dims)
+
+    t1 = time.time()
+    scaler = fit_scaler(a.views[train_idx], a.view_mask[train_idx],
+                        native_dims, SCALING_CFG["epsilon"])
+    dataset = LANLMultiViewDataset(dataclasses.replace(
+        a, views=apply_scaler(a.views, a.view_mask, scaler)))
+    t_scale = time.time() - t1
+
+    batch = TRAINING_CFG["batch_size"]
+    steps_per_epoch = -(-len(train_idx) // batch)      # iter_batches keeps the tail
+    t2 = time.time()
+    train(dataset, train_idx, native_dims, 2, 0, system == "prismflow",
+          MODEL_CFG, dict(TRAINING_CFG, epochs=epochs))
+    t_train = time.time() - t2
+
+    ms_per_step = 1000.0 * t_train / (epochs * steps_per_epoch)
+    out = {
+        "probe": True, "tag": tag, "arm": arm, "views": list(ARMS[arm]),
+        "system": system, "mode": mode,
+        "n_train_rows": int(len(train_idx)), "n_rows": int(len(samples.labels)),
+        "batch_size": batch, "steps_per_epoch": steps_per_epoch,
+        "epochs_timed": epochs,
+        "seconds": {"load_npz": round(t_load, 1), "fit_apply_scaler": round(t_scale, 1),
+                    "train_timed_epochs": round(t_train, 1)},
+        "ms_per_step": round(ms_per_step, 3),
+        "projected_unit_train_seconds_at_40_epochs":
+            round(ms_per_step * steps_per_epoch * TRAINING_CFG["epochs"] / 1000.0, 1),
+        "peak_rss_mb_one_unit_process": peak_rss_mb(),
+    }
+    print(json.dumps(out, indent=1))
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / f"probe_{tag}_{arm}_{system}_{mode['mode']}.json").write_text(
+        json.dumps(out, indent=1, default=str))
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # smoke (pre-registration 8)
 # ---------------------------------------------------------------------------
 
@@ -502,6 +586,12 @@ def main() -> int:
     r = sub.add_parser("reproduce"); r.add_argument("--days", type=int, default=1)
     b = sub.add_parser("build")
     b.add_argument("--rule", default="v2"); b.add_argument("--days", type=int, default=16)
+    pr = sub.add_parser("probe")
+    pr.add_argument("--tag", default="v2_days16")
+    pr.add_argument("--arm", default="with_auth", choices=sorted(ARMS))
+    pr.add_argument("--system", default="naive", choices=("naive", "prismflow"))
+    pr.add_argument("--epochs", type=int, default=1)
+    pr.add_argument("--mode", default="default")
     s = sub.add_parser("smoke")
     s.add_argument("--seeds", default="0,1"); s.add_argument("--days", type=int, default=6)
     s.add_argument("--mode", default="default")
@@ -510,6 +600,8 @@ def main() -> int:
         return reproduce(a.days)
     if a.cmd == "build":
         return build(a.rule, a.days)
+    if a.cmd == "probe":
+        return probe(a.tag, a.arm, a.system, a.epochs, a.mode)
     return smoke([int(x) for x in a.seeds.split(",")], a.days, a.mode)
 
 
