@@ -1,7 +1,8 @@
 {
  "rule": "part30",
- "attack_hosts": 305,
- "attack_cells_in_range": 932,
+ "attack_hosts": 0,
+ "attack_cells_in_redteam_file": 932,
+ "attack_cells_in_read_range": 0,
  "selection": {
   "n_selected": 4423,
   "cases_added_outside_streamed_views": 932,
@@ -27,8 +28,8 @@
  },
  "n_samples": 3491,
  "seconds": {
-  "selection_pass": 24.6,
-  "feature_pass": 21.1
+  "selection_pass": 25.1,
+  "feature_pass": 28.8
  },
  "per_day": {
   "train": {
