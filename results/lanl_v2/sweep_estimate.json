@@ -1,0 +1,171 @@
+{
+ "what_this_is": "Wall-clock and peak-memory ESTIMATE for the full pre-registered sweep: 4 arms x 2 systems x 5 seeds = 40 units per execution mode, 2 modes, 80 units. Built from the COMPLETED 16-day build and 16 timed probes on that table (one per arm x system x mode), plus two measured 11-way concurrency tests. NOT extrapolated from the 6-day smoke. No unit of the sweep has been run: every figure is an estimate of TRAINING time, not a result, and known_unattributed_gap_vs_part30 states what it does not cover.",
+ "built_from": {
+  "sample_table": "results/lanl_v2/samples_v2_days16.npz",
+  "build_report": "results/lanl_v2/build_v2_days16.json",
+  "probes": [
+   "probe_v2_days16_with_auth_naive_default.json",
+   "probe_v2_days16_with_auth_naive_threads1.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus00.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus01.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus02.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus03.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus04.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus05.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus06.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus07.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus08.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus09.json",
+   "probe_v2_days16_with_auth_naive_threads1_sus10.json",
+   "probe_v2_days16_with_auth_prismflow_default.json",
+   "probe_v2_days16_with_auth_prismflow_threads1.json",
+   "probe_v2_days16_without_auth_naive_default.json",
+   "probe_v2_days16_without_auth_naive_threads1.json",
+   "probe_v2_days16_without_auth_prismflow_default.json",
+   "probe_v2_days16_without_auth_prismflow_threads1.json",
+   "probe_v2_days16_without_dns_naive_default.json",
+   "probe_v2_days16_without_dns_naive_threads1.json",
+   "probe_v2_days16_without_dns_prismflow_default.json",
+   "probe_v2_days16_without_dns_prismflow_threads1.json",
+   "probe_v2_days16_without_flows_naive_default.json",
+   "probe_v2_days16_without_flows_naive_threads1.json",
+   "probe_v2_days16_without_flows_prismflow_default.json",
+   "probe_v2_days16_without_flows_prismflow_threads1.json"
+  ],
+  "n_train_rows": 197363,
+  "n_test_rows": 84460,
+  "steps_per_epoch": 3084,
+  "epochs": 40,
+  "batch_size": 64,
+  "machine": "i5-13420H, 8 physical cores, 12 logical, 15.7 GB RAM"
+ },
+ "measured_concurrency_penalty": {
+  "measured_on": "with_auth naive, threads1, 11 processes at once",
+  "solo_ms_per_step": 4.572,
+  "burst": {
+   "n_processes": 11,
+   "epochs_each": 1,
+   "seconds_each_max": 35,
+   "ms_per_step_each": [
+    11.184,
+    10.892,
+    10.793,
+    11.023,
+    10.81,
+    11.106,
+    11.097,
+    11.315,
+    10.753,
+    11.042,
+    11.147
+   ],
+   "mean_ms_per_step": 11.015,
+   "slowdown_vs_solo": 2.409,
+   "sum_peak_rss_mb": 5339.0
+  },
+  "sustained": {
+   "n_processes": 11,
+   "epochs_each": 15,
+   "seconds_each_max": 553,
+   "ms_per_step_each": [
+    11.868,
+    11.897,
+    11.914,
+    11.915,
+    11.846,
+    11.877,
+    11.915,
+    11.871,
+    11.818,
+    11.947,
+    11.902
+   ],
+   "mean_ms_per_step": 11.888,
+   "slowdown_vs_solo": 2.6,
+   "sum_peak_rss_mb": 5371.9
+  },
+  "headline_factor_used": 2.6,
+  "caveats": [
+   "measured on ONE cell. A real wave mixes arms and systems, so applying the factor uniformly is the largest controlled source of error in mode A.",
+   "a repeat of the solo probe moved 4.458 -> 4.572 ms/step, so the step rate itself carries about 3% run-to-run variation.",
+   "sustained load was held for 9.3 minutes, not the ~2 h mode A would run. Thermal behaviour beyond 9 minutes is NOT measured."
+  ]
+ },
+ "per_unit_train_seconds_at_40_epochs": {
+  "mode_A_threads1_solo": {
+   "without_auth/naive": 452.9,
+   "without_auth/prismflow": 738.5,
+   "without_flows/naive": 454.9,
+   "without_flows/prismflow": 750.9,
+   "without_dns/naive": 474.4,
+   "without_dns/prismflow": 1085.6,
+   "with_auth/naive": 564.0,
+   "with_auth/prismflow": 1207.8
+  },
+  "mode_A_threads1_contended_estimate": {
+   "without_auth/naive": 1178,
+   "without_auth/prismflow": 1920,
+   "without_flows/naive": 1183,
+   "without_flows/prismflow": 1952,
+   "without_dns/naive": 1233,
+   "without_dns/prismflow": 2823,
+   "with_auth/naive": 1466,
+   "with_auth/prismflow": 3140
+  },
+  "mode_B_threadsdefault_sequential": {
+   "without_auth/naive": 525.5,
+   "without_auth/prismflow": 892.5,
+   "without_flows/naive": 581.3,
+   "without_flows/prismflow": 938.1,
+   "without_dns/naive": 587.5,
+   "without_dns/prismflow": 1373.8,
+   "with_auth/naive": 695.5,
+   "with_auth/prismflow": 1524.1
+  }
+ },
+ "mode_A_threads1_concurrent11": {
+  "n_units": 40,
+  "sum_unit_seconds_solo_rates": 28645,
+  "sum_unit_seconds_contended": 74477,
+  "wall_clock_seconds_longest_first_on_11_slots": 7251,
+  "wall_clock_hours": 2.01,
+  "peak_rss_mb_measured_11_processes": 5371.9
+ },
+ "mode_B_threadsdefault_sequential": {
+  "n_units": 40,
+  "wall_clock_seconds": 35591,
+  "wall_clock_hours": 9.89,
+  "peak_rss_mb_one_process": 505.1
+ },
+ "known_unattributed_gap_vs_part30": {
+  "what": "Part 30's recorded per-unit seconds run far above its own committed solo training projection, and the excess cannot be attributed from the committed files. A Part 38 unit may cost several times the training time estimated above.",
+  "part30_solo_projection_with_auth_naive_seconds": 105.72580947875977,
+  "part30_recorded_unit_seconds_over_that_projection": {
+   "with_auth_naive_seed0": 23.8,
+   "with_auth_naive_seed1": 23.1,
+   "with_auth_naive_seed2": 22.6,
+   "with_auth_naive_seed3": 19.1,
+   "with_auth_naive_seed4": 14.0
+  },
+  "part30_sum_of_unit_seconds": 70753.00533294678,
+  "part30_min_max_unit_seconds": [
+   472.33600306510925,
+   4597.400192975998
+  ],
+  "why_not_resolved_here": "run_lanl.py times the WHOLE unit -- npz load, scaler, training, scoring and the per-unit diagnostics -- while the Part 38 probe times train alone. Part 38's own measured 11-way penalty is 2.6x, not the 10-24x those ratios imply, so the difference is per-unit work the probe does not run, machine state at the time, or both. It is NOT measured and is not folded in above.",
+  "practical_reading": "Treat the training figures as a LOWER BOUND. On Part 30's ratios the full sweep could be several times longer. The margin is not quantified, because quantifying it means running units, which this step must not do."
+ },
+ "totals": {
+  "training_wall_clock_hours_both_modes": 11.9,
+  "peak_rss_mb_whole_sweep": 5371.9,
+  "peak_rss_driver": "mode A's 11 concurrent unit processes, measured",
+  "peak_rss_headroom_note": "5.4 GB against 15.7 GB installed, and 5.0 GB free was observed at the start of this session -- mode A at concurrency 11 fits only if little else is running.",
+  "build_measured_seconds": 838.5,
+  "build_peak_rss_mb": 2367.7,
+  "not_included_and_not_measured": [
+   "the aggregate step: Part 30's took 753 s for 40 units including a 2000-replicate cluster bootstrap; Part 38 has 4.6x the rows and no measurement of it exists",
+   "per-unit scoring, the per-unit diagnostics and score-npz writing. npz load (0.1 s) and the scaler (0.1 s) ARE measured and are negligible beside 453-1524 s of training",
+   "any rerun, any failed unit, and the H1 and H2 diagnostics"
+  ]
+ }
+}

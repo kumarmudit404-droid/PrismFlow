@@ -479,7 +479,8 @@ ARMS = {
 }
 
 
-def probe(tag: str, arm: str, system: str, epochs: int, mode_name: str) -> int:
+def probe(tag: str, arm: str, system: str, epochs: int, mode_name: str,
+          label: str = "") -> int:
     """Time real epochs on a BUILT table, to get ms/step and peak RSS per unit.
 
     Runs `train` itself with the epoch count overridden -- not a
@@ -536,7 +537,11 @@ def probe(tag: str, arm: str, system: str, epochs: int, mode_name: str) -> int:
     }
     print(json.dumps(out, indent=1))
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / f"probe_{tag}_{arm}_{system}_{mode['mode']}.json").write_text(
+    # `label` keeps concurrent probes of the SAME cell from overwriting each
+    # other -- and from overwriting the solo run they are compared against.
+    out["label"] = label
+    name = f"probe_{tag}_{arm}_{system}_{mode['mode']}"
+    (OUT / f"{name}_{label}.json" if label else OUT / f"{name}.json").write_text(
         json.dumps(out, indent=1, default=str))
     return 0
 
@@ -592,6 +597,7 @@ def main() -> int:
     pr.add_argument("--system", default="naive", choices=("naive", "prismflow"))
     pr.add_argument("--epochs", type=int, default=1)
     pr.add_argument("--mode", default="default")
+    pr.add_argument("--label", default="")
     s = sub.add_parser("smoke")
     s.add_argument("--seeds", default="0,1"); s.add_argument("--days", type=int, default=6)
     s.add_argument("--mode", default="default")
@@ -601,7 +607,7 @@ def main() -> int:
     if a.cmd == "build":
         return build(a.rule, a.days)
     if a.cmd == "probe":
-        return probe(a.tag, a.arm, a.system, a.epochs, a.mode)
+        return probe(a.tag, a.arm, a.system, a.epochs, a.mode, a.label)
     return smoke([int(x) for x in a.seeds.split(",")], a.days, a.mode)
 
 

@@ -1,0 +1,32 @@
+{
+ "probe": true,
+ "tag": "v2_days16",
+ "arm": "with_auth",
+ "views": [
+  "auth",
+  "proc",
+  "flows",
+  "dns"
+ ],
+ "system": "naive",
+ "mode": {
+  "mode": "threads1",
+  "torch_threads_observed": 1,
+  "concurrency": 11,
+  "machine_default_threads_measured": 8
+ },
+ "n_train_rows": 197363,
+ "n_rows": 281823,
+ "batch_size": 64,
+ "steps_per_epoch": 3084,
+ "epochs_timed": 15,
+ "seconds": {
+  "load_npz": 0.2,
+  "fit_apply_scaler": 0.3,
+  "train_timed_epochs": 551.2
+ },
+ "ms_per_step": 11.915,
+ "projected_unit_train_seconds_at_40_epochs": 1469.8,
+ "peak_rss_mb_one_unit_process": 488.2,
+ "label": "sus03"
+}
