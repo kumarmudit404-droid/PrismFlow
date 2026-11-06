@@ -551,6 +551,10 @@ def probe(tag: str, arm: str, system: str, epochs: int, mode_name: str,
 # ---------------------------------------------------------------------------
 
 def smoke(seeds: list[int], days: int, mode_name: str) -> int:
+    # The 6-day cell keeps the unsuffixed path it was committed under, because
+    # PRE_REGISTRATION section 10.4 cites results/lanl_v2/smoke.json by name.
+    # Every other range is suffixed so the cells cannot overwrite each other.
+    suffix = "" if days == 6 else f"_days{days}"
     mode = apply_mode(mode_name)
     cfg = prefix_config(load_lanl_config(), days)
     samples, report = sample_table(cfg, "v2")
@@ -575,12 +579,13 @@ def smoke(seeds: list[int], days: int, mode_name: str) -> int:
            "days": days, "build": report, "split_summary": summary, "units": {}}
     for seed in seeds:
         res = unit(samples, list(samples.sources), "naive", seed, mode)
-        np.savez_compressed(OUT / f"smoke_scores_seed{seed}.npz", **res["scores"])
+        np.savez_compressed(OUT / f"smoke_scores{suffix}_seed{seed}.npz",
+                            **res["scores"])
         res["metrics"]["peak_rss_mb"] = peak_rss_mb()
         out["units"][str(seed)] = res["metrics"]
         print("\nseed %d  %s" % (seed, json.dumps(res["metrics"])))
     out["peak_rss_mb"] = peak_rss_mb()
-    (OUT / "smoke.json").write_text(json.dumps(out, indent=1, default=str))
+    (OUT / f"smoke{suffix}.json").write_text(json.dumps(out, indent=1, default=str))
     print("smoke peak RSS %s MB" % out["peak_rss_mb"])
     return 0
 
