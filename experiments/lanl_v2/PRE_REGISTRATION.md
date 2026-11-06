@@ -284,3 +284,99 @@ about any limitation.
 | Reproduction target | train 42,912 (439 attack, prevalence 0.01023024); test 18,729 (410 attack, prevalence 0.02189118); 849 attack of 61,641 total — `results/lanl/results.json`, `results/lanl/samples.npz` |
 | Frozen, not edited | `experiments/lanl/run_lanl.py`, `prismflow/evaluation/`, `prismflow/data/lanl_cyber1.py`, `app.py` |
 | Reused, not copied | `prismflow.training` (L25), `prismflow.data.lanl_cyber1` parsing and accumulators |
+
+---
+
+## 10. Amendment 1 — 2026-11-06
+
+**A dated amendment, not a revision.** Nothing above this line is edited.
+Section 1's H2 is reproduced verbatim below and its text is unchanged. This
+section records one change of primary metric, one secondary observation added
+to section 3, and the reason the change is not result-driven.
+
+### 10.1 What changes
+
+**H2's primary metric is threshold-free ROC AUC. Balanced accuracy at the
+default 0.5 threshold is demoted to a secondary observation**, in section 3's
+primary list and everywhere else in Part 38. No hypothesis is decided on a
+threshold metric.
+
+The original H2, verbatim and unchanged:
+
+> **H2 (L27 — host vs behaviour).** With all benign cells of attack hosts
+> retained, dropping every test row of `C17693` changes test ROC AUC by **less
+> than 0.036** in absolute value, for all four arms and both systems. 0.036 is
+> the *smallest* of Part 30's committed per-arm drops; the committed band is
+> **0.036 to 0.052** (`results/lanl_reanalysis/results.json`, `step5_l27`;
+> L27).
+>
+> *Why.* Under Part 30 that host carried 279 of 849 attack samples with **1**
+> benign sample in train and **1** in test. If benign contrast for that host is
+> what the model was missing, restoring it should shrink the leave-host-out
+> sensitivity. H2 is disconfirmed if any of the eight arm-and-system cells still
+> moves by 0.036 or more.
+
+**Stated plainly, because the amendment must not overclaim what it does:**
+H2's bar as pre-registered was *already* written in ROC AUC, so for H2's own
+text this amendment is a confirmation, not a substitution. What it actually
+changes is **section 3**, where "balanced accuracy" sat in the primary list
+beside ROC AUC with no ranking between them, and **H3**, which tests sign
+agreement on `roc_auc` and reports balanced accuracy among its five unbarred
+metrics. After this amendment balanced accuracy is secondary in both places.
+
+### 10.2 The secondary observation, added to section 3's diagnostics
+
+**Threshold degeneracy at 0.5.** Reported per unit, as a diagnostic and never
+as a bar: attack recall, benign recall, balanced accuracy, and the count of
+test rows with `prob_attack >= 0.5`. A unit whose max `prob_attack` is below
+0.5 is recorded as **degenerate at the default threshold**, which pins
+balanced accuracy at exactly 0.5 whatever the ranking underneath it.
+
+### 10.3 Why this is a structural property, not a result-driven choice
+
+A metric that is pinned to 0.5 by construction cannot separate four arms, two
+systems or two execution modes, so it cannot carry H2's 0.036 bar. The reason
+it is pinned is the data design, not the outcome of a run:
+
+- **L16** records that on real data this programme's systems "rank well and
+  threshold badly" — ROC AUC clears 0.50 decisively while accuracy does not
+  clear the majority-class baseline
+  (`docs/KNOWN_LIMITATIONS.md` L16; `results/ait_clean/results.json`).
+- **L23** records that on LANL the reported prevalence is a declared
+  case-control sample and that **"weighted precision collapses at the default
+  threshold"**, so every threshold metric on this sample describes the sample
+  and not the network (`docs/KNOWN_LIMITATIONS.md` L23;
+  `results/lanl_reanalysis/results.json`, `step3_l23`).
+
+Both entries predate Part 38. And Part 38's sample is **more** extreme than
+Part 30's on exactly this axis by its own pre-registered design: section 2's
+L27 rule keeps every benign cell of an attack host, which dilutes prevalence
+further and moves the default threshold further from any operating point. That
+rule was fixed in section 2 before any cell was drawn.
+
+So the change follows from the design and from two previously recorded
+limitations. It does **not** follow from a measurement.
+
+### 10.4 What this amendment does not rest on
+
+The degeneracy was first *seen* in the committed 2-seed smoke
+(`results/lanl_v2/smoke.json`: `balanced_accuracy` 0.5 and `attack_recall`
+0.0 on both seeds). Those numbers carry no weight here, for two independent
+reasons:
+
+1. Section 8 already declares every smoke number pipeline evidence and **not
+   a finding** — 2 seeds not 5, one arm not four, a reduced range.
+2. They have been **reported as void on account of a sampler defect**. That
+   report is recorded here as received. It is not confirmed by this
+   amendment's author: the reproduction gate of section 7.1 **passes** on the
+   committed sampler, matching Part 30's committed day-1 count of 3,491
+   exactly, and no defect has been located. Whether void or not, they are not
+   the basis of this amendment.
+
+### 10.5 Unchanged by this amendment
+
+Sections 2, 4, 5, 6 and 7 are untouched: the sampling rule, the five seeds,
+the `confidence` key, the two execution modes and every stopping rule stand as
+pre-registered. `docs/KNOWN_LIMITATIONS.md` is **not** edited and no
+limitation's status changes — neither L16 nor L23, which are cited here only
+as the prior record they are.
