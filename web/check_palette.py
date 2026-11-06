@@ -345,7 +345,15 @@ def report(path: Path) -> int:
     text_fg = [k for k in TEXT + ["--accent-text", "--accent-2", "--brand-orange",
                                   "--status-provider-error", "--status-genuine-zero"]
                if k in tok]
-    for name in ["--section-scrim", "--surface", "--accent-wash",
+    # --prism-scrim-local is on this list because it is the ONLY gate the
+    # footer has. Measured 2026-11-06: neither pixel gate can score
+    # .site-foot -- the prism's box never overlaps it, and the backdrop image
+    # changes no pixel in it at either viewport, because the footer stacks
+    # --section-scrim and --prism-scrim-local for a combined alpha of 0.93.
+    # That opacity is what makes the footer legible and it is also what makes
+    # it invisible to a pixel diff, so the composite has to be gated here.
+    for name in ["--section-scrim", "--prism-scrim-local", "--surface",
+                 "--accent-wash",
                  "--glass-bg-solid", "--nav-bg", "--quote-bg", "--limits-hover",
                  "--wrong-tint", "--track"]:
         bg = surface_rgb(path, name, base)

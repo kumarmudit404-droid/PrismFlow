@@ -21,7 +21,8 @@ HOW IT MEASURES
 3. The rAF loop is stopped and ``hero.frame(t)`` is driven directly across a
    full rotation cycle, so the sample covers the prism's BRIGHTEST frames
    rather than whichever frame a screenshot happened to catch. The three
-   rotation terms have periods of 28.6s, 37.0s and 57.1s, so t is swept to 60s.
+   rotation terms are dominated by the 0.15 rad/s spin, a 41.9s revolution,
+   so t is swept across that; see FRAMES.
 4. For each sampled region the WORST-CONTRAST background pixel in the
    element's own box across all frames is kept, and the contrast ratio is
    computed against that element's real computed text colour.
@@ -67,7 +68,12 @@ REGIONS = [
     ("#ch4 p", "prose immediately before the results views"),
     ("#limits .chapter__lede", "limitations hub opener"),
     (".site-nav__brand", "sticky nav, which the prism scrolls under"),
-    (".site-foot p", "the footer, --text-muted, the weakest text token on the page"),
+    # .site-foot p was on this list and could never be scored by it: the prism
+    # is a clamp(160px,22vh,340px) object at 73%/56.8% of the fixed backdrop
+    # and its box never overlaps the footer, so the footer always came back
+    # "nothing to measure" while the run still exited 0. A gate that cannot
+    # fail is not a gate. The footer's real gate is check_hero_contrast.py,
+    # which measures it against the backdrop IMAGE and already lists it.
 ]
 
 # t sweep, ms: ONE FULL ROTATION, sampled sixteen times.
@@ -369,10 +375,14 @@ def main() -> int:
                             worst_cr, worst_lum = cr_here, lum
 
                 if worst_lum is None:
-                    # The probe WORKED and the prism simply is not there. That
-                    # is the normal result now: the prism is a hero element
-                    # and no body text sits on it. Counted separately from a
-                    # scored region, because "examined and clear" and "never
+                    # The probe WORKED and the prism simply is not there in
+                    # THIS box. The prism is a fixed backdrop element, so the
+                    # paragraphs that pass over it as the page scrolls do get
+                    # scored -- but it is a small object, not a page-wide
+                    # wash, so a region whose box never overlaps it has no
+                    # prism pixels to measure and that is the correct result,
+                    # not a probe failure. Counted separately from a scored
+                    # region, because "examined and clear" and "never
                     # examined" must not look the same to the exit code.
                     clear += 1
                     print("%-34s %s" % (selector[:34],

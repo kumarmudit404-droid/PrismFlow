@@ -1053,7 +1053,13 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-v
  * one block of text on the page reading straight off the backdrop -- in
  * --text-muted, the weakest text token there is, over the prism. It carries
  * the same scrim at the same inset and closes the sheet's bottom corners, so
- * the two read as one surface. Both contrast gates sample it. */
+ * the two read as one surface.
+ *
+ * NEITHER pixel gate can score it, measured 2026-11-06: the prism's box never
+ * overlaps the footer, and the backdrop image changes no pixel in it at either
+ * viewport -- --section-scrim plus --prism-scrim-local is a combined alpha of
+ * 0.93, so what reaches the glyphs is below a pixel diff's threshold. The
+ * footer's gate is check_palette.py, which composites both scrims. */
 .site-foot {
   margin-inline: calc(var(--frame-inset) + 8px);
   border-radius: 0 0 var(--frame-radius) var(--frame-radius);
