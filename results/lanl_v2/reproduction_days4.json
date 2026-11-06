@@ -1,0 +1,54 @@
+{
+ "rule": "part30",
+ "attack_hosts": 305,
+ "attack_cells_in_range": 932,
+ "selection": {
+  "n_selected": 16319,
+  "cases_added_outside_streamed_views": 892,
+  "records_scanned": {
+   "auth": 62362386,
+   "proc": 23887887,
+   "flows": 33445174,
+   "dns": 230303
+  },
+  "occupied_cells_per_streamed_view": {
+   "auth": 5061218,
+   "proc": 5199839,
+   "flows": 3465329,
+   "dns": 127171
+  },
+  "streamed_views": [
+   "auth",
+   "proc",
+   "flows",
+   "dns"
+  ],
+  "divisor": 512
+ },
+ "n_samples": 11217,
+ "seconds": {
+  "selection_pass": 90.9,
+  "feature_pass": 84.6
+ },
+ "per_day": {
+  "test": {
+   "3": {
+    "samples": 4061,
+    "attack_samples": 22,
+    "attack_windows": 11
+   },
+   "4": {
+    "samples": 3665,
+    "attack_samples": 0,
+    "attack_windows": 0
+   }
+  },
+  "train": {
+   "1": {
+    "samples": 3491,
+    "attack_samples": 0,
+    "attack_windows": 0
+   }
+  }
+ }
+}

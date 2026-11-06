@@ -1,0 +1,42 @@
+{
+ "rule": "part30",
+ "attack_hosts": 305,
+ "attack_cells_in_range": 932,
+ "selection": {
+  "n_selected": 4423,
+  "cases_added_outside_streamed_views": 932,
+  "records_scanned": {
+   "auth": 15740952,
+   "proc": 6642771,
+   "flows": 8366223,
+   "dns": 56652
+  },
+  "occupied_cells_per_streamed_view": {
+   "auth": 1175229,
+   "proc": 1187022,
+   "flows": 781113,
+   "dns": 29758
+  },
+  "streamed_views": [
+   "auth",
+   "proc",
+   "flows",
+   "dns"
+  ],
+  "divisor": 512
+ },
+ "n_samples": 3491,
+ "seconds": {
+  "selection_pass": 24.6,
+  "feature_pass": 21.1
+ },
+ "per_day": {
+  "train": {
+   "1": {
+    "samples": 3491,
+    "attack_samples": 0,
+    "attack_windows": 0
+   }
+  }
+ }
+}
