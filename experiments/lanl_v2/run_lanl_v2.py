@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import hashlib
 import json
 import sys
 import time
@@ -448,6 +449,20 @@ def unit(samples, arm_views, system: str, seed: int, mode: dict) -> dict:
     result["constant_baseline_brier"] = m.constant_baseline_brier(labels)
     result["eniv_eigen"] = _safe(collected.get("eniv"))
     result["mean_dependence"] = _safe(collected.get("mean_dependence"))
+    result["efficiency_ratio"] = _safe(collected.get("efficiency_ratio"))
+    # Amendment section 10.2's per-unit threshold diagnostic. A unit with zero
+    # rows here is degenerate at 0.5, which pins balanced accuracy at exactly
+    # 0.5 whatever the ranking underneath it.
+    result["rows_at_or_above_threshold"] = int((prob >= 0.5).sum())
+    result["max_prob_attack"] = float(prob.max())
+    # PrismFlow.forward calls compute_eniv at its default (eigen) method, and
+    # collect_predictions returns batch-weighted scalars, not the dependence
+    # matrix. Both are frozen, and design_effect_n_eff needs the matrix.
+    # Declared as not measured, never derived from a scalar.
+    result["eniv_design_effect"] = None
+    result["eniv_design_effect_status"] = (
+        "not measured: not exposed by the frozen collect_predictions, which "
+        "returns batch-weighted scalars and no dependence matrix")
     result["train_seconds"] = round(seconds, 1)
     result["all_false_mask_rows"] = int((~present).sum())
     result["arm_views"] = list(arm_views)
@@ -547,6 +562,149 @@ def probe(tag: str, arm: str, system: str, epochs: int, mode_name: str,
 
 
 # ---------------------------------------------------------------------------
+# the sweep (pre-registration 4 and 6)
+# ---------------------------------------------------------------------------
+
+#: Across-seed figures. Every one is reported as mean +/- std over the seeds;
+#: none is reported as a single-seed value.
+SWEEP_METRICS = ("roc_auc", "balanced_accuracy", "accuracy", "attack_recall",
+                 "benign_recall", "brier", "prob_ece", "eniv_eigen",
+                 "mean_dependence", "efficiency_ratio",
+                 "rows_at_or_above_threshold", "max_prob_attack",
+                 "unit_seconds", "peak_rss_mb")
+
+
+def _mean_std(values) -> dict:
+    """Part 30's convention: sample std (ddof=1), nan below two values.
+
+    Matches `experiments/lanl/run_lanl.py` `_mean_std` so a Part 38 +/- reads
+    beside a Part 30 one. None and nan are dropped, never counted as zero.
+    """
+    kept = [float(v) for v in values
+            if v is not None and not np.isnan(float(v))]
+    return {"mean": float(np.mean(kept)) if kept else None,
+            "std": float(np.std(kept, ddof=1)) if len(kept) > 1 else float("nan"),
+            "n": len(kept), "per_seed": kept}
+
+
+def aggregate_sweep(mode_name: str, tag: str) -> dict:
+    """Mean +/- std per (arm, system) over whatever unit files exist.
+
+    Per mode ONLY. Pre-registration section 6 forbids pooling the two
+    execution modes into a single +/-, so there is no cross-mode aggregate
+    here and H3 is not evaluated by this function.
+    """
+    udir = OUT / f"units_{mode_name}"
+    units = [json.loads(path.read_text()) for path in sorted(udir.glob("*.json"))]
+    out = {"mode": mode_name, "tag": tag, "n_units": len(units),
+           "aggregation_rule": (
+               "mean +/- sample std (ddof=1) over seeds, within one execution "
+               "mode. The two modes are never pooled (pre-registration 6)."),
+           "per_cell": {}}
+    for arm in ARMS:
+        for system in ("naive", "prismflow"):
+            rows = sorted((u for u in units if u.get("arm") == arm
+                           and u.get("system") == system),
+                          key=lambda u: u["seed"])
+            if not rows:
+                continue
+            cell = {"n_seeds": len(rows),
+                    "seeds": [u["seed"] for u in rows],
+                    "degenerate_at_threshold_per_seed": [
+                        u.get("rows_at_or_above_threshold") == 0 for u in rows]}
+            for key in SWEEP_METRICS:
+                cell[key] = _mean_std([u.get(key) for u in rows])
+            out["per_cell"][f"{arm}/{system}"] = cell
+
+    # PrismFlow minus naive, per arm, on the primary metric. The per-seed
+    # signs are reported beside the mean: a cancelling population reads as
+    # "no effect" when only the aggregate mean is shown.
+    out["prismflow_minus_naive_roc_auc"] = {}
+    for arm in ARMS:
+        a = out["per_cell"].get(f"{arm}/naive")
+        b = out["per_cell"].get(f"{arm}/prismflow")
+        if not a or not b or a["seeds"] != b["seeds"]:
+            continue
+        diff = [p - n for n, p in zip(a["roc_auc"]["per_seed"],
+                                      b["roc_auc"]["per_seed"])]
+        out["prismflow_minus_naive_roc_auc"][arm] = {
+            **_mean_std(diff),
+            "seeds_positive": sum(1 for d in diff if d > 0),
+            "seeds_negative": sum(1 for d in diff if d < 0),
+            "seeds_exactly_zero": sum(1 for d in diff if d == 0)}
+    (OUT / f"sweep_{mode_name}.json").write_text(
+        json.dumps(out, indent=1, default=str))
+    return out
+
+
+def sweep(tag: str, arms: list[str], systems: list[str], seeds: list[int],
+          mode_name: str) -> int:
+    """Train and score every (arm, system, seed) in ONE execution mode.
+
+    RESUMABLE: a unit whose JSON already exists is skipped. A 10 h sequential
+    run that dies at unit 37 must not start again, and the sample table is a
+    deterministic function of cell identity, so a resumed run trains on the
+    same rows as the run it continues.
+
+    The table is loaded ONCE and never mutated -- `unit` scales into a new
+    array -- so 40 units share one read of the npz.
+    """
+    mode = apply_mode(mode_name)
+    cfg = load_lanl_config()
+    samples = load_samples(OUT / f"samples_{tag}.npz", cfg)
+    udir, sdir = OUT / f"units_{mode['mode']}", OUT / f"scores_{mode['mode']}"
+    udir.mkdir(parents=True, exist_ok=True)
+    sdir.mkdir(parents=True, exist_ok=True)
+
+    todo = [(a, sy, sd) for a in arms for sy in systems for sd in seeds]
+    block = np.asarray(samples.block)
+    print("\n=== SWEEP mode %s: %d units, tag %s ==="
+          % (mode["mode"], len(todo), tag))
+    print("mode:", json.dumps(mode))
+    print("table: %d rows, %d train, %d test"
+          % (len(samples.labels), int((block == "train").sum()),
+             int((block == "test").sum())))
+    started = time.time()
+    done = skipped = 0
+    for arm, system, seed in todo:
+        name = f"{arm}_{system}_seed{seed}"
+        upath = udir / f"{name}.json"
+        if upath.exists():
+            skipped += 1
+            print("skip  %-34s already complete" % name)
+            continue
+        t0 = time.time()
+        res = unit(samples, list(ARMS[arm]), system, seed, mode)
+        row = res["metrics"]
+        row["arm"] = arm
+        row["mode"] = mode
+        row["tag"] = tag
+        row["unit_seconds"] = round(time.time() - t0, 1)
+        row["peak_rss_mb"] = peak_rss_mb()
+        spath = sdir / f"{name}.npz"
+        np.savez_compressed(spath, **res["scores"])
+        row["scores_file"] = spath.as_posix()
+        row["scores_sha256"] = hashlib.sha256(spath.read_bytes()).hexdigest()
+        upath.write_text(json.dumps(row, indent=1, default=str))
+        done += 1
+        print("done  %-34s auc=%.6f bal=%.6f recall=%.6f rows>=.5=%-5d %6.1fs %sMB"
+              % (name, row["roc_auc"], row["balanced_accuracy"],
+                 row["attack_recall"], row["rows_at_or_above_threshold"],
+                 row["unit_seconds"], row["peak_rss_mb"]))
+
+    elapsed = time.time() - started
+    agg = aggregate_sweep(mode["mode"], tag)
+    print("\n=== SWEEP mode %s COMPLETE: %d trained, %d skipped, %.0fs ==="
+          % (mode["mode"], done, skipped, elapsed))
+    print("%-30s %6s %10s %10s" % ("arm/system", "seeds", "auc mean", "auc std"))
+    for cell, v in agg["per_cell"].items():
+        print("%-30s %6d %10.6f %10.6f"
+              % (cell, v["n_seeds"], v["roc_auc"]["mean"], v["roc_auc"]["std"]))
+    print("wrote results/lanl_v2/sweep_%s.json" % mode["mode"])
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # smoke (pre-registration 8)
 # ---------------------------------------------------------------------------
 
@@ -603,6 +761,13 @@ def main() -> int:
     pr.add_argument("--epochs", type=int, default=1)
     pr.add_argument("--mode", default="default")
     pr.add_argument("--label", default="")
+    w = sub.add_parser("sweep")
+    w.add_argument("--tag", default="v2_days16")
+    w.add_argument("--arms", nargs="+", default=list(ARMS), choices=sorted(ARMS))
+    w.add_argument("--systems", nargs="+", default=["naive", "prismflow"],
+                   choices=("naive", "prismflow"))
+    w.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2, 3, 4])
+    w.add_argument("--mode", default="default")
     s = sub.add_parser("smoke")
     s.add_argument("--seeds", default="0,1"); s.add_argument("--days", type=int, default=6)
     s.add_argument("--mode", default="default")
@@ -611,6 +776,8 @@ def main() -> int:
         return reproduce(a.days)
     if a.cmd == "build":
         return build(a.rule, a.days)
+    if a.cmd == "sweep":
+        return sweep(a.tag, a.arms, a.systems, a.seeds, a.mode)
     if a.cmd == "probe":
         return probe(a.tag, a.arm, a.system, a.epochs, a.mode, a.label)
     return smoke([int(x) for x in a.seeds.split(",")], a.days, a.mode)
