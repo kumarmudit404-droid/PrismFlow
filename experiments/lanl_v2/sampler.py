@@ -203,3 +203,72 @@ def per_day_counts(samples) -> dict:
     for (block, day), ws in windows.items():
         out[block][day]["attack_windows"] = len(ws)
     return out
+
+
+def restrict_to_blocks(cfg: LANLConfig, selected: set) -> set:
+    """Drop cells `build_lanl_samples` would discard anyway (gap, out of range).
+
+    Pure arithmetic -- `block_of_window` reads no file -- so this costs nothing
+    and removes the gap days and every out-of-range case from the feature
+    pass, which would otherwise carry an accumulator for a cell that can never
+    become a row.
+    """
+    return {c for c in selected if cfg.block_of_window(c[1]) in ("train", "test")}
+
+
+def _crc(cell) -> int:
+    return zlib.crc32(cell[0] + b"|" + str(cell[1]).encode())
+
+
+def size_fallback(cfg: LANLConfig, selected: set, attack_cells, hosts,
+                  max_total: int) -> dict:
+    """Pre-registration section 2's declared fallback, fixed before any count.
+
+    An attack host's benign cells are kept in full at `k = 0`. If that puts the
+    row count over `max_total`, the share drops to the LARGEST 1/2**k that
+    brings it under -- that is the SMALLEST k, so k is searched upwards and the
+    first that fits wins.
+
+    `crc32(cell) % 2**k == 0` iff the low k bits are zero, so one crc32 per
+    cell yields every k at once: a cell survives share 1/2**k iff its trailing
+    zero count is at least k. Cases and non-attack-host controls are untouched
+    by the fallback -- only the share named in section 2 moves.
+
+    Pass `selected` already restricted to the train/test blocks: that set is
+    exactly the rows, because every cell pass 1 selected is occupied in a
+    streamed view inside the read range.
+    """
+    fixed, movable, tz = 0, [], []
+    for cell in selected:
+        if cell in attack_cells or cell[0] not in hosts:
+            fixed += 1
+            continue
+        crc = _crc(cell)
+        movable.append(cell)
+        tz.append(32 if crc == 0 else (crc & -crc).bit_length() - 1)
+
+    at_least = [0] * 34
+    for t in tz:
+        at_least[min(t, 33)] += 1
+    for k in range(32, -1, -1):              # suffix sums: count with tz >= k
+        at_least[k] += at_least[k + 1]
+
+    for k in range(33):
+        total = fixed + at_least[k]
+        if total <= max_total:
+            break
+    else:
+        k, total = 33, fixed
+
+    dropped = {c for c, t in zip(movable, tz) if t < k}
+    return {
+        "attack_host_benign_share_k": k,
+        "attack_host_benign_share": f"1/{2 ** k}" if k < 33 else "0",
+        "fallback_fired": k > 0,
+        "rows_before_fallback": fixed + len(movable),
+        "rows_after_fallback": total,
+        "attack_host_benign_cells_before": len(movable),
+        "attack_host_benign_cells_dropped": len(dropped),
+        "max_total_bar": max_total,
+        "selected": selected - dropped,
+    }

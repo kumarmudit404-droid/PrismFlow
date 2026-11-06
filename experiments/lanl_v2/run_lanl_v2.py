@@ -79,6 +79,40 @@ class StopCondition(RuntimeError):
 
 
 # ---------------------------------------------------------------------------
+# memory
+# ---------------------------------------------------------------------------
+
+def peak_rss_mb():
+    """This process's PEAK working set, from the OS high-water mark.
+
+    Not a sample: Windows tracks the maximum itself, so a peak reached between
+    two calls is still reported. The `gzip -dc` children are separate
+    processes of a few MB each and are not counted. Returns None off Windows
+    rather than a wrong number.
+    """
+    import ctypes
+    import ctypes.wintypes as wt
+
+    class _PMC(ctypes.Structure):
+        _fields_ = [("cb", wt.DWORD), ("PageFaultCount", wt.DWORD)] + [
+            (n, ctypes.c_size_t) for n in (
+                "PeakWorkingSetSize", "WorkingSetSize",
+                "QuotaPeakPagedPoolUsage", "QuotaPagedPoolUsage",
+                "QuotaPeakNonPagedPoolUsage", "QuotaNonPagedPoolUsage",
+                "PagefileUsage", "PeakPagefileUsage")]
+
+    try:
+        pmc = _PMC()
+        pmc.cb = ctypes.sizeof(_PMC)
+        ok = ctypes.WinDLL("psapi").GetProcessMemoryInfo(
+            ctypes.WinDLL("kernel32").GetCurrentProcess(),
+            ctypes.byref(pmc), pmc.cb)
+    except (OSError, AttributeError):
+        return None
+    return round(pmc.PeakWorkingSetSize / 2 ** 20, 1) if ok else None
+
+
+# ---------------------------------------------------------------------------
 # modes (L28)
 # ---------------------------------------------------------------------------
 
@@ -164,8 +198,16 @@ def sample_table(cfg, rule: str) -> tuple[object, dict]:
     selection = sp.select_cells(cfg, cells, hosts, keep, views)
     t_select = time.time() - t0
 
+    # Only train/test cells can become rows, so carrying the gap days and the
+    # out-of-range cases into the feature pass buys nothing but accumulators.
+    selected = sp.restrict_to_blocks(cfg, selection["selected"])
+    fallback = None
+    if rule == "v2":
+        fallback = sp.size_fallback(cfg, selected, cells, hosts, MAX_TOTAL_SAMPLES)
+        selected = fallback.pop("selected")
+
     t1 = time.time()
-    samples = sp.build(cfg, selection["selected"], redteam)
+    samples = sp.build(cfg, selected, redteam)
     t_features = time.time() - t1
 
     report = {
@@ -174,9 +216,12 @@ def sample_table(cfg, rule: str) -> tuple[object, dict]:
         "attack_cells_in_redteam_file": len(cells),
         "attack_cells_in_read_range": len(in_range),
         "selection": {k: v for k, v in selection.items() if k != "selected"},
+        "cells_in_train_or_test_blocks": len(selected),
+        "size_fallback": fallback,
         "n_samples": int(len(samples.labels)),
         "seconds": {"selection_pass": round(t_select, 1),
                     "feature_pass": round(t_features, 1)},
+        "peak_rss_mb": peak_rss_mb(),
         "per_day": sp.per_day_counts(samples),
     }
     return samples, report
@@ -198,6 +243,19 @@ def split_summary(samples) -> dict:
             "n_distinct_attack_windows": len(windows),
         }
     return out
+
+
+def _print_fallback(report: dict) -> None:
+    f = report.get("size_fallback")
+    if not f:
+        return
+    print("size fallback: attack-host benign share %s (k=%d), %d of %d such "
+          "cells dropped, %d rows -> %d against a bar of %d"
+          % (f["attack_host_benign_share"], f["attack_host_benign_share_k"],
+             f["attack_host_benign_cells_dropped"],
+             f["attack_host_benign_cells_before"],
+             f["rows_before_fallback"], f["rows_after_fallback"],
+             f["max_total_bar"]))
 
 
 def check_stop_conditions(summary: dict, total: int) -> None:
@@ -301,6 +359,10 @@ def build(rule: str, days: int) -> int:
           "(%d in the whole redteam file)"
           % (total, report["attack_hosts"], report["attack_cells_in_read_range"],
              report["attack_cells_in_redteam_file"]))
+    _print_fallback(report)
+    print("selection %.1fs, feature pass %.1fs, peak RSS %s MB"
+          % (report["seconds"]["selection_pass"],
+             report["seconds"]["feature_pass"], report["peak_rss_mb"]))
 
     try:
         check_stop_conditions(summary, total)
@@ -310,8 +372,13 @@ def build(rule: str, days: int) -> int:
         print("\nSTOP CONDITION: %s" % exc)
         return 1
 
+    t2 = time.time()
     sha = save_samples(samples, OUT / f"samples_{tag}.npz")
+    report["seconds"]["save_npz"] = round(time.time() - t2, 1)
+    report["peak_rss_mb"] = peak_rss_mb()
     report["samples_sha256"] = sha
+    print("save %.1fs, peak RSS after save %s MB"
+          % (report["seconds"]["save_npz"], report["peak_rss_mb"]))
     (OUT / f"build_{tag}.json").write_text(json.dumps(report, indent=1, default=str))
     print("wrote results/lanl_v2/samples_%s.npz" % tag)
     return 0
@@ -406,9 +473,12 @@ def smoke(seeds: list[int], days: int, mode_name: str) -> int:
           "a reduced range and a reduced split." % len(seeds))
     print("mode:", json.dumps(mode))
     for name, b in summary.items():
-        print("%-6s n=%-7d attack=%-6d windows=%d"
+        print("%-6s n=%-7d attack=%-6d windows=%-4d prevalence=%.8f"
               % (name, b["n_samples"], b["n_attack_samples"],
-                 b["n_distinct_attack_windows"]))
+                 b["n_distinct_attack_windows"],
+                 b["attack_prevalence_in_sample"] or 0.0))
+    _print_fallback(report)
+    print("build peak RSS %s MB" % report["peak_rss_mb"])
     check_stop_conditions(summary, total)
 
     OUT.mkdir(parents=True, exist_ok=True)
@@ -417,9 +487,12 @@ def smoke(seeds: list[int], days: int, mode_name: str) -> int:
     for seed in seeds:
         res = unit(samples, list(samples.sources), "naive", seed, mode)
         np.savez_compressed(OUT / f"smoke_scores_seed{seed}.npz", **res["scores"])
+        res["metrics"]["peak_rss_mb"] = peak_rss_mb()
         out["units"][str(seed)] = res["metrics"]
         print("\nseed %d  %s" % (seed, json.dumps(res["metrics"])))
+    out["peak_rss_mb"] = peak_rss_mb()
     (OUT / "smoke.json").write_text(json.dumps(out, indent=1, default=str))
+    print("smoke peak RSS %s MB" % out["peak_rss_mb"])
     return 0
 
 

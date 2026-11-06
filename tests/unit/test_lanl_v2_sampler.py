@@ -120,3 +120,69 @@ def test_read_range_boundary_is_inclusive():
     first_after = (b"C1", 288)                # t = 86401, day 2
     got = sp.cells_in_read_range(cfg, {last, first_after})
     assert got == {last}
+
+
+# ---------------------------------------------------------------------------
+# the declared size fallback (pre-registration section 2)
+# ---------------------------------------------------------------------------
+
+def _cfg(days: int = 16):
+    import dataclasses
+    from prismflow.data.lanl_cyber1 import load_lanl_config
+    return dataclasses.replace(load_lanl_config(), read_until=days * 86400)
+
+
+def test_fallback_does_not_fire_under_the_bar():
+    """k = 0 means the pre-registered 'all benign cells of attack hosts' held."""
+    cfg = _cfg()
+    attack = {(b"C1", 10)}
+    hosts = sp.attack_hosts(attack)
+    selected = {(b"C1", w) for w in range(100)} | {(b"C2", w) for w in range(100)}
+    got = sp.size_fallback(cfg, selected, attack, hosts, 10_000)
+    assert got["attack_host_benign_share_k"] == 0
+    assert got["fallback_fired"] is False
+    assert got["selected"] == selected
+    assert got["rows_after_fallback"] == got["rows_before_fallback"] == 200
+
+
+def test_fallback_keeps_cases_and_non_attack_hosts_whatever_k():
+    """Only the share named in section 2 moves. Cases are never dropped."""
+    cfg = _cfg()
+    attack = {(b"C1", w) for w in range(5)}
+    hosts = sp.attack_hosts(attack)
+    movable = {(b"C1", w) for w in range(5, 4000)}
+    fixed = attack | {(b"C9", w) for w in range(300)}
+    got = sp.size_fallback(cfg, fixed | movable, attack, hosts, 400)
+    assert got["attack_host_benign_share_k"] > 0
+    assert fixed <= got["selected"]                     # every case, every control
+    assert got["selected"] - fixed < movable           # only movable cells went
+    assert got["rows_after_fallback"] == len(got["selected"]) <= 400
+
+
+def test_fallback_picks_the_largest_share_that_fits():
+    """'Largest 1/2**k' is the SMALLEST k, so k-1 must not fit."""
+    import zlib
+    cfg = _cfg()
+    attack = {(b"C1", 0)}
+    hosts = sp.attack_hosts(attack)
+    movable = {(b"C1", w) for w in range(1, 6000)}
+    bar = 900
+    got = sp.size_fallback(cfg, attack | movable, attack, hosts, bar)
+    k = got["attack_host_benign_share_k"]
+    assert k > 0
+    at = {j: sum(1 for c in movable
+                 if zlib.crc32(c[0] + b"|" + str(c[1]).encode()) % (1 << j) == 0)
+          for j in (k - 1, k)}
+    assert 1 + at[k] <= bar < 1 + at[k - 1]
+    assert got["rows_after_fallback"] == 1 + at[k]
+
+
+def test_restrict_to_blocks_drops_the_gap_and_out_of_range():
+    """Cells the frozen builder would discard never reach the feature pass."""
+    cfg = _cfg()
+    train = (b"C1", 0)                        # t = 1, day 1
+    gap = (b"C1", 864000 // 300)              # t = 864001, day 11, the gap
+    test = (b"C1", 1036800 // 300)            # t = 1036801, day 13
+    beyond = (b"C1", 1382400 // 300)          # t = 1382401, day 17
+    got = sp.restrict_to_blocks(cfg, {train, gap, test, beyond})
+    assert got == {train, test}
