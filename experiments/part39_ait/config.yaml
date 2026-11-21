@@ -1,0 +1,216 @@
+# Part 39 item A — threshold chosen on the training scenario (L16).
+#
+# SKELETON. Field descriptions and pre-registered values only; no runner reads
+# this file yet. Written 2026-11-21 before anything was run. The authority for
+# every choice here is experiments/part39_ait/PRE_REGISTRATION.md; this file is
+# that document in machine-readable form and must not diverge from it.
+
+experiment:
+  id: part39_ait_item_a
+  closes: L16, first clause only
+  description: >
+    A decision threshold chosen on the TRAINING scenario by a pre-registered
+    rule and reported as such, beside Part 28's argmax-at-0.5 figures. The
+    threshold is the only thing that changes: loader, window length, sample
+    mode, model, training recipe, scaler and label filter are all inherited
+    unchanged from experiments/ait_clean/config.yaml.
+  not_in_scope:
+    - item B, window-length sensitivity (L31)
+    - item C, contaminated-fraction axis (L18)
+    - item D, per-view epsilon (L21)
+    - item E, a third scenario -- BLOCKED, only russellmitchell and santos are
+      downloaded under data/raw/ait/
+
+# ---------------------------------------------------------------------------
+# THE THRESHOLD RULE. The one new decision in this item.
+# ---------------------------------------------------------------------------
+# NO VALIDATION SPLIT, and this is forced by the data rather than chosen.
+# docs/part27-ait-datacard.md section 8: a RANDOM window split "trains and
+# tests on neighbouring windows of one run, which leaks", and a CHRONOLOGICAL
+# split on santos "puts nearly all attack windows before nearly all benign
+# windows, so early/late is close to a label split". At 300 s network,
+# russellmitchell has 1 contiguous attack run and santos has 3, so a held-out
+# slice of one run is not independent of the rest of it.
+#
+# The threshold is therefore fitted on the WHOLE training scenario, using the
+# same model that will be scored on the test scenario. It is optimistic FOR
+# THE TRAINING SCENARIO -- accepted, and reported via
+# `report_train_scenario_balanced_accuracy_at_t` below. It is not optimistic
+# for the reported number, which is computed on the test scenario that neither
+# the model nor the threshold has seen.
+threshold:
+  select_on: training_scenario_all_label_known_rows
+  method: youdens_j
+  # J = sensitivity + specificity - 1 = 2 * balanced_accuracy - 1, a strictly
+  # increasing transform, so this argmax IS "maximise balanced accuracy on
+  # train" -- the example L16's closing condition names. Both names are
+  # reported for the same selected t.
+  equivalent_to: maximise_balanced_accuracy_on_train
+  # Exhaustive over the observed scores, so there is no step size to tune and
+  # no grid resolution to choose after seeing results.
+  grid: every_distinct_prob_attack_on_train_label_known_rows_plus_0_and_1
+  tie_break: smaller_t
+  # A unit whose selected t is 0.0 or 1.0 is reported as "degenerate at
+  # selection" with that label attached. It is NOT excluded and NOT reselected
+  # (PRE_REGISTRATION section 5.2).
+  flag_degenerate_at_0_or_1: true
+
+# ---------------------------------------------------------------------------
+# Inherited verbatim from experiments/ait_clean/config.yaml (Part 28).
+# A retrain is required because no AIT checkpoint and no per-row AIT
+# probability is committed anywhere in the repository.
+# ---------------------------------------------------------------------------
+data:
+  processed_root: data/processed
+  window_seconds: 300
+  sample_mode: network
+  inherited_from: experiments/ait_clean/config.yaml
+
+labels:
+  use_label_known_only: true
+  # labels == -1 means "no label-covered file contributed an event to this
+  # window" and is NEVER read as benign.
+
+directions:
+  - name: A_rm_to_santos
+    label: "A: train russellmitchell -> test santos"
+    train: russellmitchell
+    test: santos
+    # results/ait_clean/results.json: n_samples 1108,
+    # attack_prevalence 0.601985559566787, 3 independent attack episodes
+  - name: B_santos_to_rm
+    label: "B: train santos -> test russellmitchell"
+    train: santos
+    test: russellmitchell
+    # n_samples 1145, train_attack_prevalence 0.9004366812227074,
+    # 1 independent attack episode
+
+systems:
+  - {name: naive, label: naive fusion, use_discount: false}
+  - {name: prismflow, label: V1 PrismFlow, use_discount: true}
+
+seeds: [0, 1, 2, 3, 4]
+# A seed selects parameter initialisation (set_seed) and minibatch order
+# (iter_batches(shuffle=True, seed=seed+epoch)) ONLY. Train and test are whole
+# scenarios, so a seed cannot redraw or re-partition the data. Every +/- is
+# initialisation-and-batch-order variance on a fixed pair of scenarios, NOT a
+# spread over independent attacks.
+
+model:
+  hidden_dims: [64, 64]
+  feature_dim: 32
+  dropout: 0.0
+
+training:
+  epochs: 40
+  batch_size: 64
+  lr: 0.001
+  anneal_epochs: 10
+  per_view_loss_weight: 1.0
+
+scaling:
+  method: zscore
+  present_rows_only: true
+  epsilon: 1.0e-8
+  # Fitted on the TRAINING scenario's label_known rows only, refitted per
+  # direction, never shared between directions.
+
+evaluation:
+  batch_size: 256
+  n_bins: 15
+
+# ---------------------------------------------------------------------------
+# H1 and its bar. Fixed before any measurement.
+# ---------------------------------------------------------------------------
+hypothesis:
+  h1: >
+    With the threshold chosen on the training scenario, balanced accuracy on
+    the test scenario is within 0.02 of its committed argmax-at-0.5 value, in
+    both directions and for both systems.
+  bar_abs_balanced_accuracy_delta: 0.02
+  confirmed_iff: all four cells within the bar
+  # H1 is a NULL hypothesis about threshold choice. A train-chosen threshold
+  # that IMPROVES balanced accuracy by more than 0.02 DISCONFIRMS H1 while
+  # being a better outcome. So the SIGNED difference is reported for every
+  # cell and the direction of any disconfirmation must be stated:
+  #   upward   -> 0.5 was simply the wrong operating point; the ranking was
+  #               always there (L16's "rank well and threshold badly").
+  #   downward -> 0.5 was accidentally favourable, and Part 28's
+  #               argmax-at-0.5 figures are optimistic as deployment numbers.
+  report_signed_difference_not_absolute: true
+
+# results/ait_clean/results.json,
+# directions.<name>.systems.<system>.summary.balanced_accuracy
+committed_argmax_0_5_reference:
+  A_rm_to_santos:
+    naive:     {mean: 0.9443750913658817, std: 0.0056462129696094225, n_seeds: 5}
+    prismflow: {mean: 0.9486834813885574, std: 0.00613712861801559,   n_seeds: 5}
+  B_santos_to_rm:
+    naive:     {mean: 0.9500484966052376, std: 0.06845841673498461,   n_seeds: 5}
+    prismflow: {mean: 0.9647914645974782, std: 0.045472647363396554,  n_seeds: 5}
+
+secondary_no_bar:
+  - selected threshold t per unit, mean +/- std per cell
+  - accuracy, attack_recall, benign_recall, macro_f1, brier at t, beside their
+    committed argmax-at-0.5 values
+  - balanced accuracy at t on the TRAINING scenario, which bounds how
+    optimistic the selection was
+  - report_train_scenario_balanced_accuracy_at_t: true
+
+# ---------------------------------------------------------------------------
+# Write-down rules (PRE_REGISTRATION section 4).
+# ---------------------------------------------------------------------------
+reporting:
+  aggregation: mean +/- sample std (ddof=1) over the 5 seeds
+  min_seeds_for_a_finding: 5
+  paired_within_seed: true
+  report_per_seed_signs_before_mean: true
+  sign_categories: [positive, negative, exactly_zero]
+  never_pool_directions: true
+  never_pool_systems: true
+  cite_committed_path_for_every_number: true
+  absent_is_written: not measured
+
+# ---------------------------------------------------------------------------
+# Stopping rules (PRE_REGISTRATION section 5).
+# ---------------------------------------------------------------------------
+stopping_rules:
+  reproduction_gate:
+    # The gate that makes section 3 a comparison of THRESHOLDS rather than of
+    # two different training runs.
+    requirement: >
+      each retrained unit's argmax-at-0.5 balanced accuracy must reproduce
+      Part 28's committed per-seed value for that cell
+    tolerance_abs: 1.0e-9
+    on_mismatch: stop and report as a defect in the retrain
+    note: >
+      if it does not reproduce, suspect thread count first -- Part 34 measured
+      a committed eniv_eigen missing its own value by 0.0107 under
+      OMP_NUM_THREADS=1. Record the observed thread count with every unit.
+  degenerate_threshold: report with the label, do not exclude or reselect
+  label_coverage: label_known only, -1 is never benign
+  episode_count_must_be_reported: true
+
+output:
+  results_root: results/part39_ait
+  per_unit: results/part39_ait/units/<direction>_<system>_seed<N>.json
+  aggregate: results/part39_ait/item_a.json
+  record_observed_thread_count_per_unit: true
+
+# ---------------------------------------------------------------------------
+# What this item cannot show (PRE_REGISTRATION section 6).
+# ---------------------------------------------------------------------------
+cannot_show:
+  - >
+    that Part 28 is evidence about fusion. L17 stands: single_view_dns scores
+    balanced accuracy 0.9898 on santos and 1.0000 on russellmitchell
+    (results/ait_clean/baselines.json) and no other single view clears 0.7061.
+    A better threshold does not change what is being detected.
+  - >
+    a wider episode count. 3 (santos) and 1 (russellmitchell) remain, so no
+    +/- here is a spread over independent attacks.
+  - >
+    anything about calibration. A threshold is a decision rule, not a
+    probability correction; L16's Brier 0.1264 / ECE 0.0765 flat-baseline
+    finding in direction B is untouched.
+  - a deployment result. Both scenarios are the same simulated testbed.
