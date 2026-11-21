@@ -1,0 +1,193 @@
+{
+ "part": 38,
+ "what": "Per-view record-presence contingency on the TEST block of both sample tables. Counts and rates only, seed-free, no training, no inference, no model.",
+ "not_a_sweep_result": "Computed from results/lanl/samples.npz and results/lanl_v2/samples_v2_days16.npz alone. Independent of the 40-unit sweep and of its execution mode.",
+ "l24_reproduction_gate": {
+  "status": "PASSED",
+  "what_was_checked": "L24's 410/410 attack and 12,323/18,319 benign auth figures, recomputed from results/lanl/samples.npz. 12,323 is prose in docs/KNOWN_LIMITATIONS.md and is not a field in results/lanl/results.json, so it is reproduced from the committed table rather than quoted.",
+  "checks": {
+   "auth_attack_with_record": {
+    "recomputed": 410,
+    "l24_prose": 410
+   },
+   "auth_attack_total": {
+    "recomputed": 410,
+    "l24_prose": 410
+   },
+   "auth_benign_with_record": {
+    "recomputed": 12323,
+    "l24_prose": 12323
+   },
+   "auth_benign_total": {
+    "recomputed": 18319,
+    "l24_prose": 18319
+   }
+  }
+ },
+ "not_row_comparable": "Pre-registration section 2: Part 38's sample is not a subset or a superset of Part 30's and the two tables are not comparable row-for-row. Compare RATES, never counts, and read any difference as a difference of designs.",
+ "sources": [
+  "auth",
+  "proc",
+  "flows",
+  "dns"
+ ],
+ "part30": {
+  "n_rows": 18729,
+  "n_attack": 410,
+  "n_benign": 18319,
+  "prevalence": 0.021891184793635537,
+  "per_view": {
+   "auth": {
+    "attack_with_record": 410,
+    "attack_total": 410,
+    "benign_with_record": 12323,
+    "benign_total": 18319,
+    "attack_rate": 1.0,
+    "benign_rate": 0.6726895572902452,
+    "rate_gap_attack_minus_benign": 0.32731044270975485,
+    "attack_rate_is_exactly_one": true
+   },
+   "proc": {
+    "attack_with_record": 204,
+    "attack_total": 410,
+    "benign_with_record": 12774,
+    "benign_total": 18319,
+    "attack_rate": 0.4975609756097561,
+    "benign_rate": 0.6973088050657787,
+    "rate_gap_attack_minus_benign": -0.19974782945602265,
+    "attack_rate_is_exactly_one": false
+   },
+   "flows": {
+    "attack_with_record": 127,
+    "attack_total": 410,
+    "benign_with_record": 5149,
+    "benign_total": 18319,
+    "attack_rate": 0.3097560975609756,
+    "benign_rate": 0.28107429444838694,
+    "rate_gap_attack_minus_benign": 0.028681803112588666,
+    "attack_rate_is_exactly_one": false
+   },
+   "dns": {
+    "attack_with_record": 8,
+    "attack_total": 410,
+    "benign_with_record": 340,
+    "benign_total": 18319,
+    "attack_rate": 0.01951219512195122,
+    "benign_rate": 0.018559965063595175,
+    "rate_gap_attack_minus_benign": 0.000952230058356044,
+    "attack_rate_is_exactly_one": false
+   }
+  }
+ },
+ "part38": {
+  "n_rows": 84460,
+  "n_attack": 410,
+  "n_benign": 84050,
+  "prevalence": 0.0048543689320388345,
+  "per_view": {
+   "auth": {
+    "attack_with_record": 410,
+    "attack_total": 410,
+    "benign_with_record": 56955,
+    "benign_total": 84050,
+    "attack_rate": 1.0,
+    "benign_rate": 0.6776323616894706,
+    "rate_gap_attack_minus_benign": 0.3223676383105294,
+    "attack_rate_is_exactly_one": true
+   },
+   "proc": {
+    "attack_with_record": 204,
+    "attack_total": 410,
+    "benign_with_record": 76848,
+    "benign_total": 84050,
+    "attack_rate": 0.4975609756097561,
+    "benign_rate": 0.9143129089827484,
+    "rate_gap_attack_minus_benign": -0.4167519333729923,
+    "attack_rate_is_exactly_one": false
+   },
+   "flows": {
+    "attack_with_record": 127,
+    "attack_total": 410,
+    "benign_with_record": 21778,
+    "benign_total": 84050,
+    "attack_rate": 0.3097560975609756,
+    "benign_rate": 0.2591076740035693,
+    "rate_gap_attack_minus_benign": 0.050648423557406286,
+    "attack_rate_is_exactly_one": false
+   },
+   "dns": {
+    "attack_with_record": 8,
+    "attack_total": 410,
+    "benign_with_record": 1646,
+    "benign_total": 84050,
+    "attack_rate": 0.01951219512195122,
+    "benign_rate": 0.019583581201665676,
+    "rate_gap_attack_minus_benign": -7.138607971445693e-05,
+    "attack_rate_is_exactly_one": false
+   }
+  }
+ },
+ "per_view_rate_comparison": {
+  "auth": {
+   "part30_attack_rate": 1.0,
+   "part38_attack_rate": 1.0,
+   "attack_rate_change": 0.0,
+   "part30_benign_rate": 0.6726895572902452,
+   "part38_benign_rate": 0.6776323616894706,
+   "benign_rate_change": 0.004942804399225453,
+   "part30_rate_gap": 0.32731044270975485,
+   "part38_rate_gap": 0.3223676383105294,
+   "rate_gap_change": -0.004942804399225453,
+   "part30_attack_rate_is_exactly_one": true,
+   "part38_attack_rate_is_exactly_one": true
+  },
+  "proc": {
+   "part30_attack_rate": 0.4975609756097561,
+   "part38_attack_rate": 0.4975609756097561,
+   "attack_rate_change": 0.0,
+   "part30_benign_rate": 0.6973088050657787,
+   "part38_benign_rate": 0.9143129089827484,
+   "benign_rate_change": 0.21700410391696967,
+   "part30_rate_gap": -0.19974782945602265,
+   "part38_rate_gap": -0.4167519333729923,
+   "rate_gap_change": -0.21700410391696967,
+   "part30_attack_rate_is_exactly_one": false,
+   "part38_attack_rate_is_exactly_one": false
+  },
+  "flows": {
+   "part30_attack_rate": 0.3097560975609756,
+   "part38_attack_rate": 0.3097560975609756,
+   "attack_rate_change": 0.0,
+   "part30_benign_rate": 0.28107429444838694,
+   "part38_benign_rate": 0.2591076740035693,
+   "benign_rate_change": -0.02196662044481762,
+   "part30_rate_gap": 0.028681803112588666,
+   "part38_rate_gap": 0.050648423557406286,
+   "rate_gap_change": 0.02196662044481762,
+   "part30_attack_rate_is_exactly_one": false,
+   "part38_attack_rate_is_exactly_one": false
+  },
+  "dns": {
+   "part30_attack_rate": 0.01951219512195122,
+   "part38_attack_rate": 0.01951219512195122,
+   "attack_rate_change": 0.0,
+   "part30_benign_rate": 0.018559965063595175,
+   "part38_benign_rate": 0.019583581201665676,
+   "benign_rate_change": 0.001023616138070501,
+   "part30_rate_gap": 0.000952230058356044,
+   "part38_rate_gap": -7.138607971445693e-05,
+   "rate_gap_change": -0.001023616138070501,
+   "part30_attack_rate_is_exactly_one": false,
+   "part38_attack_rate_is_exactly_one": false
+  }
+ },
+ "auth_verdict": {
+  "question": "Did L24's contingency -- every attack cell holds an auth record, a third of benign cells do not -- survive a selection that never consults the auth stream?",
+  "part30_attack_rate": 1.0,
+  "part38_attack_rate": 1.0,
+  "still_exactly_one_on_part38": true,
+  "rate_gap_change": -0.004942804399225453,
+  "reading": "SURVIVED: the attack-side rate is still 1.0, so every attack row holds an auth record even though auth was never consulted in selection -- the contingency is a property of the data.",
+  "what_this_does_not_say": "Nothing here is about the model. These are sample-table counts; no arm, no seed and no trained unit is involved, and no limitation's status changes on this pass (pre-registration section 7.6)."
+ }
+}
