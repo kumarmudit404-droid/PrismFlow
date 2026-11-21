@@ -410,3 +410,223 @@ L22 asks for "a clone condition whose clean reference has the same view count as
 > - **The reading.** L22 is right that part of 0.8743 is the width: 0.1091 of it, or 29% of the committed figure's margin over chance. The rest is not. At equal width the detector still separates the cloned condition from a clean 6-view reference at **0.7652 +/- 0.0843**, so duplication is detected and not merely counted. **0.7652 is the number that may be differenced against a fixed-width result; 0.8743 still may not.** Evidence: `results/part36_synthetic/analysis_d.json`; `experiments/part36_synthetic/README.md` section 5.
 
 <!-- PART36:END -->
+
+---
+
+## Part 38 proposals (L24 measured; L27 and L28 pending the sweep)
+
+**PROPOSAL — not applied until the review gate per `PRE_REGISTRATION.md`
+§7.6**, which states that this programme "does not mark L24, L27 or L28
+closed, resolved or narrowed. Status changes require the full sweep and a
+review gate."
+
+Written 2026-11-21, while the mode `default` (B) sweep was still running. Only
+**L24** has its evidence in: its three statistics are seed-free scalars over
+committed tables and do not depend on the sweep. L27 and L28 are placeholders
+below, with their fill rules stated so the text cannot be shaped by the
+numbers when they land.
+
+### What changed in Part 38
+
+Three things, none of which was available to Parts 30 or 35.
+
+**1. A sample whose controls are selected without reference to `auth`.** This
+is L24's written closing condition. A cell enters as a control iff (a) it is
+occupied in at least one of `proc`, `flows`, `dns` — the `auth` stream is
+never consulted — and (b) it is on a host with at least one attack cell in the
+read range, or else `crc32(computer|window) % 512 == 0`. `auth` features are
+attached in a later pass. The step-2 sampler audit is the evidence that this
+is what ran: nine of nine exact against Part 30's committed
+`population.per_view.<view>` sums, records scanned matching to the row, two
+independent 11 GB scans agreeing field for field, and
+`tests/unit/test_lanl_v2_sampler_synthetic.py` comparing `select_cells`
+against a brute-force re-derivation of the rule cell by cell
+(`results/lanl_v2/SWEEP_EXECUTION_LOG.md` section 1).
+
+**2. The size fallback fired at `k = 2`, so the realised attack-host benign
+share is `1/4`, not `1/1`.** `results/lanl_v2/build_v2_days16.json`,
+`size_fallback`: `fallback_fired` true, `attack_host_benign_share_k` 2,
+`attack_host_benign_share` `"1/4"`, `rows_before_fallback` 979122,
+`rows_after_fallback` 281824, `attack_host_benign_cells_before` 929764,
+`attack_host_benign_cells_dropped` 697298, against `max_total_bar` 400000.
+The rule and the fallback were both fixed before any count was seen, so this
+is mechanical rather than a choice — but it means **697,298 of 929,764
+attack-host benign cells were dropped**, and every L27 statement must read
+"1/4".
+
+**3. Three seed-free scalar passes, each bit-exact on re-run and unchanged
+under `OMP_NUM_THREADS=1`**, covered by `tests/unit/test_h1_scalar_passes.py`
+(12 tests): `results/lanl_v2/h1_auth_presence.json`,
+`h1_occupancy_decomposition.json`, `h1_conditional_rates.json`. The last two
+are independent implementations of one quantity — for a binary indicator
+`AUC = 0.5 + |attack_rate - benign_rate| / 2` — and they agree to `0.00e+00`
+on all four views, with the same algebra on Part 30's rates returning L24's
+committed 0.6636552214.
+
+**A separate finding that belongs to L27's rule, recorded here so it is not
+lost:** `fallback_survivor_k2` (`crc32 % 4 == 0`) reaches test AUC
+**0.8670731707**, higher than any view occupancy
+(`h1_occupancy_decomposition.json`,
+`whole_test_block.fallback_survivor_k2.test_auc`). **It is a prevalence
+artefact of the `k = 2` thinning and not a signal any model can use** —
+`crc32` is not a feature and no encoder sees it. Attack cells were kept
+unconditionally while attack-host benign cells were thinned by that predicate,
+so the surviving benign rows satisfy a condition the attack rows mostly fail.
+It says the class balance on attack hosts was manufactured by a hash; it does
+not say the model has a leak.
+
+### L24 — proposed **OPEN**, narrowed, with its selection claim relocated
+
+L24's closing condition is met by the design above. The measurement says the
+condition was necessary but not sufficient, which is a narrowing and not a
+close.
+
+> **L24 (update, Part 38).** A sample whose control cells are drawn without
+> any reference to the `auth` stream now exists, and it was measured. Three
+> seed-free scalar passes over the committed sample table, no training and no
+> inference; each re-runs bit-exact and is unchanged under
+> `OMP_NUM_THREADS=1`.
+>
+> - **The auth-presence baseline did NOT fall.** Pre-registered H1 required a
+>   drop of at least **0.05** from Part 30's **0.6636552213548774**, i.e. a
+>   test AUC at or below **0.6136552213548774**. Measured:
+>   **0.6611838191552647**, a drop of **0.0024714021996127267** — a fiftieth
+>   of the bar. **H1 is DISCONFIRMED**
+>   (`results/lanl_v2/h1_auth_presence.json`, `h1.verdict`,
+>   `h1.drop_achieved`). The baseline is seed-free, so this is a single value
+>   and no +/- applies.
+> - **L24's contingency survived intact.** Every attack cell still holds an
+>   `auth` record — attack rate **exactly 1.000000** — on a sample whose
+>   selection never consulted the stream, and the benign rate moved only
+>   **0.672690 to 0.677632** (`results/lanl_v2/h1_conditional_rates.json`,
+>   `per_view_rate_comparison.auth`). Part 30's own 410/410 and 12,323/18,319
+>   are recomputed from `results/lanl/samples.npz` and reproduced exactly as a
+>   gate before the comparison is made (`l24_reproduction_gate.status`,
+>   `PASSED`); the 12,323 figure is prose in L24 and is not a field in
+>   `results/lanl/results.json`. **So the auth-presence separation is a
+>   property of the data, not an artefact of how Part 30 drew its controls.**
+>   L24's first bullet — the labels come from the same stream as a view, so
+>   `auth` is label-adjacent — is strengthened, not weakened.
+> - **The selection did not drop; it moved to `proc`.** Every selection input
+>   scored as its own trivial baseline on the test block, train-only
+>   orientation (`results/lanl_v2/h1_occupancy_decomposition.json`,
+>   `whole_test_block.<scalar>.test_auc`): `occupancy_proc`
+>   **0.7083759667**, `auth_present_indicator` **0.6611838192**,
+>   `n_non_auth_views_present` **0.6503477024**, `occupancy_flows`
+>   **0.5253242118**, `occupancy_dns` **0.5000356930** (at chance). `proc` now
+>   carries MORE of the separation than `auth` does. The conditional rates say
+>   why and attribute it to rule (a): `proc`'s attack rate is unchanged at
+>   **0.497561** while its benign rate jumped **0.697309 to 0.914313**,
+>   because rule (a) admits a cell only if `proc`, `flows` or `dns` is
+>   occupied. Its rate gap more than doubled, **-0.199748 to -0.416752**.
+> - **Not the host-rule tautology.** Within attack hosts (n = 70,130 test
+>   rows of 84,460; 302 attack hosts in the read range) the picture is
+>   unchanged: `occupancy_proc` **0.7143004072**, `occupancy_auth`
+>   **0.6524885255** (`within_attack_hosts.<scalar>.test_auc`). That is the
+>   within-attack-host contrast `PRE_REGISTRATION.md` section 2 names as the
+>   figure that matters. `attack_host_indicator` is reported but excluded as
+>   tautological — it is 1 on every attack row by construction and is constant
+>   within hosts. `identity_hash_kept` is a consistency check that passed:
+>   **0.5883878644** whole-block but **0.5037865749** within hosts, so its
+>   whole-block value came entirely from the host split and within hosts it
+>   sits at chance, as a hash must.
+> - **The volume signals DID fall**, which is the evidence the rule changed
+>   something: `total_records_across_views` **0.6842788175 to 0.5862805386**
+>   and `n_views_present` **0.5624544156 to 0.4800433975**, the latter below
+>   chance (`h1_auth_presence.json`, `baselines.<name>`).
+>
+> **What this means.** L24's closing condition is satisfied and the result is
+> not the one the condition anticipated. Removing `auth` from selection
+> removed the *volume* signals and left `auth`'s own contingency untouched,
+> while installing a stronger `proc`-occupancy selection effect in its place.
+> **Rule (a) has to gate on something, and whatever it gates on acquires the
+> benign-side enrichment `proc` now carries.** So "sample selection survives
+> the view drop" is still true of Part 38, for a different view. The two
+> sample tables are not comparable row-for-row (`PRE_REGISTRATION.md` section
+> 2), so **0.6612 against 0.6637 is not a measured effect size** — only the
+> pass/fail against the pre-registered bar is a result.
+>
+> **What would change our understanding.** A selection rule whose admission
+> criterion is independent of every view's occupancy — which on this data may
+> not exist, since a cell with no occupied view carries no features — or a
+> decomposition that separates `proc`'s selection-induced enrichment from any
+> behavioural signal `proc` carries. The latter is the open question: `proc`
+> occupancy is visible to the encoders through the view mask, unlike
+> `fallback_survivor_k2`, so it cannot be dismissed as unusable.
+
+**Proposed status line:** `L24` stays **OPEN**. Not resolved and not closed:
+its closing condition is met, H1 is disconfirmed, and the selection effect is
+relocated rather than removed.
+
+### L27 — placeholder, fills from Table 3 when the sweep lands
+
+**Do not write this section from a partial sweep.** The fill rule, fixed now:
+
+- The barred quantity is the **`C17693`** column only, over the **eight**
+  arm-and-system cells. H2 is confirmed iff all eight move by **less than
+  0.036** in absolute value, and disconfirmed if any one moves by **0.036 or
+  more** (`PRE_REGISTRATION.md` section 1, H2, verbatim). The other four hosts
+  are not pre-registered for Part 38 and cannot confirm or disconfirm H2.
+- Source when it exists: `results/lanl_v2/filled_tables.json`,
+  `table3_leave_host_out.per_cell.<arm>/<system>.per_host.C17693`, produced by
+  `experiments/lanl_v2/fill_analysis.py` behind a 40-unit gate.
+- **Two caveats must appear beside whatever the number is.** First, the
+  realised share is **1/4**, so a disconfirmation shows that restoring a
+  quarter of the benign contrast did not help — narrower than H2's mechanism.
+  Second, H2's 0.036 bar sits *inside* Part 30's own committed band: the eight
+  `C17693` deltas run **-0.035962653276654266** to
+  **-0.051874860066125961** (`results/lanl_reanalysis/results.json`,
+  `step5_l27.per_arm.<arm>.<system>.per_host.C17693.change_from_all_test`),
+  and the smallest is **below** the bar. A cell reproducing Part 30's weakest
+  cell would be scored as passing, so "H2 confirmed" would not by itself mean
+  the sensitivity shrank. Report all eight Part 38 deltas against all eight
+  Part 30 deltas pairwise.
+- One host is not a resample, so **no interval attaches** and the result is
+  descriptive — Part 30's own `step5_l27.interval` records the same.
+
+**Proposed status line: pending.** L27 stays **OPEN** until Table 3 is filled
+at 40/40.
+
+### L28 — placeholder, and its literal closing condition cannot be met under this design
+
+**This needs saying regardless of what mode A eventually shows.** L28's
+written closing condition is "Seeds run across at least two execution modes,
+so the reported std covers mode as well as seed" — a **pooled** standard
+deviation. `PRE_REGISTRATION.md` section 6 forbids exactly that: "The two
+modes are **never pooled into a single +/-**: L28's finding is that a 5/5 seed
+count inside one run shares one execution mode and is not independent evidence
+about mode effects." The pre-registration substitutes **H3**, a sign-agreement
+test on `roc_auc`, and that is the only barred L28 analysis Part 38 can
+produce.
+
+So **L28 cannot be CLOSED by its own text here.** Satisfying it would need a
+review-gate decision that a mode-pooled +/- is legitimate, and a second dated
+amendment. That is not a judgement this document can make.
+
+Fill rule when mode A runs (~2.0 h, ~5.4 GB across 11 processes, needs an idle
+box):
+
+- H3 is confirmed iff the sign of the PrismFlow-minus-naive difference in test
+  ROC AUC agrees across modes A and B in all four arms; disconfirmed if it
+  flips in any arm. A sign resting on a difference smaller than the per-seed
+  std is **sign undetermined**, not agreement. A cell with
+  `seeds_exactly_zero > 0` is reported with that count, because an exact zero
+  has no sign.
+- The other five metrics are reported without a bar, which is where Part 30's
+  disagreement lives (`balanced_accuracy`, `attack_recall` and `brier`
+  disagreeing for `with_auth`; `results/lanl/execution_mode.json`).
+- **Any magnitude bar must be pre-registered before mode A runs and justified
+  against L28's own figure.** A "within 3 standard deviations" bar would be
+  *already failed by the prior record*: L28 reports the same seed differing by
+  **0.0140** in AUC across modes (naive seed 0: 0.8375 and 0.8235), which is
+  "about **4** per-seed standard deviations of that same arm and system
+  (**0.0033**)".
+- Every ENIV figure carries its thread count. Mode B observed **8** threads,
+  mode A sets **1**, and a committed `eniv_eigen` of **3.4396320614332856** at
+  the machine default is missed by **0.0107** at one thread
+  (**3.4289614712229826**, Part 34).
+
+**Proposed status line: pending.** L28 stays **OPEN**, and is **NARROWED at
+best** even on a clean H3 confirmation.
+
+<!-- PART38:END -->
