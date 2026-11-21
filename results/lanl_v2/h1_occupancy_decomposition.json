@@ -1,0 +1,284 @@
+{
+ "part": 38,
+ "what": "Every selection input scored as its own trivial baseline, to ask which signal carries the separation H1's disconfirmation left unexplained. Seed-free scalars, no training, no inference, no model.",
+ "not_a_sweep_result": "Computed from results/lanl_v2/samples_v2_days16.npz plus redteam.txt.gz alone. Independent of the 40-unit sweep and of its execution mode: no thread count applies and no ENIV is involved.",
+ "tag": "v2_days16",
+ "h1_reference": {
+  "scalar": "auth_present_indicator",
+  "test_auc": 0.6611838191552647,
+  "source": "results/lanl_v2/h1_auth_presence.json",
+  "verdict": "DISCONFIRMED"
+ },
+ "orientation_rule": "Sign chosen on the TRAIN rows of the block being scored, applied unchanged to its test rows. Part 30's rule, imported from the frozen experiments/lanl/run_lanl.py.",
+ "tautology_warning": "attack_host_indicator is 1 on every attack row BY CONSTRUCTION: an attack cell makes its own computer an attack host. Its AUC measures the sampling rule, not a discovered signal, and it is excluded from the ranking. Pre-registration section 2 declares this and says the figure that matters is the within-attack-host contrast, which is the second block below.",
+ "read_positive_rate_first": "A near-constant indicator has an uninformative AUC. positive_rate_test and distinct_values_test are reported beside every scalar for that reason.",
+ "sources": [
+  "auth",
+  "proc",
+  "flows",
+  "dns"
+ ],
+ "control_divisor": 512,
+ "fallback_k": 2,
+ "attack_hosts_in_read_range": 302,
+ "n_train": 197363,
+ "n_test": 84460,
+ "n_train_on_attack_hosts": 163185,
+ "n_test_on_attack_hosts": 70130,
+ "test_prevalence": 0.0048543689320388345,
+ "test_prevalence_on_attack_hosts": 0.0058462854698417225,
+ "whole_test_block": {
+  "total_records_across_views": {
+   "positive_rate_test": 1.0,
+   "distinct_values_test": 12003,
+   "tautological": false,
+   "train_auc_as_measured": 0.6918403739721934,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.5862805385876584,
+   "vs_h1_auth_presence": -0.07490328056760631
+  },
+  "auth_present_indicator": {
+   "positive_rate_test": 0.67919725313758,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.6675392537222482,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.6611838191552647,
+   "vs_h1_auth_presence": 0.0
+  },
+  "n_views_present": {
+   "positive_rate_test": 1.0,
+   "distinct_values_test": 4,
+   "tautological": false,
+   "train_auc_as_measured": 0.5645444186716992,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.4800433975130947,
+   "vs_h1_auth_presence": -0.18114042164216998
+  },
+  "occupancy_auth": {
+   "positive_rate_test": 0.67919725313758,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.6675392537222482,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.6611838191552647,
+   "vs_h1_auth_presence": 0.0
+  },
+  "occupancy_proc": {
+   "positive_rate_test": 0.9122898413450153,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.33430063835086593,
+   "orientation_fixed_on_train": "negated",
+   "test_auc": 0.7083759666864962,
+   "vs_h1_auth_presence": 0.047192147531231465
+  },
+  "occupancy_flows": {
+   "positive_rate_test": 0.25935354013734313,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.585299474251112,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.5253242117787031,
+   "vs_h1_auth_presence": -0.13585960737656155
+  },
+  "occupancy_dns": {
+   "positive_rate_test": 0.019583234667298128,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.49228420117350175,
+   "orientation_fixed_on_train": "negated",
+   "test_auc": 0.5000356930398572,
+   "vs_h1_auth_presence": -0.16114812611540752
+  },
+  "n_non_auth_views_present": {
+   "positive_rate_test": 0.9983542505327966,
+   "distinct_values_test": 4,
+   "tautological": false,
+   "train_auc_as_measured": 0.42701630924160283,
+   "orientation_fixed_on_train": "negated",
+   "test_auc": 0.6503477024419263,
+   "vs_h1_auth_presence": -0.010836116713338395
+  },
+  "attack_host_indicator": {
+   "positive_rate_test": 0.8303338858631305,
+   "distinct_values_test": 2,
+   "tautological": true,
+   "train_auc_as_measured": 0.5867796713452905,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.5852468768590124,
+   "vs_h1_auth_presence": -0.07593694229625225
+  },
+  "identity_hash_kept": {
+   "positive_rate_test": 0.17591759412739758,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.4099627267372184,
+   "orientation_fixed_on_train": "negated",
+   "test_auc": 0.5883878643664485,
+   "vs_h1_auth_presence": -0.07279595478881618
+  },
+  "fallback_survivor_k2": {
+   "positive_rate_test": 0.99643618280843,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.12300683371298406,
+   "orientation_fixed_on_train": "negated",
+   "test_auc": 0.8670731707317073,
+   "vs_h1_auth_presence": 0.20588935157644261
+  }
+ },
+ "within_attack_hosts": {
+  "total_records_across_views": {
+   "positive_rate_test": 1.0,
+   "distinct_values_test": 11595,
+   "tautological": false,
+   "train_auc_as_measured": 0.666638353707793,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.569008332983502,
+   "vs_h1_auth_presence": -0.09217548617176274
+  },
+  "auth_present_indicator": {
+   "positive_rate_test": 0.6968059318408669,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.6582312314895604,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.6524885255306943,
+   "vs_h1_auth_presence": -0.008695293624570444
+  },
+  "n_views_present": {
+   "positive_rate_test": 1.0,
+   "distinct_values_test": 4,
+   "tautological": false,
+   "train_auc_as_measured": 0.5642366123187559,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.4757941172354925,
+   "vs_h1_auth_presence": -0.18538970191977222
+  },
+  "occupancy_auth": {
+   "positive_rate_test": 0.6968059318408669,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.6582312314895604,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.6524885255306943,
+   "vs_h1_auth_presence": -0.008695293624570444
+  },
+  "occupancy_proc": {
+   "positive_rate_test": 0.9236560673035791,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.3245344136048664,
+   "orientation_fixed_on_train": "negated",
+   "test_auc": 0.7143004072037278,
+   "vs_h1_auth_presence": 0.05311658804846309
+  },
+  "occupancy_flows": {
+   "positive_rate_test": 0.24058177670041353,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.6036908989669804,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.5347905559520311,
+   "vs_h1_auth_presence": -0.12639326320323363
+  },
+  "occupancy_dns": {
+   "positive_rate_test": 0.01885070583202624,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.4922407912806929,
+   "orientation_fixed_on_train": "negated",
+   "test_auc": 0.4996673103564082,
+   "vs_h1_auth_presence": -0.16151650879885648
+  },
+  "n_non_auth_views_present": {
+   "positive_rate_test": 0.9980179666333951,
+   "distinct_values_test": 4,
+   "tautological": false,
+   "train_auc_as_measured": 0.4344856024090197,
+   "orientation_fixed_on_train": "negated",
+   "test_auc": 0.647878062773743,
+   "vs_h1_auth_presence": -0.01330575638152165
+  },
+  "attack_host_indicator": {
+   "positive_rate_test": 1.0,
+   "distinct_values_test": 1,
+   "tautological": true,
+   "train_auc_as_measured": 0.5,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.5,
+   "vs_h1_auth_presence": -0.1611838191552647
+  },
+  "identity_hash_kept": {
+   "positive_rate_test": 0.0075288749465278765,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.4960582748577538,
+   "orientation_fixed_on_train": "negated",
+   "test_auc": 0.5037865748709123,
+   "vs_h1_auth_presence": -0.15739724428435242
+  },
+  "fallback_survivor_k2": {
+   "positive_rate_test": 0.995707970911165,
+   "distinct_values_test": 2,
+   "tautological": false,
+   "train_auc_as_measured": 0.12300683371298406,
+   "orientation_fixed_on_train": "negated",
+   "test_auc": 0.8670731707317073,
+   "vs_h1_auth_presence": 0.20588935157644261
+  }
+ },
+ "ranking_excluding_tautological": [
+  {
+   "scalar": "fallback_survivor_k2",
+   "test_auc": 0.8670731707317073,
+   "distance_from_chance": 0.3670731707317073
+  },
+  {
+   "scalar": "occupancy_proc",
+   "test_auc": 0.7083759666864962,
+   "distance_from_chance": 0.20837596668649616
+  },
+  {
+   "scalar": "auth_present_indicator",
+   "test_auc": 0.6611838191552647,
+   "distance_from_chance": 0.1611838191552647
+  },
+  {
+   "scalar": "occupancy_auth",
+   "test_auc": 0.6611838191552647,
+   "distance_from_chance": 0.1611838191552647
+  },
+  {
+   "scalar": "n_non_auth_views_present",
+   "test_auc": 0.6503477024419263,
+   "distance_from_chance": 0.1503477024419263
+  },
+  {
+   "scalar": "identity_hash_kept",
+   "test_auc": 0.5883878643664485,
+   "distance_from_chance": 0.08838786436644852
+  },
+  {
+   "scalar": "total_records_across_views",
+   "test_auc": 0.5862805385876584,
+   "distance_from_chance": 0.08628053858765838
+  },
+  {
+   "scalar": "occupancy_flows",
+   "test_auc": 0.5253242117787031,
+   "distance_from_chance": 0.025324211778703143
+  },
+  {
+   "scalar": "n_views_present",
+   "test_auc": 0.4800433975130947,
+   "distance_from_chance": 0.019956602486905284
+  },
+  {
+   "scalar": "occupancy_dns",
+   "test_auc": 0.5000356930398572,
+   "distance_from_chance": 3.569303985717642e-05
+  }
+ ]
+}
