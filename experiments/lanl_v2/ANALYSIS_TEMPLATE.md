@@ -1,15 +1,19 @@
 # Part 38 — LANL redesign: ANALYSIS TEMPLATE
 
-**This file contains no results.** Every cell marked `[pending]` is unfilled
-and must be filled from a committed file by its exact path, or left as
-`not measured`. A `[pending]` that is still present when this document is read
-as a report is a defect in the report, not a zero.
+**One result is in: H1, in Table 4 and §3.1. Everything else is `[pending]`.**
+Every cell marked `[pending]` is unfilled and must be filled from a committed
+file by its exact path, or left as `not measured`. A `[pending]` that is still
+present when this document is read as a report is a defect in the report, not
+a zero.
 
 Reference numbers quoted below are **measurements from earlier committed
 Parts**, each with its JSON path. They are the bars, not this Part's results.
 
-- **Status:** template only. Written 2026-11-21, while mode B (`default`) was
-  still running at 10 of 40 units.
+- **Status:** template, with H1 filled. Written 2026-11-21 while mode B
+  (`default`) was still running at 11 of 40 units. H1 does not depend on the
+  sweep: it is a seed-free scalar over the committed sample table
+  (`results/lanl_v2/h1_auth_presence.json`), computed with no training and no
+  inference, and it is **DISCONFIRMED**.
 - **Not a pre-registration.** `PRE_REGISTRATION.md` and its dated Amendment 1
   are frozen and are not edited by this file. Where the review brief's wording
   of a closing condition differs from the pre-registered hypothesis, the
@@ -298,34 +302,51 @@ Orientation is fixed on the train block and applied unchanged to test.
 |---|---|---|
 | Part 30 `auth_present_indicator` test AUC | **0.6636552213548774** | `results/lanl/results.json` (verified) |
 | Pre-registered bar — H1 confirmed if Part 38's value ≤ | **0.6137** (0.6637 − 0.05) | PRE_REGISTRATION §1 H1 |
-| Part 38 `auth_present_indicator` test AUC | `[pending]` | `results/lanl_v2/` — **see note below** |
-| Drop from Part 30 | `[pending]` | derived |
-| H1 verdict | `[pending]` | §3.1 |
+| Part 38 `auth_present_indicator` test AUC | **0.6611838192** | `results/lanl_v2/h1_auth_presence.json`, `baselines.auth_present_indicator.test_auc` |
+| Drop from Part 30 | **0.0024714022** | same file, `h1.drop_achieved` |
+| **H1 verdict** | **DISCONFIRMED** | same file, `h1.verdict` |
 
-**H1 is NOT measured by the sweep as launched. Checked, not assumed.**
+**H1 is MEASURED, by a separate scalar pass, not by the sweep.**
+`experiments/lanl_v2/h1_auth_presence.py` →
+`results/lanl_v2/h1_auth_presence.json`.
 
-- `experiments/lanl_v2/metrics.py:80` defines
-  `auth_presence_auc(labels, auth_present)`, which is exactly H1's statistic.
-- `run_lanl_v2.py` **never calls it.** Its only metric calls are
-  `m.evaluate(labels, prob)` and `m.constant_baseline_brier(labels)` at lines
-  448–449. No `auth_present` reference exists anywhere in the runner.
-- The baseline is seed-free and is a property of the *sample*, not of a unit,
-  so it correctly does not belong in `units_default/*.json` — but no committed
-  file carries it either.
+The sweep does not compute it: `metrics.py:80` defines `auth_presence_auc` and
+`run_lanl_v2.py` never calls it (its only metric calls are `m.evaluate` and
+`m.constant_baseline_brier`, lines 448–449). The baseline is seed-free and is
+a property of the *sample*, not of a trained unit, so it correctly does not
+belong in `units_default/*.json`. The pass reads
+`results/lanl_v2/samples_v2_days16.npz` alone and is **independent of the
+sweep and of its execution mode** — no thread count applies, no ENIV is
+involved, and it needed no training and no inference.
 
-**It is cheap to obtain and needs no training and no inference.** Both inputs
-are already in the committed sample table
-`results/lanl_v2/samples_v2_days16.npz`: `view_mask` (281823, 4) bool,
-`labels` (281823,), `block` (281823,) giving train/test. The view order is
-fixed by that file's own `meta`, `sources: ["auth", "proc", "flows", "dns"]`,
-so **auth presence is `view_mask[:, 0]`**. H1 is therefore
-`auth_presence_auc(labels[test], view_mask[test, 0])` — one scalar, seconds of
-CPU, using a function that already exists.
+Orientation follows Part 30's rule exactly, by importing
+`trivial_scalar_values` and `roc_auc_binary` from the frozen
+`experiments/lanl/run_lanl.py` rather than re-implementing them: the sign is
+chosen on the TRAIN block only and applied unchanged to test. Auth is column
+**0** of `["auth", "proc", "flows", "dns"]`, fixed by the sample table's own
+`meta.sources`. Verified: the pass re-runs bit-exact, and is unchanged under
+`OMP_NUM_THREADS=1`.
+
+**All three of Part 30's scalars, on Part 38's table.** Only
+`auth_present_indicator` carries H1's bar; the other two are what make the
+disconfirmation readable. Train rows 197,363, test rows 84,460, test
+prevalence 0.0048543689.
+
+| scalar | orientation | train AUC | Part 38 test AUC | Part 30 test AUC | change |
+|---|---|---|---|---|---|
+| **`auth_present_indicator`** (barred) | as-is | 0.6675392537 | **0.6611838192** | 0.6636552214 | **−0.0024714022** |
+| `total_records_across_views` | as-is | 0.6918403740 | 0.5862805386 | 0.6842788175 | −0.0979982790 |
+| `n_views_present` | as-is | 0.5645444187 | 0.4800433975 | 0.5624544156 | −0.0824110181 |
+
+**Read the three together, because that is the finding.** The two
+*volume/occupancy* scalars fell hard under the new selection — record volume by
+0.098, and views-present by 0.082 to 0.4800, i.e. below chance. The
+*auth-presence* scalar did **not** move: it fell by 0.0025, a fiftieth of the
+required 0.05. So the new selection rule demonstrably changed what the
+occupancy signals can do, and left auth presence intact.
 
 **Do not infer H1 from the arm AUCs.** The `with_auth` − `without_auth` gap is
-a different quantity (see below) and cannot stand in for the baseline. Until
-the scalar pass is run and committed to its own path, H1 is reported as
-**not measured**, never as absent evidence either way.
+a different quantity (below) and cannot stand in for the baseline.
 
 The arm gap the brief asked for is a **different** quantity and is reported
 separately, as a descriptive figure with no pre-registered bar:
@@ -413,16 +434,42 @@ number.** It is met by rule (a) being implemented as written, which the
 step-2 sampler audit (§1.5) is the evidence for. H1 is a separate,
 falsifiable prediction about what that design should produce.
 
-**Verdict logic:**
+**Verdict logic, and the branch that fired:**
 
 - **H1 CONFIRMED if** Part 38's `auth_present_indicator` test AUC
-  **≤ 0.6137**, i.e. at least 0.05 below Part 30's 0.6636552213548774. The
-  baseline is seed-free, so this is a single value and no ± applies.
-- **H1 DISCONFIRMED if** the value is > 0.6137. Per PRE_REGISTRATION §1:
-  "If it does **not** fall, H1 is disconfirmed and the selection signal has
-  another source, which is a reportable finding in its own right." Name the
-  recomputed value and state that the source of the remaining separation is
-  unidentified.
+  **≤ 0.6136552214**, i.e. at least 0.05 below Part 30's 0.6636552213548774.
+  The baseline is seed-free, so this is a single value and no ± applies.
+- **H1 DISCONFIRMED if** the value is above that bar.
+
+**H1 IS DISCONFIRMED. Measured test AUC 0.6611838192, a drop of 0.0024714022
+against the 0.05 required** (`results/lanl_v2/h1_auth_presence.json`, `h1`).
+
+Per PRE_REGISTRATION §1, this outcome was pre-declared as a finding, not a
+null result: "If it does **not** fall, H1 is disconfirmed and the selection
+signal has another source, which is a reportable finding in its own right."
+
+**What the disconfirmation says, stated no more strongly than the measurement
+supports.** Part 38's selection never consults the auth stream — rule (a) and
+the §1.5 sampler audit are the evidence for that — and auth presence still
+ranks the test block at 0.661. Under Part 30 the explanation on offer was the
+selection rule: 410/410 attack cells had an auth record while about a third of
+benign cells did not, so auth presence separated the classes. That explanation
+is now **excluded for Part 38's sample**, and the separation is still there. The
+association between auth presence and the attack label therefore looks like a
+property of the data rather than an artefact of how controls were drawn.
+
+Two limits on that reading, both of which must travel with it:
+
+1. This is **one scalar on one sample table**, not a decomposition. Which
+   non-auth signal carries the remaining separation is **not measured**. The
+   drop in `total_records_across_views` (−0.098) and `n_views_present`
+   (−0.082) shows the occupancy signals moved, which is evidence the rule did
+   something, not evidence about what is left.
+2. Part 38's sample "is not a subset or a superset of Part 30's, and the two
+   sample tables are **not comparable row-for-row**" (PRE_REGISTRATION §2).
+   The 0.6637 and the 0.6612 are two designs' values, so the *small
+   difference* between them is not a measured effect size — only the
+   pass/fail against the pre-registered bar is.
 - **L24 proposed status — NARROWED, not CLOSED, in either branch.** The
   closing condition asks for a design, and the design is delivered; but L24's
   recorded claim is about Part 30's sample, and Part 38's sample "is not a
@@ -542,21 +589,33 @@ For each limitation, the exact figure to name if the condition is not met, and
 what would be needed. Fill the bracketed figure with the value that failed —
 never with a summary adjective.
 
-### L24 still OPEN if
+### L24 — still OPEN, and the reason is now measured rather than pending
 
-- `auth_present_indicator` test AUC is `[pending]` > 0.6137 → **state the
-  value and the drop achieved**, and record that the selection signal has an
-  unidentified second source. Needed next: a decomposition of the remaining
-  separation — which of `proc`, `flows`, `dns` occupancy, the cell-identity
-  hash, or the attack-host rule carries it. That is a new scalar-baseline pass
-  over the sample table, not a retrain.
-- **The baseline is not written by the sweep at all — this is the confirmed
-  state today.** L24 is OPEN for the reason *not measured*, not for a negative
-  result. Needed next: a one-off scalar pass,
-  `auth_presence_auc(labels[test], view_mask[test, 0])` over
-  `results/lanl_v2/samples_v2_days16.npz`, committed to its own path. No
-  training, no inference, no dependence on the sweep finishing. Report it as
-  missing instrumentation.
+**This clause has fired.** `auth_present_indicator` test AUC is
+**0.6611838192**, above the 0.6136552214 bar: H1 disconfirmed, drop achieved
+0.0024714022 of the 0.05 required. L24 is OPEN on a **measured
+disconfirmation**, not on missing instrumentation.
+
+**What is needed next, in the order it should be done:**
+
+1. **A decomposition of the remaining separation — not measured.** Which of
+   `proc`, `flows`, `dns` occupancy, the cell-identity hash, or the
+   attack-host rule carries it. This is another scalar-baseline pass over the
+   same sample table, not a retrain, and it is the question H1's
+   disconfirmation raises and does not answer. The H1 pass is the template:
+   `h1_auth_presence.py` already imports the frozen `trivial_scalar_values`,
+   so a per-view occupancy indicator is a small extension of the same loop.
+2. **Per-view auth-presence conditional rates on Part 38's table.** Part 30's
+   410/410 against 12,323/18,319 is the figure L24's claim rests on; the same
+   two counts on this sample say whether the association survived in the raw
+   data or only in the AUC. Also a scalar pass.
+3. **The arm AUCs,** once the sweep lands, read as a separate descriptive
+   quantity with no bar (Table 4, lower block).
+
+**What must not be claimed.** That auth is "not label-adjacent" (H1's
+disconfirmation points the other way), that the selection rule failed (it
+demonstrably moved both occupancy scalars), or that 0.6612 against 0.6637
+measures an effect — the two tables are not row-comparable.
 
 ### L27 still OPEN if
 

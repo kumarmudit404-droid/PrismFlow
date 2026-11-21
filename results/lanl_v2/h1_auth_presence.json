@@ -1,0 +1,57 @@
+{
+ "part": 38,
+ "what": "H1's trivial baselines on Part 38's sample table. Seed-free, no training, no model, no inference. One scalar per row.",
+ "not_a_sweep_result": "Computed from results/lanl_v2/samples_v2_days16.npz alone. Independent of the 40-unit sweep and of its execution mode: no thread count applies and no ENIV is involved.",
+ "tag": "v2_days16",
+ "orientation_rule": "Sign chosen on the TRAIN block only and applied unchanged to test. Imported from the frozen experiments/lanl/run_lanl.py so Part 38's value and Part 30's 0.6637 come from the same code.",
+ "auth_column_index": 0,
+ "sources": [
+  "auth",
+  "proc",
+  "flows",
+  "dns"
+ ],
+ "n_train": 197363,
+ "n_test": 84460,
+ "test_prevalence": 0.0048543689320388345,
+ "baselines": {
+  "total_records_across_views": {
+   "train_auc_as_measured": 0.6918403739721934,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.5862805385876582,
+   "n_test": 84460,
+   "part30_test_auc": 0.6842788175411642,
+   "barred": false,
+   "drop_from_part30": 0.09799827895350599
+  },
+  "auth_present_indicator": {
+   "train_auc_as_measured": 0.6675392537222482,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.6611838191552647,
+   "n_test": 84460,
+   "part30_test_auc": 0.6636552213548774,
+   "barred": true,
+   "drop_from_part30": 0.0024714021996127267
+  },
+  "n_views_present": {
+   "train_auc_as_measured": 0.5645444186716992,
+   "orientation_fixed_on_train": "as-is",
+   "test_auc": 0.4800433975130947,
+   "n_test": 84460,
+   "part30_test_auc": 0.5624544155807845,
+   "barred": false,
+   "drop_from_part30": 0.08241101806768975
+  }
+ },
+ "h1": {
+  "scalar": "auth_present_indicator",
+  "part30_test_auc": 0.6636552213548774,
+  "min_drop_required": 0.05,
+  "bar_test_auc_at_or_below": 0.6136552213548774,
+  "part38_test_auc": 0.6611838191552647,
+  "drop_achieved": 0.0024714021996127267,
+  "verdict": "DISCONFIRMED",
+  "verdict_means": "CONFIRMED: the auth-presence baseline fell by at least 0.05, so selection on non-auth occupancy removed the separation auth presence alone used to carry. DISCONFIRMED: it did not fall that far, and per pre-registration section 1 the selection signal has another source, which is a reportable finding in its own right. Neither verdict changes any limitation's status: that needs the full sweep and the review gate (pre-registration section 7.6).",
+  "not_a_status_change": "docs/KNOWN_LIMITATIONS.md is not edited by this pass. L24's closing condition is a condition on the DESIGN, met by selection rule (a); H1 is a separate falsifiable prediction about what that design produces."
+ }
+}
