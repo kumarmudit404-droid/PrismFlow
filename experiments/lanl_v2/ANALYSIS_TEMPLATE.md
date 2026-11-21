@@ -596,26 +596,116 @@ never with a summary adjective.
 0.0024714022 of the 0.05 required. L24 is OPEN on a **measured
 disconfirmation**, not on missing instrumentation.
 
-**What is needed next, in the order it should be done:**
+#### 4.1 The second source is identified: `proc` occupancy, installed by rule (a)
 
-1. **A decomposition of the remaining separation — not measured.** Which of
-   `proc`, `flows`, `dns` occupancy, the cell-identity hash, or the
-   attack-host rule carries it. This is another scalar-baseline pass over the
-   same sample table, not a retrain, and it is the question H1's
-   disconfirmation raises and does not answer. The H1 pass is the template:
-   `h1_auth_presence.py` already imports the frozen `trivial_scalar_values`,
-   so a per-view occupancy indicator is a small extension of the same loop.
-2. **Per-view auth-presence conditional rates on Part 38's table.** Part 30's
-   410/410 against 12,323/18,319 is the figure L24's claim rests on; the same
-   two counts on this sample say whether the association survived in the raw
-   data or only in the AUC. Also a scalar pass.
-3. **The arm AUCs,** once the sweep lands, read as a separate descriptive
-   quantity with no bar (Table 4, lower block).
+Two further scalar passes, both seed-free, no training, no inference, both
+bit-exact on re-run and unchanged under `OMP_NUM_THREADS=1`:
+`results/lanl_v2/h1_occupancy_decomposition.json` and
+`results/lanl_v2/h1_conditional_rates.json`.
 
-**What must not be claimed.** That auth is "not label-adjacent" (H1's
-disconfirmation points the other way), that the selection rule failed (it
-demonstrably moved both occupancy scalars), or that 0.6612 against 0.6637
-measures an effect — the two tables are not row-comparable.
+**Every selection input, scored as its own trivial baseline on the test block**
+(train-only orientation; `attack_host_indicator` excluded from the ranking as
+tautological — it is 1 on every attack row by construction):
+
+| scalar | test AUC | orientation | reading |
+|---|---|---|---|
+| `fallback_survivor_k2` | 0.8670731707 | negated | **artefact of the L27 fallback, see §4.2** |
+| `occupancy_proc` | 0.7083759667 | negated | **the second source** |
+| `auth_present_indicator` | 0.6611838192 | as-is | H1's barred scalar |
+| `n_non_auth_views_present` | 0.6503477024 | negated | rule (a)'s own gate |
+| `identity_hash_kept` | 0.5883878644 | as-is | host-split only, see below |
+| `total_records_across_views` | 0.5862805386 | as-is | fell 0.098 from Part 30 |
+| `occupancy_flows` | 0.5253242118 | as-is | weak |
+| `occupancy_dns` | 0.5000356930 | negated | **at chance** |
+
+**The conditional rates say which of these are data and which are design.**
+Attack rows are *identical* on both sample tables for all four views — both
+designs keep every attack cell and the test time range is unchanged, so the
+attack population is literally the same 410 rows and only the benign controls
+differ:
+
+| view | Part 30 attack / benign | Part 38 attack / benign | attack rate | benign rate | gap change |
+|---|---|---|---|---|---|
+| auth | 410/410 · 12323/18319 | 410/410 · 56955/84050 | 1.000000 → 1.000000 | 0.672690 → 0.677632 | −0.004943 |
+| proc | 204/410 · 12774/18319 | 204/410 · 76848/84050 | 0.497561 → 0.497561 | 0.697309 → **0.914313** | **−0.217004** |
+| flows | 127/410 · 5149/18319 | 127/410 · 21778/84050 | 0.309756 → 0.309756 | 0.281074 → 0.259108 | +0.021967 |
+| dns | 8/410 · 340/18319 | 8/410 · 1646/84050 | 0.019512 → 0.019512 | 0.018560 → 0.019584 | −0.001024 |
+
+1. **L24's contingency SURVIVED, and that settles H1's reading.** The auth
+   attack rate is still *exactly* 1.000000 on a sample whose selection never
+   consulted the auth stream, and the benign rate moved by 0.005. So auth's
+   label-adjacency is **a property of the data**, not an artefact of how Part
+   30 drew its controls. This is the direct measurement behind H1's
+   disconfirmation, not an inference from it.
+2. **`proc`'s separation is NEW and is a selection artefact of rule (a).**
+   `proc`'s attack rate is unchanged at 0.497561 while its benign rate jumped
+   from 0.697309 to 0.914313, because rule (a) admits a cell only if it is
+   occupied in at least one of `proc`, `flows`, `dns`. The gap more than
+   doubled, −0.1998 → −0.4168. **Part 38 removed auth from the selection and
+   installed a stronger `proc`-occupancy selection effect in its place. The
+   selection did not drop; it moved.**
+
+**The two passes cross-validate exactly, which is why the above can be relied
+on.** For a binary indicator, `AUC = 0.5 + |attack_rate − benign_rate| / 2`.
+The rate-implied AUCs from the conditional-rate pass reproduce the measured
+AUCs from the decomposition pass to **0.00e+00** on all four views, and the
+same algebra on Part 30's rates returns **0.6636552214** — L24's committed
+0.6637. Two independent implementations and the prior Part's prose agree.
+
+`identity_hash_kept` is an internal consistency check rather than a finding:
+0.5883878644 on the whole block but **0.5037865749 within attack hosts**, so
+its whole-block value came entirely from the attack-host / non-attack-host
+split (every non-attack-host control satisfies `crc32 % 512 == 0` by
+construction) and within hosts it sits at chance, as a hash must.
+
+**Within attack hosts the picture is unchanged** — `proc` 0.7143004072, auth
+0.6524885255 — which is the within-attack-host contrast PRE_REGISTRATION §2
+names as the figure that matters. So the host-rule tautology is not what
+produces either number.
+
+#### 4.2 A separate finding, belonging to L27's rule, not L24's
+
+`fallback_survivor_k2` (`crc32(computer|window) % 4 == 0`) outranks every view
+occupancy at test AUC **0.8670731707**. **It is a prevalence artefact of the
+`k = 2` size fallback and not a signal any model can use.** `crc32` is not a
+feature and no encoder sees it. It scores as it does because attack cells were
+kept unconditionally while attack-host benign cells were thinned to 1/4 by
+that predicate, so the surviving benign rows satisfy a condition the attack
+rows mostly fail. **What it says is that the class balance on attack hosts was
+manufactured by a hash. What it does not say is that the model has a leak.**
+
+This belongs beside §3.2's L27 verdict, because the fallback is L27's rule (b)
+on its fallback branch. It is an additional reason the L27 verdict must read
+"1/4" rather than "all".
+
+#### 4.3 L24 status after these passes — NARROWED, still OPEN
+
+**Narrowed, in two specific ways that did not hold before:**
+
+- The "unidentified second source" of H1's disconfirmation **is identified**:
+  `proc` occupancy, at 0.7084, stronger than auth's 0.6612, and attributable
+  to rule (a) by the conditional rates.
+- Auth's label-adjacency is **separated** from the selection question and
+  confirmed as a data property, which is what L24's first bullet claims and
+  what Part 38's design was built to test.
+
+**Still OPEN, because:**
+
+- **No design yet removes both selection effects.** Rule (a) had to gate on
+  *something*, and whatever it gates on acquires the benign-side enrichment
+  that `proc` now carries. L24's closing condition ("control cells drawn
+  without reference to the `auth` stream") is met, and the finding is that
+  meeting it is not sufficient to remove selection from the sample.
+- **The arm AUCs are not in** (Table 4, lower block; pending the sweep).
+- **Any status change requires the review gate** (PRE_REGISTRATION §7.6).
+  Proposals go to `docs/proposed_limitations_update.md`.
+
+**What must not be claimed.** That auth is "not label-adjacent" — both passes
+point the other way. That rule (a) failed — it did what it was specified to
+do, and the finding is about what that implies. That 0.6612 against 0.6637
+measures an effect — the two tables are not row-comparable, so only the
+pass/fail against the pre-registered bar is a result. That
+`fallback_survivor_k2` is a leak — the model cannot see it.
 
 ### L27 still OPEN if
 
@@ -633,7 +723,11 @@ measures an effect — the two tables are not row-comparable.
   are not row-comparable; say so and report both host sets.
 - The realised share is **1/4** (`k = 2`), so L27's "separate host from
   behaviour" is tested at a quarter of the intended benign contrast whatever
-  the deltas say. Needed to test it at 1/1: raising the 400,000 sample bar,
+  the deltas say. **And the thinning predicate is now measured as the
+  strongest scalar on the test block** — `fallback_survivor_k2` at test AUC
+  0.8670731707 (§4.2). It is not a signal a model can use, but it means the
+  attack/benign balance on attack hosts is a hash's doing, which is exactly
+  the contrast H2's mechanism relies on. Needed to test it at 1/1: raising the 400,000 sample bar,
   which is a pre-registered quantity and therefore a review-gate decision and
   a new dated amendment — not a parameter to change quietly. The 979,122-row
   uncapped build is the measured alternative; its cost is a full rebuild plus
