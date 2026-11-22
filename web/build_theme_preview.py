@@ -26,10 +26,11 @@ CSS = HERE / "assets/css"
 
 VARIANTS = [
     ("tokens-a-light.css", ".variant--a", "A -- light"),
-    # Variant B is the APPLIED theme, so the preview reads tokens.css itself
-    # rather than a copy. The sheet can then never show a variant B that
-    # differs from the one the site ships.
-    ("tokens.css", ".variant--b", "B -- dark ember, APPLIED"),
+    # The B slot reads tokens.css itself rather than a copy, so the sheet can
+    # never show an applied palette that differs from the one the site ships.
+    # tokens.css is spectrum light now, not variant B's dark ember; the page's
+    # own banner says so and the captions in its B block are the old record.
+    ("tokens.css", ".variant--b", "B -- the applied palette, now spectrum light"),
 ]
 
 OUT = CSS / "theme-preview-vars.css"

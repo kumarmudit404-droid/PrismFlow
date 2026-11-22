@@ -1,6 +1,12 @@
-/* Variant A: light base, orange accent. A candidate, not applied to the site
+/* Variant A: light base, ORANGE accent. A candidate, not applied to the site
  * -- only theme_preview.html and the screenshot harness load it, so the
- * choice between the two palettes stays inspectable. tokens.css is live.
+ * choice between palettes stays inspectable. tokens.css is live.
+ *
+ * tokens.css is also light now ("spectrum light", near-white base, VIOLET
+ * accent) and took this file's five angle colours as its starting point --
+ * four of them unchanged, financial darkened for the cooler base. This file
+ * is what they were searched against; it is not a dark/light pair with the
+ * live sheet any more.
  *
  * The angle colours were searched rather than picked by eye;
  * web/check_palette.py holds the maths and measures the result.
