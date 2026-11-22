@@ -87,8 +87,39 @@ H2_BAR = 0.036
 TABLE1_FIELDS = ("roc_auc", "balanced_accuracy", "attack_recall",
                  "benign_recall", "brier", "prob_ece",
                  "eniv_eigen", "mean_dependence", "efficiency_ratio")
-TABLE6_FIELDS = ("unit_seconds", "peak_rss_mb", "rows_at_or_above_threshold",
+#: `peak_rss_mb` is DELIBERATELY ABSENT: it is a per-launch high-water mark,
+#: not a per-unit measurement, so `agg()` must not mean it across seeds. It is
+#: emitted per seed by `table6()` instead. See fill_analysis_patch.py.
+TABLE6_FIELDS = ("unit_seconds", "rows_at_or_above_threshold",
                  "max_prob_attack", "all_false_mask_rows")
+
+PEAK_RSS_SEMANTIC = (
+    "peak_rss_mb is a RUNNING MAXIMUM over the life of the process that wrote "
+    "the unit, not a per-unit measurement. Within one launch it is "
+    "non-decreasing, so a unit's figure includes memory peaks caused by "
+    "EARLIER units in the same process: measured 499.5 then 528.8 for "
+    "with_auth naive_seed4 then prismflow_seed2 in one process on 2026-11-22. "
+    "Reported per seed and never averaged -- units written by one long-lived "
+    "process can all carry that process's plateau, so a mean over them counts "
+    "one observation n times and its std is 0.0 by construction rather than "
+    "by reproducibility. n_distinct counts the distinct values in this cell, "
+    "which is a lower bound on the launches that wrote it and not a fixed "
+    "number of regimes.")
+
+PEAK_RSS_LAUNCH_ID = (
+    "not measured: the unit JSON records no process_id and no launch_time, so "
+    "which launch produced a given peak_rss_mb is not derivable from "
+    "committed data. File mtime is not a substitute -- a git checkout "
+    "rewrites it. Identical values across seeds are the only evidence that "
+    "two units shared a process.")
+
+UNIT_SECONDS_SEMANTIC = (
+    "unit_seconds is aggregated, but the seeds of a cell may span launches "
+    "with different machine states: with_auth/naive seeds 0,1 measured 653.8s "
+    "and 705.4s while seeds 2,3 measured 1359.8s and 1370.8s, a 2.0x "
+    "difference in the same field of the same cell. Each value is a genuine "
+    "per-unit measurement, so the mean is a legitimate operational summary; "
+    "it is not a reproducibility figure.")
 
 
 def unit_name(arm: str, system: str, seed: int) -> str:
@@ -419,6 +450,9 @@ def table6(units, cells) -> dict:
     out = {
         "what": "Operational record and the Amendment 10.2 threshold-degeneracy "
                 "diagnostic. No hypothesis is attached to any of it.",
+        "peak_rss_mb_semantic": PEAK_RSS_SEMANTIC,
+        "peak_rss_mb_launch_identity": PEAK_RSS_LAUNCH_ID,
+        "unit_seconds_semantic": UNIT_SECONDS_SEMANTIC,
         "degeneracy_definition": (
             "A unit whose max prob_attack is below 0.5 is degenerate at the "
             "default threshold, which pins balanced accuracy at exactly 0.5 "
@@ -429,6 +463,16 @@ def table6(units, cells) -> dict:
         names = [unit_name(arm, system, d) for d in seeds]
         cell = {f: agg([units[n].get(f) for n in names])
                 for f in TABLE6_FIELDS}
+        peaks = [units[n].get("peak_rss_mb") for n in names]
+        distinct = sorted({float(v) for v in peaks if v is not None})
+        cell["peak_rss_mb_per_seed"] = {
+            "per_seed": [None if v is None else float(v) for v in peaks],
+            "aggregated": False,
+            "n_distinct": len(distinct),
+            "distinct_values": distinct,
+            "semantic": PEAK_RSS_SEMANTIC,
+            "launch_identity": PEAK_RSS_LAUNCH_ID,
+        }
         cell["seeds"] = list(seeds)
         cell["degenerate_at_threshold_per_seed"] = [
             units[n]["max_prob_attack"] < 0.5 for n in names]
