@@ -77,9 +77,17 @@ on something, and whatever it gates on acquires the benign-side enrichment
 Reasoning, and the two limits that must travel with the reading:
 `ANALYSIS_TEMPLATE.md` §3.1, §4.1, §4.3; `docs/part38_section.md` §4.1–4.3, §7.
 
-**Still outstanding for L24**, and not decided by this sheet: the `with_auth` −
-`without_auth` arm gap (Table 4 lower block, from Table 1), pending the sweep.
-It is a **different quantity** from H1 and cannot stand in for it.
+**The arm gap is now measured too, and it points the same way.** Dropping the
+auth view **raises** test ROC AUC by **0.0498525761** (naive) and
+**0.0448397063** (prismflow), negative in **5 of 5** paired seeds in both
+systems — `without_auth` is the **best** arm on this sample, not the
+handicapped one (`filled_tables.json`, `table1_roc_auc_per_cell` and
+`table2_per_seed`). Under Part 30 the reading was "auth is label-adjacent, so
+`without_auth` is penalised"; that reverses here, which is what relocating the
+selection effect to `proc` predicts.
+
+This is a **different quantity** from H1, carries **no pre-registered bar**,
+and cannot stand in for H1. `ANALYSIS_TEMPLATE.md` Table 4 lower block.
 
 ---
 
@@ -106,11 +114,13 @@ sensitivity still grew.
 Full reasoning, the pairwise table and the three limits on what this licenses:
 `ANALYSIS_TEMPLATE.md` §3.2 and §4's L27 clause.
 
-**What the eight cells were read from** — unchanged from the plan below.
+**The fill path and the three mandatory caveats, as fixed before the numbers
+existed, are kept below unchanged — a verdict rule is reported as written, not
+rewritten after the fact.**
 
 **The rule is existential.** Any one of the eight at `|Δ| ≥ 0.036`
 disconfirms; confirmation needs all eight below. So the verdict can become
-determinable before 40/40 — and must still be read only from the committed
+determinable before 40/40 — and was still read only from the committed
 40/40 file.
 
 **Three things the verdict text must contain.** None is optional; all three
