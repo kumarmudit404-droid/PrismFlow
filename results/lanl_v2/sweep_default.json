@@ -106,19 +106,19 @@
    },
    "eniv_eigen": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
    "mean_dependence": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
    "efficiency_ratio": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
@@ -458,19 +458,19 @@
    },
    "eniv_eigen": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
    "mean_dependence": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
    "efficiency_ratio": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
@@ -810,19 +810,19 @@
    },
    "eniv_eigen": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
    "mean_dependence": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
    "efficiency_ratio": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
@@ -1162,19 +1162,19 @@
    },
    "eniv_eigen": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
    "mean_dependence": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
    "efficiency_ratio": {
     "mean": null,
-    "std": NaN,
+    "std": null,
     "n": 0,
     "per_seed": []
    },
