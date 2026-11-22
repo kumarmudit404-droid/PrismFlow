@@ -17,7 +17,8 @@ Status proposals go to `docs/proposed_limitations_update.md` only. This file
 changes no limitation's status: PRE_REGISTRATION §7.6 reserves that for the
 full sweep plus a review gate.
 
-Written 2026-11-22, with the mode `default` (B) sweep at **36 of 40 units**.
+Written 2026-11-22; updated the same day with the mode `default` (B) sweep
+complete at **40 of 40 units**.
 
 ---
 
@@ -26,8 +27,8 @@ Written 2026-11-22, with the mode `default` (B) sweep at **36 of 40 units**.
 | | barred quantity | bar | measured | verdict |
 |---|---|---|---|---|
 | **H1 / L24** | `auth_present_indicator` test ROC AUC, seed-free | **≤ 0.6136552214** (0.05 below Part 30's 0.6636552214) | **0.6611838192** | **DISCONFIRMED** — decided, see §2 |
-| **H2 / L27** | all eight arm×system `C17693` leave-host-out deltas, absolute value | **< 0.036** on all eight; any one ≥ 0.036 disconfirms | not measured | **PENDING** — needs Table 3 at 40/40, see §3 |
-| **H3 / L28** | sign of PrismFlow − naive test ROC AUC, agreeing across modes A and B in all four arms | sign agreement in 4/4 arms | not measured | **PENDING MODE A** — and unclosable by L28's own text, see §4 |
+| **H2 / L27** | all eight arm×system `C17693` leave-host-out deltas, absolute value | **< 0.036** on all eight; any one ≥ 0.036 disconfirms | **0.0997097614 to 0.1134384687**, all eight | **DISCONFIRMED** — decided at 40/40, see §3 |
+| **H3 / L28** | sign of PrismFlow − naive test ROC AUC, agreeing across modes A and B in all four arms | sign agreement in 4/4 arms | mode B only; **3 of 4 arms have no established sign** | **PENDING MODE A, and now unreachable** — see §4 |
 
 "not measured" above is an absence, not a zero, and is not estimated anywhere
 in this file.
@@ -82,12 +83,30 @@ It is a **different quantity** from H1 and cannot stand in for it.
 
 ---
 
-## 3. H2 / L27 — PENDING the sweep
+## 3. H2 / L27 — DECIDED, DISCONFIRMED
 
-**Fill from:** `results/lanl_v2/filled_tables.json`,
-`table3_leave_host_out.per_cell.<arm>/<system>.per_host.C17693`, read at
-40/40. Eight cells: `{without_auth, without_flows, without_dns, with_auth}` ×
-`{naive, prismflow}`.
+**Verdict: H2 DISCONFIRMED, 8 of 8 cells at or above the bar.** Band
+**0.0997097614 to 0.1134384687** against a bar of 0.036; largest
+`with_auth`/naive, smallest `without_auth`/naive.
+Source: `results/lanl_v2/filled_tables.json`,
+`table3_leave_host_out.h2_verdict` and
+`.per_cell.<arm>/<system>.per_host.C17693.change_from_all_test`.
+
+**The direction is the opposite of H2's prediction in all eight cells.** H2
+predicted the sensitivity would shrink; it **grew**, by +0.0478 to +0.0756 per
+cell against Part 30. The two bands do **not** overlap — Part 30's is
+0.035963 to 0.051875 — so the §2 sharpness warning below does not affect this
+verdict: it protects against a false *pass*, and there was no pass.
+
+**Hosts re-derived on Part 38's own test block: the same five computers, same
+rank order.** `C17693` now holds **10** benign rows against Part 30's **1**,
+with 137 attack rows unchanged — so rule (b) did restore contrast, and the
+sensitivity still grew.
+
+Full reasoning, the pairwise table and the three limits on what this licenses:
+`ANALYSIS_TEMPLATE.md` §3.2 and §4's L27 clause.
+
+**What the eight cells were read from** — unchanged from the plan below.
 
 **The rule is existential.** Any one of the eight at `|Δ| ≥ 0.036`
 disconfirms; confirmation needs all eight below. So the verdict can become
@@ -133,7 +152,31 @@ not copied from Part 30, and whether it is the same five computers is itself a
 
 ---
 
-## 4. H3 / L28 — PENDING MODE A, and unclosable as written
+## 4. H3 / L28 — PENDING MODE A, unclosable as written, and now unreachable
+
+**New at 40/40: H3 cannot be confirmed even if mode A runs.** H3 needs the
+sign of PrismFlow − naive to agree across modes **in all four arms**. On mode
+B, **three of the four arms have no established sign** — the difference is
+smaller than the per-seed std, which §3.3 requires be reported as *sign
+undetermined*:
+
+| arm | mean | std | sign |
+|---|---|---|---|
+| `without_auth` | −0.0032100173 | 0.0021726225 | **negative**, 4/5 seeds |
+| `without_flows` | −0.0023005006 | 0.0027377719 | undetermined |
+| `without_dns` | +0.0006742009 | 0.0025411558 | undetermined |
+| `with_auth` | +0.0018028525 | 0.0058650782 | undetermined |
+
+Source: `filled_tables.json`, `table2_per_seed.prismflow_minus_naive.<arm>`.
+A sign that does not exist on one side cannot agree with the other, so mode A
+could at best decide `without_auth`. **H3's "all four arms" condition is
+unreachable on this sample** — a property of the measured effect sizes, not of
+mode A's absence. `seeds_exactly_zero` is 0 in all four arms, so this is not
+an exact-zero artefact.
+
+Note the same table is the headline negative result for the thesis: **no arm
+favours the discount, and the one arm with an established direction runs
+against it.**
 
 **Status: PENDING.** Mode A (`threads1_concurrent11`) has not been run.
 `results/lanl_v2/sweep_estimate.json` puts it at ~2.0 h across 11 concurrent
