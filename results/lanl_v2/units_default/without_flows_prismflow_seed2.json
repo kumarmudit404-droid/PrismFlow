@@ -1,0 +1,42 @@
+{
+ "n": 84460,
+ "n_attack": 410,
+ "n_benign": 84050,
+ "prevalence": 0.0048543689320388345,
+ "roc_auc": 0.768055019515097,
+ "balanced_accuracy": 0.5531826293872695,
+ "accuracy": 0.9753966374615203,
+ "attack_recall": 0.12682926829268293,
+ "benign_recall": 0.979535990481856,
+ "brier": 0.009201727088891387,
+ "prob_ece": 0.012324106200662785,
+ "constant_baseline_brier": 0.004830804034310492,
+ "eniv_eigen": 2.1567522266614105,
+ "mean_dependence": 0.22904318640212137,
+ "efficiency_ratio": 0.8624614216013206,
+ "rows_at_or_above_threshold": 1772,
+ "max_prob_attack": 0.9885430335998535,
+ "eniv_design_effect": null,
+ "eniv_design_effect_status": "not measured: not exposed by the frozen collect_predictions, which returns batch-weighted scalars and no dependence matrix",
+ "train_seconds": 882.7,
+ "all_false_mask_rows": 1719,
+ "arm_views": [
+  "auth",
+  "proc",
+  "dns"
+ ],
+ "system": "prismflow",
+ "seed": 2,
+ "arm": "without_flows",
+ "mode": {
+  "mode": "default",
+  "torch_threads_observed": 8,
+  "concurrency": 1,
+  "machine_default_threads_measured": 8
+ },
+ "tag": "v2_days16",
+ "unit_seconds": 884.4,
+ "peak_rss_mb": 513.8,
+ "scores_file": "E:/PERSONAL/project/PrIsM FlOw/results/lanl_v2/scores_default/without_flows_prismflow_seed2.npz",
+ "scores_sha256": "2a6cc4d9b689247090097a5fb778167f5181c720d80b15e559557914ff64d2ec"
+}
