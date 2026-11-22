@@ -415,8 +415,25 @@ L22 asks for "a clone condition whose clean reference has the same view count as
 
 ## Part 38 proposals (L24 measured; L27 and L28 pending the sweep)
 
-**PROPOSAL — not applied until the review gate per `PRE_REGISTRATION.md`
-§7.6**, which states that this programme "does not mark L24, L27 or L28
+**APPLIED 2026-11-22 to `docs/KNOWN_LIMITATIONS.md`.** L24, L27 and L28 each
+carry a dated Part 38 block and all three remain **OPEN**; no entry was marked
+RESOLVED or CLOSED. L27's and L28's placeholder text below was superseded by
+the measured values at 40/40 before being applied — read the entries in
+`KNOWN_LIMITATIONS.md`, not the placeholders here.
+
+**Gate provenance, stated because `PRE_REGISTRATION.md` §7.6 requires it.**
+§7.6 conditions a status change on "the full sweep and a review gate". The
+review gate is the user's explicit instruction of 2026-11-22 to apply these
+proposals. **The sweep is complete for mode `default` (B) at 40 of 40 units
+but NOT for mode A**, which §8 of the same file describes as part of the
+planned sweep ("40 units x 2 modes"), so "the full sweep" in §7.6's sense is
+satisfied only for mode B. L24's and L27's evidence does not depend on mode A
+— L24 is three seed-free scalar passes and L27's H2 is a mode-B leave-host-out
+measurement — and L28, the one entry that does depend on it, was left
+UNCHANGED for exactly that reason.
+
+**Original proposal header — not applied until the review gate per
+`PRE_REGISTRATION.md` §7.6**, which states that this programme "does not mark L24, L27 or L28
 closed, resolved or narrowed. Status changes require the full sweep and a
 review gate."
 

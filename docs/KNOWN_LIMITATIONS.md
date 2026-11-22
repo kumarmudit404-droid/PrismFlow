@@ -1450,6 +1450,76 @@ as the independent-evidence comparison (`experiments/lanl/`).
   attack against **12,323 of 18,319** benign in the test block), so auth
   presence alone reaches test AUC **0.6637**.
 
+**New evidence, Part 38 (2026-11-22); the entry stays OPEN, narrowed.** The
+closing condition below was built and measured: a sample whose control cells
+are drawn without any reference to the `auth` stream. Three seed-free scalar
+passes over the committed sample table, no training and no inference; each
+re-runs bit-exact and is unchanged under `OMP_NUM_THREADS=1`
+(`tests/unit/test_h1_scalar_passes.py`, 12 tests).
+
+- **The auth-presence baseline did NOT fall. H1 is DISCONFIRMED.**
+  Pre-registered H1 required a drop of at least **0.05** from Part 30's
+  **0.6636552213548774**, i.e. a test AUC at or below **0.6136552213548774**.
+  Measured **0.6611838191552647**, a drop of **0.0024714021996127267** -- a
+  fiftieth of the bar (`results/lanl_v2/h1_auth_presence.json`, `h1.verdict`,
+  `h1.drop_achieved`). The baseline is seed-free, so this is a single value
+  and no +/- applies.
+- **L24's contingency survived intact, so it is a property of the data.**
+  Every attack cell still holds an `auth` record -- attack rate exactly
+  **1.0** -- on a sample whose selection never consulted the stream, and the
+  benign rate moved only **0.6726895572902452** to **0.6776323616894706**
+  (`results/lanl_v2/h1_conditional_rates.json`,
+  `per_view_rate_comparison.auth`). This entry's **410 of 410** and
+  **12323 of 18319** are recomputed from `results/lanl/samples.npz` and
+  reproduced exactly as a gate before any comparison is made
+  (`l24_reproduction_gate.status` `PASSED`). The first bullet above -- the
+  labels come from the same stream as a view -- is strengthened, not
+  weakened.
+- **The selection did not drop; it moved to `proc`.** Every selection input
+  scored as its own trivial baseline on the test block, train-only
+  orientation (`results/lanl_v2/h1_occupancy_decomposition.json`,
+  `whole_test_block.<scalar>.test_auc`): `occupancy_proc`
+  **0.7083759666864962**, `auth_present_indicator` **0.6611838191552647**,
+  `n_non_auth_views_present` **0.6503477024**, `occupancy_flows`
+  **0.5253242118**, `occupancy_dns` **0.5000356930** (at chance). `proc` now
+  carries MORE of the separation than `auth` does. The conditional rates
+  attribute it to rule (a): `proc`'s attack rate is unchanged at
+  **0.4975609756097561** while its benign rate jumped **0.6973088050657787**
+  to **0.9143129089827484**, because rule (a) admits a cell only if `proc`,
+  `flows` or `dns` is occupied. Its rate gap more than doubled,
+  **-0.19974782945602265** to **-0.4167519333729923**.
+- **Not the host-rule tautology.** Within attack hosts the picture is
+  unchanged: `occupancy_proc` **0.7143004072**, `occupancy_auth`
+  **0.6524885255** (`within_attack_hosts.<scalar>.test_auc`).
+- **The volume signals DID fall**, which is the evidence the rule changed
+  something: `total_records_across_views` **0.6842788175** to
+  **0.5862805386** and `n_views_present` **0.5624544156** to
+  **0.4800433975**, the latter below chance (`h1_auth_presence.json`,
+  `baselines.<name>`).
+
+**Why it stays OPEN.** The closing condition is satisfied and the result is
+not the one the condition anticipated. Removing `auth` from selection removed
+the *volume* signals and left `auth`'s own contingency untouched, while
+installing a stronger `proc`-occupancy selection effect in its place. Rule (a)
+has to gate on something, and whatever it gates on acquires the benign-side
+enrichment `proc` now carries -- so "sample selection survives the view drop"
+is still true of Part 38, for a different view. The two sample tables are not
+comparable row-for-row (`experiments/lanl_v2/PRE_REGISTRATION.md` section 2),
+so **0.6611838191552647 against 0.6636552213548774 is not a measured effect
+size** -- only the pass/fail against the pre-registered bar is a result.
+
+**What would additionally change our understanding.** A selection rule whose
+admission criterion is independent of every view's occupancy -- which on this
+data may not exist, since a cell with no occupied view carries no features --
+or a decomposition separating `proc`'s selection-induced enrichment from any
+behavioural signal `proc` carries. The latter is the live question: `proc`
+occupancy is visible to the encoders through the view mask.
+
+**Evidence:** `results/lanl_v2/h1_auth_presence.json`,
+`results/lanl_v2/h1_occupancy_decomposition.json`,
+`results/lanl_v2/h1_conditional_rates.json`; `docs/FINAL_REPORT.md` section
+4.4.4.
+
 **What this means.** The `without_auth` arm removes the auth features but not
 this selection, because cells were chosen from all four views.
 
@@ -1616,6 +1686,59 @@ test-block scores (5 seeds, mean +/- std).
 **Evidence:** `results/lanl_reanalysis/results.json` (`step5_l27`);
 `experiments/lanl_reanalysis/README.md` section 4.
 
+**New evidence, Part 38 (2026-11-22); the entry stays OPEN. H2 is
+DISCONFIRMED, in the opposite direction to its prediction.** The closing
+condition below was built: a design that keeps a stated share of the benign
+cells of attack hosts. The share realised was **1/4**, not 1/1 -- the
+pre-registered size fallback fired at `k = 2`, dropping **697298** of
+**929764** attack-host benign cells to bring **979122** rows under the
+**400000** bar (`results/lanl_v2/build_v2_days16.json`, `size_fallback`).
+Every statement below is therefore about a quarter of the benign contrast,
+not all of it.
+
+- **All eight `C17693` cells moved by 0.036 or more, so H2 is DISCONFIRMED.**
+  H2 was confirmed only if all eight arm-and-system cells moved by less than
+  **0.036** in absolute value. Measured band **0.09970976139929666** to
+  **0.11343846872488195** (`results/lanl_v2/filled_tables.json`,
+  `table3_leave_host_out.h2_verdict.min_abs_delta` and `.max_abs_delta`;
+  `cells_at_or_above_bar` lists all eight). The rule is existential, so one
+  cell would have sufficed; eight fired.
+- **The sensitivity GREW rather than shrank, which is the reverse of H2's
+  mechanism.** H2 predicted that restoring benign contrast for `C17693` would
+  shrink the leave-host-out delta. Part 30's eight deltas run
+  **-0.035962653276654266** to **-0.051874860066125961**; Part 38's run
+  **-0.09970976139929666** to **-0.11343846872488195**. The two bands **do
+  not overlap**, and Part 38's smallest cell is nearly twice Part 30's
+  largest. In magnitude the deltas grew by **+0.047835** to **+0.075601** per
+  cell. The verdict therefore does not rest on the 0.036 threshold -- which
+  sits inside Part 30's own band -- but on two non-overlapping bands.
+- **Rule (b) did restore contrast, and the figures say how much.** `C17693`
+  goes from **1** benign test row under Part 30 to **10** under Part 38,
+  against **137** attack rows unchanged
+  (`table3_leave_host_out.hosts`). Its within-host prevalence is still
+  **0.932**, against a test-block prevalence of **0.00485**. Ten benign rows
+  against 137 attack rows is not a contrast.
+- **What this disconfirmation licenses, and what it does not.** It licenses:
+  on this build, restoring **a quarter** of `C17693`'s benign cells did not
+  reduce the single-host sensitivity; it increased it. It does **not** license
+  "restoring benign contrast does not help" -- that claim needs the 1/1 build,
+  which was **not run**. It does **not** license any statement about *why* the
+  sensitivity grew: Part 38's test block is **84460** rows at prevalence
+  **0.00485** against Part 30's **18729** at **0.0219**, so removing
+  `C17693`'s attack rows removes a larger share of the rankable positive
+  signal, and **no decomposition distinguishing that from a behavioural
+  effect exists**. Do not assert one.
+- **No interval attaches.** One host is not a resample; the result is
+  descriptive, as Part 30's own `step5_l27.interval` records.
+- **Why it stays OPEN.** The closing condition asks for "all **or a stated
+  share**". A stated share was delivered and measured, and it was **1/4** --
+  so the design question this entry poses is answered at quarter strength,
+  and the 1/1 build that would answer it fully has not been run.
+
+**Evidence:** `results/lanl_v2/filled_tables.json` (`table3_leave_host_out`);
+`results/lanl_v2/build_v2_days16.json` (`size_fallback`);
+`docs/FINAL_REPORT.md` section 4.4.5.2.
+
 **What this means.** A model can therefore learn that host's activity profile
 as the attack class without learning attack behaviour.
 
@@ -1687,6 +1810,35 @@ Both halves of the result matter, and they point in opposite directions.
 
 **Evidence:** `results/lanl_reanalysis/results.json` (`step6_l28`);
 `experiments/lanl_reanalysis/README.md` section 5.
+
+**Part 38 (2026-11-22): UNCHANGED, still OPEN.** Part 38 ran all four arms in
+mode `default` (B) only, 40 of 40 units. **Mode A was not run under the Part 38
+deadline**, so no cross-mode spread exists for `without_auth`,
+`without_flows` or `without_dns`, and this entry's status is exactly as Part 35
+left it. `experiments/lanl_v2/run_mode_a.sh` exists and is validated; a future
+Part will run it.
+
+Two things Part 38 did establish about what mode A could settle:
+
+- **H3, the pre-registered substitute for the pooled +/-, is unsatisfiable on
+  this sample whatever mode A shows.** H3 required the sign of the
+  PrismFlow-minus-naive ROC AUC difference to agree across modes in **all
+  four** arms. On mode B, three of the four arms have **no established sign**
+  -- the difference is smaller than their own per-seed std
+  (`results/lanl_v2/filled_tables.json`,
+  `table2_per_seed.prismflow_minus_naive`). A sign that does not exist cannot
+  agree, so mode A can at best decide `without_auth`. Running mode A remains
+  worth doing for the across-mode spread itself, which is what this entry is
+  about; it will not produce an H3 verdict.
+- **This entry cannot be CLOSED by its own text under the Part 38
+  pre-registration.** The closing condition below asks for a std that "covers
+  mode as well as seed" -- a **pooled** std.
+  `experiments/lanl_v2/PRE_REGISTRATION.md` section 6 forbids pooling the two
+  modes into a single +/-. Closing it would need a review-gate decision that a
+  mode-pooled +/- is legitimate, and a further dated amendment.
+
+**Evidence:** `results/lanl_v2/filled_tables.json`; `docs/FINAL_REPORT.md`
+section 4.4.5.3.
 
 **What this means.** Differences of order 0.01 in `balanced_accuracy`,
 `attack_recall` and `brier` are not established, and the per-seed std
