@@ -1,0 +1,26 @@
+
+=== SWEEP mode default: 10 units, tag v2_days16 ===
+mode: {"mode": "default", "torch_threads_observed": 8, "concurrency": 1, "machine_default_threads_measured": 8}
+table: 281823 rows, 197363 train, 84460 test
+skip  with_auth_naive_seed0              already complete
+skip  with_auth_naive_seed1              already complete
+skip  with_auth_naive_seed2              already complete
+skip  with_auth_naive_seed3              already complete
+done  with_auth_naive_seed4              auc=0.750449 bal=0.542677 recall=0.085366 rows>=.5=36    1166.7s 499.5MB
+skip  with_auth_prismflow_seed0          already complete
+skip  with_auth_prismflow_seed1          already complete
+done  with_auth_prismflow_seed2          auc=0.744227 bal=0.562195 recall=0.124390 rows>=.5=51    2150.9s 528.8MB
+done  with_auth_prismflow_seed3          auc=0.749034 bal=0.560958 recall=0.121951 rows>=.5=53    2236.1s 537.3MB
+done  with_auth_prismflow_seed4          auc=0.750078 bal=0.552433 recall=0.104878 rows>=.5=44    2289.9s 538.6MB
+
+=== SWEEP mode default COMPLETE: 4 trained, 6 skipped, 7844s ===
+arm/system                      seeds   auc mean    auc std
+without_auth/naive                  5   0.790036   0.002011
+without_auth/prismflow              5   0.786826   0.003594
+without_flows/naive                 5   0.770004   0.004088
+without_flows/prismflow             5   0.767703   0.003853
+without_dns/naive                   5   0.744077   0.008469
+without_dns/prismflow               5   0.744752   0.008277
+with_auth/naive                     5   0.740184   0.012207
+with_auth/prismflow                 5   0.741987   0.009259
+wrote results/lanl_v2/sweep_default.json
