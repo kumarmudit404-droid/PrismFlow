@@ -305,8 +305,10 @@ invented.
 ## 7. What this sheet does not decide
 
 - No limitation's status (PRE_REGISTRATION §7.6).
-- Tables 1, 2, 3 and 6 — pending the sweep at 40/40.
-- Table 5 and every cross-mode figure — pending mode A.
+- Table 5's mode A columns and every cross-mode figure — pending mode A. Its
+  mode B columns are filled.
+- Whether H3 could be confirmed by a *different* sample. §4 shows it is
+  unreachable on **this** one; that is not a claim about the design in general.
 - The design-effect ENIV — not measured; `collect_predictions` is frozen and
   returns batch-weighted scalars with no dependence matrix.
 - How much of `proc`'s 0.7083759667 is selection-induced enrichment versus
