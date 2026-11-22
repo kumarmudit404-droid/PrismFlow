@@ -5,26 +5,31 @@ after the sweep reaches 40/40. With no flag it only self-checks.
 
 THE DEFECT
 ----------
-`peak_rss_mb` is a high-water mark for the life of the *process* that wrote
+`peak_rss_mb` is a RUNNING MAXIMUM over the life of the *process* that wrote
 the unit, not a per-unit measurement, so `agg()` must not average it.
-Measured over the 36 units on disk (`units_default/*.json`, `peak_rss_mb`):
+Measured over the units on disk (`units_default/*.json`, `peak_rss_mb`):
 
     499.6 - 523.1, distinct per unit   10 units   7 Nov sweep_block.sh:
                                                   one short-lived process per
                                                   unit, so these ARE per-unit
     513.8, identical                   24 units   one long-lived 21 Nov
-                                                  process: one HWM, 24 times
+                                                  process, at its plateau
     496.7, identical                    2 units   the 21 Nov 22:09 resume
+    499.5, then 528.8                   2+ units  the 2026-11-22 11:50 resume,
+                                                  RISING inside one process
 
 For the 24-unit group `agg()` is not averaging 24 measurements; it counts ONE
-measurement 24 times and reports `std = 0.0`, which reads as perfect
+observation 24 times and reports `std = 0.0`, which reads as perfect
 reproducibility when it is a single observation -- the same failure mode as a
 seed loop that varies nothing.
 
-ONE REGIME PER LAUNCH, NOT THREE. The review brief calls this three regimes.
-The 4-unit resume launched 2026-11-22 11:50 adds a fourth distinct value, so a
-caption naming a fixed count is wrong at the next launch. The caption states
-the per-launch semantic instead.
+NOT THREE REGIMES, AND NOT EVEN ONE VALUE PER LAUNCH. The review brief calls
+this three regimes. The 2026-11-22 resume disproved that twice over: it added
+a fourth distinct value, and it then raised its own value mid-launch, 499.5 ->
+528.8, because the figure is a running maximum and `prismflow` peaks higher
+than `naive`. So a unit's number can be inherited from an earlier unit in the
+same process, and no fixed count of regimes describes it. The caption states
+the running-maximum semantic instead.
 
 WHAT IS NOT MEASURED, AND IS NOT INVENTED
 -----------------------------------------
@@ -66,13 +71,17 @@ TABLE6_FIELDS = ("unit_seconds", "rows_at_or_above_threshold",
                  "max_prob_attack", "all_false_mask_rows")
 
 PEAK_RSS_SEMANTIC = (
-    "peak_rss_mb is a high-water mark for the life of the PROCESS that wrote "
-    "the unit, not a per-unit measurement. Reported per seed and never "
-    "averaged: units written by one long-lived process all carry that "
-    "process's single HWM, so a mean over them counts one measurement n times "
-    "and its std is 0.0 by construction rather than by reproducibility. One "
-    "HWM per launch -- n_distinct is the number of launches that wrote this "
-    "cell, not a fixed number of regimes.")
+    "peak_rss_mb is a RUNNING MAXIMUM over the life of the process that wrote "
+    "the unit, not a per-unit measurement. Within one launch it is "
+    "non-decreasing, so a unit's figure includes memory peaks caused by "
+    "EARLIER units in the same process: measured 499.5 then 528.8 for "
+    "with_auth naive_seed4 then prismflow_seed2 in one process on 2026-11-22. "
+    "Reported per seed and never averaged -- units written by one long-lived "
+    "process can all carry that process's plateau, so a mean over them counts "
+    "one observation n times and its std is 0.0 by construction rather than "
+    "by reproducibility. n_distinct counts the distinct values in this cell, "
+    "which is a lower bound on the launches that wrote it and not a fixed "
+    "number of regimes.")
 
 PEAK_RSS_LAUNCH_ID = (
     "not measured: the unit JSON records no process_id and no launch_time, so "

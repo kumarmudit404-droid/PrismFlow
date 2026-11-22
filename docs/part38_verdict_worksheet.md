@@ -203,24 +203,30 @@ is the user's call.
 **No hypothesis is attached to Table 6, so nothing above depends on this.** It
 is recorded here because the fix must land before Table 6 is quoted.
 
-`peak_rss_mb` is a **high-water mark for the life of the process that wrote
-the unit**, not a per-unit measurement. Measured across the 36 units on disk:
+`peak_rss_mb` is a **running maximum over the life of the process that wrote
+the unit**, not a per-unit measurement. Measured across the units on disk:
 
 | value | units | what it is |
 |---|---|---|
 | 499.6 – 523.1, distinct per unit | 10 | the 7 Nov `sweep_block.sh` block — one short-lived process per unit, so these *are* per-unit peaks |
-| **513.8**, identical | 24 | one long-lived 21 Nov process — a single HWM reported 24 times |
-| **496.7**, identical | 2 | the 21 Nov 22:09 resume process — one HWM reported twice |
+| **513.8**, identical | 24 | one long-lived 21 Nov process, at its plateau |
+| **496.7**, identical | 2 | the 21 Nov 22:09 resume process |
+| **499.5**, then **528.8** | 2+ | the 2026-11-22 11:50 resume — **rising inside one process** |
 
 Source: `results/lanl_v2/units_default/*.json`, field `peak_rss_mb`.
 
-**The brief calls this three regimes. It is one regime per launch**, and the
-4-unit resume now running will add a fourth distinct value. A caption naming a
-fixed count will be wrong again at the next launch, so the caption must state
-the per-launch semantic instead.
+**The brief calls this three regimes. The 22 Nov resume disproved that twice
+over.** It added a fourth distinct value, and then it raised its own value
+mid-launch — `with_auth_naive_seed4` recorded 499.5 and `with_auth_prismflow_seed2`
+recorded 528.8 **in the same process**, because the figure is a running
+maximum and `prismflow` peaks higher than `naive`. So a unit's number can be
+inherited from an earlier unit in the same process, it is non-decreasing
+within a launch, and **no fixed count of regimes describes it** — not three,
+and not one per launch either. The caption must state the running-maximum
+semantic.
 
 **Why the mean is wrong and not merely noisy.** For the 24 identical values,
-`agg()` is not averaging 24 measurements — it is counting **one** measurement
+`agg()` is not averaging 24 measurements — it is counting **one** observation
 24 times, then reporting `std = 0.0`, which reads as perfect reproducibility
 when it is a single observation. That is the same failure mode as a seed loop
 that varies nothing.
