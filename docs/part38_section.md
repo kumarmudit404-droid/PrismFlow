@@ -349,7 +349,7 @@ with Part 30's committed value for the same cell beside it
 (`results/lanl_reanalysis/results.json`,
 `step5_l27.per_arm.<arm>.<system>.per_host.C17693.change_from_all_test`):
 
-| arm | system | Part 38 Δ | Part 30 Δ | Part 38 − Part 30 |
+| arm | system | Part 38 Δ | Part 30 Δ | growth in magnitude, \|Part 38\| − \|Part 30\| |
 |---|---|---|---|---|
 | `without_auth` | naive | −0.099710 | −0.051875 | **+0.047835** |
 | `without_auth` | prismflow | −0.099784 | −0.050799 | **+0.048984** |

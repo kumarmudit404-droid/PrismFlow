@@ -375,7 +375,7 @@ be labelled as such wherever they are quoted.
 **Pairwise against Part 30, as §3.2 requires** — all eight Part 30 deltas are
 negative, all eight Part 38 deltas are negative and **larger in magnitude**:
 
-| arm | system | Part 38 Δ | Part 30 Δ | Part 38 − Part 30 |
+| arm | system | Part 38 Δ | Part 30 Δ | growth in magnitude, \|Part 38\| − \|Part 30\| |
 |---|---|---|---|---|
 | `without_auth` | naive | −0.099710 | −0.051875 | **+0.047835** |
 | `without_auth` | prismflow | −0.099784 | −0.050799 | **+0.048984** |
