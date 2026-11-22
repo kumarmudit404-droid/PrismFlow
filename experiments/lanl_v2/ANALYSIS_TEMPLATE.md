@@ -1,6 +1,10 @@
 # Part 38 — LANL redesign: ANALYSIS TEMPLATE
 
-**One result is in: H1, in Table 4 and §3.1. Everything else is `[pending]`.**
+**Mode B is complete at 40/40. H1 DISCONFIRMED, H2 DISCONFIRMED, H3 pending
+mode A.** Tables 1, 2, 3 and 6 are filled from committed files; Table 4 is the
+three scalar passes; **Table 5 is the only `pending mode A` table**, and mode
+A has not been run.
+
 Every cell marked `[pending]` is unfilled and must be filled from a committed
 file by its exact path, or left as `not measured`. A `[pending]` that is still
 present when this document is read as a report is a defect in the report, not
@@ -9,11 +13,21 @@ a zero.
 Reference numbers quoted below are **measurements from earlier committed
 Parts**, each with its JSON path. They are the bars, not this Part's results.
 
-- **Status:** template, with H1 filled. Written 2026-11-21 while mode B
-  (`default`) was still running at 11 of 40 units. H1 does not depend on the
-  sweep: it is a seed-free scalar over the committed sample table
+- **Status:** filled 2026-11-22 at 40 of 40 units, mode `default` (B), 8
+  threads observed. Source for Tables 1, 2, 3 and 6:
+  `results/lanl_v2/filled_tables.json`, written by
+  `experiments/lanl_v2/fill_analysis.py` behind its 40-unit gate, over
+  `results/lanl_v2/sweep_default.json` and `units_default/*.json`. Every
+  arm × system cell is `n = 5`.
+- **H1 is DISCONFIRMED** and does not depend on the sweep: it is a seed-free
+  scalar over the committed sample table
   (`results/lanl_v2/h1_auth_presence.json`), computed with no training and no
-  inference, and it is **DISCONFIRMED**.
+  inference. §3.1.
+- **H2 is DISCONFIRMED**, 8 of 8 cells at or above the bar, with Part 38's
+  band not overlapping Part 30's and the effect in the **opposite direction**
+  to the prediction. §3.2.
+- **PrismFlow − naive is negative on one arm and sign-undetermined on three.**
+  No arm favours the discount. Table 2.
 - **Not a pre-registration.** `PRE_REGISTRATION.md` and its dated Amendment 1
   are frozen and are not edited by this file. Where the review brief's wording
   of a closing condition differs from the pre-registered hypothesis, the
@@ -174,20 +188,43 @@ Two caveats on the gate, both already recorded and neither resolved:
 `per_cell.<arm>/<system>.roc_auc.{mean,std,n}`. Mode A is a **separate table
 and is never pooled into these ±** (PRE_REGISTRATION §6).
 
-| arm | system | n seeds | ROC AUC mean ± std | balanced acc (secondary) | attack recall (secondary) | eigen ENIV | mean dependence |
-|---|---|---|---|---|---|---|---|
-| `without_auth` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | null by construction | null by construction |
-| `without_auth` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_flows` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | null by construction | null by construction |
-| `without_flows` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_dns` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | null by construction | null by construction |
-| `without_dns` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `with_auth` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | null by construction | null by construction |
-| `with_auth` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
+**FILLED 2026-11-22 at 40/40.** Every cell is `n = 5`, so the 5-SEED RULE is
+satisfied for every row. All ENIV values were computed at **8 threads**
+(`torch_threads_observed`).
 
-**Fill rule:** a row with `n seeds` below 5 is reported as `n = <k>, NOT A
-FINDING` and its ± is withheld. The 5-SEED RULE is not satisfied by a mean
-over a partial cell, and `n = 2` std over two values is not a spread.
+| arm | system | n seeds | ROC AUC mean ± std | balanced acc (secondary) | attack recall (secondary) | eigen ENIV (8 threads) | mean dependence |
+|---|---|---|---|---|---|---|---|
+| `without_auth` | naive | 5 | **0.7900364591 ± 0.0020106638** | 0.6768114218 ± 0.0055826702 | 0.3536585366 ± 0.0111770139 | null by construction | null by construction |
+| `without_auth` | prismflow | 5 | **0.7868264419 ± 0.0035939990** | 0.6777763236 ± 0.0045564977 | 0.3556097561 ± 0.0091909481 | 2.1970654181 ± 0.0069142833 | 0.0880698755 ± 0.0029801289 |
+| `without_flows` | naive | 5 | **0.7700035490 ± 0.0040878521** | 0.5490339084 ± 0.0100715333 | 0.1185365854 ± 0.0201570278 | null by construction | null by construction |
+| `without_flows` | prismflow | 5 | **0.7677030484 ± 0.0038525715** | 0.5531766805 ± 0.0068354876 | 0.1268292683 ± 0.0136889904 | 2.1590483493 ± 0.0207787271 | 0.2254336037 ± 0.0146221517 |
+| `without_dns` | naive | 5 | **0.7440774046 ± 0.0084693584** | 0.5531231410 ± 0.0054124376 | 0.1102439024 ± 0.0108255322 | null by construction | null by construction |
+| `without_dns` | prismflow | 5 | **0.7447516055 ± 0.0082767688** | 0.5501986913 ± 0.0067016113 | 0.1043902439 ± 0.0134035431 | 2.4144224019 ± 0.0298687808 | 0.2014200679 ± 0.0155461106 |
+| `with_auth` | naive | 5 | **0.7401838830 ± 0.0122072868** | 0.5534098751 ± 0.0068643974 | 0.1068292683 ± 0.0137323788 | null by construction | null by construction |
+| `with_auth` | prismflow | 5 | **0.7419867355 ± 0.0092586512** | 0.5578001190 ± 0.0039122871 | 0.1156097561 ± 0.0078277105 | 2.8196540797 ± 0.0201698075 | 0.1940751504 ± 0.0054505720 |
+
+Source for every cell: `results/lanl_v2/filled_tables.json`,
+`table1_roc_auc_per_cell.per_cell.<arm>/<system>.<field>.{mean,std,n}`, which
+aggregates `results/lanl_v2/sweep_default.json` over the five per-seed units.
+
+**Fill rule (satisfied):** a row with `n seeds` below 5 would be reported as
+`n = <k>, NOT A FINDING` with its ± withheld. No row needed that.
+
+**Read the arm ordering before the system columns.** The best arm is
+`without_auth` (0.7900 naive) and the worst is `with_auth` (0.7402 naive): on
+this sample **removing the auth view raises ROC AUC by about 0.050**. That is
+the opposite direction from Part 30, where auth presence was the strongest
+trivial signal, and it is consistent with §4.1 — the selection now runs
+through `proc`, and auth's features add noise to a ranking that no longer
+needs them. `without_auth` also carries by far the highest attack recall
+(0.354 against 0.107–0.127 elsewhere) and the highest balanced accuracy
+(0.677 against 0.549–0.558).
+
+The two secondary columns are **not** pinned: balanced accuracy sits at
+0.549–0.678 and attack recall at 0.104–0.356, both well off the degenerate
+values. See §5 — Amendment §10.3's premise does not hold in this range, and
+these columns are secondary because of L16 and L23, not because they are
+constant.
 
 ### Table 2 — Per-seed ROC AUC (40 cells)
 
@@ -199,23 +236,63 @@ This table exists for reproducibility, not for averaging: it is what lets a
 reader see whether a mean hides a split population (and whether any seed sits
 far enough out to drive the ±).
 
+**FILLED 2026-11-22 at 40/40.**
+
 | arm | system | seed 0 | seed 1 | seed 2 | seed 3 | seed 4 |
 |---|---|---|---|---|---|---|
-| `without_auth` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_auth` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_flows` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_flows` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_dns` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_dns` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `with_auth` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `with_auth` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
+| `without_auth` | naive | 0.7869803253 | 0.7912215580 | 0.7891339940 | 0.7908043122 | 0.7920421062 |
+| `without_auth` | prismflow | 0.7828828224 | 0.7867918341 | 0.7855183761 | 0.7862734580 | 0.7926657187 |
+| `without_flows` | naive | 0.7632432495 | 0.7718997838 | 0.7710997519 | 0.7740374487 | 0.7697375111 |
+| `without_flows` | prismflow | 0.7614367754 | 0.7679026712 | 0.7680550195 | 0.7692167844 | 0.7719039915 |
+| `without_dns` | naive | 0.7308022083 | 0.7432551327 | 0.7440861856 | 0.7488014538 | 0.7534420423 |
+| `without_dns` | prismflow | 0.7325428534 | 0.7472057428 | 0.7416364678 | 0.7475516606 | 0.7548213027 |
+| `with_auth` | naive | 0.7201082109 | 0.7463095283 | 0.7373706127 | 0.7466818241 | 0.7504492390 |
+| `with_auth` | prismflow | 0.7273084981 | 0.7392864439 | 0.7442268394 | 0.7490343001 | 0.7500775961 |
 
-Alongside, the **per-seed sign** of PrismFlow − naive, per arm, from
-`sweep_default.json`, `prismflow_minus_naive_roc_auc.<arm>`: report
-`seeds_positive`, `seeds_negative` and `seeds_exactly_zero` **before** the
-mean. A cancelling population reads as "no effect" if only the mean is shown.
-Note `seeds_exactly_zero` is a third category — an "x of 5 agree" gloss that
-only counts positives and negatives mislabels it.
+Source: `results/lanl_v2/filled_tables.json`,
+`table2_per_seed.per_cell.<arm>/<system>.seed<N>`, read from
+`results/lanl_v2/units_default/<arm>_<system>_seed<N>.json`, field `roc_auc`.
+
+**No cell hides a split population.** Within every cell the five values span
+at most 0.0303 (`with_auth`/naive, 0.7201 to 0.7504) and the spread is
+monotone in nothing — seed 0 is the lowest value in 7 of 8 cells, which is a
+seed effect and not a bimodality.
+
+### Per-seed signs of PrismFlow − naive, reported BEFORE the means
+
+Source: `filled_tables.json`,
+`table2_per_seed.prismflow_minus_naive.<arm>`.
+
+| arm | seeds + | seeds − | seeds exactly 0 | mean | std | reading |
+|---|---|---|---|---|---|---|
+| `without_auth` | 1 | **4** | 0 | **−0.0032100173** | 0.0021726225 | **negative**, \|mean\| > std |
+| `without_flows` | 1 | **4** | 0 | −0.0023005006 | 0.0027377719 | **sign undetermined**, \|mean\| < std |
+| `without_dns` | **3** | 2 | 0 | +0.0006742009 | 0.0025411558 | **sign undetermined**, \|mean\| < std |
+| `with_auth` | **3** | 2 | 0 | +0.0018028525 | 0.0058650782 | **sign undetermined**, \|mean\| < std |
+
+Per-seed differences, in seed order:
+
+| arm | seed 0 | seed 1 | seed 2 | seed 3 | seed 4 |
+|---|---|---|---|---|---|
+| `without_auth` | −0.0040975029 | −0.0044297239 | −0.0036156179 | −0.0045308542 | +0.0006236125 |
+| `without_flows` | −0.0018064741 | −0.0039971126 | −0.0030447324 | −0.0048206642 | +0.0021664805 |
+| `without_dns` | +0.0017406451 | +0.0039506101 | −0.0024497178 | −0.0012497932 | +0.0013792603 |
+| `with_auth` | +0.0072002873 | −0.0070230844 | +0.0068562267 | +0.0023524760 | −0.0003716429 |
+
+**PrismFlow does not beat naive on any arm of this sample, and on one arm it
+loses.** Only `without_auth` has `|mean| > std`, and its sign is **negative**:
+PrismFlow is worse by 0.0032 ± 0.0022, negative in 4 of 5 seeds. The other
+three arms are **sign undetermined** by this document's own rule (§3.3) — the
+difference is smaller than the per-seed std, so neither direction is
+established. `seeds_exactly_zero` is 0 in all four arms, so no "x of 5" gloss
+is being misread here.
+
+Stated plainly: on four arms, five seeds and one execution mode, the
+dependence discount **changed nothing measurable in ranking quality**, and the
+one arm where a direction is established runs against PrismFlow. The
+largest-magnitude arm, `with_auth`, has the largest std (0.0059) and flips
+sign twice across seeds — exactly the cancelling population the per-seed
+reporting rule exists to expose.
 
 ### Table 3 — L27 leave-host-out AUC delta (8 rows × 5 hosts = 40 cells)
 
@@ -244,7 +321,33 @@ reference:
 **Part 38's host set must be re-derived on Part 38's own test block, not
 copied.** Section 2's rule (b) keeps all benign cells of attack hosts, so the
 removed-row counts will differ from the table above by design. Record the
-re-derived set and whether it is the same five computers: `[pending]`.
+re-derived set and whether it is the same five computers: **RE-DERIVED, and it
+is the same five computers, in the same rank order.** Source:
+`results/lanl_v2/filled_tables.json`, `table3_leave_host_out.hosts`.
+
+| host | test rows removed | attack rows removed | benign rows removed | Part 30 benign |
+|---|---|---|---|---|
+| `C17693` | 147 | 137 | **10** | 1 |
+| `C1015` | 270 | 12 | 258 | 1 |
+| `C2388` | 295 | 10 | 285 | 3 |
+| `C1936` | 205 | 7 | 198 | 0 |
+| `C2079` | 8 | 7 | **1** | 3 |
+
+**Rule (b) did restore benign contrast, and the figures say how much.**
+`C17693` goes from 1 benign row to **10**, and the three mid-rank hosts from
+0–3 rows to 198–285. The attack counts are unchanged for every host (137, 12,
+10, 7, 7), as they must be — both designs keep every attack cell and the test
+range is identical. `C2079` is the exception that proves the mechanism: it
+gained no benign rows (3 → 1), and it is the one host whose removal barely
+moves any cell.
+
+**But 10 benign rows against 137 attack rows is still not a contrast.**
+`C17693`'s within-host prevalence is 137/147 = 0.932 against a test-block
+prevalence of 0.00485. This is the `k = 2` share showing up in the only place
+it matters. (Arithmetic on the stated 1/4 share, **not a measurement**: a 1/1
+build would have kept on the order of four times as many benign rows for this
+host. What that build would actually have measured is **not measured** — it
+was never run.)
 
 Each cell is `mean(ROC AUC with host removed) − mean(ROC AUC all test)` over
 the 5 seeds, matching Part 30's `change_from_all_test`. Report the per-seed
@@ -252,16 +355,41 @@ array beside the delta; one host is not a resample, so **no interval is
 attached and the result is descriptive** (Part 30's own `interval` field says
 exactly this).
 
+**FILLED 2026-11-22 at 40/40.** Source: `results/lanl_v2/filled_tables.json`,
+`table3_leave_host_out.per_cell.<arm>/<system>`:
+`roc_auc_all_test.mean` and `per_host.<host>.change_from_all_test`.
+The four right-hand columns are **exploratory, not pre-registered**, and must
+be labelled as such wherever they are quoted.
+
 | arm | system | all-test AUC | **C17693 Δ** (barred) | C1015 Δ | C2388 Δ | C1936 Δ | C2079 Δ |
 |---|---|---|---|---|---|---|---|
-| `without_auth` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_auth` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_flows` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_flows` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_dns` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `without_dns` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `with_auth` | naive | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
-| `with_auth` | prismflow | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
+| `without_auth` | naive | 0.790036 | **−0.099710** | −0.000511 | +0.002777 | +0.004168 | −0.003648 |
+| `without_auth` | prismflow | 0.786826 | **−0.099784** | −0.000729 | +0.003972 | +0.004168 | −0.003703 |
+| `without_flows` | naive | 0.770004 | **−0.103284** | −0.003892 | +0.006326 | +0.003083 | −0.003407 |
+| `without_flows` | prismflow | 0.767703 | **−0.103105** | −0.003437 | +0.007529 | +0.002827 | −0.003409 |
+| `without_dns` | naive | 0.744077 | **−0.108785** | +0.006904 | +0.003563 | +0.001708 | −0.004273 |
+| `without_dns` | prismflow | 0.744752 | **−0.104055** | +0.004857 | +0.005311 | +0.002298 | −0.004225 |
+| `with_auth` | naive | 0.740184 | **−0.113438** | +0.006529 | +0.003075 | +0.005185 | −0.004440 |
+| `with_auth` | prismflow | 0.741987 | **−0.108746** | +0.003993 | +0.005275 | +0.005560 | −0.004366 |
+
+**Pairwise against Part 30, as §3.2 requires** — all eight Part 30 deltas are
+negative, all eight Part 38 deltas are negative and **larger in magnitude**:
+
+| arm | system | Part 38 Δ | Part 30 Δ | Part 38 − Part 30 |
+|---|---|---|---|---|
+| `without_auth` | naive | −0.099710 | −0.051875 | **+0.047835** |
+| `without_auth` | prismflow | −0.099784 | −0.050799 | **+0.048984** |
+| `without_flows` | naive | −0.103284 | −0.043474 | **+0.059810** |
+| `without_flows` | prismflow | −0.103105 | −0.043361 | **+0.059744** |
+| `without_dns` | naive | −0.108785 | −0.035963 | **+0.072822** |
+| `without_dns` | prismflow | −0.104055 | −0.036776 | **+0.067279** |
+| `with_auth` | naive | −0.113438 | −0.037837 | **+0.075601** |
+| `with_auth` | prismflow | −0.108746 | −0.040041 | **+0.068705** |
+
+Part 30 band: 0.035963 to 0.051875. Part 38 band: **0.099710 to 0.113438** —
+the two bands do not overlap, and Part 38's smallest cell is nearly twice
+Part 30's largest. The four exploratory hosts move every cell by at most
+0.0075 in absolute value, two orders of magnitude less than `C17693`.
 
 **This table needs no training — confirmed, not assumed.** It is a re-score of
 the committed `results/lanl_v2/scores_default/<cell>.npz` arrays with a host
@@ -353,10 +481,21 @@ separately, as a descriptive figure with no pre-registered bar:
 
 | quantity | value | source |
 |---|---|---|
-| `with_auth` − `without_auth` AUC, naive | `[pending]` | Table 1 |
-| `with_auth` − `without_auth` AUC, prismflow | `[pending]` | Table 1 |
-| per-seed sign counts for each | `[pending]` | Table 2 |
-| train/test prevalence, each arm | `[pending]` | `results/lanl_v2/build_v2_days16.json` |
+| `with_auth` − `without_auth` AUC, naive | **−0.0498525761** (0.7401838830 − 0.7900364591) | Table 1 |
+| `with_auth` − `without_auth` AUC, prismflow | **−0.0448397063** (0.7419867355 − 0.7868264419) | Table 1 |
+| per-seed sign counts for each | **5 of 5 negative in both systems** — naive per-seed −0.0668721144, −0.0449120297, −0.0517633813, −0.0441224881, −0.0415928672; prismflow −0.0555743242, −0.0475053902, −0.0412915367, −0.0372391579, −0.0425881226 | Table 2 |
+| train/test prevalence, each arm | identical across arms by construction — test 0.0048543689320388345 on 84,460 rows, 410 attack; `n_train` 197,363 | `results/lanl_v2/h1_auth_presence.json` (`test_prevalence`, `n_train`, `n_test`); the arms differ only in the view mask, not in the sampled rows |
+
+**The gap has the opposite sign to Part 30's framing, in 10 of 10 seed-pairs.**
+Dropping the auth view **raises** test ROC AUC by 0.0499 (naive) and 0.0448
+(prismflow), negative in every one of the five paired seeds in both systems.
+Under Part 30 the `without_auth` arm was the *handicapped* arm; on Part 38's
+sample it is the strongest. This is descriptive and carries **no
+pre-registered bar** — it is not H1, and it cannot stand in for H1.
+
+Note the arms share one sampled table, so the prevalence row is a check that
+both arms were drawn as specified, not evidence about the network, and it
+cannot carry a closing condition.
 
 Prevalence is **an artefact of the design**, not population prevalence, and is
 now an artefact of two rules rather than one (PRE_REGISTRATION §2). "Prevalence
@@ -380,14 +519,32 @@ reported without a bar for the other five metrics.
 
 | arm | system | mode B AUC | mode A AUC | Δ (A − B) | sign of PF − naive, B | sign of PF − naive, A | signs agree |
 |---|---|---|---|---|---|---|---|
-| `without_auth` | naive | `[pending]` | pending mode A | pending mode A | `[pending]` | pending mode A | pending mode A |
-| `without_auth` | prismflow | `[pending]` | pending mode A | pending mode A | `[pending]` | pending mode A | pending mode A |
-| `without_flows` | naive | `[pending]` | pending mode A | pending mode A | `[pending]` | pending mode A | pending mode A |
-| `without_flows` | prismflow | `[pending]` | pending mode A | pending mode A | `[pending]` | pending mode A | pending mode A |
-| `without_dns` | naive | `[pending]` | pending mode A | pending mode A | `[pending]` | pending mode A | pending mode A |
-| `without_dns` | prismflow | `[pending]` | pending mode A | pending mode A | `[pending]` | pending mode A | pending mode A |
-| `with_auth` | naive | `[pending]` | pending mode A | pending mode A | `[pending]` | pending mode A | pending mode A |
-| `with_auth` | prismflow | `[pending]` | pending mode A | pending mode A | `[pending]` | pending mode A | pending mode A |
+**Mode B columns filled 2026-11-22 at 40/40; mode A columns are the only
+`pending mode A` cells left in this document.** Mode B AUC is Table 1; the
+sign column is Table 2's per-arm `prismflow_minus_naive` under §3.3's rule — a
+difference smaller than the per-seed std is **sign undetermined**, not
+agreement.
+
+| arm | system | mode B AUC (8 threads) | mode A AUC | Δ (A − B) | sign of PF − naive, B | sign of PF − naive, A | signs agree |
+|---|---|---|---|---|---|---|---|
+| `without_auth` | naive | 0.7900364591 ± 0.0020106638 | pending mode A | pending mode A | **negative** (−0.0032100173, std 0.0021726225, 4/5 seeds −) | pending mode A | pending mode A |
+| `without_auth` | prismflow | 0.7868264419 ± 0.0035939990 | pending mode A | pending mode A | **negative** (same arm-level figure) | pending mode A | pending mode A |
+| `without_flows` | naive | 0.7700035490 ± 0.0040878521 | pending mode A | pending mode A | **sign undetermined** (−0.0023005006, std 0.0027377719) | pending mode A | pending mode A |
+| `without_flows` | prismflow | 0.7677030484 ± 0.0038525715 | pending mode A | pending mode A | **sign undetermined** | pending mode A | pending mode A |
+| `without_dns` | naive | 0.7440774046 ± 0.0084693584 | pending mode A | pending mode A | **sign undetermined** (+0.0006742009, std 0.0025411558) | pending mode A | pending mode A |
+| `without_dns` | prismflow | 0.7447516055 ± 0.0082767688 | pending mode A | pending mode A | **sign undetermined** | pending mode A | pending mode A |
+| `with_auth` | naive | 0.7401838830 ± 0.0122072868 | pending mode A | pending mode A | **sign undetermined** (+0.0018028525, std 0.0058650782) | pending mode A | pending mode A |
+| `with_auth` | prismflow | 0.7419867355 ± 0.0092586512 | pending mode A | pending mode A | **sign undetermined** | pending mode A | pending mode A |
+
+**H3 cannot be confirmed even if mode A runs, and the mode B column is why.**
+H3 tests whether the sign of PrismFlow − naive agrees across modes in all four
+arms. On mode B **three of the four arms have no established sign**: the
+difference is smaller than the per-seed std, which §3.3 requires be reported
+as *sign undetermined*. A sign that does not exist on one side cannot agree or
+disagree with the other. So mode A could at best decide the `without_auth`
+arm, and H3's "all four arms" condition is **unreachable on this sample**
+whatever mode A shows. This is a property of the measured effect sizes, not of
+mode A's absence, and it is new information as of 40/40.
 
 **Every ENIV value in this table is conditional on its thread count.** Mode B
 observed 8 threads; mode A sets 1. A committed ENIV fails a `abs=1e-6` check
@@ -403,9 +560,51 @@ Per-unit wall-clock and peak RSS, from `units_default/*.json`
 Amendment §10.2 (`rows_at_or_above_threshold`, `max_prob_attack`, and the
 per-seed `degenerate_at_threshold_per_seed` flags in `sweep_default.json`).
 
-| arm | system | unit seconds mean ± std | peak RSS MB | rows ≥ 0.5 | max prob_attack | degenerate at 0.5 |
+**FILLED 2026-11-22 at 40/40.** Source: `results/lanl_v2/filled_tables.json`,
+`table6_operational.per_cell.<arm>/<system>`.
+
+**`peak_rss_mb` is NOT aggregated, and the column below is not a mean.** It is
+a **running maximum over the life of the process** that wrote the unit, so it
+is non-decreasing within a launch and a unit's figure can be inherited from an
+earlier unit in the same process. The column reports `n_distinct` and the
+distinct values. Launch identity is **not measured** — the unit JSON records
+no `process_id` and no `launch_time`, and file mtime is not a substitute
+because a `git checkout` rewrites it.
+
+| arm | system | unit seconds mean ± std | peak RSS MB — distinct values (not a mean) | rows ≥ 0.5, per seed | max prob_attack mean | degenerate at 0.5 |
 |---|---|---|---|---|---|---|
-| (8 rows) | | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[pending]` |
+| `without_auth` | naive | 796.5 ± 241.4 | 3: 513.3, 513.8, 523.1 | 145, 146, 147, 158, 144 | 0.915352 | **False** |
+| `without_auth` | prismflow | 1291.5 ± 344.0 | 2: 513.8, 514.3 | 145, 149, 147, 143, 169 | 0.862739 | **False** |
+| `without_flows` | naive | 714.0 ± 170.3 | 1: 513.8 | 1772, 1768, 1771, 1780, 1754 | 0.973320 | **False** |
+| `without_flows` | prismflow | 884.5 ± 3.0 | 1: 513.8 | 1769, 1765, 1772, 1775, 1784 | 0.981022 | **False** |
+| `without_dns` | naive | 546.0 ± 1.3 | 1: 513.8 | 382, 377, 389, 379, 379 | 0.993766 | **False** |
+| `without_dns` | prismflow | 1845.8 ± 272.6 | 1: 513.8 | 377, 380, 376, 387, 372 | 0.987943 | **False** |
+| `with_auth` | naive | 1051.3 ± 349.4 | 4: 496.7, 499.5, 499.6, 500.1 | 42, 45, 48, 52, 36 | 0.994147 | **False** |
+| `with_auth` | prismflow | 1929.8 ± 410.7 | **5**: 501.7, 503.1, 528.8, 537.3, 538.6 | 47, 46, 51, 53, 44 | 0.988934 | **False** |
+
+**The `peak_rss_mb` column is self-documenting about the defect it replaced.**
+Three cells have `n_distinct = 1` — a single observation shared by five
+units — where the old aggregation would have printed a mean with `std = 0.0`
+and read as perfect reproducibility. `with_auth`/`prismflow` has
+`n_distinct = 5` and is strictly increasing (501.7 → 538.6), which is the
+running maximum visible directly: its seeds 2, 3 and 4 were trained in one
+process on 2026-11-22 and each inherited the previous unit's peak.
+
+**`unit_seconds` ± spans launches and is not a reproducibility figure.**
+Compare `without_dns`/naive at **546.0 ± 1.3** (one launch) with
+`with_auth`/prismflow at **1929.8 ± 410.7** (three launches) — the second ±
+is dominated by machine state, not by seed. `with_auth`/naive is the clearest
+case: its five seeds measured 653.8, 705.4, 1359.8, 1370.8 and 1166.7 seconds
+across three launches, so its ± 349.4 is a cross-launch spread. Each value is
+still a genuine per-unit measurement, so the mean remains a legitimate
+*operational* summary; it is not evidence about determinism. Table 6 carries
+no hypothesis, so nothing in §3 depends on either column.
+
+**The §10.2 degeneracy diagnostic reads "not degenerate" in all 8 cells.**
+`max_prob_attack` runs 0.862739 to 0.994147, every cell well above 0.5, and
+`degenerate_any_seed` is `False` for all eight. This is the measured
+confirmation of §5: Amendment §10.3's premise does not hold at days 1–16. It
+is **a reading, not a failure**.
 
 ---
 
@@ -512,6 +711,61 @@ quarter of it did not help. Say which claim the number supports.
   (PRE_REGISTRATION §1 H2, verbatim).
 - The four non-pre-registered hosts in Table 3 **cannot confirm or disconfirm
   H2** and must not be aggregated with the `C17693` column.
+
+**H2 IS DISCONFIRMED. All eight of eight cells are at or above the bar, and
+the smallest exceeds it by a factor of 2.8** (`results/lanl_v2/filled_tables.json`,
+`table3_leave_host_out.h2_verdict`): `max_abs_delta` **0.1134384687**
+(`with_auth`/naive), `min_abs_delta` **0.0997097614**
+(`without_auth`/naive), against a bar of 0.036. `cells_at_or_above_bar` lists
+all eight. The rule is existential, so one cell would have sufficed; eight did.
+
+**The sharpness warning does not apply to this verdict, and that is worth
+saying explicitly.** §3.2 warns that H2's bar sits inside Part 30's own band
+(0.035963 to 0.051875), so a *confirmation* would have been uninformative.
+That caveat protects against a false pass. Part 38 did not pass: its band is
+**0.099710 to 0.113438**, which does not overlap Part 30's at all, and its
+smallest cell is nearly twice Part 30's largest. The verdict does not rest on
+the threshold — it rests on two non-overlapping bands, which is what §3.2's
+pairwise requirement was for.
+
+**The direction is the opposite of what H2 predicted, in all eight cells.**
+H2 predicted the leave-host-out sensitivity would **shrink** because benign
+contrast for `C17693` was restored. It **grew**, by +0.0478 to +0.0756 per
+cell (Table 3, pairwise block). Removing one host now costs 0.10 to 0.11 AUC
+where it cost 0.036 to 0.052 before.
+
+**What this disconfirmation licenses, and what it does not.**
+
+1. **It licenses:** on this build, restoring **a quarter** of `C17693`'s
+   benign cells did not reduce the single-host sensitivity; it increased it.
+   The realised share is **1/4** (§1.1, `k = 2`), and the verdict must read
+   "1/4" — rule (b) kept 10 benign rows for `C17693` where Part 30 kept 1
+   (Table 3, host block), against 137 attack rows unchanged.
+2. **It does not license:** "restoring benign contrast does not help." That
+   claim needs the 1/1 build, which was **not run**. At `k = 2` three quarters
+   of the restored contrast was dropped again, so H2's own mechanism was
+   tested at a quarter strength.
+3. **It does not license** any statement about *why* sensitivity grew. A
+   plausible reading is available and is **not measured**: Part 38's test
+   block is 84,460 rows at prevalence 0.00485 against Part 30's 18,729 at
+   0.0219, so `C17693`'s 137 attack rows are now a third of the attack class
+   inside a four-and-a-half-times larger block, and removing them removes a
+   larger share of the rankable positive signal. **No decomposition
+   distinguishing that from a behavioural effect exists.** Do not assert it.
+
+**No interval attaches.** One host is not a resample; the result is
+descriptive. Part 30's own `step5_l27.interval` records the same, and the
+per-seed arrays are in
+`table3_leave_host_out.per_cell.<cell>.per_host.C17693.roc_auc_host_removed.per_seed`.
+
+**A fourth figure belongs beside this verdict**, from the already-committed
+scalar passes: `fallback_survivor_k2` (`crc32(computer | window) % 4 == 0`)
+reaches test AUC **0.8670731707317073**, outranking every view occupancy
+(`results/lanl_v2/h1_occupancy_decomposition.json`,
+`whole_test_block.fallback_survivor_k2`). It is a prevalence artefact of the
+same `k = 2` fallback — `crc32` is not a feature and no encoder sees it — so
+it says the class balance on attack hosts was manufactured by a hash, and does
+**not** say the model has a leak. See §4.2.
 
 **A sharpness warning that must appear beside the verdict.** Part 30's own
 committed `C17693` band is **0.035963 to 0.051875** across the same eight
@@ -696,7 +950,15 @@ on its fallback branch. It is an additional reason the L27 verdict must read
   that `proc` now carries. L24's closing condition ("control cells drawn
   without reference to the `auth` stream") is met, and the finding is that
   meeting it is not sufficient to remove selection from the sample.
-- **The arm AUCs are not in** (Table 4, lower block; pending the sweep).
+- **The arm AUCs are now in, and they do not rescue L24 — they sharpen it.**
+  Dropping the auth view **raises** test ROC AUC by **0.0498525761** (naive)
+  and **0.0448397063** (prismflow), negative in 5 of 5 paired seeds in both
+  systems (Table 4 lower block, from Table 1 and Table 2). `without_auth` is
+  the **best** arm on this sample, not the handicapped one. Under Part 30 the
+  reading was "auth is label-adjacent, so `without_auth` is penalised"; on
+  Part 38's sample `without_auth` wins, which is what the relocation of the
+  selection effect to `proc` predicts. This is descriptive and carries no
+  pre-registered bar.
 - **Any status change requires the review gate** (PRE_REGISTRATION §7.6).
   Proposals go to `docs/proposed_limitations_update.md`.
 
@@ -709,18 +971,37 @@ pass/fail against the pre-registered bar is a result. That
 
 ### L27 still OPEN if
 
-- Any `C17693` cell moves by `[pending]` ≥ 0.036 → **name the arm, the system,
-  the delta and the per-seed array**. H2 is disconfirmed; restoring benign
-  contrast for that host did not shrink the leave-host-out sensitivity, and the
-  concentration of the attack class in one host remains a live threat to every
-  per-arm AUC.
+- **THIS CLAUSE HAS FIRED, in all eight cells.** The eight `C17693` deltas,
+  with their per-seed arrays in
+  `filled_tables.json`,
+  `table3_leave_host_out.per_cell.<cell>.per_host.C17693.roc_auc_host_removed.per_seed`:
+
+  | arm | system | Δ | per-seed AUC with host removed |
+  |---|---|---|---|
+  | `without_auth` | naive | −0.099710 | see path above, n = 5 |
+  | `without_auth` | prismflow | −0.099784 | " |
+  | `without_flows` | naive | −0.103284 | " |
+  | `without_flows` | prismflow | −0.103105 | " |
+  | `without_dns` | naive | −0.108785 | " |
+  | `without_dns` | prismflow | −0.104055 | " |
+  | `with_auth` | naive | **−0.113438** (largest) | 0.5980048747, 0.6409268960, 0.6217520263, 0.6331019766, 0.6399412978 |
+  | `with_auth` | prismflow | −0.108746 | " |
+
+  H2 is disconfirmed. Restoring a quarter of the benign contrast for that host
+  did not shrink the leave-host-out sensitivity — **it grew it**, by +0.0478 to
+  +0.0756 per cell against Part 30. The concentration of the attack class in
+  one host remains a live threat to every per-arm AUC, and is now measured as
+  a larger threat than Part 30 recorded.
 - All eight pass but the smallest Part 30 cell (−0.035963) is not cleared by a
-  margin → report H2 as **confirmed at a bar that Part 30's own weakest cell
-  also passes**, which is a weak confirmation. Needed next: a bar set from the
+  margin → **this branch did not fire.** It would have required a
+  confirmation; none occurred. Had it fired, the remedy was a bar set from the
   *median* or the *largest* of Part 30's band rather than its minimum, agreed
-  at the review gate.
-- Part 38's re-derived top-5 host set differs from Part 30's → the two tables
-  are not row-comparable; say so and report both host sets.
+  at the review gate. Recorded because the branch was written before the
+  numbers and must be reported as untaken rather than deleted.
+- Part 38's re-derived top-5 host set differs from Part 30's → **this branch
+  did not fire.** The re-derivation on Part 38's own test block returns the
+  **same five computers in the same rank order** (Table 3, host block). The
+  removed-row counts differ by design, as rule (b) requires.
 - The realised share is **1/4** (`k = 2`), so L27's "separate host from
   behaviour" is tested at a quarter of the intended benign contrast whatever
   the deltas say. **And the thinning predicate is now measured as the
@@ -802,14 +1083,27 @@ What this does and does not change:
 
 ## 6. Fill checklist
 
-- [ ] Every `[pending]` replaced by a value with its JSON path, or by
-      `not measured` with the reason.
-- [ ] Every cell has `n = 5`; any `n < 5` cell labelled `NOT A FINDING`.
-- [ ] Per-seed sign counts reported before every aggregate mean.
-- [ ] No ± pools the two execution modes.
-- [ ] Every ENIV value carries its thread count.
-- [ ] Mode A tables either filled or left `pending mode A` — never blank.
-- [ ] Table 3's `C17693` column distinguished from the four exploratory hosts.
-- [ ] No number in this file lacks a committed source.
-- [ ] `PRE_REGISTRATION.md` and `docs/KNOWN_LIMITATIONS.md` unedited.
-- [ ] Status proposals written to `docs/proposed_limitations_update.md` only.
+Checked 2026-11-22 at 40/40.
+
+- [x] Every `[pending]` replaced by a value with its JSON path, or by
+      `not measured` with the reason. **The only remaining `[pending]` markers
+      are Table 5's mode A columns, labelled `pending mode A`, plus the two
+      occurrences in this document's own prose explaining the convention.**
+- [x] Every cell has `n = 5`; any `n < 5` cell labelled `NOT A FINDING`. All
+      eight arm × system cells are `n = 5`; no cell needed the label.
+- [x] Per-seed sign counts reported before every aggregate mean — Table 2,
+      with `seeds_exactly_zero` = 0 in all four arms.
+- [x] No ± pools the two execution modes. Mode A has not been run, so no
+      pooling was possible; Table 5's mode B and mode A columns are separate.
+- [x] Every ENIV value carries its thread count — Table 1's header reads
+      "8 threads", matching `torch_threads_observed`.
+- [x] Mode A tables either filled or left `pending mode A` — never blank.
+- [x] Table 3's `C17693` column distinguished from the four exploratory hosts,
+      and the four are labelled exploratory at the table and in §3.2.
+- [x] No number in this file lacks a committed source.
+- [x] `PRE_REGISTRATION.md` and `docs/KNOWN_LIMITATIONS.md` unedited.
+- [x] Status proposals written to `docs/proposed_limitations_update.md` only.
+- [ ] **Resolve each number to an exact JSON path by hand before the report
+      quotes it.** The repo's number check is a *presence* check — it confirms
+      a number appears somewhere in a cited file, not that it is the field
+      claimed. This box is deliberately left open.
