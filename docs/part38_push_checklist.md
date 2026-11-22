@@ -1,17 +1,55 @@
-# Part 38 — push checklist for Sunday
+# Part 38 — push checklist
 
 Branch `part38-lanl`, merge-base with `main` is **`805d1fc`**. Audited
-2026-11-21 with the mode `default` sweep at **25 of 40** units.
+**2026-11-22** with the mode `default` (B) sweep **complete at 40 of 40
+units**, §4.4 integrated into the final report, and the L24/L27/L28 status
+updates applied.
 
-**Nothing in this document has been executed.** The secret audit is a *plan*,
-to be run Sunday. The sizes and file lists are read from git as it stands now
-and will grow as the sweep lands.
+**The audit in §4 has been EXECUTED**, unlike the 2026-11-21 revision of this
+file, which was a plan. Results are recorded per category below.
+
+---
+
+## 0. Readiness
+
+### Ready to push
+
+- **Part 38 is closed.** Mode B sweep 40/40, all 40 `scores_sha256` verified
+  against the on-disk npz, `filled_tables.json` reproduces bit-exact across
+  two runs.
+- **L24 and L27 verdicts are in place.** H1 **DISCONFIRMED** and H2
+  **DISCONFIRMED** (the latter in the *opposite* direction to its
+  prediction), both recorded in `docs/KNOWN_LIMITATIONS.md` with dated Part 38
+  blocks. Both entries stay **OPEN**; nothing was marked RESOLVED or CLOSED.
+- **The final report is integrated.** §4.4 inserted,
+  `check_report_numbers.py` green at **759** numbers (327 before), every one
+  resolving to a cited file.
+- **A null result for the central thesis is recorded in the report body**, not
+  only inside §4.4: on this LANL sample no arm favours the dependence
+  discount (`docs/FINAL_REPORT.md` §6 and §8).
+
+### Deferred, with runners in place and not executed
+
+| item | blocks | state |
+|---|---|---|
+| Mode A (`threads1_concurrent11`) | **L28** verdict, and H3 | `experiments/lanl_v2/run_mode_a.sh` exists and is validated. ~2.0 h, ~5.4 GB across 11 processes. **H3 is unsatisfiable on this sample regardless** — three of four arms have no established sign for mode A to agree with |
+| Part 37 item B | **L12** | scaffolded, not executed |
+| Part 39 item A | **L16** | scaffolded, not executed |
+
+### What the user does next
+
+1. **Review `docs/FINAL_REPORT.md` §4.4 visually** — it is 616 inserted lines
+   and the heading depth goes to `#####`. Check it reads as part of §4.
+2. **Decide on the `web-backdrop` merge** (§7 below). This needs a visual
+   check; it is not a correctness question.
+3. **Push `part38-lanl`** (§6).
+4. **Merge and push `web-backdrop`** only if step 2 approved it.
 
 ---
 
 ## 1. Commits on the branch since `main`
 
-**25 commits**, `805d1fc..HEAD`, oldest first.
+**48 commits**, `805d1fc..HEAD`, oldest first.
 
 | # | SHA | subject |
 |---|---|---|
@@ -40,145 +78,91 @@ and will grow as the sweep lands.
 | 23 | `1fa3bca` | Part 38: README documenting the three scalar passes |
 | 24 | `693cfde` | Part 38: narrative section for final report |
 | 25 | `62cab9c` | Part 38: Mode A launch script (do not run until mode B at 40/40) |
+| 26 | `16a9107` | Part 38: push checklist for Sunday |
+| 27 | `c0d7369` | Part 39 item A: scaffolding and pre-registration (not run) |
+| 28 | `385d26f` | Part 37 item B: pre-registration and README (not run) |
+| 29 | `040bafb` | Part 38: final report integration preview |
+| 30 | `8453021` | Part 38: Sunday decision analysis |
+| 31 | `e4efc7a` | Part 39 item A: runner (not executed, not tested) |
+| 32 | `89bf16c` | Part 38: preserve 26 recovered units from shutdown (26/30 new, 10 already committed = 36/40) |
+| 33 | `1a130b0` | Part 38: verdict worksheet (L24 ready; L27/L28 pending sweep) |
+| 34 | `b85fb0e` | Part 38: final-report prose ready for integration |
+| 35 | `9d3565a` | Part 38: peak_rss_mb fix patch (apply after sweep) |
+| 36 | `239f349` | Part 38: peak_rss_mb is a running maximum, not one value per launch |
+| 37 | `ac98a1f` | Part 38: peak_rss_mb preserved per-seed with regime provenance |
+| 38 | `11cf3af` | Part 38: mode B sweep complete at 40/40 |
+| 39 | `a0f58ab` | Part 38: sweep_default.json NaN -> null |
+| 40 | `9213d0d` | Part 38: analysis template filled, L24/L27 verdicts recorded |
+| 41 | `c4f5993` | Part 38: worksheet updated to the 40/40 verdicts |
+| 42 | `b126c80` | Part 38: worksheet L24 arm gap filled, stale "pending the sweep" removed |
+| 43 | `b829e24` | Part 38: worksheet 'does not decide' list no longer lists filled tables |
+| 44 | `ab37aeb` | Part 38: section reconciled with the 40/40 verdicts |
+| 45 | `7b3cd07` | Part 38: integration instruction updated for the completed sweep |
+| 46 | `3435993` | Part 38: pairwise column relabelled to the quantity it holds |
+| 47 | `22d284c` | Part 38: integrated into final report (§4.4) |
+| 48 | `e57bd73` | Part 38: L24, L27 status updates; L28 deferred to future Part |
 
-**Commits still to come before the push:** the remaining sweep units and
-`sweep_default.json`; `filled_tables.json` plus the Tables 1/2/3/6 verdict
-writes; L27's proposal text; and — if mode A runs — `units_threads1/`,
-`scores_threads1/`, `sweep_threads1.json` and H3.
+**PRE_REGISTRATION.md is touched by two commits, both legitimate.**
+`406df50` **adds** the file (status `A`) and `ff92183` is the dated
+**amendment 1** (status `M`). No later commit edits it — verified with
+`git show --name-status`.
+
+**No frozen module is touched.** `git diff --name-only main..HEAD -- prismflow/`
+is empty.
+
+---
 
 ## 2. Files changed
 
-**83 files, 8,822 insertions, 0 deletions.** One modification, 82 additions.
-No file is deleted by this branch.
+`git diff --stat main..HEAD`: **161 files changed, 18668 insertions(+),
+6 deletions(-)**.
 
-| area | files | what |
-|---|---|---|
-| `experiments/lanl_v2/` | 15 | pre-registration, sampler, runner, metrics, the three scalar passes, `fill_analysis.py`, `run_mode_a.sh`, `sweep_block.sh`, README, analysis template, Sunday schedule |
-| `results/lanl_v2/` | 64 | sample table, 10 unit JSONs, 10 score npz, 28 probe JSONs, 6 smoke score npz, 3 smoke JSONs, 2 reproduction JSONs, build report, sweep estimate, execution log, the three scalar-pass JSONs |
-| `tests/unit/` | 3 | `test_lanl_v2_sampler.py`, `test_lanl_v2_sampler_synthetic.py`, `test_h1_scalar_passes.py` |
-| `docs/` | 2 | `part38_section.md` (new), `proposed_limitations_update.md` (**modified — appended only**) |
+| directory | files |
+|---|---|
+| `results/lanl_v2` (top level) | 47 |
+| `results/lanl_v2/units_default` | 40 |
+| `results/lanl_v2/scores_default` | 40 |
+| `experiments/lanl_v2` | 14 |
+| `docs` | 9 |
+| `experiments/part39_ait` | 4 |
+| `tests/unit` | 3 |
+| `results/lanl_v2/logs` | 2 |
 
-**The single modified file is `docs/proposed_limitations_update.md`**, and it
-was **appended to**, not rewritten: it already held 412 lines of Part
-33/34/35/36 proposals, and the Part 38 section runs from a `---` to a
-`<!-- PART38:END -->` marker, matching the existing `<!-- PART36:END -->`
-convention. **Confirm at review that the Part 36 content is still intact.**
-
-**`PRE_REGISTRATION.md` appears as `A` (added), not `M`.** It is added *by this
-branch* at commit 1 and never modified afterwards — which is the frozen
-discipline holding. `docs/KNOWN_LIMITATIONS.md` does not appear in the diff at
-all.
+---
 
 ## 3. Size
 
-### 3.1 As it stands
-
-| area | size |
+| quantity | value |
 |---|---|
-| `scores_default/` (10 npz) | **4.36 MB** |
-| other npz (`samples_v2_days16.npz` 2.94 MB + 6 smoke score npz) | **4.36 MB** |
-| results JSON | 0.07 MB |
-| `experiments/` | 0.21 MB |
-| `docs/` | 0.07 MB |
-| `tests/` | 0.03 MB |
-| **total** | **9.11 MB** over 212 objects |
+| tracked tree at HEAD | **82.1 MB** in **1285** files |
+| `.git` directory | **77.2 MB** |
+| largest tracked file | **4.4 MB**, `results/ait_attack/results.A_naive_checkpoint.json` |
+| largest file added by this branch | **2.9 MB**, `results/lanl_v2/samples_v2_days16.npz` |
+| the 40 mode-B score arrays | **18.3 MB** total, ~495 KB each |
 
-Largest blobs: `samples_v2_days16.npz` **3008.6 KB**, then the score npz at
-**372.9–527.3 KB** each.
+**No single file exceeds 10 MB**, so `results/`'s no-LFS convention holds
+without gzip. The 40 `scores_default/*.npz` are tracked individually rather
+than as one archive, which is why the directory total passes while no member
+does.
 
-### 3.2 Projected
+---
 
-The 10 committed score npz average **0.436 MB**.
+## 4. Secret and settings audit — EXECUTED 2026-11-22
 
-| scenario | projected branch size |
-|---|---|
-| mode B at 40/40, scores committed | **~22.2 MB** (+13.1 MB for 30 more npz) |
-| the above plus mode A at 40/40 | **~39.6 MB** (+17.4 MB) |
-| mode B at 40/40, **scores excluded** | **~9.1 MB** |
+| category | command | result |
+|---|---|---|
+| repo checker, real paths | `tools/check_secrets.py --all` | **PASS** — 975 files, 4 values loaded from `.env`, `clean`, exit 0 |
+| `api_key` / `secret` / `token` / `credential` / `-----BEGIN` | `grep -IEn` over every one of the 161 files in `git diff --name-only main..HEAD` | **PASS** — 11 hits, **all prose about secret scanning** (this file, `part38_decisions.md`, `SUNDAY_SCHEDULE.md`, and one "token budget" in `FINAL_REPORT.md`). No value. |
+| `.claude/settings*.json` | grep over the diff | **PASS** — not present |
+| `.env`, `.pem`, `id_rsa`, `*.key`, `credentials` | grep over the diff | **PASS** — not present |
+| 64-char hex strings | field-name resolution, not shape | **PASS, expected** — every one sits under `scores_sha256` (40 occurrences, one per unit JSON), `samples_sha256` (1) or `sha256` (1). These are **file digests**, which share a shape with several credential formats. Checked by resolving each to its JSON key rather than by eyeballing the string. |
+| untracked-by-design dirs | grep over the diff | **PASS** — neither `Project backend details/` nor `docs/report/` appears |
 
-**This is the decision to make before the push, not during it.** The repo has
-**no LFS** and the next-largest tracked file anywhere is 4.45 MB
-(`results/ait_attack/results.A_naive_checkpoint.json`). The score npz are
-already `savez_compressed`, so the gzip-plus-sha256-manifest remedy used for
-Part 29's 25 MB **does not help here**.
+**The scan ran against real repo paths**, not a flat `git log -p` dump: a flat
+dump trips `check_secrets`' own allow-list and comes back clean when it is
+not.
 
-Two facts that bear on the choice:
-
-- **Precedent exists.** Part 30's `results/lanl/scores/*.npz` are tracked — 48
-  files, 5.9 MB — so tracking score npz is the established pattern, not a new
-  one. Part 38's are larger because its test block is 84,460 rows against Part
-  30's 18,729.
-- **They are not merely archival.** Table 3 (L27 / H2) is computed *from* these
-  arrays by re-scoring with a host mask. Excluding them makes the
-  leave-host-out analysis unreproducible without a full retrain.
-
-### 3.3 `.gitignore` behaviour, already checked
-
-`.gitignore:43` `results/*/*/*` ignores that depth and `:44` re-includes only
-`*.json` (plus `.csv/.md/.png`). So:
-
-| path | status |
-|---|---|
-| `results/lanl_v2/units_default/*.json` | **tracked normally** |
-| `results/lanl_v2/scores_default/*.npz` | **ignored — needs `git add -f`** (as commit 12 did) |
-| `results/lanl_v2/units_threads1/*.json` | **will track normally** |
-| `results/lanl_v2/scores_threads1/*.npz` | **will be ignored — will need `-f`** |
-| `results/lanl_v2/logs/*.log` | **ignored** — correct, they are operational |
-| `results/lanl_v2/*.json` (top level) | **tracked** via `:31 !results/*/*.json` |
-
-## 4. Secret and settings audit
-
-### 4.1 Static path check — **done, clean**
-
-`git diff --name-only 805d1fc..HEAD` filtered for
-`settings|\.env|secret|credential|token|key|\.pem|id_rsa|\.claude/` returns
-**no matches**. **No `.claude/settings*.json` and no `.env` is on this
-branch.**
-
-### 4.2 Content scan — **PLAN, to run Sunday**
-
-Each commit in this block already ran `tools/check_secrets.py` against its
-staged changes and each reported clean. That is **not** sufficient for a push:
-staged-only scans never saw the 60 result files added by earlier commits.
-
-Run, in this order:
-
-```sh
-PYTHONPATH=. ./.venv/Scripts/python.exe tools/check_secrets.py --all
-```
-
-`--all` reads every tracked file, and the check that matters is its second
-one: it takes the real values out of `.env` and looks for those exact strings,
-which catches a key with no recognisable prefix. It never prints the values.
-
-Then the **push scan**, over the blobs this branch actually adds.
-
-> **The push scan needs real repository paths.** A flat `git log -p` dump trips
-> `check_secrets`' own allow-list, so the scan comes back clean when it is not.
-> Mirror each added blob at its repo path — e.g. export
-> `805d1fc..HEAD` into a temp tree with `git archive HEAD | tar -x -C <tmp>`,
-> or check out the branch into a scratch worktree — and scan that tree.
-
-**Expect two classes of benign hit and confirm each by eye rather than
-waving it through:**
-
-- **`scores_sha256` fields** in the 40 unit JSONs — 64-hex strings, which is
-  the shape of several credential formats. They are file digests and are
-  verifiable: each equals the sha256 of its `scores_default/<name>.npz`, and
-  `fill_analysis.py` asserts exactly that.
-- **the `samples_v2_days16.npz` sha256** in `SWEEP_EXECUTION_LOG.md` section 5,
-  `03b7602a590f9c64196ceee2750981187f456541d81927cb69d7b7d6aa251a9a`.
-
-**Any other hit stops the push.** Report it; do not rewrite history to hide it.
-
-### 4.3 Data that must not be pushed
-
-LANL `cyber1` raw data is **not** on this branch and must not be. Confirm:
-`data/raw/` holds `auth.txt.gz` (7.6 GB), `proc.txt.gz` (2.4 GB),
-`flows.txt.gz` (1.1 GB), `dns.txt.gz` (185 MB), `redteam.txt.gz` and
-`data/raw/ait/` (2.2 GB per scenario). None appears in the diff. The derived
-`samples_v2_days16.npz` **is** on the branch at 2.94 MB, which is the intended
-artefact.
+---
 
 ## 5. Working-tree state at audit time
 
@@ -228,8 +212,13 @@ Run in order. Any failure stops the push.
 
 **Repository**
 
-- [ ] `git diff main --stat -- experiments/lanl_v2/PRE_REGISTRATION.md docs/KNOWN_LIMITATIONS.md`
-      is **empty**.
+- [x] `git diff main --stat -- experiments/lanl_v2/PRE_REGISTRATION.md`
+      shows **only** `ff92183`'s amendment 1 (`406df50` adds the file).
+      **This item changed on 2026-11-22:** it previously also required
+      `docs/KNOWN_LIMITATIONS.md` to be untouched. The review gate authorised
+      the L24/L27/L28 updates, so that file IS modified, by design, in
+      `e57bd73`. All three entries stay **OPEN** and no heading gained
+      RESOLVED or CLOSED — which is the property to check now.
 - [ ] `docs/proposed_limitations_update.md` still contains
       `<!-- PART36:END -->` and all four earlier proposal sections.
 - [ ] No frozen module is modified: `git diff main --name-only` contains
@@ -248,3 +237,48 @@ Run in order. Any failure stops the push.
       identified as a `scores_sha256` or the sample-table digest.
 - [ ] Branch is `part38-lanl`; the merge target is agreed; **nothing was
       pushed before the review.**
+
+---
+
+## 7. The push, and the `web-backdrop` decision
+
+**Nothing below has been run.** Claude Code did not push, merge or tag.
+
+### 7.1 Push `part38-lanl`
+
+The branch has **no upstream**, so the first push sets it:
+
+```sh
+git -C "E:/PERSONAL/project/PrIsM FlOw" push -u origin part38-lanl
+```
+
+Pre-flight, if you want the audit re-run from scratch rather than trusted:
+
+```sh
+git -C "E:/PERSONAL/project/PrIsM FlOw" status --short
+PYTHONPATH=. ./.venv/Scripts/python.exe tools/check_secrets.py --all
+PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe docs/check_report_numbers.py
+```
+
+Expected: a clean tree except the two untracked directories
+(`Project backend details/`, `docs/report/`), `check_secrets` `clean`, and
+`check_report_numbers` reporting **759** numbers all resolving.
+
+### 7.2 `web-backdrop` — only after a visual check
+
+**This is a judgement, not a gate, and it is not Part 38's.** The backdrop
+changes what the site looks like; nothing in this block measured it and no
+test covers it. Look at it in a browser first.
+
+```sh
+git -C "E:/PERSONAL/project/PrIsM FlOw" checkout main
+git -C "E:/PERSONAL/project/PrIsM FlOw" merge --no-ff web-backdrop
+git -C "E:/PERSONAL/project/PrIsM FlOw" push origin main
+```
+
+`--no-ff` keeps the merge visible as one commit on `main`.
+
+**Do not fold this into the `part38-lanl` push.** They are unrelated changes
+and a visual regression should not be bisectable only through a results
+branch. Merging `web-backdrop` into `main` while `part38-lanl` is still
+unmerged is fine; they touch disjoint paths.
